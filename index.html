@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Padel Bielstein – Courts buchen</title>
+<style>
+:root {
+  --bg: #000000;
+  --card: #0d0d0d;
+  --border: #222222;
+  --blue: #1F6FD2;
+  --blue-dk: #1657A8;
+  --gold: #E6EA18;
+  --gold-dk: #C9CD14;
+  --gray: #a0a0a0;
+  --gray-lt: #d0d0d0;
+  --white: #ffffff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+/* ■■ HEADER ■■ */
+.hero { margin-bottom: 18px; border-bottom: 1px solid var(--border); background: #000; overflow: hidden; }
+.hero-frame { width: 100%; aspect-ratio: 3830 / 1563; background: #000; }
+.hero-img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
+
+/* ■■ MAIN ■■ */
+main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
+
+/* ■■ MODE TABS ■■ */
+.mode-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
+.mode-tab {
+  height: 60px; padding: 0 20px; border-radius: 12px; cursor: pointer; transition: all 0.2s;
+  border: 1.5px solid var(--border); background: var(--card);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--white);
+}
+#tabAbo:not(.active) { color: var(--blue); border-color: var(--blue); }
+.mode-tab:hover { border-color: #444; }
+.mode-tab.active { background: var(--gold); border-color: var(--gold-dk); color: #0a0a0a !important; }
+.mode-tab .tab-icon { font-size: 1.1rem; }
+
+/* ■■ STEPS ■■ */
+.step-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: #0a0a0a; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.82rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-lbl { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.84rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-lt); }
+.gap { margin-bottom: 28px; }
+
+/* ■■ DATE SCROLL ■■ */
+.date-scroll-wrap { position: relative; }
+.date-scroll { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 6px; padding-left: 38px; padding-right: 38px; scrollbar-width: none; }
+.date-scroll::-webkit-scrollbar { display: none; }
+.scroll-btn { position: absolute; top: 50%; transform: translateY(-60%); z-index: 10; background: var(--blue); border: none; color: #fff; font-size: 1.1rem; width: 28px; height: 40px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.scroll-btn.left { left: 0; }
+.scroll-btn.right { right: 0; }
+.date-chip { flex-shrink: 0; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 13px; cursor: pointer; transition: all 0.16s; text-align: center; min-width: 62px; }
+.date-chip:hover { border-color: var(--gold); }
+.date-chip.selected { background: var(--blue); border-color: var(--blue); color: #fff; }
+.date-chip .dname { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
+.date-chip .dnum { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.5rem; line-height: 1.1; }
+.date-chip .dmon { font-size: 0.65rem; opacity: 0.5; margin-top: 1px; }
+
+/* ■■ DURATION ■■ */
+.dur-row { display: flex; gap: 10px; }
+.dur-btn { flex: 1; height: 60px; padding: 0 16px; background: var(--card); border: 1.5px solid var(--border); color: var(--white); font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 10px; cursor: pointer; transition: all 0.16s; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.dur-btn:hover { border-color: var(--white); }
+.dur-btn.selected { background: var(--gold); border-color: var(--gold-dk); color: #0a0a0a; }
+.dur-btn .dprice { font-size: 0.78rem; font-weight: 600; opacity: 0.75; }
+.dur-btn.selected .dprice { opacity: 0.65; }
+.dur-sub { font-size: 0.72rem; color: #888; text-align: center; margin-top: 8px; letter-spacing: 0.04em; }
+
+/* ■■ LEGEND ■■ */
+.price-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 4px 11px; font-size: 0.72rem; color: #c0c0c0; letter-spacing: 0.04em; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: #c0c0c0; }
+.ldot { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ■■ COURTS ■■ */
+.courts-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.court-col { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--blue); }
+.court-hdr { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; background: #000; border-bottom: 1px solid var(--blue); }
+.court-name { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
+.slots-grid { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+.slot { border-radius: 8px; padding: 10px 13px; cursor: pointer; transition: all 0.13s; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid transparent; }
+.slot.free { background: #272727; border-color: #333; }
+.slot.free:hover { background: #222; border-color: var(--blue); transform: translateX(3px); }
+.slot.booked { background: #1a1a1a; cursor: not-allowed; }
+.slot.abo-booked { background: #1a0a0a; border-color: #3a1a1a; cursor: not-allowed; }
+.slot.selected { background: var(--blue); border-color: var(--blue-dk); }
+.slot.selected-second { background: var(--blue); border-color: var(--blue-dk); }
+.slot-time { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: 0.03em; }
+.slot.free .slot-time, .slot.selected .slot-time { color: #fff; }
+.slot.booked .slot-time { text-decoration: line-through; color: #888; }
+.slot.abo-booked .slot-time { color: #664444; }
+.slot-price { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.92rem; }
+.slot.free .slot-price { color: var(--blue); }
+.slot.selected .slot-price { color: #fff; }
+.bkd-lbl { font-size: 0.62rem; color: #999; text-transform: uppercase; letter-spacing: 0.08em; }
+.abo-lbl { font-size: 0.62rem; color: #cc4444; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+
+/* ■■ SUMMARY ■■ */
+.summary-card { background: var(--card); border: 1.5px solid var(--blue); border-radius: 12px; padding: 16px 20px; margin-bottom: 14px; display: none; animation: fadeUp 0.25s ease; }
+.summary-card.visible { display: block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.sum-hdr { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--white); margin-bottom: 12px; }
+.sum-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.sum-row:last-child { border-bottom: none; }
+.sum-row .sl { font-size: 0.83rem; color: #b8b8b8; }
+.sum-row .sv { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 1rem; }
+.sum-row.total .sl { color: var(--white); font-weight: 600; }
+.sum-row.total .sv { font-size: 1.5rem; color: var(--blue); }
+.disc-badge { background: rgba(31,111,210,0.18); border: 1px solid rgba(31,111,210,0.55); color: var(--blue); font-size: 0.65rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; margin-left: 6px; }
+
+/* ■■ BOOK BTN ■■ */
+.book-btn { width: 100%; height: 60px; background: var(--blue); color: #fff; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.12em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: none; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 24px rgba(31,111,210,0.3); }
+.book-btn.visible { display: flex; }
+.book-btn:hover { background: var(--blue-dk); transform: translateY(-2px); }
+
+/* ■■ ABO ■■ */
+.weekday-row { display: flex; gap: 7px; flex-wrap: wrap; }
+.wd-btn { flex: 1; min-width: 50px; background: var(--card); border: 1.5px solid var(--border); color: var(--gray-lt); font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 11px 6px; border-radius: 10px; cursor: pointer; transition: all 0.16s; text-align: center; }
+.wd-btn:hover { border-color: #555; color: var(--white); }
+.wd-btn.selected { background: var(--gold); border-color: var(--gold-dk); color: #0a0a0a; }
+.abo-summary { background: var(--card); border: 1.5px solid var(--gold); border-radius: 14px; padding: 20px 22px; margin-top: 20px; display: none; animation: fadeUp 0.25s ease; }
+.abo-summary.visible { display: block; }
+.abo-sum-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.abo-sum-title { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); }
+.abo-details { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.abo-detail-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.abo-detail-row .dl { font-size: 0.83rem; color: #b8b8b8; }
+.abo-detail-row .dv { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--white); }
+.abo-52 { font-size: 0.75rem; color: #888; text-align: center; margin-bottom: 16px; letter-spacing: 0.05em; }
+.abo-pricing { margin-bottom: 16px; }
+.abo-price-reg { font-size: 0.82rem; color: #888; margin-bottom: 4px; }
+.abo-price-total { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.8rem; color: var(--gold); line-height: 1; margin-bottom: 4px; }
+.abo-price-save { font-size: 0.85rem; color: #4ade80; font-weight: 600; }
+.abo-benefits { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+.abo-benefit { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #c0c0c0; }
+.abo-benefit-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+.abo-weather { font-size: 0.82rem; color: #999; line-height: 1.5; margin-bottom: 18px; font-style: italic; }
+.abo-cta { width: 100%; height: 60px; background: var(--gold); color: #0a0a0a; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 28px rgba(230,234,24,0.2); }
+.abo-cta:hover { background: var(--gold-dk); transform: translateY(-2px); }
+
+/* ■■ FOOTER ■■ */
+.footer-link { text-align: center; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
+.footer-link a { font-family: "Arial Narrow","Impact",sans-serif; font-size: 0.78rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: color 0.2s; }
+.footer-link a:hover { color: #999; }
+
+/* ■■ TOAST ■■ */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #000; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.92rem; letter-spacing: 0.06em; padding: 11px 22px; border-radius: 10px; box-shadow: 0 4px 24px rgba(230,234,24,0.25); transition: transform 0.3s ease; z-index: 999; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ■■ SCROLLBAR ■■ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+* { scrollbar-width: thin; scrollbar-color: #333 #0a0a0a; }
+
+/* ════════════════════════════════════════
+   MOBILE ≤ 560px — aus bewährter
+   Small-Display-Version übernommen
+════════════════════════════════════════ */
+@media (max-width: 560px) {
+  body { font-size: 18px; line-height: 1.25; }
+  main { padding: 18px 14px 56px; }
+  .hero { margin-bottom: 16px; }
+
+  .mode-tab { padding: 16px 14px; font-size: 1.06rem; border-radius: 14px; }
+  .mode-tab .tab-icon { font-size: 1.2rem; }
+
+  .step-num { width: 26px; height: 26px; font-size: 0.9rem; }
+  .step-lbl { font-size: 0.88rem; letter-spacing: 0.12em; }
+
+  .date-chip { min-width: 74px; padding: 12px 14px; border-radius: 12px; }
+  .date-chip .dname { font-size: 0.75rem; }
+  .date-chip .dnum { font-size: 1.85rem; }
+  .date-chip .dmon { font-size: 0.75rem; }
+
+  .dur-btn { padding: 16px 12px; font-size: 1.06rem; border-radius: 12px; flex-direction: column; gap: 2px; }
+  .dur-btn .dprice { font-size: 0.84rem; margin-top: 2px; }
+
+  .price-tag { font-size: 0.84rem; padding: 6px 12px; border-radius: 8px; }
+  .legend-item { font-size: 0.84rem; }
+
+  .courts-wrap { grid-template-columns: 1fr; }
+
+  .slots-grid { gap: 9px; padding: 12px; }
+  .slot { padding: 14px 14px; border-radius: 12px; }
+  .slot-time { font-size: 1.10rem; }
+  .slot-price { font-size: 1.04rem; }
+  .bkd-lbl, .abo-lbl { font-size: 0.74rem; }
+
+  .summary-card { padding: 18px; border-radius: 14px; }
+  .sum-hdr { font-size: 0.88rem; }
+  .sum-row .sl { font-size: 0.94rem; }
+  .sum-row .sv { font-size: 1.06rem; }
+  .sum-row.total .sv { font-size: 1.75rem; }
+
+  .book-btn { font-size: 1.2rem; border-radius: 14px; }
+  .abo-cta  { font-size: 1.15rem; border-radius: 14px; }
+  .abo-price-total { font-size: 1.5rem; }
+
+  .toast { font-size: 1rem; padding: 12px 18px; border-radius: 12px; white-space: normal; text-align: center; max-width: calc(100vw - 24px); }
+}
+
+/* ════════════════════════════════════════
+   SEHR KLEIN ≤ 390px
+════════════════════════════════════════ */
+@media (max-width: 390px) {
+  body { font-size: 17px; }
+  main { padding: 16px 12px 54px; }
+  .date-chip { min-width: 64px; padding: 10px; }
+  .date-chip .dnum { font-size: 1.65rem; }
+  .slot { padding: 12px; }
+  .slot-time { font-size: 1.05rem; }
+  .mode-tab { font-size: 0.9rem; }
+  .step-lbl { font-size: 0.78rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero" aria-label="Padel Bielstein">
+  <div class="hero-frame">
+    <img class="hero-img" src="padel_bielstein_header_ULTIMATE_BLUE.jpg" alt="Padel Bielstein">
+  </div>
+</div>
+
+<main>
+  <div class="mode-tabs">
+    <div class="mode-tab active" id="tabBook" onclick="setMode('book')"><span class="tab-icon">■</span> Jetzt buchen</div>
+    <div class="mode-tab" id="tabAbo" onclick="setMode('abo')"><span class="tab-icon">■</span> Jahresabo sichern</div>
+  </div>
+
+  <!-- BOOK MODE -->
+  <div id="modeBook">
+    <div class="step-row"><div class="step-num">1</div><div class="step-lbl">Datum wählen</div></div>
+    <div class="date-scroll-wrap gap">
+      <button class="scroll-btn left" onclick="document.getElementById('dateScroll').scrollBy({left:-200,behavior:'smooth'})">‹</button>
+      <div class="date-scroll" id="dateScroll"></div>
+      <button class="scroll-btn right" onclick="document.getElementById('dateScroll').scrollBy({left:200,behavior:'smooth'})">›</button>
+    </div>
+
+    <div class="step-row"><div class="step-num">2</div><div class="step-lbl">Spieldauer wählen</div></div>
+    <div class="dur-row gap">
+      <button class="dur-btn selected" onclick="setDur(1)" id="dur1">1 Stunde <span class="dprice" id="dp1">ab 16 €</span></button>
+      <button class="dur-btn" onclick="setDur(2)" id="dur2">2 Stunden <span class="dprice" id="dp2">ab 32 €</span></button>
+    </div>
+
+    <div class="step-row" style="margin-bottom:8px;"><div class="step-num">3</div><div class="step-lbl">Platz & Zeit wählen</div></div>
+    <div style="margin-bottom:14px;"><div class="price-tag">■ <span id="priceTxt">Wochentag-Preise (Mo–Fr)</span></div></div>
+    <div class="legend">
+      <div class="legend-item"><div class="ldot" style="background:#272727;border:1px solid var(--blue)"></div> Verfügbar</div>
+      <div class="legend-item"><div class="ldot" style="background:var(--blue)"></div> Ausgewählt</div>
+      <div class="legend-item"><div class="ldot" style="background:#1a1a1a;border:1px solid #333"></div> Belegt</div>
+    </div>
+
+    <div class="courts-wrap gap">
+      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #1</div></div><div class="slots-grid" id="slots1"></div></div>
+      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #2</div></div><div class="slots-grid" id="slots2"></div></div>
+    </div>
+
+    <div class="summary-card" id="sumCard">
+      <div class="sum-hdr">Deine Buchung</div>
+      <div class="sum-row"><span class="sl">Datum</span><span class="sv" id="sDate">—</span></div>
+      <div class="sum-row"><span class="sl">Platz</span><span class="sv" id="sCourt">—</span></div>
+      <div class="sum-row"><span class="sl">Zeit</span><span class="sv" id="sTime">—</span></div>
+      <div class="sum-row"><span class="sl">Dauer</span><span class="sv" id="sDur">—</span></div>
+      <div class="sum-row" id="discRow" style="display:none;"><span class="sl">Rabatt <span class="disc-badge" id="discBadge"></span></span><span class="sv" id="sDisc" style="color:#4ade80">—</span></div>
+      <div class="sum-row total"><span class="sl">Gesamt</span><span class="sv" id="sTotal">—</span></div>
+    </div>
+    <button class="book-btn" id="bookBtn" onclick="confirmBooking()">Jetzt buchen &amp; bezahlen →</button>
+  </div>
+
+  <!-- ABO MODE -->
+  <div id="modeAbo" style="display:none;">
+    <div class="step-row"><div class="step-num">1</div><div class="step-lbl">Wochentag wählen</div></div>
+    <div class="weekday-row gap">
+      <button class="wd-btn" onclick="setWd(1)" id="wd1">Mo</button>
+      <button class="wd-btn" onclick="setWd(2)" id="wd2">Di</button>
+      <button class="wd-btn" onclick="setWd(3)" id="wd3">Mi</button>
+      <button class="wd-btn" onclick="setWd(4)" id="wd4">Do</button>
+      <button class="wd-btn" onclick="setWd(5)" id="wd5">Fr</button>
+      <button class="wd-btn" onclick="setWd(6)" id="wd6">Sa</button>
+      <button class="wd-btn" onclick="setWd(0)" id="wd0">So</button>
+    </div>
+    <div class="step-row"><div class="step-num">2</div><div class="step-lbl">Spieldauer wählen</div></div>
+    <div class="dur-row" style="margin-bottom:8px;">
+      <button class="dur-btn selected" onclick="setAboDur(1)" id="adur1">1 Stunde <span class="dprice">ab 16 €/Woche</span></button>
+      <button class="dur-btn" onclick="setAboDur(2)" id="adur2">2 Stunden <span class="dprice">ab 32 €/Woche</span></button>
+    </div>
+    <div class="dur-sub gap">Jede Woche zur gleichen Zeit</div>
+    <div class="step-row" style="margin-bottom:8px;"><div class="step-num">3</div><div class="step-lbl">Platz & Uhrzeit wählen</div></div>
+    <div class="legend" style="margin-bottom:14px;">
+      <div class="legend-item"><div class="ldot" style="background:#272727;border:1px solid var(--blue)"></div> Verfügbar</div>
+      <div class="legend-item"><div class="ldot" style="background:var(--blue)"></div> Ausgewählt</div>
+      <div class="legend-item"><div class="ldot" style="background:#1a1a1a;border:1px solid #333"></div> Belegt</div>
+      <div class="legend-item"><div class="ldot" style="background:#1a0a0a;border:1px solid #3a1a1a"></div> Abo vergeben</div>
+    </div>
+    <div class="courts-wrap gap">
+      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #1</div></div><div class="slots-grid" id="aboSlots1"></div></div>
+      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #2</div></div><div class="slots-grid" id="aboSlots2"></div></div>
+    </div>
+    <div class="abo-summary" id="aboSummary">
+      <div class="abo-sum-hdr"><span style="font-size:1.1rem">■</span><span class="abo-sum-title">Dein Jahresabo</span></div>
+      <div class="abo-details">
+        <div class="abo-detail-row"><span class="dl">Platz</span><span class="dv" id="as-court">—</span></div>
+        <div class="abo-detail-row"><span class="dl">Wochentag</span><span class="dv" id="as-day">—</span></div>
+        <div class="abo-detail-row"><span class="dl">Uhrzeit</span><span class="dv" id="as-time">—</span></div>
+        <div class="abo-detail-row"><span class="dl">Dauer</span><span class="dv" id="as-dur">—</span></div>
+      </div>
+      <div class="abo-52">52 Wochen exklusiv für dich reserviert</div>
+      <div class="abo-pricing">
+        <div class="abo-price-reg" id="as-reg">Einzelbuchung: 52 × — € = — €</div>
+        <div class="abo-price-total" id="as-total">— €</div>
+        <div class="abo-price-save" id="as-save">Du sparst — €</div>
+      </div>
+      <div class="abo-benefits">
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz</div>
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div>Keine Konkurrenz um freie Slots</div>
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div>22 Wochen gratis gegenüber Einzelbuchung</div>
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div>Ihr spielt zu viert – jeder zahlt somit nur <strong id="as-perperson" style="color:var(--gold)">—</strong></div>
+      </div>
+      <div class="abo-weather">Dein Slot gehört dir – gespielt wird, wenn das Wetter es zulässt.</div>
+      <button class="abo-cta" onclick="submitAbo()">■ Jahresabo sichern</button>
+    </div>
+  </div>
+
+  <div class="footer-link">
+    <a href="https://tfbielstein.de" target="_blank">Tennisfreunde Bielstein e.V. →</a>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PW={8:16,9:16,10:16,11:16,12:16,13:16,14:24,15:24,16:32,17:32,18:32,19:32,20:32,21:32};
+const PE={8:24,9:24,10:32,11:32,12:32,13:32,14:24,15:24,16:24,17:24,18:24,19:24,20:24,21:24};
+const booked={1:new Set(["2026-03-07-10","2026-03-07-11","2026-03-07-14","2026-03-08-09","2026-03-09-16","2026-03-09-17"]),2:new Set(["2026-03-07-13","2026-03-07-17","2026-03-08-10","2026-03-09-09"])};
+const aboBooked={1:new Set(["2-10","4-18","6-9"]),2:new Set(["1-8","3-16","5-19"])};
+const members={"TFB001":{name:"Max M.",hours:17,discount:0.15},"TFB002":{name:"Anna K.",hours:20,discount:0.15},"TFB099":{name:"Test User",hours:7,discount:0.10}};
+const GRATIS=21;
+const WDNAMES=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const MONTHS=["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+const DAYS=["So","Mo","Di","Mi","Do","Fr","Sa"];
+let selDate=null,selDur=1,selSlot=null,member=null;
+let aboWd=null,aboDur=1,aboSlot=null,curMode='book';
+
+function fmt(n){return n.toLocaleString('de-DE')+' €';}
+function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function isWE(d){const x=new Date(d+'T12:00:00');return x.getDay()===0||x.getDay()===6;}
+function prices(d){return isWE(d)?PE:PW;}
+function rawP(h,d){return(prices(d)[h]||0)*selDur;}
+function mP(p){return member?Math.round(p*(1-member.discount)):p;}
+
+function setMode(m){
+  curMode=m;
+  document.getElementById('modeBook').style.display=m==='book'?'block':'none';
+  document.getElementById('modeAbo').style.display=m==='abo'?'block':'none';
+  document.getElementById('tabBook').classList.toggle('active',m==='book');
+  document.getElementById('tabAbo').classList.toggle('active',m==='abo');
+  if(m==='abo'){aboWd=null;aboSlot=null;renderAboWeekdays();renderAboSlots();updateAboSummary();}
+}
+
+function init(){buildDates();selectDate(today());}
+
+function buildDates(){
+  const sc=document.getElementById("dateScroll");sc.innerHTML="";
+  const t=new Date();
+  for(let i=0;i<60;i++){
+    const d=new Date(t);d.setDate(t.getDate()+i);
+    const str=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const c=document.createElement("div");
+    c.className="date-chip";c.dataset.date=str;
+    c.innerHTML=`<div class="dname">${DAYS[d.getDay()]}</div><div class="dnum">${d.getDate()}</div><div class="dmon">${MONTHS[d.getMonth()]}</div>`;
+    c.onclick=()=>selectDate(str);
+    sc.appendChild(c);
+  }
+}
+
+function selectDate(s){
+  selDate=s;selSlot=null;
+  document.querySelectorAll(".date-chip").forEach(c=>c.classList.toggle("selected",c.dataset.date===s));
+  document.getElementById("priceTxt").textContent=isWE(s)?"Wochenend-Preise (Sa+So)":"Wochentag-Preise (Mo–Fr)";
+  updDurPrices();renderSlots();updateSummary();
+}
+
+function updDurPrices(){
+  if(!selDate)return;
+  const p=isWE(selDate)?PE:PW,mn=Math.min(...Object.values(p));
+  document.getElementById("dp1").textContent=`ab ${mP(mn)} €`;
+  document.getElementById("dp2").textContent=`ab ${mP(mn*2)} €`;
+}
+
+function setDur(d){selDur=d;selSlot=null;document.getElementById("dur1").classList.toggle("selected",d===1);document.getElementById("dur2").classList.toggle("selected",d===2);renderSlots();updateSummary();}
+
+function renderSlots(){
+  if(!selDate)return;
+  [1,2].forEach(ct=>{
+    const c=document.getElementById("slots"+ct);c.innerHTML="";
+    Object.keys(PW).map(Number).forEach(h=>{
+      const k=`${selDate}-${h}`,k2=`${selDate}-${h+1}`;
+      const bk=booked[ct].has(k)||(selDur===2&&booked[ct].has(k2));
+      const isSel=selSlot?.court===ct&&selSlot?.hour===h;
+      const isSec=selSlot?.court===ct&&selSlot?.hour===h-1&&selDur===2;
+      const rp=rawP(h,selDate),p=mP(rp),isMp=member&&p<rp;
+      const h1=`${String(h).padStart(2,"0")}:00`,h2=`${String(h+1).padStart(2,"0")}:00`;
+      const sl=document.createElement("div");
+      sl.className="slot "+(bk?"booked":isSel?"selected":isSec?"selected-second":"free");
+      if(bk){sl.innerHTML=`<span class="slot-time">${h1}</span><span class="bkd-lbl">Belegt</span>`;}
+      else if(isSec){sl.innerHTML=`<span class="slot-time">${h1} – ${h2}</span>`;}
+      else{sl.innerHTML=`<span class="slot-time">${h1} – ${h2}</span><span class="slot-price${isMp?' mprice':''}">${p} €</span>`;sl.onclick=()=>pickSlot(ct,h);}
+      c.appendChild(sl);
+    });
+  });
+}
+
+function pickSlot(ct,h){selSlot=(selSlot?.court===ct&&selSlot?.hour===h)?null:{court:ct,hour:h};renderSlots();updateSummary();}
+
+function updateSummary(){
+  const card=document.getElementById("sumCard"),btn=document.getElementById("bookBtn");
+  if(!selSlot){card.classList.remove("visible");btn.classList.remove("visible");return;}
+  const{court:ct,hour:h}=selSlot,end=h+selDur;
+  const rp=rawP(h,selDate),p=mP(rp),disc=rp-p;
+  const ds=new Date(selDate+'T12:00:00').toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+  document.getElementById("sDate").textContent=ds;
+  document.getElementById("sCourt").textContent=`Court #${ct}`;
+  document.getElementById("sTime").textContent=`${String(h).padStart(2,"0")}:00 – ${String(end).padStart(2,"0")}:00 Uhr`;
+  document.getElementById("sDur").textContent=`${selDur} Stunde${selDur>1?'n':''}`;
+  document.getElementById("sTotal").textContent=`${p} €`;
+  const dr=document.getElementById("discRow");
+  if(member&&disc>0){dr.style.display="flex";document.getElementById("discBadge").textContent=`${Math.round(member.discount*100)}% Mitgliederrabatt`;document.getElementById("sDisc").textContent=`−${disc} €`;}
+  else dr.style.display="none";
+  card.classList.add("visible");btn.classList.add("visible");
+}
+
+function confirmBooking(){
+  if(!selSlot)return;
+  const{court:ct,hour:h}=selSlot;
+  for(let i=0;i<selDur;i++)booked[ct].add(`${selDate}-${h+i}`);
+  showToast("Buchung bestätigt! Weiter zur Zahlung …");
+  selSlot=null;renderSlots();updateSummary();
+}
+
+function renderAboWeekdays(){[0,1,2,3,4,5,6].forEach(d=>document.getElementById("wd"+d).classList.toggle("selected",d===aboWd));}
+function setWd(d){aboWd=d;aboSlot=null;renderAboWeekdays();renderAboSlots();updateAboSummary();}
+function setAboDur(d){aboDur=d;aboSlot=null;document.getElementById("adur1").classList.toggle("selected",d===1);document.getElementById("adur2").classList.toggle("selected",d===2);renderAboSlots();updateAboSummary();}
+
+function renderAboSlots(){
+  [1,2].forEach(ct=>{
+    const c=document.getElementById("aboSlots"+ct);c.innerHTML="";
+    const priceMap=(aboWd===0||aboWd===6)?PE:PW;
+    Object.keys(PW).map(Number).forEach(h=>{
+      const abKey=`${aboWd}-${h}`,abKey2=`${aboWd}-${h+1}`;
+      const isAboBk=aboBooked[ct].has(abKey)||(aboDur===2&&aboBooked[ct].has(abKey2));
+      const isSel=aboSlot?.court===ct&&aboSlot?.hour===h;
+      const isSec=aboSlot?.court===ct&&aboSlot?.hour===h-1&&aboDur===2;
+      const p=(priceMap[h]||0)*aboDur;
+      const h1=`${String(h).padStart(2,"0")}:00`,h2=`${String(h+1).padStart(2,"0")}:00`;
+      const sl=document.createElement("div");
+      if(isAboBk){sl.className="slot abo-booked";sl.innerHTML=`<span class="slot-time">${h1}</span><span class="abo-lbl">Abo vergeben</span>`;}
+      else if(isSel){sl.className="slot selected";sl.innerHTML=`<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;}
+      else if(isSec){sl.className="slot selected-second";sl.innerHTML=`<span class="slot-time">${h1} – ${h2}</span>`;}
+      else{sl.className="slot free";sl.innerHTML=`<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;sl.onclick=()=>pickAboSlot(ct,h);}
+      c.appendChild(sl);
+    });
+  });
+}
+
+function pickAboSlot(ct,h){aboSlot=(aboSlot?.court===ct&&aboSlot?.hour===h)?null:{court:ct,hour:h};renderAboSlots();updateAboSummary();}
+
+function updateAboSummary(){
+  const card=document.getElementById("aboSummary");
+  if(!aboSlot||aboWd===null){card.classList.remove("visible");return;}
+  const{court:ct,hour:h}=aboSlot;
+  const priceMap=(aboWd===0||aboWd===6)?PE:PW;
+  const pricePerWeek=(priceMap[h]||0)*aboDur;
+  const totalReg=pricePerWeek*52,totalAbo=pricePerWeek*30,saved=totalReg-totalAbo;
+  document.getElementById("as-court").textContent=`Court #${ct}`;
+  document.getElementById("as-day").textContent=WDNAMES[aboWd];
+  document.getElementById("as-time").textContent=`${String(h).padStart(2,"0")}:00 – ${String(h+aboDur).padStart(2,"0")}:00 Uhr`;
+  document.getElementById("as-dur").textContent=`${aboDur} Stunde${aboDur>1?'n':''}`;
+  document.getElementById("as-reg").textContent=`Einzelbuchung: 52 × ${fmt(pricePerWeek)} = ${fmt(totalReg)}`;
+  document.getElementById("as-total").textContent=fmt(totalAbo);
+  document.getElementById("as-save").textContent=`Du sparst ${fmt(saved)}`;
+  document.getElementById("as-perperson").textContent=fmt(Math.round(totalAbo/4));
+  card.classList.add("visible");
+}
+
+function submitAbo(){if(!aboSlot||aboWd===null){showToast("Bitte Wochentag und Slot wählen");return;}showToast("Abo-Anfrage gesendet! Weiter zur Zahlung …");}
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3500);}
+
+init();
+</script>
+</body>
+</html>
