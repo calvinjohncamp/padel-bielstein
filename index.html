@@ -747,7 +747,14 @@ let currentUser = null;      // Supabase Auth User
 let currentProfile = null;   // users-Tabelle Eintrag
 let pendingAction = null;    // 'book' | 'abo' — was nach Login passieren soll
 
-// Auth-State beim Laden prüfen
+// Auth-State beim Laden prüfen — init() läuft unabhängig davon
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session?.user) {
+    currentUser = session.user;
+    loadProfile(session.user.id).then(() => updateUserBar());
+  }
+});
+
 sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
     currentUser = session.user;
