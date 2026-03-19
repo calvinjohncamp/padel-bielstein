@@ -151,6 +151,41 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
 .abo-cta { width: 100%; height: 60px; background: var(--gold); color: #0a0a0a; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 28px rgba(230,234,24,0.2); }
 .abo-cta:hover { background: var(--gold-dk); transform: translateY(-2px); }
 
+/* ■■ AUTH MODAL ■■ */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--card); border: 1.5px solid var(--blue); border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 420px; animation: fadeUp 0.25s ease; position: relative; }
+.modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #666; font-size: 1.4rem; cursor: pointer; line-height: 1; }
+.modal-close:hover { color: #fff; }
+.modal-title { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+.modal-sub { font-size: 0.78rem; color: #888; margin-bottom: 22px; line-height: 1.5; }
+.modal-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 22px; }
+.modal-tab { padding: 10px; background: #1a1a1a; border: 1.5px solid var(--border); border-radius: 8px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: #888; cursor: pointer; text-align: center; transition: all 0.15s; }
+.modal-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 0.72rem; color: #888; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 5px; }
+.form-input { width: 100%; background: #111; border: 1.5px solid var(--border); border-radius: 8px; padding: 11px 13px; color: var(--white); font-size: 0.95rem; font-family: inherit; transition: border-color 0.15s; }
+.form-input:focus { outline: none; border-color: var(--blue); }
+.form-input::placeholder { color: #444; }
+.form-hint { font-size: 0.68rem; color: #666; margin-top: 4px; }
+.modal-btn { width: 100%; height: 52px; background: var(--blue); color: #fff; border: none; border-radius: 10px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; margin-top: 6px; }
+.modal-btn:hover { background: var(--blue-dk); }
+.modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.modal-btn.gold { background: var(--gold); color: #0a0a0a; }
+.modal-btn.gold:hover { background: var(--gold-dk); }
+.modal-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
+.modal-divider span { font-size: 0.68rem; color: #555; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+.modal-divider::before, .modal-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.modal-err { background: rgba(220,38,38,0.12); border: 1px solid rgba(220,38,38,0.4); border-radius: 8px; padding: 9px 12px; font-size: 0.78rem; color: #fca5a5; margin-bottom: 12px; display: none; }
+.modal-err.show { display: block; }
+.modal-ok { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.35); border-radius: 8px; padding: 9px 12px; font-size: 0.78rem; color: #4ade80; margin-bottom: 12px; display: none; }
+.modal-ok.show { display: block; }
+.user-bar { display: flex; align-items: center; justify-content: space-between; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; margin-bottom: 20px; }
+.user-bar-name { font-size: 0.82rem; color: #c0c0c0; }
+.user-bar-name strong { color: var(--gold); }
+.user-bar-out { background: none; border: 1px solid #444; color: #888; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; }
+.user-bar-out:hover { border-color: #888; color: #fff; }
+
 /* ■■ FOOTER ■■ */
 .footer-link { text-align: center; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
 .footer-link a { font-family: "Arial Narrow","Impact",sans-serif; font-size: 0.78rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: color 0.2s; }
@@ -219,6 +254,102 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
 </head>
 <body>
 
+<!-- ■■ AUTH MODAL ■■ -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modalTitle">Anmelden</div>
+    <div class="modal-sub" id="modalSub">Melde dich an um fortzufahren</div>
+
+    <!-- Login / Registrieren Tabs -->
+    <div class="modal-tabs" id="authTabs">
+      <div class="modal-tab active" id="tabLogin" onclick="switchAuthTab('login')">Anmelden</div>
+      <div class="modal-tab" id="tabRegister" onclick="switchAuthTab('register')">Registrieren</div>
+    </div>
+
+    <div class="modal-err" id="authErr"></div>
+    <div class="modal-ok" id="authOk"></div>
+
+    <!-- LOGIN FORM -->
+    <div id="formLogin">
+      <div class="form-group">
+        <label class="form-label">E-Mail</label>
+        <input class="form-input" type="email" id="loginEmail" placeholder="deine@email.de" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Passwort</label>
+        <input class="form-input" type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="modal-btn" id="loginBtn" onclick="doLogin()">Anmelden →</button>
+      <div class="modal-divider"><span>oder</span></div>
+      <button class="modal-btn" style="background:#1a1a1a;border:1.5px solid var(--border);color:#aaa;" onclick="switchAuthTab('reset')">Passwort vergessen?</button>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="formRegister" style="display:none;">
+      <div class="form-group">
+        <label class="form-label">Vor- und Nachname</label>
+        <input class="form-input" type="text" id="regName" placeholder="Max Mustermann" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-Mail</label>
+        <input class="form-input" type="email" id="regEmail" placeholder="deine@email.de" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Passwort</label>
+        <input class="form-input" type="password" id="regPw" placeholder="Min. 8 Zeichen" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Geburtsjahr</label>
+        <input class="form-input" type="number" id="regYear" placeholder="z.B. 1985" min="1920" max="2015">
+        <div class="form-hint">Wird für die Altersstatistik benötigt</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">TFB-Mitgliedsnummer (optional)</label>
+        <input class="form-input" type="text" id="regMember" placeholder="z.B. TFB001">
+        <div class="form-hint">Nur für TFB-Mitglieder – aktiviert Mitgliederrabatt</div>
+      </div>
+      <button class="modal-btn gold" id="regBtn" onclick="doRegister()">Konto erstellen →</button>
+    </div>
+
+    <!-- RESET FORM -->
+    <div id="formReset" style="display:none;">
+      <div class="modal-sub" style="margin-bottom:16px;">Wir schicken dir einen Link zum Zurücksetzen deines Passworts.</div>
+      <div class="form-group">
+        <label class="form-label">E-Mail</label>
+        <input class="form-input" type="email" id="resetEmail" placeholder="deine@email.de">
+      </div>
+      <button class="modal-btn" onclick="doReset()">Link senden →</button>
+      <div class="modal-divider"><span>oder</span></div>
+      <button class="modal-btn" style="background:#1a1a1a;border:1.5px solid var(--border);color:#aaa;" onclick="switchAuthTab('login')">← Zurück zum Login</button>
+    </div>
+
+    <!-- GAST OPTION -->
+    <div id="guestSection">
+      <div class="modal-divider"><span>Einmalbuchung ohne Konto</span></div>
+      <button class="modal-btn" style="background:#1a1a1a;border:1.5px solid var(--border);color:#aaa;" onclick="showGuestForm()">Als Gast buchen</button>
+    </div>
+
+    <!-- GAST FORM -->
+    <div id="formGuest" style="display:none;">
+      <div class="modal-divider"><span>Gast-Buchung</span></div>
+      <div class="form-group">
+        <label class="form-label">Vor- und Nachname</label>
+        <input class="form-input" type="text" id="guestName" placeholder="Max Mustermann">
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-Mail (für Bestätigung)</label>
+        <input class="form-input" type="email" id="guestEmail" placeholder="deine@email.de">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Geburtsjahr</label>
+        <input class="form-input" type="number" id="guestYear" placeholder="z.B. 1985" min="1920" max="2015">
+      </div>
+      <button class="modal-btn gold" onclick="doGuestBooking()">Weiter zur Zahlung →</button>
+    </div>
+  </div>
+</div>
+
 <div class="loading-bar" id="loadingBar"><div class="loading-bar-inner"></div></div>
 
 <div class="hero" aria-label="Padel Bielstein">
@@ -228,6 +359,13 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
 </div>
 
 <main>
+  <!-- USER BAR (sichtbar wenn eingeloggt) -->
+  <div class="user-bar" id="userBar" style="display:none;">
+    <span class="user-bar-name">Angemeldet als <strong id="userBarName">—</strong></span>
+    <button class="user-bar-out" onclick="doLogout()">Abmelden</button>
+  </div>
+
+
   <div class="mode-tabs">
     <div class="mode-tab active" id="tabBook" onclick="setMode('book')"><span class="tab-icon">■</span> Jetzt buchen</div>
     <div class="mode-tab" id="tabAbo" onclick="setMode('abo')"><span class="tab-icon">■</span> Jahresabo sichern</div>
@@ -323,7 +461,7 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>Ihr spielt zu viert – jeder zahlt somit nur <strong id="as-perperson" style="color:var(--gold)">—</strong></div>
       </div>
       <div class="abo-weather">Dein Slot gehört dir – gespielt wird, wenn das Wetter es zulässt.</div>
-      <button class="abo-cta" onclick="submitAbo()">■ Jahresabo sichern</button>
+      <button class="abo-cta" onclick="submitAbo(false)">■ Jahresabo sichern</button>
     </div>
   </div>
 
@@ -603,12 +741,262 @@ function updateSummary() {
 }
 
 // ============================================================
-//  BUCHUNG BESTÄTIGEN (Platzhalter bis Stripe eingebunden)
+//  AUTH STATE
 // ============================================================
-function confirmBooking() {
-  if (!selSlot) return;
-  showToast("Weiter zur Zahlung … (Stripe folgt)");
+let currentUser = null;      // Supabase Auth User
+let currentProfile = null;   // users-Tabelle Eintrag
+let pendingAction = null;    // 'book' | 'abo' — was nach Login passieren soll
+
+// Auth-State beim Laden prüfen
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    currentUser = session.user;
+    await loadProfile(session.user.id);
+    updateUserBar();
+  } else {
+    currentUser = null;
+    currentProfile = null;
+    member = null;
+    updateUserBar();
+  }
+});
+
+async function loadProfile(authId) {
+  try {
+    const { data } = await sb
+      .from('users')
+      .select('*')
+      .eq('auth_id', authId)
+      .single();
+    if (data) {
+      currentProfile = data;
+      // Mitgliederrabatt aktivieren
+      if (data.customer_type === 'member' && data.discount_pct > 0) {
+        member = { discount: parseFloat(data.discount_pct) };
+      } else {
+        member = null;
+      }
+    }
+  } catch(e) { console.warn('Profil laden fehlgeschlagen', e); }
 }
+
+function updateUserBar() {
+  const bar = document.getElementById('userBar');
+  if (currentUser) {
+    bar.style.display = 'flex';
+    const name = currentProfile?.full_name || currentUser.email;
+    document.getElementById('userBarName').textContent = name;
+    // Preise neu berechnen (Rabatt ggf. aktiv)
+    updDurPrices();
+    if (selDate) renderSlots();
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+// ============================================================
+//  MODAL STEUERUNG
+// ============================================================
+function openModal(action) {
+  pendingAction = action || null;
+  switchAuthTab('login');
+  clearAuthMessages();
+  document.getElementById('authModal').classList.add('open');
+  setTimeout(() => document.getElementById('loginEmail').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('authModal').classList.remove('open');
+  pendingAction = null;
+}
+
+// Klick außerhalb schließt Modal
+document.getElementById('authModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function switchAuthTab(tab) {
+  clearAuthMessages();
+  document.getElementById('formLogin').style.display    = tab==='login'    ? 'block' : 'none';
+  document.getElementById('formRegister').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('formReset').style.display    = tab==='reset'    ? 'block' : 'none';
+  document.getElementById('formGuest').style.display    = 'none';
+  document.getElementById('guestSection').style.display = (tab==='login'||tab==='register') ? 'block' : 'none';
+  document.getElementById('authTabs').style.display     = tab==='reset'    ? 'none' : 'grid';
+  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
+  document.getElementById('tabRegister').classList.toggle('active', tab==='register');
+}
+
+function showGuestForm() {
+  document.getElementById('guestSection').style.display = 'none';
+  document.getElementById('formGuest').style.display = 'block';
+}
+
+function clearAuthMessages() {
+  document.getElementById('authErr').classList.remove('show');
+  document.getElementById('authOk').classList.remove('show');
+}
+
+function showAuthErr(msg) {
+  const el = document.getElementById('authErr');
+  el.textContent = msg;
+  el.classList.add('show');
+  document.getElementById('authOk').classList.remove('show');
+}
+
+function showAuthOk(msg) {
+  const el = document.getElementById('authOk');
+  el.textContent = msg;
+  el.classList.add('show');
+  document.getElementById('authErr').classList.remove('show');
+}
+
+// ============================================================
+//  LOGIN
+// ============================================================
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPw').value;
+  if (!email || !pw) { showAuthErr('Bitte E-Mail und Passwort eingeben.'); return; }
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = '…';
+  clearAuthMessages();
+  try {
+    const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+    if (error) { showAuthErr(translateAuthError(error.message)); return; }
+    closeModal();
+    showToast('Willkommen zurück! 🎾');
+    if (pendingAction === 'book') confirmBooking(true);
+    if (pendingAction === 'abo')  submitAbo(true);
+  } catch(e) {
+    showAuthErr('Netzwerkfehler – bitte versuche es erneut.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Anmelden →';
+  }
+}
+
+// Enter-Taste im Login-Formular
+document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+// ============================================================
+//  REGISTRIERUNG
+// ============================================================
+async function doRegister() {
+  const name   = document.getElementById('regName').value.trim();
+  const email  = document.getElementById('regEmail').value.trim();
+  const pw     = document.getElementById('regPw').value;
+  const year   = parseInt(document.getElementById('regYear').value);
+  const member_number = document.getElementById('regMember').value.trim().toUpperCase() || null;
+
+  if (!name)            { showAuthErr('Bitte Name eingeben.'); return; }
+  if (!email)           { showAuthErr('Bitte E-Mail eingeben.'); return; }
+  if (pw.length < 8)    { showAuthErr('Passwort mindestens 8 Zeichen.'); return; }
+  if (!year || year < 1920 || year > 2015) { showAuthErr('Bitte gültiges Geburtsjahr eingeben.'); return; }
+
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true; btn.textContent = '…';
+  clearAuthMessages();
+
+  try {
+    // 1. Supabase Auth Account anlegen
+    const { data: authData, error: authErr } = await sb.auth.signUp({ email, password: pw });
+    if (authErr) { showAuthErr(translateAuthError(authErr.message)); return; }
+
+    // 2. users-Tabelle befüllen
+    const customer_type = member_number ? 'member' : 'account';
+    const discount_pct  = member_number ? 0.10 : 0;
+    await sb.from('users').insert({
+      auth_id:       authData.user.id,
+      email,
+      full_name:     name,
+      customer_type,
+      member_number: member_number || null,
+      discount_pct,
+      birth_year:    year,
+    });
+
+    showAuthOk('Fast fertig! Bitte bestätige deine E-Mail-Adresse – dann kannst du dich anmelden.');
+  } catch(e) {
+    showAuthErr('Fehler beim Anlegen des Kontos – bitte versuche es erneut.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Konto erstellen →';
+  }
+}
+
+// ============================================================
+//  PASSWORT RESET
+// ============================================================
+async function doReset() {
+  const email = document.getElementById('resetEmail').value.trim();
+  if (!email) { showAuthErr('Bitte E-Mail eingeben.'); return; }
+  clearAuthMessages();
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://padel-bielstein.de'
+  });
+  if (error) { showAuthErr(translateAuthError(error.message)); return; }
+  showAuthOk('Link gesendet! Bitte prüfe dein Postfach.');
+}
+
+// ============================================================
+//  GAST-BUCHUNG
+// ============================================================
+function doGuestBooking() {
+  const name  = document.getElementById('guestName').value.trim();
+  const email = document.getElementById('guestEmail').value.trim();
+  const year  = parseInt(document.getElementById('guestYear').value);
+  if (!name)  { showAuthErr('Bitte Name eingeben.'); return; }
+  if (!email) { showAuthErr('Bitte E-Mail eingeben.'); return; }
+  if (!year || year < 1920 || year > 2015) { showAuthErr('Bitte gültiges Geburtsjahr eingeben.'); return; }
+  // Gast-Daten zwischenspeichern für Buchungsflow
+  window.guestData = { name, email, birth_year: year, customer_type: 'guest' };
+  closeModal();
+  showToast('Weiter zur Zahlung … (Stripe folgt)');
+}
+
+// ============================================================
+//  LOGOUT
+// ============================================================
+async function doLogout() {
+  await sb.auth.signOut();
+  showToast('Erfolgreich abgemeldet.');
+}
+
+// ============================================================
+//  FEHLERMELDUNGEN ÜBERSETZEN
+// ============================================================
+function translateAuthError(msg) {
+  if (msg.includes('Invalid login'))      return 'E-Mail oder Passwort falsch.';
+  if (msg.includes('Email not confirmed')) return 'Bitte erst E-Mail bestätigen.';
+  if (msg.includes('already registered')) return 'Diese E-Mail ist bereits registriert.';
+  if (msg.includes('Password should'))    return 'Passwort mindestens 8 Zeichen.';
+  if (msg.includes('rate limit'))         return 'Zu viele Versuche – bitte kurz warten.';
+  return 'Fehler: ' + msg;
+}
+
+// ============================================================
+//  BUCHUNG BESTÄTIGEN — jetzt mit Auth-Check
+// ============================================================
+function confirmBooking(skipAuthCheck) {
+  if (!selSlot) return;
+  if (!skipAuthCheck && !currentUser && !window.guestData) {
+    openModal('book');
+    return;
+  }
+  // TODO: Stripe Checkout aufrufen (nächster Schritt)
+  showToast('Weiter zur Zahlung … (Stripe folgt)');
+}
+
+function submitAbo(skipAuthCheck) {
+  if (!aboSlot || aboWd===null) { showToast('Bitte Wochentag und Slot wählen'); return; }
+  if (!skipAuthCheck && !currentUser) {
+    openModal('abo');
+    return;
+  }
+  // TODO: Stripe Checkout aufrufen (nächster Schritt)
+  showToast('Abo-Anfrage gesendet! Weiter zur Zahlung …');
+}
+
+
 
 // ============================================================
 //  ABO
@@ -691,11 +1079,6 @@ function updateAboSummary() {
   document.getElementById("as-save").textContent  = `Du sparst ${fmt(saved)}`;
   document.getElementById("as-perperson").textContent = fmt(Math.round(totalAbo/4));
   card.classList.add("visible");
-}
-
-function submitAbo() {
-  if (!aboSlot || aboWd===null) { showToast("Bitte Wochentag und Slot wählen"); return; }
-  showToast("Abo-Anfrage gesendet! Weiter zur Zahlung …");
 }
 
 function showToast(msg) {
