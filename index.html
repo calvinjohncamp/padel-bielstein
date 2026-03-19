@@ -984,16 +984,56 @@ function translateAuthError(msg) {
 }
 
 // ============================================================
-//  BUCHUNG BESTÄTIGEN — jetzt mit Auth-Check
+//  BUCHUNG BESTÄTIGEN — Stripe Checkout
 // ============================================================
-function confirmBooking(skipAuthCheck) {
+async function confirmBooking(skipAuthCheck) {
   if (!selSlot) return;
   if (!skipAuthCheck && !currentUser && !window.guestData) {
     openModal('book');
     return;
   }
-  // TODO: Stripe Checkout aufrufen (nächster Schritt)
-  showToast('Weiter zur Zahlung … (Stripe folgt)');
+
+  const {court, hour} = selSlot;
+  const priceRaw = rawP(hour, selDate);
+  const price = mP(priceRaw);
+  const price_cents = Math.round(price * 100);
+
+  const email    = currentProfile?.email || currentUser?.email || window.guestData?.email;
+  const fullName = currentProfile?.full_name || window.guestData?.name || '';
+  const birthYear = currentProfile?.birth_year || window.guestData?.birth_year || null;
+  const custType = currentProfile?.customer_type || 'guest';
+
+  showToast('Weiter zu Stripe …');
+
+  try {
+    const res = await fetch(
+      'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7' },
+        body: JSON.stringify({
+          court,
+          date: selDate,
+          hour_start: hour,
+          duration: selDur,
+          price_cents,
+          user_id: currentUser?.id || null,
+          customer_type: custType,
+          email,
+          full_name: fullName,
+          birth_year: birthYear,
+        }),
+      }
+    );
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      showToast('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+    }
+  } catch(e) {
+    showToast('Netzwerkfehler – bitte erneut versuchen.');
+  }
 }
 
 function submitAbo(skipAuthCheck) {
