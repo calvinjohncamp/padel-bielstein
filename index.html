@@ -1010,7 +1010,11 @@ async function confirmBooking(skipAuthCheck) {
       'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7`,
+          'apikey': 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7'
+        },
         body: JSON.stringify({
           court,
           date: selDate,
