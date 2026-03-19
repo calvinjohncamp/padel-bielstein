@@ -497,19 +497,19 @@ let pricesLoaded = false;
 async function loadPrices() {
   try {
     const today = new Date().toISOString().split('T')[0];
-    const { data, error } = await sb
-      .from('prices')
-      .select('hour, day_type, price_cents')
-      .lte('valid_from', today)
-      .or('valid_until.is.null,valid_until.gte.' + today)
-      .order('valid_from', { ascending: false });
+    const { data, error } = await Promise.race([
+      sb.from('prices').select('hour, day_type, price_cents')
+        .lte('valid_from', today)
+        .or('valid_until.is.null,valid_until.gte.' + today)
+        .order('valid_from', { ascending: false }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+    ]);
 
     if (error || !data || data.length === 0) {
       console.warn('Preise: Fallback auf hardcoded Werte', error);
       return;
     }
 
-    // Neueste gültige Preise je Stunde+Typ übernehmen
     const seen = new Set();
     PW = {}; PE = {};
     for (const row of data) {
@@ -520,14 +520,15 @@ async function loadPrices() {
       if (row.day_type === 'weekday') PW[row.hour] = euros;
       else                            PE[row.hour] = euros;
     }
-    // Fehlende Stunden mit Fallback auffüllen
     for (let h = 8; h <= 21; h++) {
       if (!PW[h]) PW[h] = PW_FB[h];
       if (!PE[h]) PE[h] = PE_FB[h];
     }
     pricesLoaded = true;
-  } catch (e) {
-    console.warn('Preise: Netzwerkfehler, Fallback aktiv', e);
+  } catch(e) {
+    console.warn('Preise: Fallback aktiv', e);
+    PW = {...PW_FB};
+    PE = {...PE_FB};
   }
 }
 
@@ -604,19 +605,18 @@ function showLoader(on) { document.getElementById('loadingBar').classList.toggle
 //  INIT
 // ============================================================
 async function init() {
-  // 1. Datum sofort anzeigen
+  // Datum sofort anzeigen
   buildDates();
   selDate = todayStr();
   document.querySelectorAll(".date-chip").forEach(c => c.classList.toggle("selected", c.dataset.date===selDate));
   document.getElementById("priceTxt").textContent = isWE(selDate) ? "Wochenend-Preise (Sa+So)" : "Wochentag-Preise (Mo–Fr)";
 
-  // 2. Preise + Buchungen laden, dann erst Slots rendern
+  // Preise laden dann Slots rendern
   showLoader(true);
   await loadPrices();
-  await loadBookings(selDate);
+  showLoader(false);
   updDurPrices();
   renderSlots();
-  showLoader(false);
 }
 
 // ============================================================
