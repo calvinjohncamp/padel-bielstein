@@ -609,10 +609,13 @@ function showLoader(on) { document.getElementById('loadingBar').classList.toggle
 //  INIT
 // ============================================================
 async function init() {
+  buildDates();             // sofort — kein Warten auf DB
+  selectDate(todayStr());   // Datum vorauswählen (ohne Preise noch)
   showLoader(true);
   await loadPrices();
-  buildDates();
-  await selectDate(todayStr());
+  updDurPrices();
+  await loadBookings(todayStr());
+  renderSlots();
   showLoader(false);
 }
 
