@@ -541,15 +541,11 @@ let aboBooked = {1: new Set(), 2: new Set()};
 
 async function loadBookings(date) {
   try {
-    showLoader(true);
-    const { data, error } = await sb
-      .from('bookings')
-      .select('court, date, hour_start, duration')
-      .eq('date', date)
-      .eq('status', 'paid');
-
+    const { data, error } = await Promise.race([
+      sb.from('bookings').select('court, date, hour_start, duration').eq('date', date).eq('status', 'paid'),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+    ]);
     if (error) { console.warn('Buchungen laden fehlgeschlagen', error); return; }
-
     booked = {1: new Set(), 2: new Set()};
     for (const b of (data || [])) {
       for (let i = 0; i < b.duration; i++) {
@@ -557,9 +553,8 @@ async function loadBookings(date) {
       }
     }
   } catch(e) {
-    console.warn('Buchungen: Netzwerkfehler', e);
-  } finally {
-    showLoader(false);
+    console.warn('Buchungen: Fehler oder Timeout', e);
+    booked = {1: new Set(), 2: new Set()};
   }
 }
 
