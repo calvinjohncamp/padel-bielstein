@@ -605,18 +605,18 @@ function showLoader(on) { document.getElementById('loadingBar').classList.toggle
 //  INIT
 // ============================================================
 async function init() {
-  // Datum sofort anzeigen
+  // Komplett synchron starten — keine DB-Calls beim Start
+  PW = {...PW_FB};
+  PE = {...PE_FB};
   buildDates();
   selDate = todayStr();
   document.querySelectorAll(".date-chip").forEach(c => c.classList.toggle("selected", c.dataset.date===selDate));
   document.getElementById("priceTxt").textContent = isWE(selDate) ? "Wochenend-Preise (Sa+So)" : "Wochentag-Preise (Mo–Fr)";
-
-  // Preise laden dann Slots rendern
-  showLoader(true);
-  await loadPrices();
-  showLoader(false);
   updDurPrices();
   renderSlots();
+  // DB im Hintergrund laden — ohne await, blockiert nichts
+  loadPrices().then(() => { updDurPrices(); renderSlots(); });
+  loadBookings(selDate).then(() => renderSlots());
 }
 
 // ============================================================
