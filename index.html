@@ -609,12 +609,17 @@ function showLoader(on) { document.getElementById('loadingBar').classList.toggle
 //  INIT
 // ============================================================
 async function init() {
-  buildDates();             // sofort — kein Warten auf DB
-  selectDate(todayStr());   // Datum vorauswählen (ohne Preise noch)
+  // 1. Datum sofort anzeigen
+  buildDates();
+  selDate = todayStr();
+  document.querySelectorAll(".date-chip").forEach(c => c.classList.toggle("selected", c.dataset.date===selDate));
+  document.getElementById("priceTxt").textContent = isWE(selDate) ? "Wochenend-Preise (Sa+So)" : "Wochentag-Preise (Mo–Fr)";
+
+  // 2. Preise + Buchungen laden, dann erst Slots rendern
   showLoader(true);
   await loadPrices();
+  await loadBookings(selDate);
   updDurPrices();
-  await loadBookings(todayStr());
   renderSlots();
   showLoader(false);
 }
