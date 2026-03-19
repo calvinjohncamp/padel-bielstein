@@ -27,6 +27,12 @@ body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color
 .hero-frame { width: 100%; aspect-ratio: 3830 / 1563; background: #000; }
 .hero-img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
 
+/* ■■ LOADING ■■ */
+.loading-bar { width: 100%; height: 2px; background: var(--border); margin-bottom: 18px; overflow: hidden; display: none; }
+.loading-bar.active { display: block; }
+.loading-bar-inner { height: 100%; width: 40%; background: var(--blue); animation: loadSlide 1.2s ease-in-out infinite; }
+@keyframes loadSlide { 0%{transform:translateX(-100%)} 100%{transform:translateX(350%)} }
+
 /* ■■ MAIN ■■ */
 main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
 
@@ -161,49 +167,38 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
 * { scrollbar-width: thin; scrollbar-color: #333 #0a0a0a; }
 
 /* ════════════════════════════════════════
-   MOBILE ≤ 560px — aus bewährter
-   Small-Display-Version übernommen
+   MOBILE ≤ 560px
 ════════════════════════════════════════ */
 @media (max-width: 560px) {
   body { font-size: 18px; line-height: 1.25; }
   main { padding: 18px 14px 56px; }
   .hero { margin-bottom: 16px; }
-
   .mode-tab { padding: 16px 14px; font-size: 1.06rem; border-radius: 14px; }
   .mode-tab .tab-icon { font-size: 1.2rem; }
-
   .step-num { width: 26px; height: 26px; font-size: 0.9rem; }
   .step-lbl { font-size: 0.88rem; letter-spacing: 0.12em; }
-
   .date-chip { min-width: 74px; padding: 12px 14px; border-radius: 12px; }
   .date-chip .dname { font-size: 0.75rem; }
   .date-chip .dnum { font-size: 1.85rem; }
   .date-chip .dmon { font-size: 0.75rem; }
-
   .dur-btn { padding: 16px 12px; font-size: 1.06rem; border-radius: 12px; flex-direction: column; gap: 2px; }
   .dur-btn .dprice { font-size: 0.84rem; margin-top: 2px; }
-
   .price-tag { font-size: 0.84rem; padding: 6px 12px; border-radius: 8px; }
   .legend-item { font-size: 0.84rem; }
-
   .courts-wrap { grid-template-columns: 1fr; }
-
   .slots-grid { gap: 9px; padding: 12px; }
   .slot { padding: 14px 14px; border-radius: 12px; }
   .slot-time { font-size: 1.10rem; }
   .slot-price { font-size: 1.04rem; }
   .bkd-lbl, .abo-lbl { font-size: 0.74rem; }
-
   .summary-card { padding: 18px; border-radius: 14px; }
   .sum-hdr { font-size: 0.88rem; }
   .sum-row .sl { font-size: 0.94rem; }
   .sum-row .sv { font-size: 1.06rem; }
   .sum-row.total .sv { font-size: 1.75rem; }
-
   .book-btn { font-size: 1.2rem; border-radius: 14px; }
   .abo-cta  { font-size: 1.15rem; border-radius: 14px; }
   .abo-price-total { font-size: 1.5rem; }
-
   .toast { font-size: 1rem; padding: 12px 18px; border-radius: 12px; white-space: normal; text-align: center; max-width: calc(100vw - 24px); }
 }
 
@@ -223,6 +218,8 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
 </style>
 </head>
 <body>
+
+<div class="loading-bar" id="loadingBar"><div class="loading-bar-inner"></div></div>
 
 <div class="hero" aria-label="Padel Bielstein">
   <div class="hero-frame">
@@ -337,162 +334,376 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
 
 <div class="toast" id="toast"></div>
 
+<!-- ■■ SUPABASE SDK ■■ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-const PW={8:16,9:16,10:16,11:16,12:16,13:16,14:24,15:24,16:32,17:32,18:32,19:32,20:32,21:32};
-const PE={8:24,9:24,10:32,11:32,12:32,13:32,14:24,15:24,16:24,17:24,18:24,19:24,20:24,21:24};
-const booked={1:new Set(["2026-03-07-10","2026-03-07-11","2026-03-07-14","2026-03-08-09","2026-03-09-16","2026-03-09-17"]),2:new Set(["2026-03-07-13","2026-03-07-17","2026-03-08-10","2026-03-09-09"])};
-const aboBooked={1:new Set(["2-10","4-18","6-9"]),2:new Set(["1-8","3-16","5-19"])};
-const members={"TFB001":{name:"Max M.",hours:17,discount:0.15},"TFB002":{name:"Anna K.",hours:20,discount:0.15},"TFB099":{name:"Test User",hours:7,discount:0.10}};
-const GRATIS=21;
-const WDNAMES=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
-const MONTHS=["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
-const DAYS=["So","Mo","Di","Mi","Do","Fr","Sa"];
-let selDate=null,selDur=1,selSlot=null,member=null;
-let aboWd=null,aboDur=1,aboSlot=null,curMode='book';
+// ============================================================
+//  SUPABASE CONFIG
+// ============================================================
+const SUPABASE_URL  = 'https://hioaqcwqzeqcvvikollq.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-function fmt(n){return n.toLocaleString('de-DE')+' €';}
-function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function isWE(d){const x=new Date(d+'T12:00:00');return x.getDay()===0||x.getDay()===6;}
-function prices(d){return isWE(d)?PE:PW;}
-function rawP(h,d){return(prices(d)[h]||0)*selDur;}
-function mP(p){return member?Math.round(p*(1-member.discount)):p;}
+// ============================================================
+//  PREISE – aus Supabase geladen, Fallback auf hardcoded
+// ============================================================
+// Fallback (falls DB nicht erreichbar)
+const PW_FB = {8:16,9:16,10:16,11:16,12:16,13:16,14:24,15:24,16:32,17:32,18:32,19:32,20:32,21:32};
+const PE_FB = {8:24,9:24,10:32,11:32,12:32,13:32,14:24,15:24,16:24,17:24,18:24,19:24,20:24,21:24};
 
-function setMode(m){
-  curMode=m;
-  document.getElementById('modeBook').style.display=m==='book'?'block':'none';
-  document.getElementById('modeAbo').style.display=m==='abo'?'block':'none';
-  document.getElementById('tabBook').classList.toggle('active',m==='book');
-  document.getElementById('tabAbo').classList.toggle('active',m==='abo');
-  if(m==='abo'){aboWd=null;aboSlot=null;renderAboWeekdays();renderAboSlots();updateAboSummary();}
+let PW = {...PW_FB};  // Wochentag-Preise (Mo–Fr)
+let PE = {...PE_FB};  // Wochenend-Preise (Sa+So)
+let pricesLoaded = false;
+
+async function loadPrices() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await sb
+      .from('prices')
+      .select('hour, day_type, price_cents')
+      .lte('valid_from', today)
+      .or('valid_until.is.null,valid_until.gte.' + today)
+      .order('valid_from', { ascending: false });
+
+    if (error || !data || data.length === 0) {
+      console.warn('Preise: Fallback auf hardcoded Werte', error);
+      return;
+    }
+
+    // Neueste gültige Preise je Stunde+Typ übernehmen
+    const seen = new Set();
+    PW = {}; PE = {};
+    for (const row of data) {
+      const key = `${row.day_type}-${row.hour}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const euros = row.price_cents / 100;
+      if (row.day_type === 'weekday') PW[row.hour] = euros;
+      else                            PE[row.hour] = euros;
+    }
+    // Fehlende Stunden mit Fallback auffüllen
+    for (let h = 8; h <= 21; h++) {
+      if (!PW[h]) PW[h] = PW_FB[h];
+      if (!PE[h]) PE[h] = PE_FB[h];
+    }
+    pricesLoaded = true;
+  } catch (e) {
+    console.warn('Preise: Netzwerkfehler, Fallback aktiv', e);
+  }
 }
 
-function init(){buildDates();selectDate(today());}
+// ============================================================
+//  BUCHUNGEN – aus Supabase geladen
+// ============================================================
+// booked: {1: Set("2027-03-20-16"), 2: Set(...)}
+let booked = {1: new Set(), 2: new Set()};
+// aboBooked: {1: Set("1-8"), 2: Set(...)}  (weekday-hour)
+let aboBooked = {1: new Set(), 2: new Set()};
 
-function buildDates(){
-  const sc=document.getElementById("dateScroll");sc.innerHTML="";
-  const t=new Date();
-  for(let i=0;i<60;i++){
-    const d=new Date(t);d.setDate(t.getDate()+i);
-    const str=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const c=document.createElement("div");
-    c.className="date-chip";c.dataset.date=str;
-    c.innerHTML=`<div class="dname">${DAYS[d.getDay()]}</div><div class="dnum">${d.getDate()}</div><div class="dmon">${MONTHS[d.getMonth()]}</div>`;
-    c.onclick=()=>selectDate(str);
+async function loadBookings(date) {
+  try {
+    showLoader(true);
+    const { data, error } = await sb
+      .from('bookings')
+      .select('court, date, hour_start, duration')
+      .eq('date', date)
+      .eq('status', 'paid');
+
+    if (error) { console.warn('Buchungen laden fehlgeschlagen', error); return; }
+
+    booked = {1: new Set(), 2: new Set()};
+    for (const b of (data || [])) {
+      for (let i = 0; i < b.duration; i++) {
+        booked[b.court].add(`${b.date}-${b.hour_start + i}`);
+      }
+    }
+  } catch(e) {
+    console.warn('Buchungen: Netzwerkfehler', e);
+  } finally {
+    showLoader(false);
+  }
+}
+
+async function loadAboBookings(weekday) {
+  try {
+    const { data, error } = await sb
+      .from('subscriptions')
+      .select('court, weekday, hour_start, duration')
+      .eq('weekday', weekday)
+      .eq('status', 'active');
+
+    if (error) { console.warn('Abos laden fehlgeschlagen', error); return; }
+
+    aboBooked = {1: new Set(), 2: new Set()};
+    for (const s of (data || [])) {
+      for (let i = 0; i < s.duration; i++) {
+        aboBooked[s.court].add(`${s.weekday}-${s.hour_start + i}`);
+      }
+    }
+  } catch(e) {
+    console.warn('Abos: Netzwerkfehler', e);
+  }
+}
+
+// ============================================================
+//  HILFSFUNKTIONEN
+// ============================================================
+const WDNAMES = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const MONTHS  = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+const DAYS    = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+
+let selDate = null, selDur = 1, selSlot = null, member = null;
+let aboWd = null, aboDur = 1, aboSlot = null, curMode = 'book';
+
+function fmt(n) { return n.toLocaleString('de-DE') + ' €'; }
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function isWE(d) { const x = new Date(d+'T12:00:00'); return x.getDay()===0||x.getDay()===6; }
+function prices(d) { return isWE(d) ? PE : PW; }
+function rawP(h, d) { return (prices(d)[h] || 0) * selDur; }
+function mP(p) { return member ? Math.round(p * (1 - member.discount)) : p; }
+function showLoader(on) { document.getElementById('loadingBar').classList.toggle('active', on); }
+
+// ============================================================
+//  INIT
+// ============================================================
+async function init() {
+  showLoader(true);
+  await loadPrices();
+  buildDates();
+  await selectDate(todayStr());
+  showLoader(false);
+}
+
+// ============================================================
+//  MODE
+// ============================================================
+function setMode(m) {
+  curMode = m;
+  document.getElementById('modeBook').style.display = m==='book' ? 'block' : 'none';
+  document.getElementById('modeAbo').style.display  = m==='abo'  ? 'block' : 'none';
+  document.getElementById('tabBook').classList.toggle('active', m==='book');
+  document.getElementById('tabAbo').classList.toggle('active',  m==='abo');
+  if (m==='abo') { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
+}
+
+// ============================================================
+//  DATUMS-SCROLL
+// ============================================================
+function buildDates() {
+  const sc = document.getElementById("dateScroll");
+  sc.innerHTML = "";
+  const t = new Date();
+  for (let i = 0; i < 60; i++) {
+    const d = new Date(t);
+    d.setDate(t.getDate() + i);
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const c = document.createElement("div");
+    c.className = "date-chip";
+    c.dataset.date = str;
+    c.innerHTML = `<div class="dname">${DAYS[d.getDay()]}</div><div class="dnum">${d.getDate()}</div><div class="dmon">${MONTHS[d.getMonth()]}</div>`;
+    c.onclick = () => selectDate(str);
     sc.appendChild(c);
   }
 }
 
-function selectDate(s){
-  selDate=s;selSlot=null;
-  document.querySelectorAll(".date-chip").forEach(c=>c.classList.toggle("selected",c.dataset.date===s));
-  document.getElementById("priceTxt").textContent=isWE(s)?"Wochenend-Preise (Sa+So)":"Wochentag-Preise (Mo–Fr)";
-  updDurPrices();renderSlots();updateSummary();
+async function selectDate(s) {
+  selDate = s;
+  selSlot = null;
+  document.querySelectorAll(".date-chip").forEach(c => c.classList.toggle("selected", c.dataset.date===s));
+  document.getElementById("priceTxt").textContent = isWE(s) ? "Wochenend-Preise (Sa+So)" : "Wochentag-Preise (Mo–Fr)";
+  await loadBookings(s);
+  updDurPrices();
+  renderSlots();
+  updateSummary();
 }
 
-function updDurPrices(){
-  if(!selDate)return;
-  const p=isWE(selDate)?PE:PW,mn=Math.min(...Object.values(p));
-  document.getElementById("dp1").textContent=`ab ${mP(mn)} €`;
-  document.getElementById("dp2").textContent=`ab ${mP(mn*2)} €`;
+// ============================================================
+//  DAUER
+// ============================================================
+function updDurPrices() {
+  if (!selDate) return;
+  const p = isWE(selDate) ? PE : PW;
+  const mn = Math.min(...Object.values(p));
+  document.getElementById("dp1").textContent = `ab ${mP(mn)} €`;
+  document.getElementById("dp2").textContent = `ab ${mP(mn*2)} €`;
 }
 
-function setDur(d){selDur=d;selSlot=null;document.getElementById("dur1").classList.toggle("selected",d===1);document.getElementById("dur2").classList.toggle("selected",d===2);renderSlots();updateSummary();}
+function setDur(d) {
+  selDur = d;
+  selSlot = null;
+  document.getElementById("dur1").classList.toggle("selected", d===1);
+  document.getElementById("dur2").classList.toggle("selected", d===2);
+  renderSlots();
+  updateSummary();
+}
 
-function renderSlots(){
-  if(!selDate)return;
-  [1,2].forEach(ct=>{
-    const c=document.getElementById("slots"+ct);c.innerHTML="";
-    Object.keys(PW).map(Number).forEach(h=>{
-      const k=`${selDate}-${h}`,k2=`${selDate}-${h+1}`;
-      const bk=booked[ct].has(k)||(selDur===2&&booked[ct].has(k2));
-      const isSel=selSlot?.court===ct&&selSlot?.hour===h;
-      const isSec=selSlot?.court===ct&&selSlot?.hour===h-1&&selDur===2;
-      const rp=rawP(h,selDate),p=mP(rp),isMp=member&&p<rp;
-      const h1=`${String(h).padStart(2,"0")}:00`,h2=`${String(h+1).padStart(2,"0")}:00`;
-      const sl=document.createElement("div");
-      sl.className="slot "+(bk?"booked":isSel?"selected":isSec?"selected-second":"free");
-      if(bk){sl.innerHTML=`<span class="slot-time">${h1}</span><span class="bkd-lbl">Belegt</span>`;}
-      else if(isSec){sl.innerHTML=`<span class="slot-time">${h1} – ${h2}</span>`;}
-      else{sl.innerHTML=`<span class="slot-time">${h1} – ${h2}</span><span class="slot-price${isMp?' mprice':''}">${p} €</span>`;sl.onclick=()=>pickSlot(ct,h);}
+// ============================================================
+//  SLOTS RENDERN
+// ============================================================
+function renderSlots() {
+  if (!selDate) return;
+  [1, 2].forEach(ct => {
+    const c = document.getElementById("slots" + ct);
+    c.innerHTML = "";
+    Object.keys(PW).map(Number).forEach(h => {
+      const k  = `${selDate}-${h}`;
+      const k2 = `${selDate}-${h+1}`;
+      const bk = booked[ct].has(k) || (selDur===2 && booked[ct].has(k2));
+      const isSel = selSlot?.court===ct && selSlot?.hour===h;
+      const isSec = selSlot?.court===ct && selSlot?.hour===h-1 && selDur===2;
+      const rp = rawP(h, selDate), p = mP(rp), isMp = member && p < rp;
+      const h1 = `${String(h).padStart(2,"0")}:00`;
+      const h2 = `${String(h+1).padStart(2,"0")}:00`;
+      const sl = document.createElement("div");
+      sl.className = "slot " + (bk ? "booked" : isSel ? "selected" : isSec ? "selected-second" : "free");
+      if (bk)      { sl.innerHTML = `<span class="slot-time">${h1}</span><span class="bkd-lbl">Belegt</span>`; }
+      else if(isSec){ sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span>`; }
+      else {
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price${isMp?' mprice':''}">${p} €</span>`;
+        sl.onclick = () => pickSlot(ct, h);
+      }
       c.appendChild(sl);
     });
   });
 }
 
-function pickSlot(ct,h){selSlot=(selSlot?.court===ct&&selSlot?.hour===h)?null:{court:ct,hour:h};renderSlots();updateSummary();}
-
-function updateSummary(){
-  const card=document.getElementById("sumCard"),btn=document.getElementById("bookBtn");
-  if(!selSlot){card.classList.remove("visible");btn.classList.remove("visible");return;}
-  const{court:ct,hour:h}=selSlot,end=h+selDur;
-  const rp=rawP(h,selDate),p=mP(rp),disc=rp-p;
-  const ds=new Date(selDate+'T12:00:00').toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
-  document.getElementById("sDate").textContent=ds;
-  document.getElementById("sCourt").textContent=`Court #${ct}`;
-  document.getElementById("sTime").textContent=`${String(h).padStart(2,"0")}:00 – ${String(end).padStart(2,"0")}:00 Uhr`;
-  document.getElementById("sDur").textContent=`${selDur} Stunde${selDur>1?'n':''}`;
-  document.getElementById("sTotal").textContent=`${p} €`;
-  const dr=document.getElementById("discRow");
-  if(member&&disc>0){dr.style.display="flex";document.getElementById("discBadge").textContent=`${Math.round(member.discount*100)}% Mitgliederrabatt`;document.getElementById("sDisc").textContent=`−${disc} €`;}
-  else dr.style.display="none";
-  card.classList.add("visible");btn.classList.add("visible");
+function pickSlot(ct, h) {
+  selSlot = (selSlot?.court===ct && selSlot?.hour===h) ? null : {court:ct, hour:h};
+  renderSlots();
+  updateSummary();
 }
 
-function confirmBooking(){
-  if(!selSlot)return;
-  const{court:ct,hour:h}=selSlot;
-  for(let i=0;i<selDur;i++)booked[ct].add(`${selDate}-${h+i}`);
-  showToast("Buchung bestätigt! Weiter zur Zahlung …");
-  selSlot=null;renderSlots();updateSummary();
+// ============================================================
+//  SUMMARY
+// ============================================================
+function updateSummary() {
+  const card = document.getElementById("sumCard");
+  const btn  = document.getElementById("bookBtn");
+  if (!selSlot) { card.classList.remove("visible"); btn.classList.remove("visible"); return; }
+  const {court:ct, hour:h} = selSlot, end = h + selDur;
+  const rp = rawP(h, selDate), p = mP(rp), disc = rp - p;
+  const ds = new Date(selDate+'T12:00:00').toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+  document.getElementById("sDate").textContent  = ds;
+  document.getElementById("sCourt").textContent = `Court #${ct}`;
+  document.getElementById("sTime").textContent  = `${String(h).padStart(2,"0")}:00 – ${String(end).padStart(2,"0")}:00 Uhr`;
+  document.getElementById("sDur").textContent   = `${selDur} Stunde${selDur>1?'n':''}`;
+  document.getElementById("sTotal").textContent = `${p} €`;
+  const dr = document.getElementById("discRow");
+  if (member && disc > 0) {
+    dr.style.display = "flex";
+    document.getElementById("discBadge").textContent = `${Math.round(member.discount*100)}% Mitgliederrabatt`;
+    document.getElementById("sDisc").textContent = `−${disc} €`;
+  } else { dr.style.display = "none"; }
+  card.classList.add("visible");
+  btn.classList.add("visible");
 }
 
-function renderAboWeekdays(){[0,1,2,3,4,5,6].forEach(d=>document.getElementById("wd"+d).classList.toggle("selected",d===aboWd));}
-function setWd(d){aboWd=d;aboSlot=null;renderAboWeekdays();renderAboSlots();updateAboSummary();}
-function setAboDur(d){aboDur=d;aboSlot=null;document.getElementById("adur1").classList.toggle("selected",d===1);document.getElementById("adur2").classList.toggle("selected",d===2);renderAboSlots();updateAboSummary();}
+// ============================================================
+//  BUCHUNG BESTÄTIGEN (Platzhalter bis Stripe eingebunden)
+// ============================================================
+function confirmBooking() {
+  if (!selSlot) return;
+  showToast("Weiter zur Zahlung … (Stripe folgt)");
+}
 
-function renderAboSlots(){
-  [1,2].forEach(ct=>{
-    const c=document.getElementById("aboSlots"+ct);c.innerHTML="";
-    const priceMap=(aboWd===0||aboWd===6)?PE:PW;
-    Object.keys(PW).map(Number).forEach(h=>{
-      const abKey=`${aboWd}-${h}`,abKey2=`${aboWd}-${h+1}`;
-      const isAboBk=aboBooked[ct].has(abKey)||(aboDur===2&&aboBooked[ct].has(abKey2));
-      const isSel=aboSlot?.court===ct&&aboSlot?.hour===h;
-      const isSec=aboSlot?.court===ct&&aboSlot?.hour===h-1&&aboDur===2;
-      const p=(priceMap[h]||0)*aboDur;
-      const h1=`${String(h).padStart(2,"0")}:00`,h2=`${String(h+1).padStart(2,"0")}:00`;
-      const sl=document.createElement("div");
-      if(isAboBk){sl.className="slot abo-booked";sl.innerHTML=`<span class="slot-time">${h1}</span><span class="abo-lbl">Abo vergeben</span>`;}
-      else if(isSel){sl.className="slot selected";sl.innerHTML=`<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;}
-      else if(isSec){sl.className="slot selected-second";sl.innerHTML=`<span class="slot-time">${h1} – ${h2}</span>`;}
-      else{sl.className="slot free";sl.innerHTML=`<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;sl.onclick=()=>pickAboSlot(ct,h);}
+// ============================================================
+//  ABO
+// ============================================================
+function renderAboWeekdays() {
+  [0,1,2,3,4,5,6].forEach(d => document.getElementById("wd"+d).classList.toggle("selected", d===aboWd));
+}
+
+async function setWd(d) {
+  aboWd = d;
+  aboSlot = null;
+  renderAboWeekdays();
+  await loadAboBookings(d);
+  renderAboSlots();
+  updateAboSummary();
+}
+
+function setAboDur(d) {
+  aboDur = d;
+  aboSlot = null;
+  document.getElementById("adur1").classList.toggle("selected", d===1);
+  document.getElementById("adur2").classList.toggle("selected", d===2);
+  renderAboSlots();
+  updateAboSummary();
+}
+
+function renderAboSlots() {
+  [1, 2].forEach(ct => {
+    const c = document.getElementById("aboSlots" + ct);
+    c.innerHTML = "";
+    const priceMap = (aboWd===0||aboWd===6) ? PE : PW;
+    Object.keys(PW).map(Number).forEach(h => {
+      const abKey  = `${aboWd}-${h}`;
+      const abKey2 = `${aboWd}-${h+1}`;
+      const isAboBk = aboBooked[ct].has(abKey) || (aboDur===2 && aboBooked[ct].has(abKey2));
+      const isSel = aboSlot?.court===ct && aboSlot?.hour===h;
+      const isSec = aboSlot?.court===ct && aboSlot?.hour===h-1 && aboDur===2;
+      const p = (priceMap[h] || 0) * aboDur;
+      const h1 = `${String(h).padStart(2,"0")}:00`;
+      const h2 = `${String(h+1).padStart(2,"0")}:00`;
+      const sl = document.createElement("div");
+      if (isAboBk) {
+        sl.className = "slot abo-booked";
+        sl.innerHTML = `<span class="slot-time">${h1}</span><span class="abo-lbl">Abo vergeben</span>`;
+      } else if (isSel) {
+        sl.className = "slot selected";
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;
+      } else if (isSec) {
+        sl.className = "slot selected-second";
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span>`;
+      } else {
+        sl.className = "slot free";
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;
+        sl.onclick = () => pickAboSlot(ct, h);
+      }
       c.appendChild(sl);
     });
   });
 }
 
-function pickAboSlot(ct,h){aboSlot=(aboSlot?.court===ct&&aboSlot?.hour===h)?null:{court:ct,hour:h};renderAboSlots();updateAboSummary();}
+function pickAboSlot(ct, h) {
+  aboSlot = (aboSlot?.court===ct && aboSlot?.hour===h) ? null : {court:ct, hour:h};
+  renderAboSlots();
+  updateAboSummary();
+}
 
-function updateAboSummary(){
-  const card=document.getElementById("aboSummary");
-  if(!aboSlot||aboWd===null){card.classList.remove("visible");return;}
-  const{court:ct,hour:h}=aboSlot;
-  const priceMap=(aboWd===0||aboWd===6)?PE:PW;
-  const pricePerWeek=(priceMap[h]||0)*aboDur;
-  const totalReg=pricePerWeek*52,totalAbo=pricePerWeek*30,saved=totalReg-totalAbo;
-  document.getElementById("as-court").textContent=`Court #${ct}`;
-  document.getElementById("as-day").textContent=WDNAMES[aboWd];
-  document.getElementById("as-time").textContent=`${String(h).padStart(2,"0")}:00 – ${String(h+aboDur).padStart(2,"0")}:00 Uhr`;
-  document.getElementById("as-dur").textContent=`${aboDur} Stunde${aboDur>1?'n':''}`;
-  document.getElementById("as-reg").textContent=`Einzelbuchung: 52 × ${fmt(pricePerWeek)} = ${fmt(totalReg)}`;
-  document.getElementById("as-total").textContent=fmt(totalAbo);
-  document.getElementById("as-save").textContent=`Du sparst ${fmt(saved)}`;
-  document.getElementById("as-perperson").textContent=fmt(Math.round(totalAbo/4));
+function updateAboSummary() {
+  const card = document.getElementById("aboSummary");
+  if (!aboSlot || aboWd===null) { card.classList.remove("visible"); return; }
+  const {court:ct, hour:h} = aboSlot;
+  const priceMap = (aboWd===0||aboWd===6) ? PE : PW;
+  const pricePerWeek = (priceMap[h] || 0) * aboDur;
+  const totalReg = pricePerWeek * 52, totalAbo = pricePerWeek * 30, saved = totalReg - totalAbo;
+  document.getElementById("as-court").textContent = `Court #${ct}`;
+  document.getElementById("as-day").textContent   = WDNAMES[aboWd];
+  document.getElementById("as-time").textContent  = `${String(h).padStart(2,"0")}:00 – ${String(h+aboDur).padStart(2,"0")}:00 Uhr`;
+  document.getElementById("as-dur").textContent   = `${aboDur} Stunde${aboDur>1?'n':''}`;
+  document.getElementById("as-reg").textContent   = `Einzelbuchung: 52 × ${fmt(pricePerWeek)} = ${fmt(totalReg)}`;
+  document.getElementById("as-total").textContent = fmt(totalAbo);
+  document.getElementById("as-save").textContent  = `Du sparst ${fmt(saved)}`;
+  document.getElementById("as-perperson").textContent = fmt(Math.round(totalAbo/4));
   card.classList.add("visible");
 }
 
-function submitAbo(){if(!aboSlot||aboWd===null){showToast("Bitte Wochentag und Slot wählen");return;}showToast("Abo-Anfrage gesendet! Weiter zur Zahlung …");}
-function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3500);}
+function submitAbo() {
+  if (!aboSlot || aboWd===null) { showToast("Bitte Wochentag und Slot wählen"); return; }
+  showToast("Abo-Anfrage gesendet! Weiter zur Zahlung …");
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3500);
+}
 
 init();
 </script>
