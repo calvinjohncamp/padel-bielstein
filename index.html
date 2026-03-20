@@ -630,6 +630,15 @@ async function init() {
     window.history.replaceState({}, '', '/');
     showToast('Buchung abgebrochen.');
     loadBookings(selDate).then(() => renderSlots());
+  } else if (params.get('abo') === 'success') {
+    window.history.replaceState({}, '', '/');
+    showToast('\u2b50 Jahresabo gebucht! Best\u00e4tigung kommt per E-Mail.');
+    setMode('abo');
+    loadBookings(selDate).then(() => renderSlots());
+  } else if (params.get('abo') === 'cancel') {
+    window.history.replaceState({}, '', '/');
+    showToast('Abo-Buchung abgebrochen.');
+    loadBookings(selDate).then(() => renderSlots());
   } else {
     loadBookings(selDate).then(() => renderSlots());
   }
@@ -1070,14 +1079,53 @@ async function confirmBooking(skipAuthCheck) {
   }
 }
 
-function submitAbo(skipAuthCheck) {
+async function submitAbo(skipAuthCheck) {
   if (!aboSlot || aboWd===null) { showToast('Bitte Wochentag und Slot wählen'); return; }
   if (!skipAuthCheck && !currentUser) {
     openModal('abo');
     return;
   }
-  // TODO: Stripe Checkout aufrufen (nächster Schritt)
-  showToast('Abo-Anfrage gesendet! Weiter zur Zahlung …');
+
+  const {court, hour} = aboSlot;
+  const priceMap = (aboWd===0||aboWd===6) ? PE : PW;
+  const pricePerWeek = (priceMap[hour] || 0) * aboDur;
+
+  const email    = currentProfile?.email || currentUser?.email;
+  const fullName = currentProfile?.full_name || '';
+
+  showToast('Weiter zu Stripe …');
+
+  try {
+    const res = await fetch(
+      'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-abo-checkout-',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON}`,
+          'apikey': SUPABASE_ANON,
+        },
+        body: JSON.stringify({
+          court,
+          weekday: aboWd,
+          hour_start: hour,
+          duration: aboDur,
+          price_per_week: pricePerWeek,
+          user_id: currentUser?.id || null,
+          email,
+          full_name: fullName,
+        }),
+      }
+    );
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      showToast('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+    }
+  } catch(e) {
+    showToast('Netzwerkfehler – bitte erneut versuchen.');
+  }
 }
 
 
