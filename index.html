@@ -185,6 +185,8 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
 .user-bar-name strong { color: var(--gold); }
 .user-bar-out { background: none; border: 1px solid #444; color: #888; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; }
 .user-bar-out:hover { border-color: #888; color: #fff; }
+.user-bar-portal { background: none; border: 1px solid var(--gold); color: var(--gold); font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; margin-right: 6px; }
+.user-bar-portal:hover { background: var(--gold); color: #000; }
 
 /* ■■ FOOTER ■■ */
 .footer-link { text-align: center; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
@@ -362,7 +364,10 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
   <!-- USER BAR (sichtbar wenn eingeloggt) -->
   <div class="user-bar" id="userBar" style="display:none;">
     <span class="user-bar-name">Angemeldet als <strong id="userBarName">—</strong></span>
-    <button class="user-bar-out" onclick="doLogout()">Abmelden</button>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button class="user-bar-portal" id="portalBtn" style="display:none;" onclick="openPortal()">■ Abo verwalten</button>
+      <button class="user-bar-out" onclick="doLogout()">Abmelden</button>
+    </div>
   </div>
 
 
@@ -567,22 +572,20 @@ setInterval(() => {
 
 async function loadAboBookings(weekday) {
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/subscriptions?select=court,weekday,hour_start,duration&weekday=eq.${weekday}&status=eq.active`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }, signal: controller.signal }
-    );
-    clearTimeout(timer);
-    if (!res.ok) { console.warn('Abos HTTP Fehler:', res.status); return; }
-    const data = await res.json();
+    const { data, error } = await sb
+      .from('subscriptions')
+      .select('court, weekday, hour_start, duration')
+      .eq('weekday', weekday)
+      .eq('status', 'active');
+
+    if (error) { console.warn('Abos laden fehlgeschlagen', error); return; }
+
     aboBooked = {1: new Set(), 2: new Set()};
     for (const s of (data || [])) {
       for (let i = 0; i < s.duration; i++) {
         aboBooked[s.court].add(`${s.weekday}-${s.hour_start + i}`);
       }
     }
-    console.log('Abos geladen:', data.length, 'Eintraege fuer Wochentag', weekday);
   } catch(e) {
     console.warn('Abos: Netzwerkfehler', e);
   }
@@ -631,16 +634,6 @@ async function init() {
   } else if (params.get('booking') === 'cancelled') {
     window.history.replaceState({}, '', '/');
     showToast('Buchung abgebrochen.');
-    loadBookings(selDate).then(() => renderSlots());
-  } else if (params.get('abo') === 'success') {
-    window.history.replaceState({}, '', '/');
-    showToast('\u2b50 Jahresabo gebucht! Best\u00e4tigung kommt per E-Mail.');
-    setMode('abo');
-    loadBookings(selDate).then(() => renderSlots());
-    if (aboWd !== null) { loadAboBookings(aboWd).then(() => renderAboSlots()); }
-  } else if (params.get('abo') === 'cancel') {
-    window.history.replaceState({}, '', '/');
-    showToast('Abo-Buchung abgebrochen.');
     loadBookings(selDate).then(() => renderSlots());
   } else {
     loadBookings(selDate).then(() => renderSlots());
@@ -825,11 +818,54 @@ function updateUserBar() {
     bar.style.display = 'flex';
     const name = currentProfile?.full_name || currentUser.email;
     document.getElementById('userBarName').textContent = name;
-    // Preise neu berechnen (Rabatt ggf. aktiv)
     updDurPrices();
     if (selDate) renderSlots();
+    checkHasAbo();
   } else {
     bar.style.display = 'none';
+    document.getElementById('portalBtn').style.display = 'none';
+  }
+}
+
+async function checkHasAbo() {
+  if (!currentUser) return;
+  const email = currentProfile?.email || currentUser.email;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/subscriptions?email=eq.${encodeURIComponent(email)}&status=eq.active&limit=1`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    const data = await res.json();
+    document.getElementById('portalBtn').style.display = (data && data.length > 0) ? 'inline-block' : 'none';
+  } catch(e) {
+    console.warn('Abo-Check fehlgeschlagen', e);
+  }
+}
+
+async function openPortal() {
+  showToast('Weiter zum Abo-Portal …');
+  const email = currentProfile?.email || currentUser?.email;
+  try {
+    const res = await fetch(
+      'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-portal-session',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON}`,
+          'apikey': SUPABASE_ANON,
+        },
+        body: JSON.stringify({ email }),
+      }
+    );
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      showToast('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+    }
+  } catch(e) {
+    showToast('Netzwerkfehler – bitte erneut versuchen.');
   }
 }
 
@@ -1082,53 +1118,14 @@ async function confirmBooking(skipAuthCheck) {
   }
 }
 
-async function submitAbo(skipAuthCheck) {
+function submitAbo(skipAuthCheck) {
   if (!aboSlot || aboWd===null) { showToast('Bitte Wochentag und Slot wählen'); return; }
   if (!skipAuthCheck && !currentUser) {
     openModal('abo');
     return;
   }
-
-  const {court, hour} = aboSlot;
-  const priceMap = (aboWd===0||aboWd===6) ? PE : PW;
-  const pricePerWeek = (priceMap[hour] || 0) * aboDur;
-
-  const email    = currentProfile?.email || currentUser?.email;
-  const fullName = currentProfile?.full_name || '';
-
-  showToast('Weiter zu Stripe …');
-
-  try {
-    const res = await fetch(
-      'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-abo-checkout-',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON}`,
-          'apikey': SUPABASE_ANON,
-        },
-        body: JSON.stringify({
-          court,
-          weekday: aboWd,
-          hour_start: hour,
-          duration: aboDur,
-          price_per_week: pricePerWeek,
-          user_id: currentUser?.id || null,
-          email,
-          full_name: fullName,
-        }),
-      }
-    );
-    const data = await res.json();
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      showToast('Fehler: ' + (data.error || 'Unbekannter Fehler'));
-    }
-  } catch(e) {
-    showToast('Netzwerkfehler – bitte erneut versuchen.');
-  }
+  // TODO: Stripe Checkout aufrufen (nächster Schritt)
+  showToast('Abo-Anfrage gesendet! Weiter zur Zahlung …');
 }
 
 
