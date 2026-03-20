@@ -567,20 +567,22 @@ setInterval(() => {
 
 async function loadAboBookings(weekday) {
   try {
-    const { data, error } = await sb
-      .from('subscriptions')
-      .select('court, weekday, hour_start, duration')
-      .eq('weekday', weekday)
-      .eq('status', 'active');
-
-    if (error) { console.warn('Abos laden fehlgeschlagen', error); return; }
-
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/subscriptions?select=court,weekday,hour_start,duration&weekday=eq.${weekday}&status=eq.active`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }, signal: controller.signal }
+    );
+    clearTimeout(timer);
+    if (!res.ok) { console.warn('Abos HTTP Fehler:', res.status); return; }
+    const data = await res.json();
     aboBooked = {1: new Set(), 2: new Set()};
     for (const s of (data || [])) {
       for (let i = 0; i < s.duration; i++) {
         aboBooked[s.court].add(`${s.weekday}-${s.hour_start + i}`);
       }
     }
+    console.log('Abos geladen:', data.length, 'Eintraege fuer Wochentag', weekday);
   } catch(e) {
     console.warn('Abos: Netzwerkfehler', e);
   }
@@ -635,6 +637,7 @@ async function init() {
     showToast('\u2b50 Jahresabo gebucht! Best\u00e4tigung kommt per E-Mail.');
     setMode('abo');
     loadBookings(selDate).then(() => renderSlots());
+    if (aboWd !== null) { loadAboBookings(aboWd).then(() => renderAboSlots()); }
   } else if (params.get('abo') === 'cancel') {
     window.history.replaceState({}, '', '/');
     showToast('Abo-Buchung abgebrochen.');
