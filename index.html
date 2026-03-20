@@ -791,21 +791,21 @@ sb.auth.onAuthStateChange(async (event, session) => {
 
 async function loadProfile(authId) {
   try {
-    const { data } = await sb
-      .from('users')
-      .select('*')
-      .eq('auth_id', authId)
-      .single();
-    if (data) {
-      currentProfile = data;
-      // Mitgliederrabatt aktivieren
-      if (data.customer_type === 'member' && data.discount_pct > 0) {
-        member = { discount: parseFloat(data.discount_pct) };
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/users?auth_id=eq.${authId}&limit=1`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.length > 0) {
+      currentProfile = data[0];
+      if (currentProfile.customer_type === 'member' && currentProfile.discount_pct > 0) {
+        member = { discount: parseFloat(currentProfile.discount_pct) };
       } else {
         member = null;
       }
     }
-  } catch(e) { console.warn('Profil laden fehlgeschlagen', e); }
+  } catch(e) { console.warn('Profil laden fehlgeschlagen', e.message); }
 }
 
 function updateUserBar() {
@@ -930,18 +930,31 @@ async function doRegister() {
     const { data: authData, error: authErr } = await sb.auth.signUp({ email, password: pw });
     if (authErr) { showAuthErr(translateAuthError(authErr.message)); return; }
 
-    // 2. users-Tabelle befüllen
+    // 2. users-Tabelle befüllen via nativer fetch
     const customer_type = member_number ? 'member' : 'account';
     const discount_pct  = member_number ? 0.10 : 0;
-    await sb.from('users').insert({
-      auth_id:       authData.user.id,
-      email,
-      full_name:     name,
-      customer_type,
-      member_number: member_number || null,
-      discount_pct,
-      birth_year:    year,
+    const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({
+        auth_id:       authData.user.id,
+        email,
+        full_name:     name,
+        customer_type,
+        member_number: member_number || null,
+        discount_pct,
+        birth_year:    year,
+      }),
     });
+    if (!insertRes.ok) {
+      const err = await insertRes.text();
+      console.warn('Users insert Fehler:', err);
+    }
 
     showAuthOk('Fast fertig! Bitte bestätige deine E-Mail-Adresse – dann kannst du dich anmelden.');
   } catch(e) {
