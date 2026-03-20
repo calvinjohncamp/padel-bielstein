@@ -548,22 +548,27 @@ async function loadBookings(date) {
         sb.from('bookings').select('court, date, hour_start, duration').eq('date', date).eq('status', 'paid'),
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
       ]);
-      if (error) { console.warn('Buchungen Fehler:', error); break; }
+      if (error) { console.warn('Buchungen Fehler:', JSON.stringify(error)); break; }
       booked = {1: new Set(), 2: new Set()};
       for (const b of (data || [])) {
         for (let i = 0; i < b.duration; i++) {
           booked[b.court].add(`${b.date}-${b.hour_start + i}`);
         }
       }
-      console.log(`Buchungen geladen (Versuch ${attempt}):`, booked);
-      return; // Erfolg — raus
+      console.log(`Buchungen geladen (Versuch ${attempt}): Court1=${[...booked[1]]}, Court2=${[...booked[2]]}`);
+      return;
     } catch(e) {
       console.warn(`Buchungen Versuch ${attempt} fehlgeschlagen:`, e.message);
-      if (attempt < 3) await new Promise(r => setTimeout(r, 2000)); // 2s warten
+      if (attempt < 3) await new Promise(r => setTimeout(r, 2000));
     }
   }
   booked = {1: new Set(), 2: new Set()};
 }
+
+// Keep-alive: alle 4 Minuten Supabase aufwecken
+setInterval(() => {
+  sb.from('prices').select('hour').limit(1).then(() => console.log('Keep-alive OK'));
+}, 4 * 60 * 1000);
 
 async function loadAboBookings(weekday) {
   try {
@@ -611,7 +616,6 @@ function showLoader(on) { document.getElementById('loadingBar').classList.toggle
 //  INIT
 // ============================================================
 async function init() {
-  // Komplett synchron starten — keine DB-Calls beim Start
   PW = {...PW_FB};
   PE = {...PE_FB};
   buildDates();
@@ -621,20 +625,18 @@ async function init() {
   updDurPrices();
   renderSlots();
 
-  // Nach erfolgreicher Stripe-Zahlung zurückgekehrt?
+  // Nach Stripe-Rückleitung?
   const params = new URLSearchParams(window.location.search);
   if (params.get('booking') === 'success') {
-    showToast('🎾 Buchung erfolgreich! Bestätigung kommt per E-Mail.');
-    // URL bereinigen ohne Reload
     window.history.replaceState({}, '', '/');
-    // Buchungen sofort neu laden um gebuchte Slots anzuzeigen
+    showToast('🎾 Buchung erfolgreich! Bestätigung kommt per E-Mail.');
     await loadBookings(selDate);
     renderSlots();
   } else if (params.get('booking') === 'cancelled') {
-    showToast('Buchung abgebrochen.');
     window.history.replaceState({}, '', '/');
+    showToast('Buchung abgebrochen.');
+    loadBookings(selDate).then(() => renderSlots());
   } else {
-    // DB im Hintergrund laden — ohne await, blockiert nichts
     loadBookings(selDate).then(() => renderSlots());
   }
 
