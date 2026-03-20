@@ -497,19 +497,18 @@ let pricesLoaded = false;
 async function loadPrices() {
   try {
     const today = new Date().toISOString().split('T')[0];
-    const { data, error } = await Promise.race([
-      sb.from('prices').select('hour, day_type, price_cents')
-        .lte('valid_from', today)
-        .or('valid_until.is.null,valid_until.gte.' + today)
-        .order('valid_from', { ascending: false }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-    ]);
+    const { data, error } = await sb
+      .from('prices')
+      .select('hour, day_type, price_cents')
+      .lte('valid_from', today)
+      .or('valid_until.is.null,valid_until.gte.' + today)
+      .order('valid_from', { ascending: false })
+      .abortSignal(AbortSignal.timeout(8000));
 
     if (error || !data || data.length === 0) {
-      console.warn('Preise: Fallback auf hardcoded Werte', error);
+      console.warn('Preise: Fallback', error?.message);
       return;
     }
-
     const seen = new Set();
     PW = {}; PE = {};
     for (const row of data) {
@@ -518,15 +517,16 @@ async function loadPrices() {
       seen.add(key);
       const euros = row.price_cents / 100;
       if (row.day_type === 'weekday') PW[row.hour] = euros;
-      else                            PE[row.hour] = euros;
+      else PE[row.hour] = euros;
     }
     for (let h = 8; h <= 21; h++) {
       if (!PW[h]) PW[h] = PW_FB[h];
       if (!PE[h]) PE[h] = PE_FB[h];
     }
     pricesLoaded = true;
+    console.log('Preise geladen aus DB');
   } catch(e) {
-    console.warn('Preise: Fallback aktiv', e);
+    console.warn('Preise: Fallback aktiv', e.message);
     PW = {...PW_FB};
     PE = {...PE_FB};
   }
@@ -541,33 +541,31 @@ let booked = {1: new Set(), 2: new Set()};
 let aboBooked = {1: new Set(), 2: new Set()};
 
 async function loadBookings(date) {
-  // Bis zu 3 Versuche mit je 8 Sekunden Timeout
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      const { data, error } = await Promise.race([
-        sb.from('bookings').select('court, date, hour_start, duration').eq('date', date).eq('status', 'paid'),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-      ]);
-      if (error) { console.warn('Buchungen Fehler:', JSON.stringify(error)); break; }
-      booked = {1: new Set(), 2: new Set()};
-      for (const b of (data || [])) {
-        for (let i = 0; i < b.duration; i++) {
-          booked[b.court].add(`${b.date}-${b.hour_start + i}`);
-        }
+  try {
+    const { data, error } = await sb
+      .from('bookings')
+      .select('court, date, hour_start, duration')
+      .eq('date', date)
+      .eq('status', 'paid')
+      .abortSignal(AbortSignal.timeout(8000));
+
+    if (error) { console.warn('Buchungen Fehler:', error.message); return; }
+    booked = {1: new Set(), 2: new Set()};
+    for (const b of (data || [])) {
+      for (let i = 0; i < b.duration; i++) {
+        booked[b.court].add(`${b.date}-${b.hour_start + i}`);
       }
-      console.log(`Buchungen geladen (Versuch ${attempt}): Court1=${[...booked[1]]}, Court2=${[...booked[2]]}`);
-      return;
-    } catch(e) {
-      console.warn(`Buchungen Versuch ${attempt} fehlgeschlagen:`, e.message);
-      if (attempt < 3) await new Promise(r => setTimeout(r, 2000));
     }
+    console.log('Buchungen geladen:', [...booked[1]], [...booked[2]]);
+  } catch(e) {
+    console.warn('Buchungen Timeout/Fehler:', e.message);
+    booked = {1: new Set(), 2: new Set()};
   }
-  booked = {1: new Set(), 2: new Set()};
 }
 
 // Keep-alive: alle 4 Minuten Supabase aufwecken
 setInterval(() => {
-  sb.from('prices').select('hour').limit(1).then(() => console.log('Keep-alive OK'));
+  sb.from('prices').select('hour').limit(1);
 }, 4 * 60 * 1000);
 
 async function loadAboBookings(weekday) {
@@ -625,7 +623,6 @@ async function init() {
   updDurPrices();
   renderSlots();
 
-  // Nach Stripe-Rückleitung?
   const params = new URLSearchParams(window.location.search);
   if (params.get('booking') === 'success') {
     window.history.replaceState({}, '', '/');
@@ -639,7 +636,6 @@ async function init() {
   } else {
     loadBookings(selDate).then(() => renderSlots());
   }
-
   loadPrices().then(() => { updDurPrices(); renderSlots(); });
 }
 
