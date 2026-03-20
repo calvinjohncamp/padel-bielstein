@@ -497,19 +497,16 @@ let pricesLoaded = false;
 async function loadPrices() {
   try {
     const today = new Date().toISOString().split('T')[0];
-    const { data, error } = await Promise.race([
-      sb.from('prices').select('hour, day_type, price_cents')
-        .lte('valid_from', today)
-        .or('valid_until.is.null,valid_until.gte.' + today)
-        .order('valid_from', { ascending: false }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-    ]);
-
-    if (error || !data || data.length === 0) {
-      console.warn('Preise: Fallback auf hardcoded Werte', error);
-      return;
-    }
-
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/prices?select=hour,day_type,price_cents&valid_from=lte.${today}&or=(valid_until.is.null,valid_until.gte.${today})&order=valid_from.desc`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }, signal: controller.signal }
+    );
+    clearTimeout(timer);
+    if (!res.ok) { console.warn('Preise HTTP Fehler:', res.status); return; }
+    const data = await res.json();
+    if (!data || data.length === 0) return;
     const seen = new Set();
     PW = {}; PE = {};
     for (const row of data) {
@@ -518,7 +515,7 @@ async function loadPrices() {
       seen.add(key);
       const euros = row.price_cents / 100;
       if (row.day_type === 'weekday') PW[row.hour] = euros;
-      else                            PE[row.hour] = euros;
+      else PE[row.hour] = euros;
     }
     for (let h = 8; h <= 21; h++) {
       if (!PW[h]) PW[h] = PW_FB[h];
@@ -526,38 +523,47 @@ async function loadPrices() {
     }
     pricesLoaded = true;
   } catch(e) {
-    console.warn('Preise: Fallback aktiv', e);
-    PW = {...PW_FB};
-    PE = {...PE_FB};
+    console.warn('Preise: Fallback aktiv', e.message);
+    PW = {...PW_FB}; PE = {...PE_FB};
   }
 }
 
 // ============================================================
-//  BUCHUNGEN – aus Supabase geladen
+//  BUCHUNGEN – nativer fetch
 // ============================================================
-// booked: {1: Set("2027-03-20-16"), 2: Set(...)}
 let booked = {1: new Set(), 2: new Set()};
-// aboBooked: {1: Set("1-8"), 2: Set(...)}  (weekday-hour)
 let aboBooked = {1: new Set(), 2: new Set()};
 
 async function loadBookings(date) {
   try {
-    const { data, error } = await Promise.race([
-      sb.from('bookings').select('court, date, hour_start, duration').eq('date', date).eq('status', 'paid'),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-    ]);
-    if (error) { console.warn('Buchungen laden fehlgeschlagen', error); return; }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/bookings?select=court,date,hour_start,duration&date=eq.${date}&status=eq.paid`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }, signal: controller.signal }
+    );
+    clearTimeout(timer);
+    if (!res.ok) { console.warn('Buchungen HTTP Fehler:', res.status); return; }
+    const data = await res.json();
     booked = {1: new Set(), 2: new Set()};
     for (const b of (data || [])) {
       for (let i = 0; i < b.duration; i++) {
         booked[b.court].add(`${b.date}-${b.hour_start + i}`);
       }
     }
+    console.log('Buchungen geladen:', data.length, 'Einträge');
   } catch(e) {
-    console.warn('Buchungen: Fehler oder Timeout', e);
+    console.warn('Buchungen Fehler:', e.message);
     booked = {1: new Set(), 2: new Set()};
   }
 }
+
+// Keep-alive: alle 4 Minuten
+setInterval(() => {
+  fetch(`${SUPABASE_URL}/rest/v1/prices?select=hour&limit=1`,
+    { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+  );
+}, 4 * 60 * 1000);
 
 async function loadAboBookings(weekday) {
   try {
@@ -605,7 +611,6 @@ function showLoader(on) { document.getElementById('loadingBar').classList.toggle
 //  INIT
 // ============================================================
 async function init() {
-  // Komplett synchron starten — keine DB-Calls beim Start
   PW = {...PW_FB};
   PE = {...PE_FB};
   buildDates();
@@ -614,9 +619,21 @@ async function init() {
   document.getElementById("priceTxt").textContent = isWE(selDate) ? "Wochenend-Preise (Sa+So)" : "Wochentag-Preise (Mo–Fr)";
   updDurPrices();
   renderSlots();
-  // DB im Hintergrund laden — ohne await, blockiert nichts
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('booking') === 'success') {
+    window.history.replaceState({}, '', '/');
+    showToast('🎾 Buchung erfolgreich! Bestätigung kommt per E-Mail.');
+    await loadBookings(selDate);
+    renderSlots();
+  } else if (params.get('booking') === 'cancelled') {
+    window.history.replaceState({}, '', '/');
+    showToast('Buchung abgebrochen.');
+    loadBookings(selDate).then(() => renderSlots());
+  } else {
+    loadBookings(selDate).then(() => renderSlots());
+  }
   loadPrices().then(() => { updDurPrices(); renderSlots(); });
-  loadBookings(selDate).then(() => renderSlots());
 }
 
 // ============================================================
@@ -912,7 +929,7 @@ async function doRegister() {
     const { data: authData, error: authErr } = await sb.auth.signUp({ email, password: pw });
     if (authErr) { showAuthErr(translateAuthError(authErr.message)); return; }
 
-    // 2. users-Tabelle befüllen via upsert (verhindert Fehler bei Doppelregistrierung)
+    // 2. users-Tabelle befüllen via upsert
     const customer_type = member_number ? 'member' : 'account';
     const discount_pct  = member_number ? 0.10 : 0;
     const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
