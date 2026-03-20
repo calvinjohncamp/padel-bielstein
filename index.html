@@ -541,22 +541,28 @@ let booked = {1: new Set(), 2: new Set()};
 let aboBooked = {1: new Set(), 2: new Set()};
 
 async function loadBookings(date) {
-  try {
-    const { data, error } = await Promise.race([
-      sb.from('bookings').select('court, date, hour_start, duration').eq('date', date).eq('status', 'paid'),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-    ]);
-    if (error) { console.warn('Buchungen laden fehlgeschlagen', error); return; }
-    booked = {1: new Set(), 2: new Set()};
-    for (const b of (data || [])) {
-      for (let i = 0; i < b.duration; i++) {
-        booked[b.court].add(`${b.date}-${b.hour_start + i}`);
+  // Bis zu 3 Versuche mit je 8 Sekunden Timeout
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const { data, error } = await Promise.race([
+        sb.from('bookings').select('court, date, hour_start, duration').eq('date', date).eq('status', 'paid'),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+      ]);
+      if (error) { console.warn('Buchungen Fehler:', error); break; }
+      booked = {1: new Set(), 2: new Set()};
+      for (const b of (data || [])) {
+        for (let i = 0; i < b.duration; i++) {
+          booked[b.court].add(`${b.date}-${b.hour_start + i}`);
+        }
       }
+      console.log(`Buchungen geladen (Versuch ${attempt}):`, booked);
+      return; // Erfolg — raus
+    } catch(e) {
+      console.warn(`Buchungen Versuch ${attempt} fehlgeschlagen:`, e.message);
+      if (attempt < 3) await new Promise(r => setTimeout(r, 2000)); // 2s warten
     }
-  } catch(e) {
-    console.warn('Buchungen: Fehler oder Timeout', e);
-    booked = {1: new Set(), 2: new Set()};
   }
+  booked = {1: new Set(), 2: new Set()};
 }
 
 async function loadAboBookings(weekday) {
@@ -614,9 +620,25 @@ async function init() {
   document.getElementById("priceTxt").textContent = isWE(selDate) ? "Wochenend-Preise (Sa+So)" : "Wochentag-Preise (Mo–Fr)";
   updDurPrices();
   renderSlots();
-  // DB im Hintergrund laden — ohne await, blockiert nichts
+
+  // Nach erfolgreicher Stripe-Zahlung zurückgekehrt?
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('booking') === 'success') {
+    showToast('🎾 Buchung erfolgreich! Bestätigung kommt per E-Mail.');
+    // URL bereinigen ohne Reload
+    window.history.replaceState({}, '', '/');
+    // Buchungen sofort neu laden um gebuchte Slots anzuzeigen
+    await loadBookings(selDate);
+    renderSlots();
+  } else if (params.get('booking') === 'cancelled') {
+    showToast('Buchung abgebrochen.');
+    window.history.replaceState({}, '', '/');
+  } else {
+    // DB im Hintergrund laden — ohne await, blockiert nichts
+    loadBookings(selDate).then(() => renderSlots());
+  }
+
   loadPrices().then(() => { updDurPrices(); renderSlots(); });
-  loadBookings(selDate).then(() => renderSlots());
 }
 
 // ============================================================
