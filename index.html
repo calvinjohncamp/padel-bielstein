@@ -902,15 +902,351 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
     <!-- ── MIS ── -->
     <div id="adminMis" style="display:none;">
-      <div class="admin-card" style="text-align:center;padding:40px 20px;">
-        <div style="font-size:2rem;margin-bottom:12px;">📊</div>
-        <div style="font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Management Information System</div>
-        <div style="font-size:0.82rem;color:#666;line-height:1.7;max-width:480px;margin:0 auto;">
-          Wird in einer der nächsten Sessions implementiert.<br>
-          Geplante Inhalte: rollierender 12-Monats-Umsatz, Auslastung nach Court/Stunde/Wochentag, Unique Customers, Altersgruppen, Umsatz intern vs. extern.
-        </div>
+
+      <!-- MIS-Ansicht wählen -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <button class="admin-toggle-btn active" id="misTabTage" onclick="showMisTab('tage')" style="flex:1;height:44px;font-size:0.82rem;">▶ Tagesverlauf (30 Tage)</button>
+        <button class="admin-toggle-btn" id="misTabMonat" onclick="showMisTab('monat')" style="flex:1;height:44px;font-size:0.82rem;">📋 Monatsbericht</button>
       </div>
+
+      <!-- ── TAGESVERLAUF ── -->
+      <div id="misTage">
+
+        <!-- KPIs -->
+        <div class="admin-stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;">
+          <div class="admin-stat"><div class="admin-stat-val" style="color:var(--white);">8.045 €</div><div class="admin-stat-lbl">Umsatz (30 Tage)</div><div style="font-size:0.7rem;color:#4ade80;margin-top:2px;">▲ +14 % vs. Vormonat</div></div>
+          <div class="admin-stat"><div class="admin-stat-val" style="color:var(--white);">289 h</div><div class="admin-stat-lbl">Gespielte Stunden</div><div style="font-size:0.7rem;color:#4ade80;margin-top:2px;">▲ +13,7 %</div></div>
+          <div class="admin-stat"><div class="admin-stat-val" style="color:var(--white);">49,3 %</div><div class="admin-stat-lbl">Ø Auslastung</div><div style="font-size:0.7rem;color:#4ade80;margin-top:2px;">▲ +7,8 PP</div></div>
+          <div class="admin-stat"><div class="admin-stat-val" style="color:var(--white);">255</div><div class="admin-stat-lbl">Aktive Kunden</div><div style="font-size:0.7rem;color:#4ade80;margin-top:2px;">▲ +21,4 %</div></div>
+        </div>
+
+        <!-- Sparkline -->
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;">Umsatzverlauf – letzte 30 Tage</div>
+        <div style="position:relative;width:100%;height:80px;margin-bottom:18px;"><canvas id="misSparkline"></canvas></div>
+
+        <!-- Tabelle -->
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;">Tagesverlauf</div>
+        <div style="overflow-x:auto;margin-bottom:28px;">
+          <table class="admin-table" id="misTageTable">
+            <thead><tr><th style="text-align:left;">Datum</th><th>Stunden</th><th>Umsatz</th><th>Ø €/h</th><th>Kunden</th><th>Auslastung</th><th>Wetter</th><th>Bespielb.</th></tr></thead>
+            <tbody id="misTageTbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Wetter 30 Tage -->
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;">30-Tage-Auswertung — Wetter</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;">
+          <div class="admin-stat" style="flex:1;min-width:80px;text-align:center;"><div style="width:14px;height:14px;border-radius:50%;background:#22c55e;margin:0 auto 6px;"></div><div class="admin-stat-val" style="font-size:1.3rem;">21</div><div class="admin-stat-lbl">Grüne Tage</div></div>
+          <div class="admin-stat" style="flex:1;min-width:80px;text-align:center;"><div style="width:14px;height:14px;border-radius:50%;background:#facc15;margin:0 auto 6px;"></div><div class="admin-stat-val" style="font-size:1.3rem;">5</div><div class="admin-stat-lbl">Gelbe Tage</div></div>
+          <div class="admin-stat" style="flex:1;min-width:80px;text-align:center;"><div style="width:14px;height:14px;border-radius:50%;background:#ef4444;margin:0 auto 6px;"></div><div class="admin-stat-val" style="font-size:1.3rem;">3</div><div class="admin-stat-lbl">Rote Tage</div></div>
+          <div class="admin-stat" style="flex:1;min-width:80px;text-align:center;"><div style="width:14px;height:14px;border-radius:50%;background:var(--blue);margin:0 auto 6px;"></div><div class="admin-stat-val" style="font-size:1.3rem;">267 h</div><div class="admin-stat-lbl">Bespielbar</div></div>
+          <div class="admin-stat" style="flex:1;min-width:80px;text-align:center;"><div style="width:14px;height:14px;border-radius:50%;background:var(--gold);margin:0 auto 6px;"></div><div class="admin-stat-val" style="font-size:1.3rem;">66,8 %</div><div class="admin-stat-lbl">Bespielbarkeit</div></div>
+        </div>
+
+        <!-- Balken Kundentyp + Alter -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+          <div>
+            <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;">Kundentyp — Stunden &amp; Anteil</div>
+            <div style="position:relative;width:100%;height:200px;"><canvas id="misKt30"></canvas></div>
+          </div>
+          <div>
+            <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;">Altersstruktur — Stunden &amp; Anteil</div>
+            <div style="position:relative;width:100%;height:200px;"><canvas id="misAlt30"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Balken Tageszeit -->
+        <div style="margin-bottom:24px;">
+          <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;">Tageszeit — Stunden &amp; Anteil</div>
+          <div style="position:relative;width:100%;height:160px;"><canvas id="misTz30"></canvas></div>
+        </div>
+
+        <div style="font-size:0.7rem;color:#555;margin-top:8px;">* Wetter: historische Daten via Bright Sky / DWD · Beispieldaten (Demo)</div>
+      </div><!-- /misTage -->
+
+      <!-- ── MONATSBERICHT ── -->
+      <div id="misMonat" style="display:none;">
+
+        <!-- Header -->
+        <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:20px;">
+          <div style="font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);">Management-Report · Februar 2027</div>
+          <div style="font-size:0.72rem;color:#555;">Erstellt: 01.03.2027 · Beispieldaten</div>
+        </div>
+
+        <!-- 1. Monatsübersicht -->
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;">1 · Monatsübersicht — IST vs. Vormonat vs. Vorjahr</div>
+        <div class="admin-stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px;">
+          <div class="admin-stat"><div class="admin-stat-val">6.272 €</div><div class="admin-stat-lbl">Umsatz</div><div style="font-size:0.68rem;color:#4ade80;margin-top:2px;">▲ +14,0 % vs. Jan · +35,5 % vs. Vorjahr</div></div>
+          <div class="admin-stat"><div class="admin-stat-val">224 h</div><div class="admin-stat-lbl">Gespielte Stunden</div><div style="font-size:0.68rem;color:#4ade80;margin-top:2px;">▲ +13,7 % vs. Jan · +37,4 % vs. Vorjahr</div></div>
+          <div class="admin-stat"><div class="admin-stat-val">41,0 %</div><div class="admin-stat-lbl">Auslastung</div><div style="font-size:0.68rem;color:#4ade80;margin-top:2px;">▲ +4,9 PP vs. Jan · +11,2 PP vs. Vorjahr</div></div>
+          <div class="admin-stat"><div class="admin-stat-val">118</div><div class="admin-stat-lbl">Aktive Kunden</div><div style="font-size:0.68rem;color:#4ade80;margin-top:2px;">▲ +14,6 % vs. Jan · +37,2 % vs. Vorjahr</div></div>
+        </div>
+        <div class="admin-stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+          <div class="admin-stat"><div class="admin-stat-val">34</div><div class="admin-stat-lbl">Neukunden</div><div style="font-size:0.68rem;color:#4ade80;margin-top:2px;">▲ +21,4 % vs. Jan</div></div>
+          <div class="admin-stat"><div class="admin-stat-val">27,99 €</div><div class="admin-stat-lbl">Ø Preis / Stunde</div><div style="font-size:0.68rem;color:#666;margin-top:2px;">≈ stabil</div></div>
+          <div class="admin-stat"><div class="admin-stat-val">16</div><div class="admin-stat-lbl">Aktive Abos</div><div style="font-size:0.68rem;color:#4ade80;margin-top:2px;">▲ +60,0 % vs. Vorjahr</div></div>
+          <div class="admin-stat"><div class="admin-stat-val" style="color:var(--white);font-weight:900;">100.640 €</div><div class="admin-stat-lbl">Roll. 12M-Umsatz</div><div style="font-size:0.68rem;color:#4ade80;margin-top:2px;">▲ Erstmals über 100k !</div></div>
+        </div>
+
+        <!-- 2. Umsatz 12M -->
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:8px;">2 · Umsatzentwicklung — letzte 12 Monate vs. Vorjahr</div>
+        <div style="display:flex;gap:14px;margin-bottom:8px;font-size:0.72rem;color:#888;">
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--blue);display:inline-block;"></span>Aktuelles Jahr</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#444;display:inline-block;"></span>Vorjahr</span>
+        </div>
+        <div style="position:relative;width:100%;height:220px;margin-bottom:24px;"><canvas id="misBar12"></canvas></div>
+
+        <!-- 3. Rollierend -->
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:8px;">3 · Kumulierter Umsatz — rollierende 12 Monate</div>
+        <div style="display:flex;gap:14px;margin-bottom:8px;font-size:0.72rem;color:#888;">
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--gold);display:inline-block;"></span>Aktuelles Jahr</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#444;display:inline-block;"></span>Vorjahr</span>
+        </div>
+        <div style="position:relative;width:100%;height:200px;margin-bottom:24px;"><canvas id="misRoll"></canvas></div>
+
+        <!-- 4. Struktur -->
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:14px;">4 · Struktur — Kundentyp &amp; Altersgruppe &amp; Tageszeit (gespielte Stunden)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+          <div>
+            <div style="font-size:0.72rem;color:#888;margin-bottom:8px;">Kundentyp</div>
+            <div style="position:relative;width:100%;height:200px;"><canvas id="misKtMon"></canvas></div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;color:#888;margin-bottom:8px;">Altersstruktur</div>
+            <div style="position:relative;width:100%;height:200px;"><canvas id="misAltMon"></canvas></div>
+          </div>
+        </div>
+        <div style="margin-bottom:24px;">
+          <div style="font-size:0.72rem;color:#888;margin-bottom:8px;">Tageszeit</div>
+          <div style="position:relative;width:100%;height:160px;"><canvas id="misTzMon"></canvas></div>
+        </div>
+
+        <!-- 5. Wetter Monat -->
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;">5 · Wetter — Monatsauswertung Februar 2027</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+          <div class="admin-stat" style="flex:1;min-width:80px;text-align:center;"><div style="width:14px;height:14px;border-radius:50%;background:#22c55e;margin:0 auto 6px;"></div><div class="admin-stat-val" style="font-size:1.3rem;">20</div><div class="admin-stat-lbl">Grüne Tage</div></div>
+          <div class="admin-stat" style="flex:1;min-width:80px;text-align:center;"><div style="width:14px;height:14px;border-radius:50%;background:#facc15;margin:0 auto 6px;"></div><div class="admin-stat-val" style="font-size:1.3rem;">5</div><div class="admin-stat-lbl">Gelbe Tage</div></div>
+          <div class="admin-stat" style="flex:1;min-width:80px;text-align:center;"><div style="width:14px;height:14px;border-radius:50%;background:#ef4444;margin:0 auto 6px;"></div><div class="admin-stat-val" style="font-size:1.3rem;">3</div><div class="admin-stat-lbl">Rote Tage</div></div>
+          <div class="admin-stat" style="flex:1;min-width:80px;text-align:center;"><div style="width:14px;height:14px;border-radius:50%;background:var(--blue);margin:0 auto 6px;"></div><div class="admin-stat-val" style="font-size:1.3rem;">252 h</div><div class="admin-stat-lbl">Bespielbar</div></div>
+          <div class="admin-stat" style="flex:1;min-width:80px;text-align:center;"><div style="width:14px;height:14px;border-radius:50%;background:var(--gold);margin:0 auto 6px;"></div><div class="admin-stat-val" style="font-size:1.3rem;">64,3 %</div><div class="admin-stat-lbl">Bespielbarkeit</div></div>
+        </div>
+        <div style="font-size:0.78rem;color:#888;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:24px;line-height:1.6;">
+          Wetterbereinigt: Bei 64,3 % Bespielbarkeit entspricht die Auslastung (41,0 %) einer effektiven Kapazitätsauslastung von <strong style="color:var(--white);">63,8 %</strong>. Vorjahr Feb 2026: 3 Rote Tage mehr, 58,1 % Bespielbarkeit.
+        </div>
+
+        <!-- 6. Tagesverlauf Monat -->
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;">6 · Tagesverlauf — Februar 2027 (alle 28 Tage)</div>
+        <div style="position:relative;width:100%;height:280px;margin-bottom:14px;"><canvas id="misTageBarMon"></canvas></div>
+        <div style="overflow-x:auto;margin-bottom:24px;">
+          <table class="admin-table">
+            <thead><tr><th style="text-align:left;">Datum</th><th>Stunden</th><th>Umsatz</th><th>Ø €/h</th><th>Kunden</th><th>Auslastung</th><th>Wetter</th><th>Bespielb.</th></tr></thead>
+            <tbody id="misMonTbody"></tbody>
+          </table>
+        </div>
+
+        <!-- 7. 12M-Tabelle -->
+        <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;">7 · 12-Monats-Verlauf Detail</div>
+        <div style="overflow-x:auto;margin-bottom:20px;">
+          <table class="admin-table">
+            <thead><tr><th style="text-align:left;">Monat</th><th>Tage</th><th>Stunden</th><th>Umsatz</th><th>Ø €/h</th><th>Kunden</th><th>Auslastg.</th><th>Roll. 12M</th></tr></thead>
+            <tbody>
+              <tr><td>Mär 26</td><td>31</td><td>184 h</td><td>4.802 €</td><td>26,1 €</td><td>126</td><td>30 %</td><td>38.117 €</td></tr>
+              <tr><td>Apr 26</td><td>30</td><td>184 h</td><td>5.326 €</td><td>28,9 €</td><td>148</td><td>31 %</td><td>42.351 €</td></tr>
+              <tr><td>Mai 26</td><td>31</td><td>255 h</td><td>6.719 €</td><td>26,3 €</td><td>185</td><td>42 %</td><td>47.562 €</td></tr>
+              <tr><td>Jun 26</td><td>30</td><td>220 h</td><td>5.912 €</td><td>26,9 €</td><td>165</td><td>37 %</td><td>51.557 €</td></tr>
+              <tr><td>Jul 26</td><td>31</td><td>251 h</td><td>6.726 €</td><td>26,8 €</td><td>200</td><td>41 %</td><td>55.893 €</td></tr>
+              <tr><td>Aug 26</td><td>31</td><td>316 h</td><td>8.495 €</td><td>26,9 €</td><td>245</td><td>52 %</td><td>61.364 €</td></tr>
+              <tr><td>Sep 26</td><td>30</td><td>354 h</td><td>9.213 €</td><td>26,0 €</td><td>298</td><td>60 %</td><td>67.121 €</td></tr>
+              <tr><td>Okt 26</td><td>31</td><td>385 h</td><td>10.534 €</td><td>27,4 €</td><td>249</td><td>63 %</td><td>73.794 €</td></tr>
+              <tr><td>Nov 26</td><td>30</td><td>425 h</td><td>11.622 €</td><td>27,3 €</td><td>267</td><td>72 %</td><td>81.339 €</td></tr>
+              <tr><td>Dez 26</td><td>31</td><td>377 h</td><td>11.080 €</td><td>29,4 €</td><td>294</td><td>62 %</td><td>88.801 €</td></tr>
+              <tr><td>Jan 27</td><td>31</td><td>482 h</td><td>13.939 €</td><td>28,9 €</td><td>367</td><td>79 %</td><td>98.316 €</td></tr>
+              <tr style="background:var(--card);font-weight:700;"><td>Feb 27</td><td>28</td><td>224 h</td><td>6.272 €</td><td>28,0 €</td><td>118</td><td>41 %</td><td>100.640 €</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button onclick="window.print()" style="display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--white);font-size:0.82rem;font-family:inherit;cursor:pointer;">↓ Bericht drucken / als PDF speichern</button>
+        <div style="font-size:0.7rem;color:#555;margin-top:10px;">* Wetter: historische Daten via Bright Sky / DWD · Beispieldaten (Demo)</div>
+
+      </div><!-- /misMonat -->
+
     </div><!-- /adminMis -->
+
+    <script>
+    // ── MIS Tab-Switch ──
+    function showMisTab(tab) {
+      document.getElementById('misTage').style.display  = tab==='tage'  ? 'block' : 'none';
+      document.getElementById('misMonat').style.display = tab==='monat' ? 'block' : 'none';
+      document.getElementById('misTabTage').classList.toggle('active',  tab==='tage');
+      document.getElementById('misTabMonat').classList.toggle('active', tab==='monat');
+      if (tab==='monat' && !window._misMonatLoaded) { initMisMonat(); window._misMonatLoaded=true; }
+    }
+
+    // ── Shared helpers ──
+    function misLR(values) {
+      const total=values.reduce((a,b)=>a+b,0);
+      const floors=values.map(v=>Math.floor(v/total*100));
+      const rem=values.map((v,i)=>(v/total*100)-floors[i]);
+      let def=100-floors.reduce((a,b)=>a+b,0);
+      rem.map((r,i)=>[r,i]).sort((a,b)=>b[0]-a[0]).forEach(([,i])=>{if(def>0){floors[i]++;def--;}});
+      return floors;
+    }
+    const misDLP={id:'misDL',afterDatasetsDraw(chart){
+      const {ctx}=chart,pcts=chart.config.options._pcts;
+      chart.getDatasetMeta(0).data.forEach((bar,i)=>{
+        const val=chart.data.datasets[0].data[i];
+        ctx.save();ctx.font='500 11px Arial Narrow,Arial,sans-serif';
+        ctx.fillStyle='#ccc';ctx.textAlign='left';ctx.textBaseline='middle';
+        ctx.fillText(`${val} h  ·  ${pcts[i]} %`,bar.x+7,bar.y);
+        ctx.restore();
+      });
+    }};
+    function misHBar(id,labels,data,colors,maxVal){
+      const pcts=misLR(data);
+      new Chart(document.getElementById(id),{type:'bar',
+        data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:3,borderSkipped:false}]},
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+          layout:{padding:{right:115,left:4}},_pcts:pcts,
+          plugins:{legend:{display:false},tooltip:{enabled:false}},
+          scales:{x:{display:false,max:maxVal},
+            y:{ticks:{font:{size:11,family:'Arial Narrow,Arial,sans-serif'},color:'#aaa',padding:3},
+              grid:{display:false},border:{display:false}}}},
+        plugins:[misDLP]});
+    }
+
+    const misRawData=[
+      {d:'31.01.',h:9,u:231,eph:25.7,k:9,au:46,w:'g',bs:'14/14'},
+      {d:'01.02.',h:11,u:330,eph:30.0,k:7,au:56,w:'g',bs:'14/14'},
+      {d:'02.02.',h:9,u:231,eph:25.7,k:6,au:46,w:'g',bs:'14/14'},
+      {d:'03.02.',h:13,u:364,eph:28.0,k:10,au:66,w:'g',bs:'14/14'},
+      {d:'04.02.',h:15,u:399,eph:26.6,k:14,au:77,w:'g',bs:'13/14'},
+      {d:'05.02.',h:6,u:176,eph:29.3,k:5,au:31,w:'y',bs:'9/14'},
+      {d:'06.02.',h:10,u:272,eph:27.2,k:8,au:51,w:'g',bs:'14/14'},
+      {d:'07.02.',h:6,u:156,eph:26.0,k:6,au:31,w:'y',bs:'10/14'},
+      {d:'08.02.',h:5,u:149,eph:29.8,k:5,au:26,w:'r',bs:'4/14'},
+      {d:'09.02.',h:10,u:291,eph:29.1,k:12,au:51,w:'g',bs:'14/14'},
+      {d:'10.02.',h:11,u:285,eph:25.9,k:10,au:56,w:'g',bs:'14/14'},
+      {d:'11.02.',h:18,u:476,eph:26.4,k:12,au:92,w:'g',bs:'14/14'},
+      {d:'12.02.',h:4,u:117,eph:29.2,k:3,au:20,w:'r',bs:'3/14'},
+      {d:'13.02.',h:10,u:298,eph:29.8,k:11,au:51,w:'g',bs:'14/14'},
+      {d:'14.02.',h:7,u:201,eph:28.7,k:6,au:36,w:'y',bs:'8/14'},
+      {d:'15.02.',h:6,u:164,eph:27.3,k:5,au:31,w:'g',bs:'14/14'},
+      {d:'16.02.',h:11,u:316,eph:28.7,k:11,au:56,w:'g',bs:'14/14'},
+      {d:'17.02.',h:12,u:316,eph:26.3,k:12,au:61,w:'g',bs:'14/14'},
+      {d:'18.02.',h:14,u:405,eph:28.9,k:11,au:71,w:'g',bs:'13/14'},
+      {d:'19.02.',h:5,u:148,eph:29.6,k:6,au:26,w:'y',bs:'7/14'},
+      {d:'20.02.',h:6,u:159,eph:26.5,k:8,au:31,w:'r',bs:'2/14'},
+      {d:'21.02.',h:10,u:266,eph:26.6,k:10,au:51,w:'g',bs:'14/14'},
+      {d:'22.02.',h:9,u:250,eph:27.8,k:7,au:46,w:'g',bs:'14/14'},
+      {d:'23.02.',h:5,u:146,eph:29.2,k:7,au:26,w:'y',bs:'6/14'},
+      {d:'24.02.',h:16,u:480,eph:30.0,k:14,au:82,w:'g',bs:'14/14'},
+      {d:'25.02.',h:15,u:457,eph:30.5,k:13,au:77,w:'g',bs:'14/14'},
+      {d:'26.02.',h:9,u:234,eph:26.0,k:6,au:46,w:'g',bs:'14/14'},
+      {d:'27.02.',h:10,u:263,eph:26.3,k:9,au:51,w:'g',bs:'14/14'},
+      {d:'28.02.',h:12,u:331,eph:27.6,k:8,au:61,w:'g',bs:'14/14'},
+    ];
+    const misWCol={g:'#1F6FD2',y:'#facc15',r:'#ef4444'};
+    const misWColA={g:'#1F6FD266',y:'#facc1566',r:'#ef444466'};
+    const misWTxt={g:'1A bespielbar',y:'Eingeschränkt',r:'Unbespielbar'};
+
+    // ── TAGESVERLAUF INIT (läuft beim Tab-Öffnen) ──
+    function initMisTage() {
+      if (window._misTageLoaded) return;
+      window._misTageLoaded = true;
+
+      // Tabelle
+      const tb=document.getElementById('misTageTbody');
+      misRawData.forEach(r=>{
+        tb.innerHTML+=`<tr>
+          <td style="text-align:left;font-weight:600;">${r.d}</td>
+          <td>${r.h} h</td><td>${r.u.toLocaleString('de-DE')} €</td>
+          <td>${r.eph.toFixed(1)} €</td><td>${r.k}</td>
+          <td><span style="display:inline-block;height:5px;width:${Math.round(r.au*0.55)}px;border-radius:2px;background:var(--blue);vertical-align:middle;margin-right:4px;"></span>${r.au} %</td>
+          <td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${misWCol[r.w]};vertical-align:middle;margin-right:4px;"></span><span style="font-size:0.68rem;color:#888;">${misWTxt[r.w]}</span></td>
+          <td style="color:#666;">${r.bs} h</td>
+        </tr>`;
+      });
+      const n=misRawData.length,sH=misRawData.reduce((a,r)=>a+r.h,0),sU=misRawData.reduce((a,r)=>a+r.u,0),sK=misRawData.reduce((a,r)=>a+r.k,0);
+      const avgAu=(misRawData.reduce((a,r)=>a+r.au,0)/n).toFixed(1);
+      tb.innerHTML+=`<tr style="background:#111;color:#aaa;font-size:0.75rem;"><td style="text-align:left;">Ø 30-Tage-Schnitt</td><td>${(sH/n).toFixed(1)} h</td><td>${Math.round(sU/n).toLocaleString('de-DE')} €</td><td>${(sU/sH).toFixed(1)} €</td><td>${(sK/n).toFixed(1)}</td><td>${avgAu} %</td><td></td><td></td></tr>`;
+      tb.innerHTML+=`<tr style="background:#0d0d0d;color:#aaa;font-size:0.75rem;border-top:1px solid #333;"><td style="text-align:left;color:#fff;font-weight:600;">Summe 30 Tage</td><td>${sH} h</td><td>${sU.toLocaleString('de-DE')} €</td><td>—</td><td>${sK}</td><td>—</td><td></td><td></td></tr>`;
+
+      // Sparkline
+      new Chart(document.getElementById('misSparkline'),{type:'bar',data:{
+        labels:misRawData.map(r=>r.d),
+        datasets:[{data:misRawData.map(r=>r.u),backgroundColor:misRawData.map(r=>misWColA[r.w]),borderColor:misRawData.map(r=>misWCol[r.w]),borderWidth:1,borderRadius:2}]
+      },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.y.toLocaleString('de-DE')} €`}}},
+        scales:{x:{ticks:{font:{size:8},maxRotation:0,autoSkip:true,maxTicksLimit:10,color:'#666'},grid:{display:false}},
+                y:{ticks:{font:{size:8},color:'#666',callback:v=>(v/1000).toFixed(1)+'k'},grid:{color:'rgba(255,255,255,0.05)'}}}}});
+
+      // Balken 30T
+      misHBar('misKt30',['Buchungen Externe','Buchungen Mitglieder','Abos Mitglieder','Abos Externe'],[114,68,28,14],['#1F6FD2','#3d9be9','#E6EA18','#c9cd14'],148);
+      misHBar('misAlt30',['30–49 Jahre','< 30 Jahre','50–70 Jahre','> 70 Jahre'],[108,58,48,10],['#E6EA18','#1F6FD2','#3d9be9','#888'],140);
+      misHBar('misTz30',['16–19 Uhr','12–16 Uhr','19–22 Uhr','08–12 Uhr'],[81,55,46,42],['#1F6FD2','#3d9be9','#E6EA18','#888'],110);
+    }
+
+    // ── MONATSBERICHT INIT ──
+    function initMisMonat() {
+      const mon28=misRawData.slice(1); // 01.02–28.02
+
+      // Tagesverlauf-Tabelle Monat
+      const tb=document.getElementById('misMonTbody');
+      mon28.forEach(r=>{
+        tb.innerHTML+=`<tr>
+          <td style="text-align:left;font-weight:600;">${r.d}</td>
+          <td>${r.h} h</td><td>${r.u.toLocaleString('de-DE')} €</td>
+          <td>${r.eph.toFixed(1)} €</td><td>${r.k}</td>
+          <td><span style="display:inline-block;height:5px;width:${Math.round(r.au*0.5)}px;border-radius:2px;background:var(--blue);vertical-align:middle;margin-right:4px;"></span>${r.au} %</td>
+          <td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${misWCol[r.w]};vertical-align:middle;margin-right:4px;"></span><span style="font-size:0.68rem;color:#888;">${misWTxt[r.w]}</span></td>
+          <td style="color:#666;">${r.bs} h</td>
+        </tr>`;
+      });
+      const sH=mon28.reduce((a,r)=>a+r.h,0),sU=mon28.reduce((a,r)=>a+r.u,0);
+      tb.innerHTML+=`<tr style="background:#111;font-weight:700;"><td style="text-align:left;">Gesamt / Ø</td><td>${sH} h</td><td>${sU.toLocaleString('de-DE')} €</td><td>${(sU/sH).toFixed(1)} €</td><td>—</td><td>41,0 %</td><td>—</td><td>252/392 h</td></tr>`;
+
+      const mo=['Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez','Jan','Feb'];
+      const akt=[4802,5326,6719,5912,6726,8495,9213,10534,11622,11080,13939,6272];
+      const vor=[3100,4100,4200,4100,4200,6000,6300,7800,8100,9400,9600,4628];
+      const roll=[38117,42351,47562,51557,55893,61364,67121,73794,81339,88801,98316,100640];
+      const rollV=[18000,21000,24000,27000,30000,33000,36000,40000,44000,48000,53000,58000];
+      const gc='rgba(255,255,255,0.05)';
+
+      new Chart(document.getElementById('misBar12'),{type:'bar',data:{labels:mo,datasets:[
+        {label:'Vorjahr',data:vor,backgroundColor:'#33333388',borderColor:'#555',borderWidth:1,borderRadius:3},
+        {label:'Aktuell',data:akt,backgroundColor:'#1F6FD266',borderColor:'#1F6FD2',borderWidth:1,borderRadius:3}
+      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toLocaleString('de-DE')} €`}}},
+        scales:{x:{ticks:{font:{size:9},color:'#888'},grid:{display:false}},
+                y:{ticks:{font:{size:9},color:'#888',callback:v=>(v/1000).toFixed(0)+'k'},grid:{color:gc}}}}});
+
+      new Chart(document.getElementById('misRoll'),{type:'line',data:{labels:mo,datasets:[
+        {label:'Vorjahr',data:rollV,borderColor:'#555',borderDash:[5,3],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#555',tension:0.3,fill:false},
+        {label:'Aktuell',data:roll,borderColor:'#E6EA18',borderWidth:2,pointRadius:4,pointBackgroundColor:'#E6EA18',tension:0.3,fill:{target:'origin',above:'rgba(230,234,24,0.06)'}}
+      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toLocaleString('de-DE')} €`}}},
+        scales:{x:{ticks:{font:{size:9},color:'#888'},grid:{display:false}},
+                y:{ticks:{font:{size:9},color:'#888',callback:v=>(v/1000).toFixed(0)+'k'},grid:{color:gc}}}}});
+
+      misHBar('misKtMon',['Buchungen Externe','Buchungen Mitglieder','Abos Mitglieder','Abos Externe'],[114,68,28,14],['#1F6FD2','#3d9be9','#E6EA18','#c9cd14'],148);
+      misHBar('misAltMon',['30–49 Jahre','< 30 Jahre','50–70 Jahre','> 70 Jahre'],[108,58,48,10],['#E6EA18','#1F6FD2','#3d9be9','#888'],140);
+      misHBar('misTzMon',['16–19 Uhr','12–16 Uhr','19–22 Uhr','08–12 Uhr'],[81,55,46,42],['#1F6FD2','#3d9be9','#E6EA18','#888'],110);
+
+      new Chart(document.getElementById('misTageBarMon'),{type:'bar',data:{
+        labels:mon28.map(r=>r.d),
+        datasets:[{data:mon28.map(r=>r.u),backgroundColor:mon28.map(r=>misWColA[r.w]),borderColor:mon28.map(r=>misWCol[r.w]),borderWidth:1,borderRadius:3}]
+      },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.y.toLocaleString('de-DE')} €`}}},
+        scales:{x:{ticks:{font:{size:9},maxRotation:45,color:'#888'},grid:{display:false}},
+                y:{ticks:{font:{size:9},color:'#888',callback:v=>v+' €'},grid:{color:gc}}}}});
+    }
+
+    // Chart.js laden und MIS-Tage initial aufbauen wenn Tab aktiv wird
+    (function waitForChartJS(){
+      if (typeof Chart !== 'undefined') { initMisTage(); return; }
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+      s.onload=()=>initMisTage();
+      document.head.appendChild(s);
+    })();
+    </script>
 
     <!-- ── NUTZERVERWALTUNG ── -->
     <div id="adminUsers" style="display:none;">
@@ -2190,6 +2526,7 @@ function setAdminTab(tab) {
   if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
   if (tab==='internal' && !adminTabLoaded.internal) { loadInternalBookings(); adminTabLoaded.internal=true; }
   if (tab==='bookings' && !adminTabLoaded.bookings) { loadAdminBookings(); loadAdminAbos(); loadAdminStats(); adminTabLoaded.bookings=true; }
+  if (tab==='mis'      && !adminTabLoaded.mis)      { if(typeof initMisTage==='function') initMisTage(); adminTabLoaded.mis=true; }
   if (tab==='users'    && !adminTabLoaded.users)    { loadAdminUsers();   adminTabLoaded.users=true; }
 }
 
