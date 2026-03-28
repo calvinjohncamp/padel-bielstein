@@ -187,11 +187,111 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .user-bar-out:hover { border-color: #888; color: #fff; }
 .user-bar-portal { background: none; border: 1px solid var(--gold); color: var(--gold); font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; margin-right: 6px; }
 .user-bar-portal:hover { background: var(--gold); color: #000; }
+.user-bar-login { background: var(--blue); border: none; color: #fff; font-size: 0.72rem; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; }
+.user-bar-login:hover { background: var(--blue-dk); }
+.user-bar-register { background: none; border: 1px solid var(--gold); color: var(--gold); font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; margin-right: 6px; }
+.user-bar-register:hover { background: var(--gold); color: #000; }
+
+/* ■■ JETZT SPIELEN ■■ */
+.play-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+.play-card-title { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray); margin-bottom: 14px; }
+.play-booking-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.play-booking-item:last-child { border-bottom: none; }
+.play-booking-info { display: flex; flex-direction: column; gap: 3px; }
+.play-booking-court { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; color: var(--gold); }
+.play-booking-time { font-size: 0.82rem; color: #b0b0b0; }
+.play-badge-now  { border: 1.5px solid #4ade80; background: rgba(74,222,128,0.08); color: #4ade80; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.play-badge-soon { border: 1.5px solid var(--gold); background: rgba(230,234,24,0.08); color: var(--gold); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.play-badge-past { border: 1.5px solid #444; color: #555; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+
+.door-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.door-btn { height: 86px; border-radius: 14px; border: none; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
+.door-btn-icon { font-size: 1.7rem; line-height: 1; }
+.door-btn.access { background: var(--blue); color: #fff; box-shadow: 0 4px 20px rgba(31,111,210,0.35); }
+.door-btn.access:hover:not(:disabled) { background: var(--blue-dk); transform: translateY(-2px); }
+.door-btn.court { background: var(--gold); color: #0a0a0a; box-shadow: 0 4px 20px rgba(230,234,24,0.25); }
+.door-btn.court:hover:not(:disabled) { background: var(--gold-dk); transform: translateY(-2px); }
+.door-btn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
+
+.door-info { background: #0a1a0a; border: 1px solid #1a3a1a; border-radius: 10px; padding: 12px 16px; font-size: 0.78rem; color: #6a9a6a; line-height: 1.6; margin-bottom: 14px; }
+.door-info strong { color: #4ade80; }
+.door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+.door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #0d0d0d; border-radius: 8px; border: 1px solid var(--border); }
+.door-log-icon { font-size: 1rem; }
+.door-log-text { font-size: 0.78rem; color: #b0b0b0; flex: 1; }
+.door-log-time { font-size: 0.68rem; color: #555; font-family: "Arial Narrow","Impact",sans-serif; }
+.play-empty { text-align: center; padding: 56px 16px; color: #555; }
+.play-empty-icon { font-size: 2.8rem; margin-bottom: 14px; }
+.play-empty-text { font-size: 0.88rem; line-height: 1.6; }
+.play-no-active { background: #0d0d0d; border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; color: #666; font-size: 0.82rem; margin-bottom: 16px; }
+
+/* ■■ ADMIN ■■ */
+.admin-section { margin-bottom: 28px; }
+.admin-section-title { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gray); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.admin-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; }
+.admin-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.admin-row:last-child { margin-bottom: 0; }
+.admin-label { font-size: 0.78rem; color: #999; min-width: 160px; }
+.admin-input { background: #111; border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--white); font-size: 0.88rem; font-family: inherit; flex: 1; min-width: 120px; transition: border-color 0.15s; }
+.admin-input:focus { outline: none; border-color: var(--blue); }
+.admin-save-btn { height: 38px; padding: 0 18px; background: var(--blue); color: #fff; border: none; border-radius: 8px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.admin-save-btn:hover { background: var(--blue-dk); }
+.admin-save-btn.gold { background: var(--gold); color: #0a0a0a; }
+.admin-save-btn.gold:hover { background: var(--gold-dk); }
+.admin-save-btn.danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
+.admin-save-btn.danger:hover { background: #991b1b; }
+.admin-toggle { display: flex; align-items: center; gap: 10px; }
+.admin-toggle-btn { height: 32px; padding: 0 14px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--card); color: #666; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
+.admin-toggle-btn.active { background: #14532d; border-color: #166534; color: #4ade80; }
+.closure-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
+.closure-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #111; border: 1px solid var(--border); border-radius: 8px; font-size: 0.82rem; }
+.closure-item-date { color: #c0c0c0; }
+.closure-item-note { color: #666; font-size: 0.72rem; }
+.closure-remove { background: none; border: none; color: #555; cursor: pointer; font-size: 1rem; padding: 0 4px; transition: color 0.15s; }
+.closure-remove:hover { color: #ef4444; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.admin-table th { text-align: left; padding: 8px 10px; color: #666; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.68rem; border-bottom: 1px solid var(--border); }
+.admin-table td { padding: 9px 10px; border-bottom: 1px solid #111; color: #c0c0c0; vertical-align: middle; }
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: #0d0d0d; }
+.admin-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.admin-badge.paid    { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid #166534; }
+.admin-badge.active  { background: rgba(230,234,24,0.10); color: var(--gold); border: 1px solid #713f12; }
+.admin-badge.member  { background: rgba(31,111,210,0.15); color: var(--blue); border: 1px solid var(--blue-dk); }
+.admin-badge.account { background: #1a1a1a; color: #666; border: 1px solid #333; }
+.admin-badge.guest   { background: #1a1a1a; color: #555; border: 1px solid #333; }
+.admin-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.admin-stat { background: #0d0d0d; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center; }
+.admin-stat-val { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.6rem; color: var(--gold); line-height: 1; margin-bottom: 4px; }
+.admin-stat-lbl { font-size: 0.68rem; color: #666; text-transform: uppercase; letter-spacing: 0.08em; }
+.admin-tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+.admin-tab { padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--card); color: #666; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
+.admin-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.admin-ok  { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.35); border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; color: #4ade80; margin-top: 10px; display: none; }
+.admin-ok.show { display: block; }
+.admin-err { background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.35); border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; color: #fca5a5; margin-top: 10px; display: none; }
+.admin-err.show { display: block; }
+@media (max-width: 560px) {
+  .admin-stat-grid { grid-template-columns: 1fr 1fr; }
+  .admin-stat-val { font-size: 1.3rem; }
+  .admin-row { flex-direction: column; align-items: flex-start; }
+  .admin-input { width: 100%; }
+  .admin-label { min-width: unset; }
+}
 
 /* ■■ FOOTER ■■ */
-.footer-link { text-align: center; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
-.footer-link a { font-family: "Arial Narrow","Impact",sans-serif; font-size: 0.78rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: color 0.2s; }
-.footer-link a:hover { color: #999; }
+.site-footer { margin-top: 56px; padding: 20px 0 28px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+.site-footer-left a { font-family: "Arial Narrow","Impact",sans-serif; font-size: 0.75rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: color 0.2s; }
+.site-footer-left a:hover { color: #999; }
+.site-footer-center { text-align: center; }
+.site-footer-right { text-align: right; font-size: 0.72rem; color: #444; line-height: 1.6; letter-spacing: 0.04em; }
+.admin-footer-link { background: none; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-size: 0.72rem; color: #333; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; padding: 0; transition: color 0.2s; display: none; }
+.admin-footer-link:hover { color: #fca5a5; }
+@media (max-width: 560px) {
+  .site-footer { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
+  .site-footer-center { grid-column: 1 / -1; order: -1; }
+  .site-footer-right { text-align: right; }
+}
 
 /* ■■ TOAST ■■ */
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #000; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.92rem; letter-spacing: 0.06em; padding: 11px 22px; border-radius: 10px; box-shadow: 0 4px 24px rgba(230,234,24,0.25); transition: transform 0.3s ease; z-index: 999; white-space: nowrap; }
@@ -326,29 +426,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
       <button class="modal-btn" style="background:#1a1a1a;border:1.5px solid var(--border);color:#aaa;" onclick="switchAuthTab('login')">← Zurück zum Login</button>
     </div>
 
-    <!-- GAST OPTION -->
-    <div id="guestSection">
-      <div class="modal-divider"><span>Einmalbuchung ohne Konto</span></div>
-      <button class="modal-btn" style="background:#1a1a1a;border:1.5px solid var(--border);color:#aaa;" onclick="showGuestForm()">Als Gast buchen</button>
-    </div>
-
-    <!-- GAST FORM -->
-    <div id="formGuest" style="display:none;">
-      <div class="modal-divider"><span>Gast-Buchung</span></div>
-      <div class="form-group">
-        <label class="form-label">Vor- und Nachname</label>
-        <input class="form-input" type="text" id="guestName" placeholder="Max Mustermann">
-      </div>
-      <div class="form-group">
-        <label class="form-label">E-Mail (für Bestätigung)</label>
-        <input class="form-input" type="email" id="guestEmail" placeholder="deine@email.de">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Geburtsjahr</label>
-        <input class="form-input" type="number" id="guestYear" placeholder="z.B. 1985" min="1920" max="2015">
-      </div>
-      <button class="modal-btn gold" onclick="doGuestBooking()">Weiter zur Zahlung →</button>
-    </div>
+    <!-- kein Gast-Zugang: Registrierung erforderlich -->
   </div>
 </div>
 
@@ -361,20 +439,33 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 </div>
 
 <main>
-  <!-- USER BAR (sichtbar wenn eingeloggt) -->
-  <div class="user-bar" id="userBar" style="display:none;">
-    <span class="user-bar-name">Angemeldet als <strong id="userBarName">—</strong></span>
-    <div style="display:flex;gap:6px;align-items:center;">
-      <button class="user-bar-portal" id="portalBtn" style="display:none;" onclick="openPortal()">■ Abo verwalten</button>
-      <button class="user-bar-out" onclick="doLogout()">Abmelden</button>
+  <!-- USER BAR -->
+  <div class="user-bar" id="userBar">
+    <!-- Eingeloggt -->
+    <div id="userBarLoggedIn" style="display:none;width:100%;align-items:center;justify-content:space-between;">
+      <span class="user-bar-name">Angemeldet als <strong id="userBarName">—</strong></span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="user-bar-portal" id="portalBtn" style="display:none;" onclick="openPortal()">■ Abo verwalten</button>
+        <button class="user-bar-out" onclick="doLogout()">Abmelden</button>
+      </div>
+    </div>
+    <!-- Ausgeloggt -->
+    <div id="userBarLoggedOut" style="width:100%;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:0.82rem;color:#666;">Zum Buchen bitte anmelden</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="user-bar-register" onclick="openModal('register')">Registrieren</button>
+        <button class="user-bar-login" onclick="openModal('login')">Anmelden</button>
+      </div>
     </div>
   </div>
 
 
-  <div class="mode-tabs">
+  <div class="mode-tabs" style="grid-template-columns:1fr 1fr 1fr;" id="mainTabs">
     <div class="mode-tab active" id="tabBook" onclick="setMode('book')"><span class="tab-icon">■</span> Jetzt buchen</div>
     <div class="mode-tab" id="tabAbo" onclick="setMode('abo')"><span class="tab-icon">■</span> Jahresabo sichern</div>
+    <div class="mode-tab" id="tabPlay" onclick="setMode('play')"><span class="tab-icon">▶</span> Jetzt spielen</div>
   </div>
+  <!-- Admin Tab entfernt – Admin-Zugang über Fußzeile -->
 
   <!-- BOOK MODE -->
   <div id="modeBook">
@@ -470,9 +561,222 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
     </div>
   </div>
 
-  <div class="footer-link">
-    <a href="https://tfbielstein.de" target="_blank">Tennisfreunde Bielstein e.V. →</a>
+  <!-- JETZT SPIELEN MODE -->
+  <div id="modePlay" style="display:none;">
+
+    <!-- Nicht eingeloggt -->
+    <div id="playNotLoggedIn" style="display:none;">
+      <div class="play-empty">
+        <div class="play-empty-icon">🔒</div>
+        <div class="play-empty-text">Bitte <strong style="color:var(--white);">anmelden</strong>, um deine Buchungen zu sehen und die Türen zu öffnen.</div>
+        <button class="user-bar-login" style="margin-top:18px;padding:10px 28px;font-size:0.82rem;" onclick="openModal('login')">Jetzt anmelden</button>
+      </div>
+    </div>
+
+    <!-- Eingeloggt -->
+    <div id="playLoggedIn" style="display:none;">
+
+      <!-- Meine heutigen Buchungen -->
+      <div class="play-card">
+        <div class="play-card-title">▶ Heutige Buchungen</div>
+        <div id="playBookingsList">
+          <div class="play-empty" style="padding:24px 0;">
+            <div style="font-size:2rem;margin-bottom:8px;">📅</div>
+            <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zugangsinformation -->
+      <div class="door-info" id="doorAccessInfo">
+        Wird geladen …
+      </div>
+
+      <!-- Tür-Buttons -->
+      <div id="doorButtons" style="display:none;">
+        <div class="play-card-title" style="margin-bottom:12px;">■ Türen öffnen</div>
+        <div class="door-grid">
+          <button class="door-btn access" id="btnAccessDoor" onclick="openAccessDoor()" disabled>
+            <span class="door-btn-icon">🚪</span>
+            <span id="btnAccessLabel">Zugangstür öffnen</span>
+          </button>
+          <button class="door-btn court" id="btnCourtDoor" onclick="openCourtDoors()" disabled>
+            <span class="door-btn-icon">🎾</span>
+            <span id="btnCourtLabel">Court-Türen öffnen</span>
+          </button>
+        </div>
+        <div style="font-size:0.72rem;color:#555;text-align:center;margin-bottom:20px;">
+          Türen öffnen sich ab 15 Min. vor Spielbeginn · Nur zur gebuchten Zeit aktiv
+        </div>
+      </div>
+
+      <!-- Türprotokoll -->
+      <div class="play-card" id="doorLogCard" style="display:none;">
+        <div class="play-card-title">■ Türprotokoll heute</div>
+        <div class="door-log" id="doorLogList"></div>
+      </div>
+
+    </div>
   </div>
+
+  <!-- ADMIN MODE -->
+  <div id="modeAdmin" style="display:none;">
+
+    <div class="admin-tabs">
+      <div class="admin-tab active" id="atab-freibad" onclick="setAdminTab('freibad')">🏊 Freibad</div>
+      <div class="admin-tab" id="atab-bookings" onclick="setAdminTab('bookings')">📅 Buchungen</div>
+      <div class="admin-tab" id="atab-users" onclick="setAdminTab('users')">👤 Nutzer</div>
+    </div>
+
+    <!-- ── FREIBAD-KONFIGURATION ── -->
+    <div id="adminFreibad">
+
+      <div class="admin-section">
+        <div class="admin-section-title">Saison</div>
+        <div class="admin-card">
+          <div class="admin-row">
+            <span class="admin-label">Saisonstart</span>
+            <input class="admin-input" type="date" id="cfgSeasonStart">
+            <span class="admin-label" style="min-width:80px;">Saisonende</span>
+            <input class="admin-input" type="date" id="cfgSeasonEnd">
+          </div>
+          <div class="admin-row">
+            <span class="admin-label">Aktuell aktiv</span>
+            <div class="admin-toggle">
+              <button class="admin-toggle-btn" id="cfgSeasonActive" onclick="toggleSeasonActive()">—</button>
+              <span style="font-size:0.75rem;color:#666;" id="cfgSeasonActiveHint"></span>
+            </div>
+          </div>
+          <div class="admin-row">
+            <button class="admin-save-btn" onclick="saveFreibadConfig()">Saison speichern</button>
+          </div>
+          <div class="admin-ok" id="cfgSeasonOk">✓ Gespeichert</div>
+          <div class="admin-err" id="cfgSeasonErr"></div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Standard-Öffnungszeiten</div>
+        <div class="admin-card">
+          <div class="admin-row">
+            <span class="admin-label">Öffnet um</span>
+            <input class="admin-input" type="number" id="cfgOpenH" min="6" max="12" style="max-width:80px;"> Uhr
+            <span class="admin-label" style="min-width:60px;">Schließt um</span>
+            <input class="admin-input" type="number" id="cfgCloseH" min="14" max="22" style="max-width:80px;"> Uhr
+          </div>
+          <div class="admin-row">
+            <button class="admin-save-btn" onclick="saveFreibadConfig()">Zeiten speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Schließtage & Ausnahmen</div>
+        <div class="admin-card">
+          <div class="admin-row">
+            <input class="admin-input" type="date" id="newClosureDate" style="max-width:180px;">
+            <input class="admin-input" type="text" id="newClosureNote" placeholder="Grund (optional)">
+            <button class="admin-save-btn gold" onclick="addClosure()">+ Eintragen</button>
+          </div>
+          <div class="admin-ok" id="closureOk">✓ Schließtag eingetragen</div>
+          <div class="admin-err" id="closureErr"></div>
+          <div class="closure-list" id="closureList">
+            <div style="color:#555;font-size:0.78rem;padding:8px 0;">Wird geladen …</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Datumsabhängige Öffnungszeiten</div>
+        <div class="admin-card">
+          <div class="admin-row">
+            <input class="admin-input" type="date" id="excDate" style="max-width:180px;">
+            <input class="admin-input" type="number" id="excOpen" min="6" max="12" placeholder="von (Uhr)" style="max-width:90px;">
+            <input class="admin-input" type="number" id="excClose" min="12" max="22" placeholder="bis (Uhr)" style="max-width:90px;">
+            <button class="admin-save-btn gold" onclick="addException()">+ Eintragen</button>
+          </div>
+          <div class="admin-ok" id="excOk">✓ Ausnahme gespeichert</div>
+          <div class="admin-err" id="excErr"></div>
+          <div class="closure-list" id="excList">
+            <div style="color:#555;font-size:0.78rem;padding:8px 0;">Wird geladen …</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /adminFreibad -->
+
+    <!-- ── BUCHUNGSÜBERSICHT ── -->
+    <div id="adminBookings" style="display:none;">
+      <div class="admin-stat-grid" id="adminStats">
+        <div class="admin-stat"><div class="admin-stat-val" id="statBookings">—</div><div class="admin-stat-lbl">Buchungen</div></div>
+        <div class="admin-stat"><div class="admin-stat-val" id="statRevenue">—</div><div class="admin-stat-lbl">Umsatz (€)</div></div>
+        <div class="admin-stat"><div class="admin-stat-val" id="statAbos">—</div><div class="admin-stat-lbl">Aktive Abos</div></div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">
+          Buchungen
+          <span style="float:right;">
+            <input class="admin-input" type="date" id="filterDateFrom" style="max-width:150px;display:inline-block;">
+            <input class="admin-input" type="date" id="filterDateTo"   style="max-width:150px;display:inline-block;margin-left:6px;">
+            <button class="admin-save-btn" style="margin-left:6px;" onclick="loadAdminBookings()">Filtern</button>
+          </span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table" id="bookingsTable">
+            <thead><tr>
+              <th>Datum</th><th>Zeit</th><th>Court</th><th>Name</th><th>€</th><th>Status</th>
+            </tr></thead>
+            <tbody id="bookingsTbody">
+              <tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Aktive Jahresabos</div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead><tr>
+              <th>Name</th><th>Court</th><th>Tag</th><th>Zeit</th><th>€/Wo</th><th>Läuft bis</th>
+            </tr></thead>
+            <tbody id="abosTbody">
+              <tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /adminBookings -->
+
+    <!-- ── NUTZERVERWALTUNG ── -->
+    <div id="adminUsers" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-title">Registrierte Nutzer</div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead><tr>
+              <th>Name</th><th>E-Mail</th><th>Typ</th><th>Mitglied#</th><th>Jahrgang</th><th>Registriert</th>
+            </tr></thead>
+            <tbody id="usersTbody">
+              <tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /adminUsers -->
+
+  </div><!-- /modeAdmin -->
+
+  <footer class="site-footer">
+    <div class="site-footer-left">
+      <a href="https://tfbielstein.de" target="_blank">Tennisfreunde Bielstein e.V. →</a>
+    </div>
+    <div class="site-footer-center">
+      <button class="admin-footer-link" id="adminFooterBtn" onclick="setMode('admin')">⚙ Admin</button>
+    </div>
+    <div class="site-footer-right">
+      Padel Bielstein · Jahnstraße 15<br>51674 Wiehl-Bielstein
+    </div>
+  </footer>
 </main>
 
 <div class="toast" id="toast"></div>
@@ -600,6 +904,7 @@ const DAYS    = ["So","Mo","Di","Mi","Do","Fr","Sa"];
 
 let selDate = null, selDur = 1, selSlot = null, member = null;
 let aboWd = null, aboDur = 1, aboSlot = null, curMode = 'book';
+let doorLog = [];
 
 function fmt(n) { return n.toLocaleString('de-DE') + ' €'; }
 function todayStr() {
@@ -625,6 +930,9 @@ async function init() {
   updDurPrices();
   renderSlots();
 
+  // Freibad-Config parallel laden
+  loadFreibadConfig();
+
   const params = new URLSearchParams(window.location.search);
   if (params.get('booking') === 'success') {
     window.history.replaceState({}, '', '/');
@@ -646,11 +954,18 @@ async function init() {
 // ============================================================
 function setMode(m) {
   curMode = m;
-  document.getElementById('modeBook').style.display = m==='book' ? 'block' : 'none';
-  document.getElementById('modeAbo').style.display  = m==='abo'  ? 'block' : 'none';
-  document.getElementById('tabBook').classList.toggle('active', m==='book');
-  document.getElementById('tabAbo').classList.toggle('active',  m==='abo');
-  if (m==='abo') { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
+  document.getElementById('modeBook').style.display  = m==='book'  ? 'block' : 'none';
+  document.getElementById('modeAbo').style.display   = m==='abo'   ? 'block' : 'none';
+  document.getElementById('modePlay').style.display  = m==='play'  ? 'block' : 'none';
+  document.getElementById('modeAdmin').style.display = m==='admin' ? 'block' : 'none';
+  document.getElementById('tabBook').classList.toggle('active',  m==='book');
+  document.getElementById('tabAbo').classList.toggle('active',   m==='abo');
+  document.getElementById('tabPlay').classList.toggle('active',  m==='play');
+  const adminFooter = document.getElementById('adminFooterBtn');
+  if (adminFooter) adminFooter.style.fontWeight = m==='admin' ? '900' : '700';
+  if (m==='abo')   { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
+  if (m==='play')  { renderPlaySection(); }
+  if (m==='admin') { initAdmin(); }
 }
 
 // ============================================================
@@ -813,17 +1128,27 @@ async function loadProfile(authId) {
 }
 
 function updateUserBar() {
-  const bar = document.getElementById('userBar');
+  const loggedIn  = document.getElementById('userBarLoggedIn');
+  const loggedOut = document.getElementById('userBarLoggedOut');
   if (currentUser) {
-    bar.style.display = 'flex';
+    loggedIn.style.display  = 'flex';
+    loggedOut.style.display = 'none';
     const name = currentProfile?.full_name || currentUser.email;
     document.getElementById('userBarName').textContent = name;
     updDurPrices();
     if (selDate) renderSlots();
     checkHasAbo();
+    // Admin-Link in Fußzeile zeigen/verstecken
+    const adminBtn = document.getElementById('adminFooterBtn');
+    if (adminBtn) adminBtn.style.display = isAdmin() ? 'inline' : 'none';
+    renderPlaySection();
   } else {
-    bar.style.display = 'none';
+    loggedIn.style.display  = 'none';
+    loggedOut.style.display = 'flex';
     document.getElementById('portalBtn').style.display = 'none';
+    const adminBtn = document.getElementById('adminFooterBtn');
+    if (adminBtn) adminBtn.style.display = 'none';
+    renderPlaySection();
   }
 }
 
@@ -873,11 +1198,17 @@ async function openPortal() {
 //  MODAL STEUERUNG
 // ============================================================
 function openModal(action) {
-  pendingAction = action || null;
-  switchAuthTab('login');
+  pendingAction = (action === 'book' || action === 'abo') ? action : null;
+  const startTab = (action === 'register') ? 'register' : 'login';
+  switchAuthTab(startTab);
   clearAuthMessages();
   document.getElementById('authModal').classList.add('open');
-  setTimeout(() => document.getElementById('loginEmail').focus(), 100);
+  setTimeout(() => {
+    const focusEl = startTab === 'register'
+      ? document.getElementById('regName')
+      : document.getElementById('loginEmail');
+    if (focusEl) focusEl.focus();
+  }, 100);
 }
 
 function closeModal() {
@@ -895,17 +1226,13 @@ function switchAuthTab(tab) {
   document.getElementById('formLogin').style.display    = tab==='login'    ? 'block' : 'none';
   document.getElementById('formRegister').style.display = tab==='register' ? 'block' : 'none';
   document.getElementById('formReset').style.display    = tab==='reset'    ? 'block' : 'none';
-  document.getElementById('formGuest').style.display    = 'none';
-  document.getElementById('guestSection').style.display = (tab==='login'||tab==='register') ? 'block' : 'none';
   document.getElementById('authTabs').style.display     = tab==='reset'    ? 'none' : 'grid';
   document.getElementById('tabLogin').classList.toggle('active', tab==='login');
   document.getElementById('tabRegister').classList.toggle('active', tab==='register');
 }
 
-function showGuestForm() {
-  document.getElementById('guestSection').style.display = 'none';
-  document.getElementById('formGuest').style.display = 'block';
-}
+
+
 
 function clearAuthMessages() {
   document.getElementById('authErr').classList.remove('show');
@@ -1026,19 +1353,338 @@ async function doReset() {
 }
 
 // ============================================================
-//  GAST-BUCHUNG
+//  JETZT SPIELEN – Türzugang
 // ============================================================
-function doGuestBooking() {
-  const name  = document.getElementById('guestName').value.trim();
-  const email = document.getElementById('guestEmail').value.trim();
-  const year  = parseInt(document.getElementById('guestYear').value);
-  if (!name)  { showAuthErr('Bitte Name eingeben.'); return; }
-  if (!email) { showAuthErr('Bitte E-Mail eingeben.'); return; }
-  if (!year || year < 1920 || year > 2015) { showAuthErr('Bitte gültiges Geburtsjahr eingeben.'); return; }
-  // Gast-Daten zwischenspeichern für Buchungsflow
-  window.guestData = { name, email, birth_year: year, customer_type: 'guest' };
-  closeModal();
-  showToast('Weiter zur Zahlung … (Stripe folgt)');
+
+// ============================================================
+//  ADMIN-EMAILS (hardcoded)
+// ============================================================
+const ADMIN_EMAILS = ['joern.kaemper@gmail.com', 'calvinjohncamp@gmail.com'];
+
+function isAdmin() {
+  return currentUser && ADMIN_EMAILS.includes((currentProfile?.email || currentUser.email || '').toLowerCase());
+}
+
+// ============================================================
+//  FREIBAD-KONFIGURATION (aus Supabase, Fallback auf Defaults)
+// ============================================================
+// Defaults: 01.05–30.09, 08–20 Uhr
+let freibadConfig = {
+  season_start_md: '05-01',   // MM-DD
+  season_end_md:   '09-30',
+  open_hour:       8,
+  close_hour:      20,
+  season_active:   true,      // manueller Override
+};
+let freibadClosures   = [];   // [{date:'2027-07-04', note:'Wartung'}]
+let freibadExceptions = [];   // [{date:'2027-06-15', open_hour:10, close_hour:18}]
+
+async function loadFreibadConfig() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/freibad_config?select=*&limit=1`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.length > 0) {
+      const d = data[0];
+      freibadConfig = {
+        season_start_md: d.season_start_md || '05-01',
+        season_end_md:   d.season_end_md   || '09-30',
+        open_hour:       d.open_hour  ?? 8,
+        close_hour:      d.close_hour ?? 20,
+        season_active:   d.season_active !== false,
+      };
+    }
+  } catch(e) { console.warn('freibad_config Fallback aktiv:', e.message); }
+
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/freibad_closures?select=*&order=date.asc`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (res.ok) freibadClosures = await res.json() || [];
+  } catch(e) { freibadClosures = []; }
+
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/freibad_exceptions?select=*&order=date.asc`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (res.ok) freibadExceptions = await res.json() || [];
+  } catch(e) { freibadExceptions = []; }
+}
+
+function isFreibadOpen(dateStr, hourOverride) {
+  const d    = dateStr ? new Date(dateStr + 'T12:00:00') : new Date();
+  const dStr = dateStr || todayStr();
+  const h    = hourOverride !== undefined ? hourOverride : new Date().getHours();
+
+  // Schließtag?
+  if (freibadClosures.some(c => c.date === dStr)) return false;
+
+  // Manuelle Override — Saison deaktiviert?
+  if (!freibadConfig.season_active) return false;
+
+  // Ist es Saison? (Vergleich via MM-DD)
+  const mdStr = dStr.slice(5); // "MM-DD"
+  if (mdStr < freibadConfig.season_start_md || mdStr > freibadConfig.season_end_md) return false;
+
+  // Datumsspezifische Öffnungszeiten?
+  const exc = freibadExceptions.find(e => e.date === dStr);
+  const openH  = exc ? exc.open_hour  : freibadConfig.open_hour;
+  const closeH = exc ? exc.close_hour : freibadConfig.close_hour;
+
+  return h >= openH && h < closeH;
+}
+
+function getFreibadHours(dateStr) {
+  const dStr = dateStr || todayStr();
+  const exc = freibadExceptions.find(e => e.date === dStr);
+  return {
+    open:  exc ? exc.open_hour  : freibadConfig.open_hour,
+    close: exc ? exc.close_hour : freibadConfig.close_hour,
+  };
+}
+
+async function loadTodayBookings() {
+  if (!currentUser) return [];
+  const today = todayStr();
+  const email = currentProfile?.email || currentUser.email;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/bookings?select=court,date,hour_start,duration&date=eq.${today}&status=eq.paid&email=eq.${encodeURIComponent(email)}`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return [];
+    return await res.json();
+  } catch(e) { return []; }
+}
+
+async function loadTodayAboSlot() {
+  if (!currentUser) return null;
+  const today = new Date();
+  const weekday = today.getDay();
+  const email = currentProfile?.email || currentUser.email;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/subscriptions?select=court,weekday,hour_start,duration&weekday=eq.${weekday}&status=eq.active&email=eq.${encodeURIComponent(email)}&limit=1`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data || data.length === 0) return null;
+    // Als Buchungsobjekt zurückgeben (mit heutigem Datum)
+    const s = data[0];
+    return { court: s.court, date: todayStr(), hour_start: s.hour_start, duration: s.duration, isAbo: true };
+  } catch(e) { return null; }
+}
+
+// Prüft ob eine Buchung gerade aktiv ist (±15 Min)
+function getActiveBooking(bookings) {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  for (const b of bookings) {
+    const startMin = b.hour_start * 60;
+    const endMin   = (b.hour_start + b.duration) * 60;
+    if (nowMin >= startMin - 15 && nowMin < endMin) return b;
+  }
+  return null;
+}
+
+function getBookingStatus(b) {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const startMin = b.hour_start * 60;
+  const endMin   = (b.hour_start + b.duration) * 60;
+  if (nowMin < startMin - 15) return 'soon';
+  if (nowMin >= endMin) return 'past';
+  return 'now';
+}
+
+async function renderPlaySection() {
+  const notLoggedIn = document.getElementById('playNotLoggedIn');
+  const loggedIn    = document.getElementById('playLoggedIn');
+
+  if (!currentUser) {
+    notLoggedIn.style.display = 'block';
+    loggedIn.style.display    = 'none';
+    return;
+  }
+  notLoggedIn.style.display = 'none';
+  loggedIn.style.display    = 'block';
+
+  // Buchungen laden
+  const [regularBookings, aboSlot] = await Promise.all([loadTodayBookings(), loadTodayAboSlot()]);
+  const allBookings = [...regularBookings];
+  if (aboSlot) {
+    // Abo nur hinzufügen wenn kein identischer Slot schon vorhanden
+    const exists = allBookings.some(b => b.hour_start === aboSlot.hour_start && b.court === aboSlot.court);
+    if (!exists) allBookings.push(aboSlot);
+  }
+
+  // Sortieren nach Startzeit
+  allBookings.sort((a,b) => a.hour_start - b.hour_start);
+
+  const listEl = document.getElementById('playBookingsList');
+
+  if (allBookings.length === 0) {
+    listEl.innerHTML = `
+      <div class="play-empty" style="padding:24px 0;">
+        <div style="font-size:2rem;margin-bottom:8px;">📅</div>
+        <div style="font-size:0.82rem;color:#555;">Heute keine Buchungen</div>
+      </div>`;
+    document.getElementById('doorButtons').style.display = 'none';
+    document.getElementById('doorAccessInfo').textContent = '';
+    document.getElementById('doorAccessInfo').style.display = 'none';
+    return;
+  }
+
+  listEl.innerHTML = allBookings.map(b => {
+    const status = getBookingStatus(b);
+    const h1 = `${String(b.hour_start).padStart(2,'0')}:00`;
+    const h2 = `${String(b.hour_start + b.duration).padStart(2,'0')}:00`;
+    const aboTag = b.isAbo ? ' <span style="font-size:0.65rem;color:#888;font-weight:400;">(Abo)</span>' : '';
+    const badgeCls = status === 'now' ? 'play-badge-now' : status === 'soon' ? 'play-badge-soon' : 'play-badge-past';
+    const badgeTxt = status === 'now' ? '● Läuft jetzt' : status === 'soon' ? '⏱ Bald' : '✓ Beendet';
+    return `
+      <div class="play-booking-item">
+        <div class="play-booking-info">
+          <div class="play-booking-court">Court #${b.court}${aboTag}</div>
+          <div class="play-booking-time">${h1} – ${h2} Uhr</div>
+        </div>
+        <span class="${badgeCls}">${badgeTxt}</span>
+      </div>`;
+  }).join('');
+
+  // Aktive Buchung ermitteln
+  const active = getActiveBooking(allBookings);
+  const doorInfoEl = document.getElementById('doorAccessInfo');
+  const doorBtns   = document.getElementById('doorButtons');
+  const accessBtn  = document.getElementById('btnAccessDoor');
+  const courtBtn   = document.getElementById('btnCourtDoor');
+  const accessLbl  = document.getElementById('btnAccessLabel');
+  const courtLbl   = document.getElementById('btnCourtLabel');
+
+  doorInfoEl.style.display = 'block';
+
+  if (active) {
+    const freibadOffen = isFreibadOpen();
+    const zugangTuer = freibadOffen ? 'Tür B (Freibadseite)' : 'Tür A (Parkplatzseite)';
+    const courtTueren = active.court === 1 ? 'Türen 3 + 4 (Court #1)' : 'Türen 1 + 2 (Court #2)';
+
+    doorInfoEl.innerHTML = freibadOffen
+      ? `<strong>Freibad geöffnet</strong> — Zugang heute ausschließlich über <strong>Tür B</strong> (Freibad/Liegewiese). Ausgang über Tür A möglich.`
+      : `<strong>Freibad geschlossen</strong> — Zugang und Ausgang ausschließlich über <strong>Tür A</strong> (Parkplatz/Tennis).`;
+
+    accessLbl.textContent = zugangTuer + ' öffnen';
+    courtLbl.textContent  = courtTueren + ' öffnen';
+    accessBtn.disabled = false;
+    courtBtn.disabled  = false;
+    accessBtn.dataset.court = active.court;
+    courtBtn.dataset.court  = active.court;
+    doorBtns.style.display = 'block';
+  } else {
+    const next = allBookings.find(b => getBookingStatus(b) === 'soon');
+    if (next) {
+      const h1 = `${String(next.hour_start).padStart(2,'0')}:00`;
+      doorInfoEl.innerHTML = `Deine nächste Buchung startet um <strong>${h1} Uhr</strong>. Die Türen öffnen sich 15 Minuten vorher.`;
+    } else {
+      doorInfoEl.innerHTML = `Keine aktive Buchung. Türöffnung ist nur während der gebuchten Spielzeit (±15 Min.) möglich.`;
+    }
+    accessBtn.disabled = true;
+    courtBtn.disabled  = true;
+    doorBtns.style.display = 'block';
+  }
+
+  renderDoorLog();
+}
+
+function logDoorEvent(icon, text) {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  doorLog.unshift({ icon, text, time: timeStr });
+  renderDoorLog();
+}
+
+function renderDoorLog() {
+  const logCard = document.getElementById('doorLogCard');
+  const logList = document.getElementById('doorLogList');
+  if (doorLog.length === 0) { logCard.style.display = 'none'; return; }
+  logCard.style.display = 'block';
+  logList.innerHTML = doorLog.map(e => `
+    <div class="door-log-entry">
+      <span class="door-log-icon">${e.icon}</span>
+      <span class="door-log-text">${e.text}</span>
+      <span class="door-log-time">${e.time}</span>
+    </div>`).join('');
+}
+
+async function openAccessDoor() {
+  const btn = document.getElementById('btnAccessDoor');
+  btn.disabled = true;
+  const freibadOffen = isFreibadOpen();
+  const doorName = freibadOffen ? 'Tür B (Freibadseite)' : 'Tür A (Parkplatzseite)';
+  const doorId   = freibadOffen ? 'door_B' : 'door_A';
+
+  showToast(`${doorName} wird geöffnet …`);
+
+  // ── Türöffnungs-Event in DB loggen ──────────────────────────
+  await logDoorToSupabase(doorId, 'opened');
+
+  // ── PLATZHALTER: Hier kommt später der API-Call ans Schließsystem ──
+  // await fetch('https://api.tapkey.com/v1/locks/' + doorId + '/open', { method:'POST', headers:{...} });
+
+  setTimeout(() => {
+    logDoorEvent('🚪', `${doorName} geöffnet`);
+    showToast(`✅ ${doorName} ist offen – bitte schließen nach Eintritt!`);
+    btn.disabled = false;
+  }, 800);
+}
+
+async function openCourtDoors() {
+  const btn = document.getElementById('btnCourtDoor');
+  btn.disabled = true;
+  const court = parseInt(btn.dataset.court || '1');
+  const doorNames = court === 1 ? 'Türen 3 + 4 (Court #1)' : 'Türen 1 + 2 (Court #2)';
+  const doorIds   = court === 1 ? ['door_3','door_4'] : ['door_1','door_2'];
+
+  showToast(`${doorNames} werden geöffnet …`);
+
+  // ── Türöffnungs-Events in DB loggen ─────────────────────────
+  await Promise.all(doorIds.map(id => logDoorToSupabase(id, 'opened')));
+
+  // ── PLATZHALTER: Hier kommt später der API-Call ans Schließsystem ──
+  // await Promise.all(doorIds.map(id => fetch('https://api.tapkey.com/v1/locks/' + id + '/open', { method:'POST', headers:{...} })));
+
+  setTimeout(() => {
+    logDoorEvent('🎾', `${doorNames} geöffnet`);
+    showToast(`✅ ${doorNames} sind offen – viel Spaß beim Spielen!`);
+    btn.disabled = false;
+  }, 800);
+}
+
+async function logDoorToSupabase(doorId, eventType) {
+  const email = currentProfile?.email || currentUser?.email;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/door_events`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({
+        door_id:    doorId,
+        event_type: eventType,
+        email,
+        user_id:    currentUser?.id || null,
+        ts:         new Date().toISOString(),
+      }),
+    });
+  } catch(e) { console.warn('Door log fehlgeschlagen:', e.message); }
 }
 
 // ============================================================
@@ -1066,7 +1712,7 @@ function translateAuthError(msg) {
 // ============================================================
 async function confirmBooking(skipAuthCheck) {
   if (!selSlot) return;
-  if (!skipAuthCheck && !currentUser && !window.guestData) {
+  if (!skipAuthCheck && !currentUser) {
     openModal('book');
     return;
   }
@@ -1076,10 +1722,10 @@ async function confirmBooking(skipAuthCheck) {
   const price = mP(priceRaw);
   const price_cents = Math.round(price * 100);
 
-  const email    = currentProfile?.email || currentUser?.email || window.guestData?.email;
-  const fullName = currentProfile?.full_name || window.guestData?.name || '';
-  const birthYear = currentProfile?.birth_year || window.guestData?.birth_year || null;
-  const custType = currentProfile?.customer_type || 'guest';
+  const email    = currentProfile?.email || currentUser?.email;
+  const fullName = currentProfile?.full_name || '';
+  const birthYear = currentProfile?.birth_year || null;
+  const custType = currentProfile?.customer_type || 'account';
 
   showToast('Weiter zu Stripe …');
 
@@ -1218,6 +1864,337 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 3500);
+}
+
+// ============================================================
+//  ADMIN – Initialisierung & Tab-Steuerung
+// ============================================================
+let adminTabLoaded = { freibad: false, bookings: false, users: false };
+
+function setAdminTab(tab) {
+  document.getElementById('adminFreibad').style.display  = tab==='freibad'  ? 'block' : 'none';
+  document.getElementById('adminBookings').style.display = tab==='bookings' ? 'block' : 'none';
+  document.getElementById('adminUsers').style.display    = tab==='users'    ? 'block' : 'none';
+  document.getElementById('atab-freibad').classList.toggle('active',  tab==='freibad');
+  document.getElementById('atab-bookings').classList.toggle('active', tab==='bookings');
+  document.getElementById('atab-users').classList.toggle('active',    tab==='users');
+  if (tab==='freibad'  && !adminTabLoaded.freibad)  { loadAdminFreibad();  adminTabLoaded.freibad=true; }
+  if (tab==='bookings' && !adminTabLoaded.bookings) { loadAdminBookings(); loadAdminAbos(); loadAdminStats(); adminTabLoaded.bookings=true; }
+  if (tab==='users'    && !adminTabLoaded.users)    { loadAdminUsers();   adminTabLoaded.users=true; }
+}
+
+// Korrekte Anzeige beim ersten Öffnen
+document.getElementById('adminFreibad').style.display  = 'block';
+document.getElementById('adminBookings').style.display = 'none';
+document.getElementById('adminUsers').style.display    = 'none';
+
+async function initAdmin() {
+  if (!adminTabLoaded.freibad) { loadAdminFreibad(); adminTabLoaded.freibad = true; }
+}
+
+// ============================================================
+//  ADMIN – Freibad-Config lesen & anzeigen
+// ============================================================
+async function loadAdminFreibad() {
+  await loadFreibadConfig();
+
+  // Saison-Felder befüllen (aktuelles Jahr als Basis)
+  const y = new Date().getFullYear();
+  document.getElementById('cfgSeasonStart').value = `${y}-${freibadConfig.season_start_md}`;
+  document.getElementById('cfgSeasonEnd').value   = `${y}-${freibadConfig.season_end_md}`;
+  document.getElementById('cfgOpenH').value  = freibadConfig.open_hour;
+  document.getElementById('cfgCloseH').value = freibadConfig.close_hour;
+
+  const activeBtn = document.getElementById('cfgSeasonActive');
+  activeBtn.textContent = freibadConfig.season_active ? 'AKTIV' : 'DEAKTIVIERT';
+  activeBtn.classList.toggle('active', freibadConfig.season_active);
+  document.getElementById('cfgSeasonActiveHint').textContent =
+    freibadConfig.season_active ? 'Freibad-Saison läuft planmäßig' : 'Saison manuell deaktiviert (→ nur Tür A)';
+
+  renderClosureList();
+  renderExceptionList();
+}
+
+function toggleSeasonActive() {
+  freibadConfig.season_active = !freibadConfig.season_active;
+  const btn = document.getElementById('cfgSeasonActive');
+  btn.textContent = freibadConfig.season_active ? 'AKTIV' : 'DEAKTIVIERT';
+  btn.classList.toggle('active', freibadConfig.season_active);
+  document.getElementById('cfgSeasonActiveHint').textContent =
+    freibadConfig.season_active ? 'Freibad-Saison läuft planmäßig' : 'Saison manuell deaktiviert (→ nur Tür A)';
+}
+
+async function saveFreibadConfig() {
+  const startVal = document.getElementById('cfgSeasonStart').value; // YYYY-MM-DD
+  const endVal   = document.getElementById('cfgSeasonEnd').value;
+  const openH    = parseInt(document.getElementById('cfgOpenH').value);
+  const closeH   = parseInt(document.getElementById('cfgCloseH').value);
+
+  if (!startVal || !endVal || isNaN(openH) || isNaN(closeH)) {
+    showAdminMsg('cfgSeasonErr', 'Bitte alle Felder ausfüllen.'); return;
+  }
+  if (closeH <= openH) {
+    showAdminMsg('cfgSeasonErr', 'Schließzeit muss nach Öffnungszeit liegen.'); return;
+  }
+
+  const payload = {
+    id: 1,
+    season_start_md: startVal.slice(5),  // MM-DD
+    season_end_md:   endVal.slice(5),
+    open_hour:  openH,
+    close_hour: closeH,
+    season_active: freibadConfig.season_active,
+    updated_at: new Date().toISOString(),
+  };
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/freibad_config`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    // Lokalen State aktualisieren
+    freibadConfig = { ...freibadConfig, ...payload };
+    showAdminMsg('cfgSeasonOk', '✓ Konfiguration gespeichert');
+  } catch(e) {
+    showAdminMsg('cfgSeasonErr', 'Fehler: ' + e.message);
+  }
+}
+
+// ============================================================
+//  ADMIN – Schließtage
+// ============================================================
+async function addClosure() {
+  const date = document.getElementById('newClosureDate').value;
+  const note = document.getElementById('newClosureNote').value.trim();
+  if (!date) { showAdminMsg('closureErr', 'Bitte Datum wählen.'); return; }
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/freibad_closures`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json', 'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({ date, note: note || null }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    freibadClosures.push({ date, note });
+    freibadClosures.sort((a,b) => a.date.localeCompare(b.date));
+    document.getElementById('newClosureDate').value = '';
+    document.getElementById('newClosureNote').value = '';
+    showAdminMsg('closureOk', '✓ Schließtag eingetragen');
+    renderClosureList();
+  } catch(e) {
+    showAdminMsg('closureErr', 'Fehler: ' + e.message);
+  }
+}
+
+async function removeClosure(date) {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/freibad_closures?date=eq.${date}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` },
+    });
+    freibadClosures = freibadClosures.filter(c => c.date !== date);
+    renderClosureList();
+  } catch(e) { showToast('Fehler beim Löschen'); }
+}
+
+function renderClosureList() {
+  const el = document.getElementById('closureList');
+  if (freibadClosures.length === 0) {
+    el.innerHTML = '<div style="color:#555;font-size:0.78rem;padding:8px 0;">Keine Schließtage eingetragen</div>';
+    return;
+  }
+  el.innerHTML = freibadClosures.map(c => `
+    <div class="closure-item">
+      <div>
+        <div class="closure-item-date">${formatDateDE(c.date)}</div>
+        ${c.note ? `<div class="closure-item-note">${c.note}</div>` : ''}
+      </div>
+      <button class="closure-remove" onclick="removeClosure('${c.date}')" title="Entfernen">✕</button>
+    </div>`).join('');
+}
+
+// ============================================================
+//  ADMIN – Datumsausnahmen (abweichende Öffnungszeiten)
+// ============================================================
+async function addException() {
+  const date  = document.getElementById('excDate').value;
+  const openH  = parseInt(document.getElementById('excOpen').value);
+  const closeH = parseInt(document.getElementById('excClose').value);
+  if (!date || isNaN(openH) || isNaN(closeH)) { showAdminMsg('excErr', 'Bitte alle Felder ausfüllen.'); return; }
+  if (closeH <= openH) { showAdminMsg('excErr', 'Schließzeit muss nach Öffnungszeit liegen.'); return; }
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/freibad_exceptions`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify({ date, open_hour: openH, close_hour: closeH }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    freibadExceptions = freibadExceptions.filter(e => e.date !== date);
+    freibadExceptions.push({ date, open_hour: openH, close_hour: closeH });
+    freibadExceptions.sort((a,b) => a.date.localeCompare(b.date));
+    document.getElementById('excDate').value  = '';
+    document.getElementById('excOpen').value  = '';
+    document.getElementById('excClose').value = '';
+    showAdminMsg('excOk', '✓ Ausnahme gespeichert');
+    renderExceptionList();
+  } catch(e) {
+    showAdminMsg('excErr', 'Fehler: ' + e.message);
+  }
+}
+
+async function removeException(date) {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/freibad_exceptions?date=eq.${date}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` },
+    });
+    freibadExceptions = freibadExceptions.filter(e => e.date !== date);
+    renderExceptionList();
+  } catch(e) { showToast('Fehler beim Löschen'); }
+}
+
+function renderExceptionList() {
+  const el = document.getElementById('excList');
+  if (freibadExceptions.length === 0) {
+    el.innerHTML = '<div style="color:#555;font-size:0.78rem;padding:8px 0;">Keine Ausnahmen eingetragen</div>';
+    return;
+  }
+  el.innerHTML = freibadExceptions.map(e => `
+    <div class="closure-item">
+      <div>
+        <div class="closure-item-date">${formatDateDE(e.date)}</div>
+        <div class="closure-item-note">${e.open_hour}:00 – ${e.close_hour}:00 Uhr</div>
+      </div>
+      <button class="closure-remove" onclick="removeException('${e.date}')" title="Entfernen">✕</button>
+    </div>`).join('');
+}
+
+// ============================================================
+//  ADMIN – Buchungsübersicht
+// ============================================================
+async function loadAdminStats() {
+  try {
+    const [bRes, aRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/bookings?select=price_cents&status=eq.paid`,
+        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }),
+      fetch(`${SUPABASE_URL}/rest/v1/subscriptions?select=price_total_cents&status=eq.active`,
+        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }),
+    ]);
+    const bookings = bRes.ok ? await bRes.json() : [];
+    const abos     = aRes.ok ? await aRes.json() : [];
+    const revenue  = bookings.reduce((s,b) => s + (b.price_cents||0), 0)
+                   + abos.reduce((s,a) => s + (a.price_total_cents||0), 0);
+    document.getElementById('statBookings').textContent = bookings.length;
+    document.getElementById('statRevenue').textContent  = (revenue/100).toLocaleString('de-DE');
+    document.getElementById('statAbos').textContent     = abos.length;
+  } catch(e) { console.warn('Stats Fehler:', e); }
+}
+
+async function loadAdminBookings() {
+  const from = document.getElementById('filterDateFrom').value;
+  const to   = document.getElementById('filterDateTo').value;
+  let url = `${SUPABASE_URL}/rest/v1/bookings?select=*&status=eq.paid&order=date.desc,hour_start.desc&limit=200`;
+  if (from) url += `&date=gte.${from}`;
+  if (to)   url += `&date=lte.${to}`;
+  try {
+    const res  = await fetch(url, { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } });
+    const data = res.ok ? await res.json() : [];
+    const tbody = document.getElementById('bookingsTbody');
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Keine Buchungen gefunden</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(b => `
+      <tr>
+        <td>${formatDateDE(b.date)}</td>
+        <td>${String(b.hour_start).padStart(2,'0')}:00 – ${String(b.hour_start+b.duration).padStart(2,'0')}:00</td>
+        <td>Court #${b.court}</td>
+        <td style="color:#e0e0e0;">${b.full_name || '—'}</td>
+        <td style="color:var(--gold);">${b.price_cents ? (b.price_cents/100).toFixed(2)+' €' : '—'}</td>
+        <td><span class="admin-badge paid">Bezahlt</span></td>
+      </tr>`).join('');
+  } catch(e) { console.warn('Buchungen Admin Fehler:', e); }
+}
+
+async function loadAdminAbos() {
+  try {
+    const res  = await fetch(
+      `${SUPABASE_URL}/rest/v1/subscriptions?select=*&status=eq.active&order=created_at.desc`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    const data = res.ok ? await res.json() : [];
+    const wdNames = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+    const tbody = document.getElementById('abosTbody');
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Keine aktiven Abos</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(a => `
+      <tr>
+        <td style="color:#e0e0e0;">${a.full_name || '—'}</td>
+        <td>Court #${a.court}</td>
+        <td>${wdNames[a.weekday] || '—'}</td>
+        <td>${String(a.hour_start).padStart(2,'0')}:00 – ${String(a.hour_start+a.duration).padStart(2,'0')}:00</td>
+        <td style="color:var(--gold);">${a.price_per_week_cents ? (a.price_per_week_cents/100).toFixed(2)+' €' : '—'}</td>
+        <td>${a.ends_on ? formatDateDE(a.ends_on) : '—'}</td>
+      </tr>`).join('');
+  } catch(e) { console.warn('Abos Admin Fehler:', e); }
+}
+
+// ============================================================
+//  ADMIN – Nutzerverwaltung
+// ============================================================
+async function loadAdminUsers() {
+  try {
+    const res  = await fetch(
+      `${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc&limit=500`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    const data = res.ok ? await res.json() : [];
+    const tbody = document.getElementById('usersTbody');
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Keine Nutzer gefunden</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(u => `
+      <tr>
+        <td style="color:#e0e0e0;">${u.full_name || '—'}</td>
+        <td style="color:#888;">${u.email || '—'}</td>
+        <td><span class="admin-badge ${u.customer_type || 'account'}">${u.customer_type || 'account'}</span></td>
+        <td style="color:#888;">${u.member_number || '—'}</td>
+        <td>${u.birth_year || '—'}</td>
+        <td style="color:#555;">${u.created_at ? formatDateDE(u.created_at.slice(0,10)) : '—'}</td>
+      </tr>`).join('');
+  } catch(e) { console.warn('Users Admin Fehler:', e); }
+}
+
+// ============================================================
+//  ADMIN – Hilfsfunktionen
+// ============================================================
+function showAdminMsg(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+function formatDateDE(dateStr) {
+  if (!dateStr) return '—';
+  const [y,m,d] = dateStr.split('-');
+  return `${d}.${m}.${y}`;
 }
 
 init();
