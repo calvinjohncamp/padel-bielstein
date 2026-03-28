@@ -380,7 +380,10 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
       </div>
       <div class="form-group">
         <label class="form-label">Passwort</label>
-        <input class="form-input" type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password">
+        <div style="position:relative;">
+          <input class="form-input" type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password" style="padding-right:42px;">
+          <button type="button" onclick="togglePw('loginPw',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#666;cursor:pointer;font-size:1rem;padding:0;line-height:1;">👁</button>
+        </div>
       </div>
       <button class="modal-btn" id="loginBtn" onclick="doLogin()">Anmelden →</button>
       <div class="modal-divider"><span>oder</span></div>
@@ -399,7 +402,10 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
       </div>
       <div class="form-group">
         <label class="form-label">Passwort</label>
-        <input class="form-input" type="password" id="regPw" placeholder="Min. 8 Zeichen" autocomplete="new-password">
+        <div style="position:relative;">
+          <input class="form-input" type="password" id="regPw" placeholder="Min. 8 Zeichen" autocomplete="new-password" style="padding-right:42px;">
+          <button type="button" onclick="togglePw('regPw',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#666;cursor:pointer;font-size:1rem;padding:0;line-height:1;">👁</button>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Geburtsjahr</label>
@@ -1138,6 +1144,13 @@ const DAYS    = ["So","Mo","Di","Mi","Do","Fr","Sa"];
 let selDate = null, selDur = 1, selSlot = null, member = null;
 let aboWd = null, aboDur = 1, aboSlot = null, curMode = 'book';
 let doorLog = [];
+
+function togglePw(fieldId, btn) {
+  const input = document.getElementById(fieldId);
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.style.color = show ? 'var(--gold)' : '#666';
+}
 
 function fmt(n) { return n.toLocaleString('de-DE') + ' €'; }
 function todayStr() {
