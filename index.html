@@ -908,7 +908,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
       <a href="https://tfbielstein.de" target="_blank">Tennisfreunde Bielstein e.V. →</a>
     </div>
     <div class="site-footer-center">
-      <button class="admin-footer-link" id="adminFooterBtn" onclick="setMode('admin')">⚙ Admin</button>
+      <button class="admin-footer-link" id="adminFooterBtn" onclick="curMode==='admin' ? setMode('book') : setMode('admin')">⚙ Admin</button>
     </div>
     <div class="site-footer-right">
       Padel Bielstein · Jahnstraße 15<br>51674 Wiehl-Bielstein
@@ -1122,9 +1122,14 @@ function setMode(m) {
   document.getElementById('tabPlay').classList.toggle('active',  m==='play');
   const adminFooter = document.getElementById('adminFooterBtn');
   if (adminFooter) adminFooter.style.fontWeight = m==='admin' ? '900' : '700';
-  if (m==='abo')   { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
-  if (m==='play')  { renderPlaySection(); }
-  if (m==='admin') { initAdmin(); }
+  if (m==='abo')  { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
+  if (m==='play') { renderPlaySection(); }
+  if (m==='admin') {
+    document.getElementById('mainTabs').style.display = 'none';
+    initAdmin();
+  } else {
+    document.getElementById('mainTabs').style.display = 'grid';
+  }
 }
 
 // ============================================================
