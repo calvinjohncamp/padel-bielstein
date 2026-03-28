@@ -1222,6 +1222,7 @@ function setMode(m) {
     document.getElementById('heroHeader').title = '← Zurück zur Buchungsübersicht';
     document.getElementById('adminFooterBtn').textContent = '← Home';
     initAdmin();
+    window.scrollTo(0, 0);
   } else {
     document.getElementById('mainTabs').style.display = 'grid';
     document.getElementById('heroHeader').style.cursor = 'default';
