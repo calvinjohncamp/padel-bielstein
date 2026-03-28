@@ -831,13 +831,8 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
           <!-- Nur bei Wiederkehrend -->
           <div id="intRecurringOpts" style="display:none;">
             <div class="admin-row">
-              <span class="admin-label">Wiederholt sich</span>
-              <select class="admin-input" id="intRecurFreq" style="max-width:180px;">
-                <option value="weekly">Wöchentlich</option>
-                <option value="biweekly">Zweiwöchentlich</option>
-              </select>
-              <span class="admin-label" style="min-width:60px;">Bis</span>
-              <input class="admin-input" type="date" id="intRecurUntil" style="max-width:160px;">
+              <span class="admin-label">Wöchentlich bis</span>
+              <input class="admin-input" type="date" id="intRecurUntil" style="max-width:180px;">
             </div>
           </div>
           <div class="admin-row">
@@ -853,7 +848,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
         <div style="overflow-x:auto;">
           <table class="admin-table">
             <thead><tr>
-              <th>Datum</th><th>Zeit</th><th>Court</th><th>Grund</th><th>€</th><th>Art</th><th>Aktion</th>
+              <th>Wochentag</th><th>Zeit</th><th>Court</th><th>Grund</th><th>€</th><th>Wöchentlich bis</th><th>Aktion</th>
             </tr></thead>
             <tbody id="internalTbody">
               <tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
@@ -2666,18 +2661,16 @@ async function saveInternalBooking() {
   const duration = to - from;
   const courts   = court === '0' ? [1, 2] : [parseInt(court)];
   const recurUntil = intType === 'recurring' ? document.getElementById('intRecurUntil').value : null;
-  const recurFreq  = intType === 'recurring' ? document.getElementById('intRecurFreq').value : null;
 
-  // Alle zu buchenden Daten ermitteln
+  // Alle zu buchenden Daten ermitteln (immer wöchentlich)
   const dates = [date];
   if (intType === 'recurring' && recurUntil) {
-    const step = recurFreq === 'biweekly' ? 14 : 7;
     let cur = new Date(date + 'T12:00:00');
     const end = new Date(recurUntil + 'T12:00:00');
-    cur.setDate(cur.getDate() + step);
+    cur.setDate(cur.getDate() + 7);
     while (cur <= end) {
       dates.push(cur.toISOString().slice(0,10));
-      cur.setDate(cur.getDate() + step);
+      cur.setDate(cur.getDate() + 7);
     }
   }
 
@@ -2714,32 +2707,53 @@ async function saveInternalBooking() {
     document.getElementById('intTo').value     = '';
     document.getElementById('intReason').value = '';
     adminTabLoaded.internal = false;
-    loadInternalBookings();
+    await loadInternalBookings();
     // Slot-Anzeige aktualisieren
     if (selDate) { await loadBookings(selDate); renderSlots(); }
   } catch(e) { showAdminMsg('intErr', 'Fehler: ' + e.message); }
 }
 
 async function loadInternalBookings() {
+  const today = todayStr();
+  const WDNAMES = ['So','Mo','Di','Mi','Do','Fr','Sa'];
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/bookings?select=*&customer_type=eq.internal&status=eq.blocked&order=date.asc,hour_start.asc&limit=200`,
+      `${SUPABASE_URL}/rest/v1/bookings?select=*&customer_type=eq.internal&status=eq.blocked&date=gte.${today}&order=date.asc,hour_start.asc`,
       { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
     );
     const data = res.ok ? await res.json() : [];
     const tbody = document.getElementById('internalTbody');
     if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Keine internen Blockierungen</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="color:#555;text-align:center;padding:24px;">Keine internen Blockierungen</td></tr>';
       return;
     }
-    tbody.innerHTML = data.map(b => `
+
+    // Gruppieren: wiederkehrende nach recur_group, Einzeltermine einzeln
+    const seen = new Set();
+    const rows = [];
+    for (const b of data) {
+      if (b.recur_group) {
+        if (seen.has(b.recur_group)) continue;
+        seen.add(b.recur_group);
+        // Letztes Datum der Gruppe finden
+        const group = data.filter(x => x.recur_group === b.recur_group);
+        const lastDate = group[group.length - 1].date;
+        const wd = new Date(b.date + 'T12:00:00').getDay();
+        rows.push({ ...b, isRecurring: true, lastDate, wd });
+      } else {
+        const wd = new Date(b.date + 'T12:00:00').getDay();
+        rows.push({ ...b, isRecurring: false, wd });
+      }
+    }
+
+    tbody.innerHTML = rows.map(b => `
       <tr>
-        <td>${formatDateDE(b.date)}</td>
+        <td>${b.isRecurring ? WDNAMES[b.wd] : formatDateDE(b.date)}</td>
         <td>${String(b.hour_start).padStart(2,'0')}:00 – ${String(b.hour_start+b.duration).padStart(2,'0')}:00</td>
         <td>Court #${b.court}</td>
         <td style="color:#e0e0e0;">${b.full_name || '—'}</td>
-        <td style="color:${b.price_cents>0?'var(--gold)':'#555'};">${b.price_cents>0 ? (b.price_cents/100).toFixed(2)+' €' : '0 €'}</td>
-        <td><span class="admin-badge account">${b.recurring ? 'Wiederkehrend' : 'Einzeltermin'}</span></td>
+        <td style="color:${b.price_cents>0?'var(--gold)':'#555'};">${b.price_cents>0?(b.price_cents/100).toFixed(2)+' €':'0 €'}</td>
+        <td style="color:#888;">${b.isRecurring ? formatDateDE(b.lastDate) : '<span style="color:#555;">Einzeltermin</span>'}</td>
         <td><button class="admin-save-btn danger" style="height:26px;font-size:0.65rem;padding:0 8px;" onclick="deleteInternalBooking(${b.id}, '${b.recur_group||''}')">Löschen</button></td>
       </tr>`).join('');
   } catch(e) { console.warn('Interne Buchungen Fehler:', e); }
