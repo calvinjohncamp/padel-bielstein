@@ -432,7 +432,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 <div class="loading-bar" id="loadingBar"><div class="loading-bar-inner"></div></div>
 
-<div class="hero" aria-label="Padel Bielstein">
+<div class="hero" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');" style="cursor:default;">
   <div class="hero-frame">
     <img class="hero-img" src="padel_bielstein_header_ULTIMATE_BLUE_ohne_Ball.jpg" alt="Padel Bielstein">
   </div>
@@ -866,8 +866,8 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
     <!-- ── BUCHUNGSÜBERSICHT ── -->
     <div id="adminBookings" style="display:none;">
       <div class="admin-stat-grid">
-        <div class="admin-stat"><div class="admin-stat-val" id="statBookings">—</div><div class="admin-stat-lbl">Buchungen gesamt</div></div>
-        <div class="admin-stat"><div class="admin-stat-val" id="statRevenue">—</div><div class="admin-stat-lbl">Umsatz (€)</div></div>
+        <div class="admin-stat"><div class="admin-stat-val" id="statBookings">—</div><div class="admin-stat-lbl">Offene Buchungen</div></div>
+        <div class="admin-stat"><div class="admin-stat-val" id="statRevenue">—</div><div class="admin-stat-lbl">Erwarteter Umsatz (€)</div></div>
         <div class="admin-stat"><div class="admin-stat-val" id="statAbos">—</div><div class="admin-stat-lbl">Aktive Abos</div></div>
       </div>
       <div class="admin-section">
@@ -968,7 +968,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
       <button class="admin-footer-link" id="adminFooterBtn" onclick="curMode==='admin' ? setMode('book') : setMode('admin')">⚙ Admin</button>
     </div>
     <div class="site-footer-right">
-      Padel Bielstein · Jahnstraße 15<br>51674 Wiehl-Bielstein
+      Padel Bielstein<br>Jahnstraße 15 · 51674 Wiehl-Bielstein
     </div>
   </footer>
 </main>
@@ -1183,9 +1183,15 @@ function setMode(m) {
   if (m==='play') { renderPlaySection(); }
   if (m==='admin') {
     document.getElementById('mainTabs').style.display = 'none';
+    document.getElementById('heroHeader').style.cursor = 'pointer';
+    document.getElementById('heroHeader').title = '← Zurück zur Buchungsübersicht';
+    document.getElementById('adminFooterBtn').textContent = '← Home';
     initAdmin();
   } else {
     document.getElementById('mainTabs').style.display = 'grid';
+    document.getElementById('heroHeader').style.cursor = 'default';
+    document.getElementById('heroHeader').title = '';
+    document.getElementById('adminFooterBtn').textContent = '⚙ Admin';
   }
 }
 
@@ -2370,9 +2376,10 @@ function renderExceptionList() {
 //  ADMIN – Buchungsübersicht
 // ============================================================
 async function loadAdminStats() {
+  const today = todayStr();
   try {
     const [bRes, aRes] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/bookings?select=price_cents&status=eq.paid`,
+      fetch(`${SUPABASE_URL}/rest/v1/bookings?select=price_cents&status=eq.paid&date=gte.${today}`,
         { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }),
       fetch(`${SUPABASE_URL}/rest/v1/subscriptions?select=price_total_cents&status=eq.active`,
         { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }),
