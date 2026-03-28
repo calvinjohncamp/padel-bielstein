@@ -382,7 +382,9 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
         <label class="form-label">Passwort</label>
         <div style="position:relative;">
           <input class="form-input" type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password" style="padding-right:42px;">
-          <button type="button" onclick="togglePw('loginPw',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#666;cursor:pointer;font-size:1rem;padding:0;line-height:1;">👁</button>
+          <button type="button" onclick="togglePw('loginPw',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#666;cursor:pointer;padding:0;line-height:1;" title="Passwort anzeigen">
+            <svg id="eyeLogin" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
         </div>
       </div>
       <button class="modal-btn" id="loginBtn" onclick="doLogin()">Anmelden →</button>
@@ -404,7 +406,9 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
         <label class="form-label">Passwort</label>
         <div style="position:relative;">
           <input class="form-input" type="password" id="regPw" placeholder="Min. 8 Zeichen" autocomplete="new-password" style="padding-right:42px;">
-          <button type="button" onclick="togglePw('regPw',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#666;cursor:pointer;font-size:1rem;padding:0;line-height:1;">👁</button>
+          <button type="button" onclick="togglePw('regPw',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#666;cursor:pointer;padding:0;line-height:1;" title="Passwort anzeigen">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
         </div>
       </div>
       <div class="form-group">
@@ -1150,6 +1154,7 @@ function togglePw(fieldId, btn) {
   const show = input.type === 'password';
   input.type = show ? 'text' : 'password';
   btn.style.color = show ? 'var(--gold)' : '#666';
+  btn.title = show ? 'Passwort verbergen' : 'Passwort anzeigen';
 }
 
 function fmt(n) { return n.toLocaleString('de-DE') + ' €'; }
