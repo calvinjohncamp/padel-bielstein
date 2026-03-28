@@ -1359,7 +1359,7 @@ async function doReset() {
 // ============================================================
 //  ADMIN-EMAILS (hardcoded)
 // ============================================================
-const ADMIN_EMAILS = ['joern.kaemper@gmail.com', 'calvinjohncamp@gmail.com'];
+const ADMIN_EMAILS = ['joern.kaemper@gmail.com', 'calvinjohncamp@gmail.com', 'calvinjohncamp@aol.com'];
 
 function isAdmin() {
   return currentUser && ADMIN_EMAILS.includes((currentProfile?.email || currentUser.email || '').toLowerCase());
