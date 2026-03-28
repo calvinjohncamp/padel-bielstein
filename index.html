@@ -2718,10 +2718,11 @@ async function loadInternalBookings() {
   const WDNAMES = ['So','Mo','Di','Mi','Do','Fr','Sa'];
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/bookings?select=*&customer_type=eq.internal&status=eq.blocked&date=gte.${today}&order=date.asc,hour_start.asc`,
+      `${SUPABASE_URL}/rest/v1/bookings?select=id,date,hour_start,duration,court,full_name,price_cents,recur_group,recurring&customer_type=eq.internal&status=eq.blocked&date=gte.${today}&order=date.asc,hour_start.asc&limit=500`,
       { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
     );
     const data = res.ok ? await res.json() : [];
+    console.log('Interne Buchungen geladen:', data.length);
     const tbody = document.getElementById('internalTbody');
     if (!data.length) {
       tbody.innerHTML = '<tr><td colspan="7" style="color:#555;text-align:center;padding:24px;">Keine internen Blockierungen</td></tr>';
@@ -2735,7 +2736,6 @@ async function loadInternalBookings() {
       if (b.recur_group) {
         if (seen.has(b.recur_group)) continue;
         seen.add(b.recur_group);
-        // Letztes Datum der Gruppe finden
         const group = data.filter(x => x.recur_group === b.recur_group);
         const lastDate = group[group.length - 1].date;
         const wd = new Date(b.date + 'T12:00:00').getDay();
@@ -2754,7 +2754,7 @@ async function loadInternalBookings() {
         <td style="color:#e0e0e0;">${b.full_name || '—'}</td>
         <td style="color:${b.price_cents>0?'var(--gold)':'#555'};">${b.price_cents>0?(b.price_cents/100).toFixed(2)+' €':'0 €'}</td>
         <td style="color:#888;">${b.isRecurring ? formatDateDE(b.lastDate) : '<span style="color:#555;">Einzeltermin</span>'}</td>
-        <td><button class="admin-save-btn danger" style="height:26px;font-size:0.65rem;padding:0 8px;" onclick="deleteInternalBooking(${b.id}, '${b.recur_group||''}')">Löschen</button></td>
+        <td><button class="admin-save-btn danger" style="height:26px;font-size:0.65rem;padding:0 8px;" onclick="deleteInternalBooking(${b.id}, '${(b.recur_group||'').replace(/'/g,'')}')" >Löschen</button></td>
       </tr>`).join('');
   } catch(e) { console.warn('Interne Buchungen Fehler:', e); }
 }
