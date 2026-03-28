@@ -624,6 +624,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
     <div class="admin-tabs">
       <div class="admin-tab active" id="atab-freibad"   onclick="setAdminTab('freibad')">🏊 Freibad & Anlage</div>
+      <div class="admin-tab"        id="atab-prices"    onclick="setAdminTab('prices')">💰 Preise</div>
       <div class="admin-tab"        id="atab-internal"  onclick="setAdminTab('internal')">📋 Interne Buchungen</div>
       <div class="admin-tab"        id="atab-bookings"  onclick="setAdminTab('bookings')">📅 Buchungsübersicht</div>
       <div class="admin-tab"        id="atab-users"     onclick="setAdminTab('users')">👤 Nutzer</div>
@@ -726,6 +727,55 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
     </div><!-- /adminFreibad -->
 
+    <!-- ── PREISE ── -->
+    <div id="adminPrices" style="display:none;">
+
+      <!-- Mitgliederrabatt -->
+      <div class="admin-section">
+        <div class="admin-section-title">Mitgliederrabatt</div>
+        <div class="admin-card">
+          <div class="admin-row">
+            <span class="admin-label">Rabatt TFB-Mitglieder</span>
+            <input class="admin-input" type="number" id="priceDiscount" min="0" max="50" step="1" value="10" style="max-width:80px;"> %
+            <span style="font-size:0.75rem;color:#666;margin-left:8px;">Voreinstellung: 10 %</span>
+          </div>
+          <div class="admin-row">
+            <button class="admin-save-btn" onclick="saveDiscount()">Rabatt speichern</button>
+          </div>
+          <div class="admin-ok"  id="discountOk"></div>
+          <div class="admin-err" id="discountErr"></div>
+        </div>
+      </div>
+
+      <!-- Preismatrix -->
+      <div class="admin-section">
+        <div class="admin-section-title">Preismatrix</div>
+        <div class="admin-card">
+          <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
+            Preise in € pro Stunde · Änderungen gelten sofort für alle neuen Buchungen.
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <!-- Wochentag -->
+            <div>
+              <div style="font-size:0.72rem;color:#999;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">Mo – Fr</div>
+              <div id="priceGridWeekday"></div>
+            </div>
+            <!-- Wochenende -->
+            <div>
+              <div style="font-size:0.72rem;color:#999;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">Sa + So</div>
+              <div id="priceGridWeekend"></div>
+            </div>
+          </div>
+          <div class="admin-row" style="margin-top:16px;">
+            <button class="admin-save-btn gold" onclick="savePrices()">Alle Preise speichern</button>
+          </div>
+          <div class="admin-ok"  id="pricesOk"></div>
+          <div class="admin-err" id="pricesErr"></div>
+        </div>
+      </div>
+
+    </div><!-- /adminPrices -->
+
     <!-- ── INTERNE BUCHUNGEN ── -->
     <div id="adminInternal" style="display:none;">
       <div class="admin-section">
@@ -746,6 +796,11 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
             <input class="admin-input" type="number" id="intFrom" min="8" max="21" placeholder="Stunde" style="max-width:80px;"> Uhr
             <span class="admin-label" style="min-width:30px;">Bis</span>
             <input class="admin-input" type="number" id="intTo"   min="9" max="22" placeholder="Stunde" style="max-width:80px;"> Uhr
+          </div>
+          <div class="admin-row">
+            <span class="admin-label">Preis</span>
+            <input class="admin-input" type="number" id="intPrice" min="0" step="0.50" value="0" style="max-width:90px;"> €/Std.
+            <span style="font-size:0.75rem;color:#666;margin-left:8px;">0 € = Vereinskosten (kein Umsatz) · Betrag = wird als Umsatz gezählt</span>
           </div>
           <div class="admin-row">
             <span class="admin-label">Grund</span>
@@ -783,7 +838,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
         <div style="overflow-x:auto;">
           <table class="admin-table">
             <thead><tr>
-              <th>Datum</th><th>Zeit</th><th>Court</th><th>Grund</th><th>Art</th><th>Aktion</th>
+              <th>Datum</th><th>Zeit</th><th>Court</th><th>Grund</th><th>€</th><th>Art</th><th>Aktion</th>
             </tr></thead>
             <tbody id="internalTbody">
               <tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
@@ -917,6 +972,20 @@ async function loadPrices() {
     console.warn('Preise: Fallback aktiv', e.message);
     PW = {...PW_FB}; PE = {...PE_FB};
   }
+
+  // Mitgliederrabatt aus app_config laden
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/app_config?key=eq.member_discount&select=value&limit=1`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data.length > 0 && member) {
+        member.discount = parseFloat(data[0].value);
+      }
+    }
+  } catch(e) { /* Fallback: 10% bleibt */ }
 }
 
 // ============================================================
@@ -1984,17 +2053,19 @@ function showToast(msg) {
 // ============================================================
 //  ADMIN – Initialisierung & Tab-Steuerung
 // ============================================================
-let adminTabLoaded = { freibad: false, internal: false, bookings: false, users: false };
+let adminTabLoaded = { freibad: false, prices: false, internal: false, bookings: false, users: false };
 
 function setAdminTab(tab) {
   document.getElementById('adminFreibad').style.display   = tab==='freibad'  ? 'block' : 'none';
+  document.getElementById('adminPrices').style.display    = tab==='prices'   ? 'block' : 'none';
   document.getElementById('adminInternal').style.display  = tab==='internal' ? 'block' : 'none';
   document.getElementById('adminBookings').style.display  = tab==='bookings' ? 'block' : 'none';
   document.getElementById('adminUsers').style.display     = tab==='users'    ? 'block' : 'none';
-  ['freibad','internal','bookings','users'].forEach(t =>
+  ['freibad','prices','internal','bookings','users'].forEach(t =>
     document.getElementById('atab-'+t).classList.toggle('active', t===tab)
   );
   if (tab==='freibad'  && !adminTabLoaded.freibad)  { loadAdminFreibad();  adminTabLoaded.freibad=true; }
+  if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
   if (tab==='internal' && !adminTabLoaded.internal) { loadInternalBookings(); adminTabLoaded.internal=true; }
   if (tab==='bookings' && !adminTabLoaded.bookings) { loadAdminBookings(); loadAdminAbos(); loadAdminStats(); adminTabLoaded.bookings=true; }
   if (tab==='users'    && !adminTabLoaded.users)    { loadAdminUsers();   adminTabLoaded.users=true; }
@@ -2002,6 +2073,7 @@ function setAdminTab(tab) {
 
 // Korrekte Anzeige beim ersten Öffnen
 document.getElementById('adminFreibad').style.display   = 'block';
+document.getElementById('adminPrices').style.display    = 'none';
 document.getElementById('adminInternal').style.display  = 'none';
 document.getElementById('adminBookings').style.display  = 'none';
 document.getElementById('adminUsers').style.display     = 'none';
@@ -2296,6 +2368,124 @@ async function loadAdminUsers() {
 }
 
 // ============================================================
+//  ADMIN – Preise
+// ============================================================
+const HOURS = [8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+
+async function loadAdminPrices() {
+  // Mitgliederrabatt aus users-Tabelle (discount_pct vom Typ 'member')
+  // Wir nutzen einen eigenen config-Eintrag — Fallback auf 10%
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/prices?select=hour,day_type,price_cents&order=day_type,hour`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    const data = res.ok ? await res.json() : [];
+
+    // Preise in Maps aufbauen
+    const dbPW = {}, dbPE = {};
+    for (const r of data) {
+      if (r.day_type === 'weekday') dbPW[r.hour] = r.price_cents / 100;
+      else                          dbPE[r.hour] = r.price_cents / 100;
+    }
+
+    renderPriceGrid('priceGridWeekday', 'weekday', dbPW);
+    renderPriceGrid('priceGridWeekend', 'weekend',  dbPE);
+  } catch(e) {
+    renderPriceGrid('priceGridWeekday', 'weekday', {});
+    renderPriceGrid('priceGridWeekend', 'weekend',  {});
+  }
+
+  // Mitgliederrabatt laden
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/app_config?key=eq.member_discount&select=value&limit=1`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    const data = res.ok ? await res.json() : [];
+    if (data.length > 0) {
+      document.getElementById('priceDiscount').value = parseFloat(data[0].value) * 100;
+    }
+  } catch(e) { /* Fallback 10% bleibt */ }
+}
+
+function renderPriceGrid(containerId, dayType, prices) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = HOURS.map(h => {
+    const val = prices[h] ?? PW_FB[h] ?? 0;
+    return `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-size:0.78rem;color:#888;min-width:52px;">${String(h).padStart(2,'0')}:00</span>
+        <input class="admin-input" type="number" min="0" step="0.50"
+          id="price_${dayType}_${h}" value="${val}"
+          style="max-width:80px;padding:5px 8px;font-size:0.88rem;">
+        <span style="font-size:0.75rem;color:#555;">€ / Std.</span>
+      </div>`;
+  }).join('');
+}
+
+async function savePrices() {
+  const rows = [];
+  const today = new Date().toISOString().split('T')[0];
+
+  for (const dayType of ['weekday','weekend']) {
+    for (const h of HOURS) {
+      const val = parseFloat(document.getElementById(`price_${dayType}_${h}`)?.value);
+      if (isNaN(val) || val < 0) { showAdminMsg('pricesErr', `Ungültiger Preis für ${h}:00 Uhr`); return; }
+      rows.push({ hour: h, day_type: dayType, price_cents: Math.round(val * 100), valid_from: today });
+    }
+  }
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/prices`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify(rows),
+    });
+    if (!res.ok) throw new Error(await res.text());
+
+    // Lokale Preise sofort aktualisieren
+    for (const r of rows) {
+      if (r.day_type === 'weekday') PW[r.hour] = r.price_cents / 100;
+      else                          PE[r.hour] = r.price_cents / 100;
+    }
+    updDurPrices();
+    renderSlots();
+    showAdminMsg('pricesOk', '✓ Preise gespeichert — sofort live');
+  } catch(e) {
+    showAdminMsg('pricesErr', 'Fehler: ' + e.message);
+  }
+}
+
+async function saveDiscount() {
+  const pct = parseFloat(document.getElementById('priceDiscount').value);
+  if (isNaN(pct) || pct < 0 || pct > 50) {
+    showAdminMsg('discountErr', 'Bitte Wert zwischen 0 und 50 eingeben.'); return;
+  }
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify({ key: 'member_discount', value: String(pct / 100) }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    // Lokalen member-Rabatt aktualisieren falls eingeloggt
+    if (member) { member.discount = pct / 100; updDurPrices(); renderSlots(); }
+    showAdminMsg('discountOk', `✓ Mitgliederrabatt auf ${pct} % gesetzt`);
+  } catch(e) {
+    showAdminMsg('discountErr', 'Fehler: ' + e.message);
+  }
+}
+
+// ============================================================
 //  ADMIN – Interne Buchungen / Blockierungen
 // ============================================================
 let intType = 'once';
@@ -2313,6 +2503,7 @@ async function saveInternalBooking() {
   const from    = parseInt(document.getElementById('intFrom').value);
   const to      = parseInt(document.getElementById('intTo').value);
   const reason  = document.getElementById('intReason').value.trim();
+  const pricePerH = parseFloat(document.getElementById('intPrice').value) || 0;
 
   if (!date || isNaN(from) || isNaN(to) || !reason) {
     showAdminMsg('intErr', 'Bitte alle Felder ausfüllen.'); return;
@@ -2343,7 +2534,8 @@ async function saveInternalBooking() {
       for (const c of courts) {
         rows.push({
           court: c, date: d, hour_start: from, duration,
-          status: 'blocked', price_cents: 0,
+          status: 'blocked',
+          price_cents: Math.round(pricePerH * duration * 100),
           full_name: reason, email: 'intern@padel-bielstein.de',
           customer_type: 'internal',
           recurring: intType === 'recurring',
@@ -2393,6 +2585,7 @@ async function loadInternalBookings() {
         <td>${String(b.hour_start).padStart(2,'0')}:00 – ${String(b.hour_start+b.duration).padStart(2,'0')}:00</td>
         <td>Court #${b.court}</td>
         <td style="color:#e0e0e0;">${b.full_name || '—'}</td>
+        <td style="color:${b.price_cents>0?'var(--gold)':'#555'};">${b.price_cents>0 ? (b.price_cents/100).toFixed(2)+' €' : '0 €'}</td>
         <td><span class="admin-badge account">${b.recurring ? 'Wiederkehrend' : 'Einzeltermin'}</span></td>
         <td><button class="admin-save-btn danger" style="height:26px;font-size:0.65rem;padding:0 8px;" onclick="deleteInternalBooking(${b.id}, '${b.recur_group||''}')">Löschen</button></td>
       </tr>`).join('');
