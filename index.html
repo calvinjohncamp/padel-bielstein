@@ -2481,6 +2481,8 @@ async function createUserByAdmin() {
     loadAdminUsers();
   } catch(e) { showAdminMsg('newUserErr', 'Fehler: ' + e.message); }
 }
+
+async function loadAdminUsers() {
   try {
     const res  = await fetch(
       `${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc&limit=500`,
