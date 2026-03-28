@@ -671,23 +671,23 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
       <div class="admin-section">
         <div class="admin-section-title">Abweichende Öffnungszeiten (einzelnes Datum)</div>
         <div class="admin-card">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:12px;">
             <div>
               <div style="font-size:0.72rem;color:#666;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;">🏊 Freibad</div>
               <div class="admin-row" style="flex-wrap:nowrap;gap:6px;">
                 <input class="admin-input" type="date" id="excDateFB" style="flex:2;">
-                <input class="admin-input" type="number" id="excOpenFB"  min="6"  max="14" placeholder="von" style="max-width:64px;">
-                <input class="admin-input" type="number" id="excCloseFB" min="14" max="22" placeholder="bis" style="max-width:64px;">
-                <button class="admin-save-btn gold" onclick="addException('freibad')" style="white-space:nowrap;">+ OK</button>
+                <input class="admin-input" type="number" id="excOpenFB"  min="6"  max="14" placeholder="von (Uhr)" style="max-width:90px;">
+                <input class="admin-input" type="number" id="excCloseFB" min="14" max="22" placeholder="bis (Uhr)" style="max-width:90px;">
+                <button class="admin-save-btn gold" onclick="addException('freibad')" style="white-space:nowrap;">+ Eintragen</button>
               </div>
             </div>
             <div>
               <div style="font-size:0.72rem;color:#666;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;">🎾 Padel-Anlage</div>
               <div class="admin-row" style="flex-wrap:nowrap;gap:6px;">
                 <input class="admin-input" type="date" id="excDatePD" style="flex:2;">
-                <input class="admin-input" type="number" id="excOpenPD"  min="6"  max="14" placeholder="von" style="max-width:64px;">
-                <input class="admin-input" type="number" id="excClosePD" min="14" max="22" placeholder="bis" style="max-width:64px;">
-                <button class="admin-save-btn gold" onclick="addException('padel')" style="white-space:nowrap;">+ OK</button>
+                <input class="admin-input" type="number" id="excOpenPD"  min="6"  max="14" placeholder="von (Uhr)" style="max-width:90px;">
+                <input class="admin-input" type="number" id="excClosePD" min="14" max="22" placeholder="bis (Uhr)" style="max-width:90px;">
+                <button class="admin-save-btn gold" onclick="addException('padel')" style="white-space:nowrap;">+ Eintragen</button>
               </div>
             </div>
           </div>
@@ -1674,14 +1674,14 @@ function getBookingStatus(b) {
   return 'now';
 }
 
-// Demo-Buchungen für Präsentation (werden nur gezeigt wenn keine echten vorhanden)
+// Demo-Status: 'soon' → 'now' (beim Türöffnen) → 'done' (nach Schließen)
+let demoPlayStatus = 'soon';
+
 function getDemoBookings() {
   const now = new Date();
   const h = now.getHours();
-  // Aktive Demo-Buchung: läuft jetzt, plus eine spätere
   return [
-    { court: 1, date: todayStr(), hour_start: h,     duration: 1, isDemo: true },
-    { court: 2, date: todayStr(), hour_start: h + 2, duration: 2, isDemo: true },
+    { court: 1, date: todayStr(), hour_start: h, duration: 1, isDemo: true },
   ];
 }
 
@@ -1725,13 +1725,17 @@ async function renderPlaySection() {
     : '';
 
   listEl.innerHTML = demoBanner + allBookings.map(b => {
-    const status = getBookingStatus(b);
+    const status = isDemo ? demoPlayStatus : getBookingStatus(b);
     const h1 = `${String(b.hour_start).padStart(2,'0')}:00`;
     const h2 = `${String(b.hour_start + b.duration).padStart(2,'0')}:00`;
     const aboTag  = b.isAbo  ? ' <span style="font-size:0.65rem;color:#888;font-weight:400;">(Abo)</span>'  : '';
     const demoTag = b.isDemo ? ' <span style="font-size:0.65rem;color:#555;font-weight:400;">(Demo)</span>' : '';
-    const badgeCls = status === 'now' ? 'play-badge-now' : status === 'soon' ? 'play-badge-soon' : 'play-badge-past';
-    const badgeTxt = status === 'now' ? '● Läuft jetzt' : status === 'soon' ? '⏱ Bald' : '✓ Beendet';
+    const badgeCls = status === 'now'  ? 'play-badge-now'  :
+                     status === 'done' ? 'play-badge-past' :
+                     status === 'soon' ? 'play-badge-soon' : 'play-badge-past';
+    const badgeTxt = status === 'now'  ? '● Läuft jetzt'     :
+                     status === 'done' ? '✓ Spielzeit beendet' :
+                     status === 'soon' ? '⏱ Bald'            : '✓ Beendet';
     return `
       <div class="play-booking-item">
         <div class="play-booking-info">
@@ -1787,6 +1791,16 @@ async function renderPlaySection() {
     doorBtns.style.display = 'block';
   }
 
+  // Hinweistext
+  let hintEl = document.getElementById('playHint');
+  if (!hintEl) {
+    hintEl = document.createElement('div');
+    hintEl.id = 'playHint';
+    hintEl.style.cssText = 'font-size:0.75rem;color:#555;line-height:1.6;text-align:center;margin-top:4px;margin-bottom:16px;padding:0 4px;';
+    doorBtns.parentNode.insertBefore(hintEl, doorBtns.nextSibling);
+  }
+  hintEl.textContent = 'Beide Türen des gebuchten Courts sind bis spätestens 5 Minuten nach Spielende von außen zu schließen.';
+
   renderDoorLog();
 }
 
@@ -1818,17 +1832,17 @@ async function openAccessDoor() {
   const doorId   = freibadOffen ? 'door_B' : 'door_A';
 
   showToast(`${doorName} wird geöffnet …`);
-
-  // ── Türöffnungs-Event in DB loggen ──────────────────────────
   await logDoorToSupabase(doorId, 'opened');
 
-  // ── PLATZHALTER: Hier kommt später der API-Call ans Schließsystem ──
-  // await fetch('https://api.tapkey.com/v1/locks/' + doorId + '/open', { method:'POST', headers:{...} });
-
-  setTimeout(() => {
+  setTimeout(async () => {
     logDoorEvent('🚪', `${doorName} geöffnet`);
     showToast(`✅ ${doorName} ist offen – bitte schließen nach Eintritt!`);
     btn.disabled = false;
+    // Demo-Status auf "Läuft jetzt" switchen
+    if (demoPlayStatus === 'soon') {
+      demoPlayStatus = 'now';
+      await renderPlaySection();
+    }
   }, 800);
 }
 
@@ -1840,17 +1854,19 @@ async function openCourtDoors() {
   const doorIds   = court === 1 ? ['door_3','door_4'] : ['door_1','door_2'];
 
   showToast(`${doorNames} werden geöffnet …`);
-
-  // ── Türöffnungs-Events in DB loggen ─────────────────────────
   await Promise.all(doorIds.map(id => logDoorToSupabase(id, 'opened')));
 
-  // ── PLATZHALTER: Hier kommt später der API-Call ans Schließsystem ──
-  // await Promise.all(doorIds.map(id => fetch('https://api.tapkey.com/v1/locks/' + id + '/open', { method:'POST', headers:{...} })));
-
-  setTimeout(() => {
+  setTimeout(async () => {
     logDoorEvent('🎾', `${doorNames} geöffnet`);
     showToast(`✅ ${doorNames} sind offen – viel Spaß beim Spielen!`);
     btn.disabled = false;
+    // Demo: wenn Zugang schon geöffnet wurde (status=now) → nach Court-Türen = Spielzeit beendet simulieren
+    if (demoPlayStatus === 'now') {
+      setTimeout(async () => {
+        demoPlayStatus = 'done';
+        await renderPlaySection();
+      }, 4000); // 4 Sek. Verzögerung für Demo-Zwecke
+    }
   }, 800);
 }
 
@@ -2541,7 +2557,7 @@ async function saveInternalBooking() {
           court: c, date: d, hour_start: from, duration,
           status: 'blocked',
           price_cents: Math.round(pricePerH * duration * 100),
-          full_name: reason, email: 'intern@padel-bielstein.de',
+          full_name: reason,
           customer_type: 'internal',
           recurring: intType === 'recurring',
           recur_group: intType === 'recurring' ? `${date}_${court}_${from}` : null,
