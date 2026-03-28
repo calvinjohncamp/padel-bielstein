@@ -717,6 +717,20 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
             <input class="admin-input" type="text" id="newClosureNote" placeholder="Grund (z.B. Reparatur)" style="flex:2;">
             <button class="admin-save-btn gold" onclick="addClosure()">+ Eintragen</button>
           </div>
+          <!-- Optionale Zeitfelder für Teilsperrung -->
+          <div style="margin-bottom:10px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:#888;cursor:pointer;margin-bottom:8px;">
+              <input type="checkbox" id="closureTimeCheck" onchange="document.getElementById('closureTimeFields').style.display=this.checked?'flex':'none'" style="accent-color:var(--gold);">
+              Nur für bestimmte Uhrzeit sperren (statt ganzer Tag)
+            </label>
+            <div id="closureTimeFields" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-size:0.78rem;color:#888;">Von</span>
+              <input class="admin-input" type="number" id="newClosureFrom" min="8" max="21" placeholder="Stunde" style="max-width:80px;">
+              <span style="font-size:0.78rem;color:#888;">Uhr &nbsp; Bis</span>
+              <input class="admin-input" type="number" id="newClosureTo"   min="9" max="22" placeholder="Stunde" style="max-width:80px;">
+              <span style="font-size:0.78rem;color:#888;">Uhr</span>
+            </div>
+          </div>
           <div class="admin-ok"  id="closureOk"></div>
           <div class="admin-err" id="closureErr"></div>
           <div class="closure-list" id="closureList">
@@ -888,6 +902,42 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
     <!-- ── NUTZERVERWALTUNG ── -->
     <div id="adminUsers" style="display:none;">
+
+      <!-- Neuen Nutzer anlegen -->
+      <div class="admin-section">
+        <div class="admin-section-title">+ Neuen Nutzer / Mitglied anlegen</div>
+        <div class="admin-card">
+          <div class="admin-row">
+            <span class="admin-label">Name</span>
+            <input class="admin-input" type="text" id="newUserName" placeholder="Vor- und Nachname">
+          </div>
+          <div class="admin-row">
+            <span class="admin-label">E-Mail</span>
+            <input class="admin-input" type="email" id="newUserEmail" placeholder="email@beispiel.de">
+          </div>
+          <div class="admin-row">
+            <span class="admin-label">Typ</span>
+            <select class="admin-input" id="newUserType" style="max-width:180px;" onchange="document.getElementById('newUserMemberRow').style.display=this.value==='member'?'flex':'none'">
+              <option value="account">Konto (kein Mitglied)</option>
+              <option value="member">TFB-Mitglied</option>
+            </select>
+          </div>
+          <div class="admin-row" id="newUserMemberRow" style="display:none;">
+            <span class="admin-label">Mitgliedsnr.</span>
+            <input class="admin-input" type="text" id="newUserMember" placeholder="z.B. TFB042" style="max-width:160px;">
+            <span class="admin-label" style="min-width:60px;">Jahrgang</span>
+            <input class="admin-input" type="number" id="newUserYear" placeholder="z.B. 1975" style="max-width:110px;">
+          </div>
+          <div class="admin-row">
+            <button class="admin-save-btn gold" onclick="createUserByAdmin()">+ Nutzer anlegen</button>
+            <span style="font-size:0.72rem;color:#666;margin-left:8px;">Nutzer erhält E-Mail zur Passwort-Vergabe</span>
+          </div>
+          <div class="admin-ok"  id="newUserOk"></div>
+          <div class="admin-err" id="newUserErr"></div>
+        </div>
+      </div>
+
+      <!-- Nutzerliste -->
       <div class="admin-section">
         <div class="admin-section-title">Registrierte Nutzer</div>
         <div style="overflow-x:auto;">
@@ -2162,22 +2212,36 @@ async function addClosure() {
   const date   = document.getElementById('newClosureDate').value;
   const target = document.getElementById('newClosureTarget').value;
   const note   = document.getElementById('newClosureNote').value.trim();
-  if (!date) { showAdminMsg('closureErr', 'Bitte Datum wählen.'); return; }
-  if (!note) { showAdminMsg('closureErr', 'Bitte Grund angeben.'); return; }
+  const useTime = document.getElementById('closureTimeCheck').checked;
+  const fromH  = useTime ? parseInt(document.getElementById('newClosureFrom').value) : null;
+  const toH    = useTime ? parseInt(document.getElementById('newClosureTo').value)   : null;
+
+  if (!date)  { showAdminMsg('closureErr', 'Bitte Datum wählen.'); return; }
+  if (!note)  { showAdminMsg('closureErr', 'Bitte Grund angeben.'); return; }
+  if (useTime && (isNaN(fromH) || isNaN(toH))) { showAdminMsg('closureErr', 'Bitte Von und Bis Uhrzeit angeben.'); return; }
+  if (useTime && toH <= fromH) { showAdminMsg('closureErr', 'Bis-Zeit muss nach Von-Zeit liegen.'); return; }
+
   try {
+    const payload = { date, target, note };
+    if (useTime) { payload.from_hour = fromH; payload.to_hour = toH; }
+
     const res = await fetch(`${SUPABASE_URL}/rest/v1/freibad_closures`, {
       method: 'POST',
       headers: {
         'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
         'Content-Type': 'application/json', 'Prefer': 'return=minimal',
       },
-      body: JSON.stringify({ date, target, note }),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error(await res.text());
-    freibadClosures.push({ date, target, note });
+    freibadClosures.push({ ...payload });
     freibadClosures.sort((a,b) => a.date.localeCompare(b.date));
     document.getElementById('newClosureDate').value = '';
     document.getElementById('newClosureNote').value = '';
+    document.getElementById('newClosureFrom').value = '';
+    document.getElementById('newClosureTo').value   = '';
+    document.getElementById('closureTimeCheck').checked = false;
+    document.getElementById('closureTimeFields').style.display = 'none';
     showAdminMsg('closureOk', '✓ Eingetragen');
     renderClosureList();
   } catch(e) { showAdminMsg('closureErr', 'Fehler: ' + e.message); }
@@ -2216,17 +2280,21 @@ function renderClosureList() {
     return;
   }
   const targetLabel = { freibad:'🏊 Nur Freibad', court1:'🎾 Court #1', court2:'🎾 Court #2', both:'🎾 Beide Courts' };
-  el.innerHTML = freibadClosures.map(c => `
+  el.innerHTML = freibadClosures.map(c => {
+    const timeStr = (c.from_hour != null && c.to_hour != null)
+      ? ` · ${String(c.from_hour).padStart(2,'0')}:00–${String(c.to_hour).padStart(2,'0')}:00 Uhr`
+      : ' · Ganzer Tag';
+    return `
     <div class="closure-item">
       <div style="flex:1;">
-        <div class="closure-item-date">${formatDateDE(c.date)} &nbsp;<span style="color:#888;font-size:0.72rem;">${targetLabel[c.target]||c.target||''}</span></div>
+        <div class="closure-item-date">${formatDateDE(c.date)}${timeStr} &nbsp;<span style="color:#888;font-size:0.72rem;">${targetLabel[c.target]||c.target||''}</span></div>
         <div class="closure-item-note">${c.note || ''}</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;">
         <button class="admin-save-btn" style="height:28px;font-size:0.65rem;padding:0 8px;" onclick="notifyClosureBookings('${c.date}','${(c.note||'').replace(/'/g,"\\'")}')">📧 Benachrichtigen</button>
         <button class="closure-remove" onclick="removeClosure('${c.date}')" title="Entfernen">✕</button>
       </div>
-    </div>`).join('');
+    </div>`}).join('');
 }
 
 // ============================================================
@@ -2364,7 +2432,55 @@ async function loadAdminAbos() {
 // ============================================================
 //  ADMIN – Nutzerverwaltung
 // ============================================================
-async function loadAdminUsers() {
+async function createUserByAdmin() {
+  const name       = document.getElementById('newUserName').value.trim();
+  const email      = document.getElementById('newUserEmail').value.trim();
+  const type       = document.getElementById('newUserType').value;
+  const memberNum  = document.getElementById('newUserMember').value.trim().toUpperCase() || null;
+  const birthYear  = parseInt(document.getElementById('newUserYear').value) || null;
+
+  if (!name)  { showAdminMsg('newUserErr', 'Bitte Name eingeben.'); return; }
+  if (!email) { showAdminMsg('newUserErr', 'Bitte E-Mail eingeben.'); return; }
+
+  try {
+    // Supabase Auth: Einladungs-E-Mail senden (Magic Link / Invite)
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/invite`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+    const authData = res.ok ? await res.json() : null;
+
+    // users-Tabelle direkt befüllen
+    await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify({
+        auth_id:       authData?.id || null,
+        email,
+        full_name:     name,
+        customer_type: type,
+        member_number: type === 'member' ? memberNum : null,
+        discount_pct:  type === 'member' ? 0.10 : 0,
+        birth_year:    birthYear,
+      }),
+    });
+
+    showAdminMsg('newUserOk', `✓ ${name} angelegt – Einladungs-E-Mail an ${email} gesendet`);
+    document.getElementById('newUserName').value   = '';
+    document.getElementById('newUserEmail').value  = '';
+    document.getElementById('newUserMember').value = '';
+    document.getElementById('newUserYear').value   = '';
+    adminTabLoaded.users = false;
+    loadAdminUsers();
+  } catch(e) { showAdminMsg('newUserErr', 'Fehler: ' + e.message); }
+}
   try {
     const res  = await fetch(
       `${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc&limit=500`,
