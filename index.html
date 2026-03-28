@@ -1105,6 +1105,27 @@ async function loadAboBookings(weekday) {
   } catch(e) {
     console.warn('Abos: Netzwerkfehler', e);
   }
+
+  // Interne Blockierungen für diesen Wochentag laden
+  // Wir suchen recurring=true Einträge und prüfen den Wochentag
+  try {
+    const today = todayStr();
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/bookings?select=court,hour_start,duration,date&customer_type=eq.internal&status=eq.blocked&recurring=eq.true&date=gte.${today}&limit=500`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    const blocked = res.ok ? await res.json() : [];
+    for (const b of blocked) {
+      const wd = new Date(b.date + 'T12:00:00').getDay();
+      if (wd !== weekday) continue;
+      for (let i = 0; i < b.duration; i++) {
+        aboBooked[b.court].add(`${weekday}-${b.hour_start + i}`);
+      }
+      break; // Ein Eintrag pro recur_group reicht zum Markieren
+    }
+  } catch(e) {
+    console.warn('Interne Blockierungen für Abo-Ansicht fehlgeschlagen', e);
+  }
 }
 
 // ============================================================
