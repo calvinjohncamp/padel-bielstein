@@ -623,10 +623,11 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   <div id="modeAdmin" style="display:none;">
 
     <div class="admin-tabs">
-      <div class="admin-tab active" id="atab-freibad"   onclick="setAdminTab('freibad')">🏊 Freibad & Anlage</div>
+      <div class="admin-tab active" id="atab-freibad"   onclick="setAdminTab('freibad')">🏊 Freibad & Padel-Anlage</div>
       <div class="admin-tab"        id="atab-prices"    onclick="setAdminTab('prices')">💰 Preise</div>
       <div class="admin-tab"        id="atab-internal"  onclick="setAdminTab('internal')">📋 Interne Buchungen</div>
       <div class="admin-tab"        id="atab-bookings"  onclick="setAdminTab('bookings')">📅 Buchungsübersicht</div>
+      <div class="admin-tab"        id="atab-mis"       onclick="setAdminTab('mis')">📊 MIS</div>
       <div class="admin-tab"        id="atab-users"     onclick="setAdminTab('users')">👤 Nutzer</div>
     </div>
 
@@ -865,24 +866,17 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
     <!-- ── BUCHUNGSÜBERSICHT ── -->
     <div id="adminBookings" style="display:none;">
       <div class="admin-stat-grid">
-        <div class="admin-stat"><div class="admin-stat-val" id="statBookings">—</div><div class="admin-stat-lbl">Buchungen</div></div>
+        <div class="admin-stat"><div class="admin-stat-val" id="statBookings">—</div><div class="admin-stat-lbl">Buchungen gesamt</div></div>
         <div class="admin-stat"><div class="admin-stat-val" id="statRevenue">—</div><div class="admin-stat-lbl">Umsatz (€)</div></div>
         <div class="admin-stat"><div class="admin-stat-val" id="statAbos">—</div><div class="admin-stat-lbl">Aktive Abos</div></div>
       </div>
       <div class="admin-section">
-        <div class="admin-section-title">
-          Buchungen
-          <span style="float:right;display:flex;gap:6px;align-items:center;">
-            <input class="admin-input" type="date" id="filterDateFrom" style="max-width:140px;display:inline-block;">
-            <input class="admin-input" type="date" id="filterDateTo"   style="max-width:140px;display:inline-block;">
-            <button class="admin-save-btn" onclick="loadAdminBookings()">Filtern</button>
-          </span>
-        </div>
+        <div class="admin-section-title">Kommende Buchungen (ab heute, nach Datum)</div>
         <div style="overflow-x:auto;">
           <table class="admin-table">
-            <thead><tr><th>Datum</th><th>Zeit</th><th>Court</th><th>Name</th><th>€</th><th>Status</th></tr></thead>
+            <thead><tr><th>Datum</th><th>Zeit</th><th>Court</th><th>Name</th><th>€</th></tr></thead>
             <tbody id="bookingsTbody">
-              <tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
+              <tr><td colspan="5" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
             </tbody>
           </table>
         </div>
@@ -900,8 +894,33 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
       </div>
     </div><!-- /adminBookings -->
 
+    <!-- ── MIS ── -->
+    <div id="adminMis" style="display:none;">
+      <div class="admin-card" style="text-align:center;padding:40px 20px;">
+        <div style="font-size:2rem;margin-bottom:12px;">📊</div>
+        <div style="font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Management Information System</div>
+        <div style="font-size:0.82rem;color:#666;line-height:1.7;max-width:480px;margin:0 auto;">
+          Wird in einer der nächsten Sessions implementiert.<br>
+          Geplante Inhalte: rollierender 12-Monats-Umsatz, Auslastung nach Court/Stunde/Wochentag, Unique Customers, Altersgruppen, Umsatz intern vs. extern.
+        </div>
+      </div>
+    </div><!-- /adminMis -->
+
     <!-- ── NUTZERVERWALTUNG ── -->
     <div id="adminUsers" style="display:none;">
+
+      <!-- Nutzerliste -->
+      <div class="admin-section">
+        <div class="admin-section-title">Registrierte Nutzer</div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead><tr><th>Name</th><th>E-Mail</th><th>Typ</th><th>Mitglied#</th><th>Jahrgang</th><th>Registriert</th></tr></thead>
+            <tbody id="usersTbody">
+              <tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <!-- Neuen Nutzer anlegen -->
       <div class="admin-section">
@@ -937,18 +956,6 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
         </div>
       </div>
 
-      <!-- Nutzerliste -->
-      <div class="admin-section">
-        <div class="admin-section-title">Registrierte Nutzer</div>
-        <div style="overflow-x:auto;">
-          <table class="admin-table">
-            <thead><tr><th>Name</th><th>E-Mail</th><th>Typ</th><th>Mitglied#</th><th>Jahrgang</th><th>Registriert</th></tr></thead>
-            <tbody id="usersTbody">
-              <tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div><!-- /adminUsers -->
 
   </div><!-- /modeAdmin -->
@@ -2124,15 +2131,16 @@ function showToast(msg) {
 // ============================================================
 //  ADMIN – Initialisierung & Tab-Steuerung
 // ============================================================
-let adminTabLoaded = { freibad: false, prices: false, internal: false, bookings: false, users: false };
+let adminTabLoaded = { freibad: false, prices: false, internal: false, bookings: false, mis: false, users: false };
 
 function setAdminTab(tab) {
   document.getElementById('adminFreibad').style.display   = tab==='freibad'  ? 'block' : 'none';
   document.getElementById('adminPrices').style.display    = tab==='prices'   ? 'block' : 'none';
   document.getElementById('adminInternal').style.display  = tab==='internal' ? 'block' : 'none';
   document.getElementById('adminBookings').style.display  = tab==='bookings' ? 'block' : 'none';
+  document.getElementById('adminMis').style.display       = tab==='mis'      ? 'block' : 'none';
   document.getElementById('adminUsers').style.display     = tab==='users'    ? 'block' : 'none';
-  ['freibad','prices','internal','bookings','users'].forEach(t =>
+  ['freibad','prices','internal','bookings','mis','users'].forEach(t =>
     document.getElementById('atab-'+t).classList.toggle('active', t===tab)
   );
   if (tab==='freibad'  && !adminTabLoaded.freibad)  { loadAdminFreibad();  adminTabLoaded.freibad=true; }
@@ -2147,6 +2155,7 @@ document.getElementById('adminFreibad').style.display   = 'block';
 document.getElementById('adminPrices').style.display    = 'none';
 document.getElementById('adminInternal').style.display  = 'none';
 document.getElementById('adminBookings').style.display  = 'none';
+document.getElementById('adminMis').style.display       = 'none';
 document.getElementById('adminUsers').style.display     = 'none';
 
 async function initAdmin() {
@@ -2379,17 +2388,16 @@ async function loadAdminStats() {
 }
 
 async function loadAdminBookings() {
-  const from = document.getElementById('filterDateFrom').value;
-  const to   = document.getElementById('filterDateTo').value;
-  let url = `${SUPABASE_URL}/rest/v1/bookings?select=*&status=eq.paid&order=date.desc,hour_start.desc&limit=200`;
-  if (from) url += `&date=gte.${from}`;
-  if (to)   url += `&date=lte.${to}`;
+  const today = todayStr();
   try {
-    const res  = await fetch(url, { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } });
+    const res  = await fetch(
+      `${SUPABASE_URL}/rest/v1/bookings?select=*&status=eq.paid&date=gte.${today}&order=date.asc,hour_start.asc&limit=200`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
     const data = res.ok ? await res.json() : [];
     const tbody = document.getElementById('bookingsTbody');
     if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Keine Buchungen gefunden</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center;padding:24px;">Keine kommenden Buchungen</td></tr>';
       return;
     }
     tbody.innerHTML = data.map(b => `
@@ -2399,7 +2407,6 @@ async function loadAdminBookings() {
         <td>Court #${b.court}</td>
         <td style="color:#e0e0e0;">${b.full_name || '—'}</td>
         <td style="color:var(--gold);">${b.price_cents ? (b.price_cents/100).toFixed(2)+' €' : '—'}</td>
-        <td><span class="admin-badge paid">Bezahlt</span></td>
       </tr>`).join('');
   } catch(e) { console.warn('Buchungen Admin Fehler:', e); }
 }
