@@ -700,12 +700,12 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
         </div>
       </div>
 
-      <!-- Anlage sperren — schreibt direkt in bookings (status=blocked, customer_type=internal) -->
+      <!-- Anlage sperren -->
       <div class="admin-section">
         <div class="admin-section-title">Anlage gesperrt</div>
         <div class="admin-card">
           <div style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.6;">
-            Gesperrte Courts werden sofort im Buchungssystem als nicht buchbar angezeigt (orangener Grund). Bestehende Buchungen bleiben erhalten.
+            Gesperrte Courts werden sofort im Buchungssystem als nicht buchbar angezeigt (orangener Grund).
           </div>
           <div class="admin-row" style="flex-wrap:wrap;gap:8px;">
             <input class="admin-input" type="date" id="newClosureDate" style="max-width:160px;">
@@ -737,32 +737,6 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
           <div class="admin-err" id="closureErr"></div>
           <div class="closure-list" id="closureList">
             <div style="color:#555;font-size:0.78rem;padding:8px 0;">Wird geladen …</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Edit-Modal für Closure -->
-      <div id="closureEditOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;align-items:center;justify-content:center;padding:16px;">
-        <div style="background:var(--card);border:1.5px solid var(--gold);border-radius:16px;padding:28px 24px;width:100%;max-width:480px;position:relative;">
-          <button onclick="closeClosureEdit()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#666;font-size:1.4rem;cursor:pointer;">✕</button>
-          <div style="font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;">Sperrung bearbeiten</div>
-          <input type="hidden" id="editClosureIds">
-          <div class="admin-row" style="flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-            <span class="admin-label">Grund</span>
-            <input class="admin-input" type="text" id="editClosureNote" style="flex:1;min-width:160px;">
-          </div>
-          <div class="admin-row" style="flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-            <span class="admin-label">Von Uhr</span>
-            <input class="admin-input" type="number" id="editClosureFrom" min="8" max="21" style="max-width:80px;">
-            <span class="admin-label">Bis Uhr</span>
-            <input class="admin-input" type="number" id="editClosureTo" min="9" max="22" style="max-width:80px;">
-          </div>
-          <div style="font-size:0.72rem;color:#666;margin-bottom:16px;">Datum und Court können nicht geändert werden — bitte löschen und neu anlegen.</div>
-          <div class="admin-ok"  id="editClosureOk"></div>
-          <div class="admin-err" id="editClosureErr"></div>
-          <div style="display:flex;gap:10px;">
-            <button class="admin-save-btn gold" style="flex:1;" onclick="saveClosureEdit()">Änderung speichern</button>
-            <button class="admin-save-btn" style="flex:1;background:#1a1a1a;border:1px solid #444;color:#aaa;" onclick="closeClosureEdit()">Abbrechen</button>
           </div>
         </div>
       </div>
@@ -875,7 +849,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
         <div style="overflow-x:auto;">
           <table class="admin-table">
             <thead><tr>
-              <th>Wochentag / Datum</th><th>Zeit</th><th>Court</th><th>Grund</th><th>€</th><th>Wöchentlich bis</th><th>Aktionen</th>
+              <th>Datum / Wochentag</th><th>Zeit</th><th>Court</th><th>Grund</th><th>€</th><th>Wöchentlich bis</th><th>Aktionen</th>
             </tr></thead>
             <tbody id="internalTbody">
               <tr><td colspan="7" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
@@ -883,37 +857,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
           </table>
         </div>
       </div>
-
-      <!-- Edit-Modal für interne Buchungen -->
-      <div id="intEditOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;align-items:center;justify-content:center;padding:16px;">
-        <div style="background:var(--card);border:1.5px solid var(--gold);border-radius:16px;padding:28px 24px;width:100%;max-width:480px;position:relative;">
-          <button onclick="closeIntEdit()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#666;font-size:1.4rem;cursor:pointer;">✕</button>
-          <div style="font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;">Blockierung bearbeiten</div>
-          <input type="hidden" id="editIntId">
-          <input type="hidden" id="editIntRecurGroup">
-          <div class="admin-row" style="margin-bottom:12px;">
-            <span class="admin-label">Grund</span>
-            <input class="admin-input" type="text" id="editIntReason" style="flex:1;">
-          </div>
-          <div class="admin-row" style="margin-bottom:12px;">
-            <span class="admin-label">Von Uhr</span>
-            <input class="admin-input" type="number" id="editIntFrom" min="8" max="21" style="max-width:80px;">
-            <span class="admin-label">Bis Uhr</span>
-            <input class="admin-input" type="number" id="editIntTo" min="9" max="22" style="max-width:80px;">
-          </div>
-          <div class="admin-row" style="margin-bottom:12px;">
-            <span class="admin-label">Preis</span>
-            <input class="admin-input" type="number" id="editIntPrice" min="0" step="0.5" style="max-width:90px;"> €/Std.
-          </div>
-          <div id="editIntRecurNote" style="display:none;font-size:0.72rem;color:#888;margin-bottom:12px;">Diese Buchung ist Teil einer Reihe. Änderungen gelten für alle zukünftigen Termine.</div>
-          <div class="admin-ok"  id="editIntOk"></div>
-          <div class="admin-err" id="editIntErr"></div>
-          <div style="display:flex;gap:10px;">
-            <button class="admin-save-btn gold" style="flex:1;" onclick="saveIntEdit()">Änderung speichern</button>
-            <button class="admin-save-btn" style="flex:1;background:#1a1a1a;border:1px solid #444;color:#aaa;" onclick="closeIntEdit()">Abbrechen</button>
-          </div>
-        </div>
-      </div>
+    </div><!-- /adminInternal -->
 
     <!-- ── BUCHUNGSÜBERSICHT ── -->
     <div id="adminBookings" style="display:none;">
@@ -2230,7 +2174,7 @@ async function loadAdminFreibad() {
   document.getElementById('cfgSeasonEnd').value   = `${y}-${freibadConfig.season_end_md}`;
   document.getElementById('cfgOpenH').value  = freibadConfig.open_hour;
   document.getElementById('cfgCloseH').value = freibadConfig.close_hour;
-  loadClosureList(); // lädt aus bookings + freibad_closures
+  loadClosureList();
   renderExceptionList();
 }
 
@@ -2275,12 +2219,6 @@ async function saveFreibadConfig() {
 // ============================================================
 //  ADMIN – Schließtage
 // ============================================================
-// ============================================================
-//  ADMIN – Anlage gesperrt (schreibt in bookings, nicht freibad_closures)
-// ============================================================
-// Sperrungen in bookings: status=blocked, customer_type=internal, full_name=Grund
-// freibad_closures bleibt nur für Tür-B-Logik (target=freibad)
-
 async function addClosure() {
   const date    = document.getElementById('newClosureDate').value;
   const target  = document.getElementById('newClosureTarget').value;
@@ -2291,53 +2229,40 @@ async function addClosure() {
 
   if (!date) { showAdminMsg('closureErr', 'Bitte Datum wählen.'); return; }
   if (!note) { showAdminMsg('closureErr', 'Bitte Grund angeben.'); return; }
-  if (isNaN(fromH) || isNaN(toH)) { showAdminMsg('closureErr', 'Bitte Von und Bis Uhrzeit angeben.'); return; }
-  if (toH <= fromH) { showAdminMsg('closureErr', 'Bis-Zeit muss nach Von-Zeit liegen.'); return; }
+  if (useTime && (isNaN(fromH) || isNaN(toH))) { showAdminMsg('closureErr', 'Bitte Von und Bis angeben.'); return; }
+  if (useTime && toH <= fromH) { showAdminMsg('closureErr', 'Bis-Zeit muss nach Von-Zeit liegen.'); return; }
 
   const duration = toH - fromH;
-  // Welche Courts sperren?
   let courts = [];
   if (target === 'court1') courts = [1];
   else if (target === 'court2') courts = [2];
   else if (target === 'both') courts = [1, 2];
-  // target === 'freibad' → nur freibad_closures, keine Court-Sperrung
 
   try {
-    // 1. Freibad-Türlogik: immer in freibad_closures eintragen (für Tür B)
+    // Freibad-Türlogik: in freibad_closures
     if (target === 'freibad' || target === 'both') {
       const fcPayload = { date, target, note };
       if (useTime) { fcPayload.from_hour = fromH; fcPayload.to_hour = toH; }
       await fetch(`${SUPABASE_URL}/rest/v1/freibad_closures`, {
         method: 'POST',
-        headers: {
-          'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-          'Content-Type': 'application/json', 'Prefer': 'return=minimal',
-        },
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify(fcPayload),
       });
     }
-
-    // 2. Court-Slots in bookings sperren
+    // Court-Slots in bookings sperren
     if (courts.length > 0) {
       const rows = courts.map(c => ({
         court: c, date, hour_start: fromH, duration,
         status: 'blocked', customer_type: 'internal',
-        full_name: note,
-        price_cents: 0,
-        recur_group: null, recurring: false,
+        full_name: note, price_cents: 0, recur_group: null, recurring: false,
       }));
       const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, {
         method: 'POST',
-        headers: {
-          'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-          'Content-Type': 'application/json', 'Prefer': 'return=representation',
-        },
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify(rows),
       });
       if (!res.ok) throw new Error(await res.text());
     }
-
-    // Formular zurücksetzen
     document.getElementById('newClosureDate').value = '';
     document.getElementById('newClosureNote').value = '';
     document.getElementById('newClosureFrom').value = '';
@@ -2350,102 +2275,32 @@ async function addClosure() {
   } catch(e) { showAdminMsg('closureErr', 'Fehler: ' + e.message); }
 }
 
-// Sperrungen laden: kombiniert aus bookings (Courts) und freibad_closures (Freibad)
-let closureBookings = []; // [{id, date, court, hour_start, duration, full_name}]
+let closureBookings = [];
 
 async function loadClosureList() {
   const today = todayStr();
   try {
-    // Court-Sperrungen aus bookings
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/bookings?select=id,date,court,hour_start,duration,full_name&customer_type=eq.internal&status=eq.blocked&recur_group=is.null&recurring=eq.false&date=gte.${today}&order=date.asc,hour_start.asc&limit=200`,
       { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
     );
     closureBookings = res.ok ? await res.json() : [];
   } catch(e) { closureBookings = []; }
-
   try {
-    // Freibad-Closures (Tür B)
     const res2 = await fetch(
       `${SUPABASE_URL}/rest/v1/freibad_closures?select=*&order=date.asc`,
       { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
     );
     freibadClosures = res2.ok ? await res2.json() : [];
   } catch(e) { freibadClosures = []; }
-
   renderClosureList();
-}
-
-function renderClosureList() {
-  const el = document.getElementById('closureList');
-  const allEmpty = closureBookings.length === 0 && freibadClosures.length === 0;
-  if (allEmpty) {
-    el.innerHTML = '<div style="color:#555;font-size:0.78rem;padding:8px 0;">Keine Sperrungen eingetragen</div>';
-    return;
-  }
-
-  let html = '';
-
-  // Court-Sperrungen aus bookings (gruppiert nach Datum+Grund, falls gleich)
-  // Zeige je einen Eintrag pro bookings-Zeile
-  if (closureBookings.length > 0) {
-    html += `<div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin:8px 0 4px;">🎾 Court-Sperrungen</div>`;
-    // Gruppiere nach date+full_name+hour_start (same-target entries)
-    const grouped = {};
-    for (const b of closureBookings) {
-      const key = `${b.date}|${b.hour_start}|${b.duration}|${b.full_name}`;
-      if (!grouped[key]) grouped[key] = { ...b, courts: [] };
-      grouped[key].courts.push(b.court);
-      // keep all ids
-      if (!grouped[key].ids) grouped[key].ids = [];
-      grouped[key].ids.push(b.id);
-    }
-    for (const g of Object.values(grouped)) {
-      const timeStr = `${String(g.hour_start).padStart(2,'0')}:00 – ${String(g.hour_start+g.duration).padStart(2,'0')}:00 Uhr`;
-      const courtStr = g.courts.map(c=>`Court #${c}`).join(' + ');
-      const idsStr = g.ids.join(',');
-      html += `
-      <div class="closure-item">
-        <div style="flex:1;">
-          <div class="closure-item-date">${formatDateDE(g.date)} · ${timeStr} &nbsp;<span style="color:#888;font-size:0.72rem;">🎾 ${courtStr}</span></div>
-          <div class="closure-item-note">${g.full_name || ''}</div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <button class="admin-save-btn" style="height:28px;font-size:0.65rem;padding:0 10px;" onclick="openClosureEdit('${idsStr}','${(g.full_name||'').replace(/'/g,"\\'")}',${g.hour_start},${g.hour_start+g.duration})">✏ Bearbeiten</button>
-          <button class="closure-remove" onclick="removeClosure(null,'${idsStr}')" title="Entfernen">✕</button>
-        </div>
-      </div>`;
-    }
-  }
-
-  // Freibad-Closures (Tür B)
-  if (freibadClosures.length > 0) {
-    html += `<div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin:12px 0 4px;">🏊 Freibad / Tür B</div>`;
-    for (const c of freibadClosures) {
-      const timeStr = (c.from_hour != null && c.to_hour != null)
-        ? ` · ${String(c.from_hour).padStart(2,'0')}:00–${String(c.to_hour).padStart(2,'0')}:00 Uhr`
-        : ' · Ganzer Tag';
-      html += `
-      <div class="closure-item">
-        <div style="flex:1;">
-          <div class="closure-item-date">${formatDateDE(c.date)}${timeStr}</div>
-          <div class="closure-item-note">${c.note || ''}</div>
-        </div>
-        <button class="closure-remove" onclick="removeClosure('${c.date}',null)" title="Entfernen">✕</button>
-      </div>`;
-    }
-  }
-
-  el.innerHTML = html;
 }
 
 async function removeClosure(fcDate, bookingIds) {
   if (!confirm('Sperrung wirklich löschen?')) return;
   try {
     if (bookingIds) {
-      // Court-Sperrungen aus bookings löschen
-      const ids = bookingIds.split(',');
-      for (const id of ids) {
+      for (const id of bookingIds.split(',')) {
         await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, {
           method: 'DELETE',
           headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` },
@@ -2453,7 +2308,6 @@ async function removeClosure(fcDate, bookingIds) {
       }
     }
     if (fcDate) {
-      // freibad_closures löschen
       await fetch(`${SUPABASE_URL}/rest/v1/freibad_closures?date=eq.${fcDate}`, {
         method: 'DELETE',
         headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` },
@@ -2462,7 +2316,7 @@ async function removeClosure(fcDate, bookingIds) {
     await loadClosureList();
     if (selDate) { await loadBookings(selDate); renderSlots(); }
     showToast('✓ Sperrung gelöscht');
-  } catch(e) { showToast('Fehler beim Löschen: ' + e.message); }
+  } catch(e) { showToast('Fehler: ' + e.message); }
 }
 
 function openClosureEdit(idsStr, note, fromH, toH) {
@@ -2472,31 +2326,21 @@ function openClosureEdit(idsStr, note, fromH, toH) {
   document.getElementById('editClosureTo').value   = toH;
   document.getElementById('closureEditOverlay').style.display = 'flex';
 }
-
-function closeClosureEdit() {
-  document.getElementById('closureEditOverlay').style.display = 'none';
-}
+function closeClosureEdit() { document.getElementById('closureEditOverlay').style.display = 'none'; }
 
 async function saveClosureEdit() {
   const idsStr = document.getElementById('editClosureIds').value;
   const note   = document.getElementById('editClosureNote').value.trim();
   const fromH  = parseInt(document.getElementById('editClosureFrom').value);
   const toH    = parseInt(document.getElementById('editClosureTo').value);
-
   if (!note) { showAdminMsg('editClosureErr', 'Bitte Grund angeben.'); return; }
   if (isNaN(fromH) || isNaN(toH) || toH <= fromH) { showAdminMsg('editClosureErr', 'Ungültige Zeiten.'); return; }
-
-  const duration = toH - fromH;
-  const ids = idsStr.split(',');
   try {
-    for (const id of ids) {
+    for (const id of idsStr.split(',')) {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, {
         method: 'PATCH',
-        headers: {
-          'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-          'Content-Type': 'application/json', 'Prefer': 'return=minimal',
-        },
-        body: JSON.stringify({ full_name: note, hour_start: fromH, duration }),
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ full_name: note, hour_start: fromH, duration: toH - fromH }),
       });
       if (!res.ok) throw new Error(await res.text());
     }
@@ -2505,6 +2349,55 @@ async function saveClosureEdit() {
     if (selDate) { await loadBookings(selDate); renderSlots(); }
     setTimeout(closeClosureEdit, 1200);
   } catch(e) { showAdminMsg('editClosureErr', 'Fehler: ' + e.message); }
+}
+
+function renderClosureList() {
+  const el = document.getElementById('closureList');
+  if (closureBookings.length === 0 && freibadClosures.length === 0) {
+    el.innerHTML = '<div style="color:#555;font-size:0.78rem;padding:8px 0;">Keine Sperrungen eingetragen</div>';
+    return;
+  }
+  let html = '';
+  if (closureBookings.length > 0) {
+    html += `<div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin:8px 0 4px;">🎾 Court-Sperrungen</div>`;
+    const grouped = {};
+    for (const b of closureBookings) {
+      const key = `${b.date}|${b.hour_start}|${b.duration}|${b.full_name}`;
+      if (!grouped[key]) grouped[key] = { ...b, courts: [], ids: [] };
+      grouped[key].courts.push(b.court);
+      grouped[key].ids.push(b.id);
+    }
+    for (const g of Object.values(grouped)) {
+      const timeStr = `${String(g.hour_start).padStart(2,'0')}:00 – ${String(g.hour_start+g.duration).padStart(2,'0')}:00 Uhr`;
+      const courtStr = g.courts.map(c=>`Court #${c}`).join(' + ');
+      const idsStr = g.ids.join(',');
+      const safeNote = (g.full_name||'').replace(/'/g,"\\'");
+      html += `<div class="closure-item">
+        <div style="flex:1;">
+          <div class="closure-item-date">${formatDateDE(g.date)} · ${timeStr} &nbsp;<span style="color:#888;font-size:0.72rem;">🎾 ${courtStr}</span></div>
+          <div class="closure-item-note">${g.full_name||''}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="admin-save-btn" style="height:28px;font-size:0.65rem;padding:0 10px;" onclick="openClosureEdit('${idsStr}','${safeNote}',${g.hour_start},${g.hour_start+g.duration})">✏ Bearbeiten</button>
+          <button class="closure-remove" onclick="removeClosure(null,'${idsStr}')" title="Entfernen">✕</button>
+        </div>
+      </div>`;
+    }
+  }
+  if (freibadClosures.length > 0) {
+    html += `<div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin:12px 0 4px;">🏊 Freibad / Tür B</div>`;
+    for (const c of freibadClosures) {
+      const timeStr = (c.from_hour!=null&&c.to_hour!=null) ? ` · ${String(c.from_hour).padStart(2,'0')}:00–${String(c.to_hour).padStart(2,'0')}:00 Uhr` : ' · Ganzer Tag';
+      html += `<div class="closure-item">
+        <div style="flex:1;">
+          <div class="closure-item-date">${formatDateDE(c.date)}${timeStr}</div>
+          <div class="closure-item-note">${c.note||''}</div>
+        </div>
+        <button class="closure-remove" onclick="removeClosure('${c.date}',null)" title="Entfernen">✕</button>
+      </div>`;
+    }
+  }
+  el.innerHTML = html;
 }
 
 // ============================================================
@@ -2922,13 +2815,12 @@ async function loadInternalBookings() {
       { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
     );
     const data = res.ok ? await res.json() : [];
+    console.log('Interne Buchungen geladen:', data.length);
     const tbody = document.getElementById('internalTbody');
     if (!data.length) {
       tbody.innerHTML = '<tr><td colspan="7" style="color:#555;text-align:center;padding:24px;">Keine internen Blockierungen</td></tr>';
       return;
     }
-
-    // Gruppieren: wiederkehrende nach recur_group, Einzeltermine einzeln
     const seen = new Set();
     const rows = [];
     for (const b of data) {
@@ -2944,18 +2836,16 @@ async function loadInternalBookings() {
         rows.push({ ...b, isRecurring: false, wd });
       }
     }
-
     tbody.innerHTML = rows.map(b => {
-      const pricePerH = b.duration > 0 ? (b.price_cents / 100) / b.duration : 0;
+      const pricePerH = b.duration > 0 ? (b.price_cents/100)/b.duration : 0;
       const safeReason = (b.full_name||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
-      return `
-      <tr>
+      return `<tr>
         <td>${b.isRecurring ? WDNAMES[b.wd] : formatDateDE(b.date)}</td>
         <td>${String(b.hour_start).padStart(2,'0')}:00 – ${String(b.hour_start+b.duration).padStart(2,'0')}:00</td>
         <td>Court #${b.court}</td>
-        <td style="color:#e0e0e0;">${b.full_name || '—'}</td>
+        <td style="color:#e0e0e0;">${b.full_name||'—'}</td>
         <td style="color:${b.price_cents>0?'var(--gold)':'#555'};">${b.price_cents>0?(b.price_cents/100).toFixed(2)+' €':'0 €'}</td>
-        <td style="color:#888;">${b.isRecurring ? formatDateDE(b.lastDate) : '<span style="color:#555;">Einzeltermin</span>'}</td>
+        <td style="color:#888;">${b.isRecurring?formatDateDE(b.lastDate):'<span style="color:#555;">Einzeltermin</span>'}</td>
         <td style="display:flex;gap:5px;">
           <button class="admin-save-btn" style="height:26px;font-size:0.63rem;padding:0 7px;" onclick="openIntEdit(${b.id},'${b.recur_group||''}','${safeReason}',${b.hour_start},${b.hour_start+b.duration},${pricePerH},${b.isRecurring})">✏</button>
           <button class="admin-save-btn danger" style="height:26px;font-size:0.63rem;padding:0 7px;" onclick="deleteInternalBooking(${b.id},'${(b.recur_group||'').replace(/'/g,'')}')">✕</button>
@@ -2967,7 +2857,7 @@ async function loadInternalBookings() {
 
 function openIntEdit(id, recurGroup, reason, fromH, toH, pricePerH, isRecurring) {
   document.getElementById('editIntId').value         = id;
-  document.getElementById('editIntRecurGroup').value = recurGroup || '';
+  document.getElementById('editIntRecurGroup').value = recurGroup||'';
   document.getElementById('editIntReason').value     = reason;
   document.getElementById('editIntFrom').value       = fromH;
   document.getElementById('editIntTo').value         = toH;
@@ -2975,64 +2865,41 @@ function openIntEdit(id, recurGroup, reason, fromH, toH, pricePerH, isRecurring)
   document.getElementById('editIntRecurNote').style.display = isRecurring ? 'block' : 'none';
   document.getElementById('intEditOverlay').style.display = 'flex';
 }
-
-function closeIntEdit() {
-  document.getElementById('intEditOverlay').style.display = 'none';
-}
+function closeIntEdit() { document.getElementById('intEditOverlay').style.display = 'none'; }
 
 async function saveIntEdit() {
-  const id         = parseInt(document.getElementById('editIntId').value);
-  const recurGroup = document.getElementById('editIntRecurGroup').value;
-  const reason     = document.getElementById('editIntReason').value.trim();
-  const fromH      = parseInt(document.getElementById('editIntFrom').value);
-  const toH        = parseInt(document.getElementById('editIntTo').value);
-  const pricePerH  = parseFloat(document.getElementById('editIntPrice').value) || 0;
-
-  if (!reason) { showAdminMsg('editIntErr', 'Bitte Grund angeben.'); return; }
-  if (isNaN(fromH) || isNaN(toH) || toH <= fromH) { showAdminMsg('editIntErr', 'Ungültige Zeiten.'); return; }
-
+  const id        = parseInt(document.getElementById('editIntId').value);
+  const recurGroup= document.getElementById('editIntRecurGroup').value;
+  const reason    = document.getElementById('editIntReason').value.trim();
+  const fromH     = parseInt(document.getElementById('editIntFrom').value);
+  const toH       = parseInt(document.getElementById('editIntTo').value);
+  const pricePerH = parseFloat(document.getElementById('editIntPrice').value)||0;
+  if (!reason) { showAdminMsg('editIntErr','Bitte Grund angeben.'); return; }
+  if (isNaN(fromH)||isNaN(toH)||toH<=fromH) { showAdminMsg('editIntErr','Ungültige Zeiten.'); return; }
   const duration = toH - fromH;
-
+  const patch = { full_name: reason, hour_start: fromH, duration, price_cents: Math.round(pricePerH*duration*100) };
   try {
-    const patch = {
-      full_name: reason,
-      hour_start: fromH,
-      duration,
-      price_cents: Math.round(pricePerH * duration * 100),
-    };
-
     if (recurGroup) {
-      // Alle zukünftigen Einträge der Reihe aktualisieren
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/bookings?recur_group=eq.${recurGroup}&customer_type=eq.internal&date=gte.${todayStr()}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-            'Content-Type': 'application/json', 'Prefer': 'return=minimal',
-          },
-          body: JSON.stringify(patch),
-        }
-      );
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?recur_group=eq.${recurGroup}&customer_type=eq.internal&date=gte.${todayStr()}`, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify(patch),
+      });
       if (!res.ok) throw new Error(await res.text());
     } else {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, {
         method: 'PATCH',
-        headers: {
-          'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-          'Content-Type': 'application/json', 'Prefer': 'return=minimal',
-        },
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify(patch),
       });
       if (!res.ok) throw new Error(await res.text());
     }
-
-    showAdminMsg('editIntOk', '✓ Gespeichert');
+    showAdminMsg('editIntOk','✓ Gespeichert');
     adminTabLoaded.internal = false;
     await loadInternalBookings();
     if (selDate) { await loadBookings(selDate); renderSlots(); }
     setTimeout(closeIntEdit, 1200);
-  } catch(e) { showAdminMsg('editIntErr', 'Fehler: ' + e.message); }
+  } catch(e) { showAdminMsg('editIntErr','Fehler: '+e.message); }
 }
 
 async function deleteInternalBooking(id, recurGroup) {
@@ -3069,5 +2936,39 @@ function formatDateDE(dateStr) {
 
 init();
 </script>
+<!-- ■■ EDIT-MODALS ■■ -->
+<div id="closureEditOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--card);border:1.5px solid var(--gold);border-radius:16px;padding:28px 24px;width:100%;max-width:480px;position:relative;">
+    <button onclick="closeClosureEdit()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#666;font-size:1.4rem;cursor:pointer;">✕</button>
+    <div style="font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;">Sperrung bearbeiten</div>
+    <input type="hidden" id="editClosureIds">
+    <div class="admin-row" style="margin-bottom:12px;"><span class="admin-label">Grund</span><input class="admin-input" type="text" id="editClosureNote" style="flex:1;"></div>
+    <div class="admin-row" style="margin-bottom:12px;"><span class="admin-label">Von Uhr</span><input class="admin-input" type="number" id="editClosureFrom" min="8" max="21" style="max-width:80px;"><span class="admin-label">Bis Uhr</span><input class="admin-input" type="number" id="editClosureTo" min="9" max="22" style="max-width:80px;"></div>
+    <div style="font-size:0.72rem;color:#666;margin-bottom:16px;">Datum und Court können nicht geändert werden.</div>
+    <div class="admin-ok" id="editClosureOk"></div><div class="admin-err" id="editClosureErr"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="admin-save-btn gold" style="flex:1;" onclick="saveClosureEdit()">Speichern</button>
+      <button class="admin-save-btn" style="flex:1;background:#1a1a1a;border:1px solid #444;color:#aaa;" onclick="closeClosureEdit()">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div id="intEditOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--card);border:1.5px solid var(--gold);border-radius:16px;padding:28px 24px;width:100%;max-width:480px;position:relative;">
+    <button onclick="closeIntEdit()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#666;font-size:1.4rem;cursor:pointer;">✕</button>
+    <div style="font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;">Blockierung bearbeiten</div>
+    <input type="hidden" id="editIntId"><input type="hidden" id="editIntRecurGroup">
+    <div class="admin-row" style="margin-bottom:12px;"><span class="admin-label">Grund</span><input class="admin-input" type="text" id="editIntReason" style="flex:1;"></div>
+    <div class="admin-row" style="margin-bottom:12px;"><span class="admin-label">Von Uhr</span><input class="admin-input" type="number" id="editIntFrom" min="8" max="21" style="max-width:80px;"><span class="admin-label">Bis Uhr</span><input class="admin-input" type="number" id="editIntTo" min="9" max="22" style="max-width:80px;"></div>
+    <div class="admin-row" style="margin-bottom:12px;"><span class="admin-label">Preis</span><input class="admin-input" type="number" id="editIntPrice" min="0" step="0.5" style="max-width:90px;"> €/Std.</div>
+    <div id="editIntRecurNote" style="display:none;font-size:0.72rem;color:#888;margin-bottom:12px;">Reihe: Änderungen gelten für alle zukünftigen Termine.</div>
+    <div class="admin-ok" id="editIntOk"></div><div class="admin-err" id="editIntErr"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="admin-save-btn gold" style="flex:1;" onclick="saveIntEdit()">Speichern</button>
+      <button class="admin-save-btn" style="flex:1;background:#1a1a1a;border:1px solid #444;color:#aaa;" onclick="closeIntEdit()">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
