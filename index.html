@@ -1350,12 +1350,11 @@ setTimeout(()=>window.print(),1400);
                 y:{ticks:{font:{size:9},color:'#888',callback:v=>v+' €'},grid:{color:gc}}}}});
     }
 
-    // Chart.js laden und MIS-Tage initial aufbauen wenn Tab aktiv wird
-    (function waitForChartJS(){
-      if (typeof Chart !== 'undefined') { initMisTage(); return; }
+    // Chart.js vorladen (aber noch nicht initialisieren — das passiert beim Tab-Öffnen)
+    (function loadChartJS(){
+      if (typeof Chart !== 'undefined') return;
       const s=document.createElement('script');
       s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
-      s.onload=()=>initMisTage();
       document.head.appendChild(s);
     })();
     </script>
@@ -2638,7 +2637,14 @@ function setAdminTab(tab) {
   if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
   if (tab==='internal' && !adminTabLoaded.internal) { loadInternalBookings(); adminTabLoaded.internal=true; }
   if (tab==='bookings' && !adminTabLoaded.bookings) { loadAdminBookings(); loadAdminAbos(); loadAdminStats(); adminTabLoaded.bookings=true; }
-  if (tab==='mis'      && !adminTabLoaded.mis)      { if(typeof initMisTage==='function') initMisTage(); adminTabLoaded.mis=true; }
+  if (tab==='mis'      && !adminTabLoaded.mis)      {
+    adminTabLoaded.mis=true;
+    function doMisInit() {
+      if (typeof Chart !== 'undefined') { initMisTage(); }
+      else { const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'; s.onload=()=>initMisTage(); document.head.appendChild(s); }
+    }
+    setTimeout(doMisInit, 100);
+  }
   if (tab==='users'    && !adminTabLoaded.users)    { loadAdminUsers();   adminTabLoaded.users=true; }
 }
 
