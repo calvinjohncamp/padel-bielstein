@@ -1221,8 +1221,9 @@ function setMode(m) {
     document.getElementById('heroHeader').style.cursor = 'pointer';
     document.getElementById('heroHeader').title = '← Zurück zur Buchungsübersicht';
     document.getElementById('adminFooterBtn').textContent = '← Home';
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     initAdmin();
-    window.scrollTo(0, 0);
   } else {
     document.getElementById('mainTabs').style.display = 'grid';
     document.getElementById('heroHeader').style.cursor = 'default';
@@ -2214,8 +2215,10 @@ async function loadAdminFreibad() {
   document.getElementById('cfgSeasonEnd').value   = `${y}-${freibadConfig.season_end_md}`;
   document.getElementById('cfgOpenH').value  = freibadConfig.open_hour;
   document.getElementById('cfgCloseH').value = freibadConfig.close_hour;
-  loadClosureList();
+  await loadClosureList();
   renderExceptionList();
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
 }
 
 async function saveFreibadConfig() {
