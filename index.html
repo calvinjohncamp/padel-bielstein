@@ -24,8 +24,41 @@ body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color
 
 /* ■■ HEADER ■■ */
 .hero { margin-bottom: 18px; border-bottom: 1px solid var(--border); background: #000; overflow: hidden; }
-.hero-frame { width: 100%; aspect-ratio: 3830 / 1563; background: #000; }
+.hero-frame { width: 100%; aspect-ratio: 3830 / 1563; background: #000; position: relative; }
 .hero-img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
+.hero-launch {
+  position: absolute;
+  left: 50%;
+  top: 68%;
+  transform: translateX(-50%);
+  z-index: 2;
+  font-family: "Arial Narrow","Impact",sans-serif;
+  font-weight: 900;
+  font-size: clamp(0.95rem, 2.65vw, 2.15rem);
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.75);
+  pointer-events: none;
+}
+.hero-launch .launch-gold { color: var(--gold); }
+.hero-launch .launch-blue { color: var(--blue); }
+@media (max-width: 560px) {
+  .hero-launch {
+    top: 69%;
+    font-size: clamp(0.72rem, 3.5vw, 1.05rem);
+    letter-spacing: 0.13em;
+  }
+}
+@media (max-width: 390px) {
+  .hero-launch {
+    top: 70%;
+    font-size: 0.68rem;
+    letter-spacing: 0.11em;
+  }
+}
+
 
 /* ■■ LOADING ■■ */
 .loading-bar { width: 100%; height: 2px; background: var(--border); margin-bottom: 18px; overflow: hidden; display: none; }
@@ -445,6 +478,9 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 <div class="hero" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');" style="cursor:default;">
   <div class="hero-frame">
     <img class="hero-img" src="padel_bielstein_header_ULTIMATE_BLUE_ohne_Ball.jpg" alt="Padel Bielstein">
+    <div class="hero-launch" aria-label="Ab Frühjahr 2027">
+      <span class="launch-gold">Ab</span> <span class="launch-blue">Frühjahr</span> <span class="launch-gold">2027</span>
+    </div>
   </div>
 </div>
 
