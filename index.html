@@ -1696,6 +1696,9 @@ async function loadAboBookings(weekday) {
   } catch(e) {
     console.warn('Interne Blockierungen für Abo-Ansicht fehlgeschlagen', e);
   }
+
+  // Lokale Test-Abos ergänzen, damit Sandbox-Zahlungen direkt wie echte Reservierungen wirken
+  addLocalAboBlocksForWeekday(weekday);
 }
 
 // ============================================================
@@ -1728,6 +1731,75 @@ function rawP(h, d) { return (prices(d)[h] || 0) * selDur; }
 function mP(p) { return member ? Math.round(p * (1 - member.discount)) : p; }
 function showLoader(on) { document.getElementById('loadingBar').classList.toggle('active', on); }
 
+
+// ============================================================
+//  TEST-ABOS: lokales Slot-Blocking für Sandbox-Echtgefühl
+//  Hinweis: echte Live-Blockierung muss später serverseitig im Webhook erfolgen.
+// ============================================================
+const LOCAL_ABOS_KEY = 'pb_test_active_abos_v1';
+const LOCAL_PENDING_ABO_KEY = 'pb_pending_abo_checkout_v1';
+
+function getLocalTestAbos() {
+  try { return JSON.parse(localStorage.getItem(LOCAL_ABOS_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveLocalTestAbos(list) {
+  localStorage.setItem(LOCAL_ABOS_KEY, JSON.stringify(list || []));
+}
+
+function storePendingAboCheckout(abo) {
+  localStorage.setItem(LOCAL_PENDING_ABO_KEY, JSON.stringify(abo));
+}
+
+function finalizePendingAboCheckout() {
+  try {
+    const raw = localStorage.getItem(LOCAL_PENDING_ABO_KEY);
+    if (!raw) return false;
+    const pending = JSON.parse(raw);
+    const list = getLocalTestAbos();
+
+    const exists = list.some(a =>
+      Number(a.court) === Number(pending.court) &&
+      Number(a.weekday) === Number(pending.weekday) &&
+      Number(a.hour_start) === Number(pending.hour_start) &&
+      Number(a.duration) === Number(pending.duration) &&
+      (a.email || '') === (pending.email || '')
+    );
+
+    if (!exists) {
+      list.push({
+        ...pending,
+        status: 'active',
+        source: 'local-test',
+        created_at: new Date().toISOString()
+      });
+      saveLocalTestAbos(list);
+    }
+
+    localStorage.removeItem(LOCAL_PENDING_ABO_KEY);
+    return true;
+  } catch(e) {
+    console.warn('Lokales Test-Abo konnte nicht finalisiert werden', e);
+    localStorage.removeItem(LOCAL_PENDING_ABO_KEY);
+    return false;
+  }
+}
+
+function addLocalAboBlocksForWeekday(weekday) {
+  const list = getLocalTestAbos();
+  for (const s of list) {
+    if (Number(s.weekday) !== Number(weekday)) continue;
+    const court = Number(s.court);
+    const start = Number(s.hour_start);
+    const dur = Number(s.duration || 1);
+    if (!aboBooked[court]) continue;
+    for (let i = 0; i < dur; i++) {
+      aboBooked[court].add(`${weekday}-${start + i}`);
+    }
+  }
+}
+
 // ============================================================
 //  INIT
 // ============================================================
@@ -1746,8 +1818,9 @@ async function init() {
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('booking') === 'success') {
+    const aboFinalized = finalizePendingAboCheckout();
     window.history.replaceState({}, '', '/');
-    showToast('🎾 Buchung erfolgreich! Bestätigung kommt per E-Mail.');
+    showToast(aboFinalized ? '🎾 Jahresabo erfolgreich! Slot ist jetzt reserviert.' : '🎾 Buchung erfolgreich! Bestätigung kommt per E-Mail.');
     await loadBookings(selDate);
     renderSlots();
   } else if (params.get('booking') === 'cancelled') {
@@ -1992,7 +2065,8 @@ async function checkHasAbo() {
       { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
     );
     const data = await res.json();
-    document.getElementById('portalBtn').style.display = (data && data.length > 0) ? 'inline-block' : 'none';
+    const localHasAbo = getLocalTestAbos().some(a => (a.email || '') === (email || ''));
+    document.getElementById('portalBtn').style.display = ((data && data.length > 0) || localHasAbo) ? 'inline-block' : 'none';
   } catch(e) {
     console.warn('Abo-Check fehlgeschlagen', e);
   }
@@ -2305,7 +2379,11 @@ async function loadTodayAboSlot() {
     );
     if (!res.ok) return null;
     const data = await res.json();
-    if (!data || data.length === 0) return null;
+    if (!data || data.length === 0) {
+      const local = getLocalTestAbos().find(a => Number(a.weekday) === Number(weekday) && (a.email || '') === (email || ''));
+      if (!local) return null;
+      return { court: local.court, date: todayStr(), hour_start: local.hour_start, duration: local.duration, isAbo: true };
+    }
     // Als Buchungsobjekt zurückgeben (mit heutigem Datum)
     const s = data[0];
     return { court: s.court, date: todayStr(), hour_start: s.hour_start, duration: s.duration, isAbo: true };
@@ -2629,7 +2707,7 @@ async function confirmBooking(skipAuthCheck) {
   }
 }
 
-async function submitAbo(skipAuthCheck) {
+async async function submitAbo(skipAuthCheck) {
   if (!aboSlot || aboWd===null) {
     showToast('Bitte Wochentag und Slot wählen');
     return;
@@ -2649,6 +2727,25 @@ async function submitAbo(skipAuthCheck) {
   const fullName = currentProfile?.full_name || '';
   const birthYear = currentProfile?.birth_year || null;
   const custType = currentProfile?.customer_type || 'account';
+
+  // Für Sandbox-Echtgefühl: erst nach erfolgreicher Rückkehr wird daraus ein lokaler aktiver Blocker.
+  storePendingAboCheckout({
+    booking_type: 'abo',
+    court,
+    weekday: aboWd,
+    weekday_name: WDNAMES[aboWd],
+    hour_start: hour,
+    duration: aboDur,
+    price_cents,
+    price_per_week_cents: Math.round(pricePerWeek * 100),
+    weeks_billed: 30,
+    weeks_reserved: 52,
+    user_id: currentUser?.id || null,
+    customer_type: custType,
+    email,
+    full_name: fullName,
+    birth_year: birthYear
+  });
 
   showToast('Weiter zu Stripe …');
 
@@ -2688,10 +2785,12 @@ async function submitAbo(skipAuthCheck) {
     if (data.url) {
       window.location.href = data.url;
     } else {
+      localStorage.removeItem(LOCAL_PENDING_ABO_KEY);
       showToast('Fehler: ' + (data.error || 'Stripe-Checkout für Jahresabo noch nicht verfügbar'));
       console.error('Abo checkout error:', data);
     }
   } catch (e) {
+    localStorage.removeItem(LOCAL_PENDING_ABO_KEY);
     console.error(e);
     showToast('Netzwerkfehler – bitte erneut versuchen.');
   }
