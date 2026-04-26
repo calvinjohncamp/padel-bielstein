@@ -97,9 +97,9 @@ body.bielstein-theme #tabPlay:not(.active) {
 /* Unsichtbare Klick-Zone – neu kalibriert für beide Header */
 .easter-egg-zone {
   position: absolute;
-  right: 6%;
-  top: 5%;
-  width: 18%;
+  right: 30%;
+  top: 8%;
+  width: 9%;
   aspect-ratio: 1;
   cursor: pointer;
   z-index: 20;
@@ -630,6 +630,96 @@ body.bielstein-theme .court-hdr { border-color: #003566 !important; background: 
 </style>
 </head>
 <body>
+
+<!-- ■■ BIELSTEIN THEME MASTER OVERRIDE – muss nach allen Style-Blöcken kommen ■■ -->
+<style id="bielsteinOverride">
+body.bielstein-theme {
+  background: #000814 !important;
+}
+body.bielstein-theme .hero,
+body.bielstein-theme .hero-frame {
+  background: #000814 !important;
+  border-bottom: none !important;
+}
+/* Tabs */
+body.bielstein-theme .mode-tab.active {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+body.bielstein-theme .mode-tab:not(.active) {
+  background: transparent !important;
+  border-color: #003566 !important;
+  color: #888 !important;
+}
+body.bielstein-theme #tabAbo:not(.active),
+body.bielstein-theme #tabPlay:not(.active) {
+  color: #FFC300 !important;
+  border-color: rgba(255,195,0,0.55) !important;
+}
+/* Duration & weekday buttons */
+body.bielstein-theme .dur-btn.selected,
+body.bielstein-theme .wd-btn.selected {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+/* Primary action buttons */
+body.bielstein-theme .book-btn,
+body.bielstein-theme .abo-cta {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+  box-shadow: 0 4px 24px rgba(255,195,0,0.35) !important;
+}
+/* Login / register bar */
+body.bielstein-theme .user-bar-login {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+/* Modal */
+body.bielstein-theme .modal-btn,
+body.bielstein-theme .modal-tab.active {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+/* Admin */
+body.bielstein-theme .admin-save-btn,
+body.bielstein-theme .admin-tab.active {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+/* Date chips & scroll buttons */
+body.bielstein-theme .date-chip.selected {
+  background: #003566 !important;
+  border-color: #FFC300 !important;
+  color: #fff !important;
+}
+body.bielstein-theme .scroll-btn {
+  background: #003566 !important;
+}
+/* Slots */
+body.bielstein-theme .slot.selected,
+body.bielstein-theme .slot.selected-second {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+/* Courts */
+body.bielstein-theme .court-col { border-color: #003566 !important; }
+body.bielstein-theme .court-hdr { border-color: #003566 !important; background: #000814 !important; }
+/* Shadows & badges */
+body.bielstein-theme .door-btn.access {
+  box-shadow: 0 4px 20px rgba(255,195,0,0.35) !important;
+}
+body.bielstein-theme .disc-badge {
+  background: rgba(255,195,0,0.18) !important;
+  border: 1px solid rgba(255,195,0,0.55) !important;
+}
+</style>
 
 <!-- ■■ AUTH MODAL ■■ -->
 <div class="modal-overlay" id="authModal">
