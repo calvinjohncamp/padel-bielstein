@@ -20,6 +20,66 @@
   --gray-lt: #E4E2E3;
   --white: #F6F6F6;
 }
+
+/* ■■ BIELSTEIN EASTER-EGG THEME (Navy/Gold – Palette 2) ■■ */
+body.bielstein-theme {
+  --bg: #000814;
+  --card: #001D3D;
+  --border: #003566;
+  --blue: #FFC300;
+  --blue-dk: #E6AF00;
+  --gold: #FFC300;
+  --gold-dk: #FFD60A;
+  --gray: #4376AB;
+  --gray-lt: #8AABCC;
+  --white: #FFFFFF;
+}
+body.bielstein-theme { background: #000814; }
+body.bielstein-theme .hero { background: #000814; }
+body.bielstein-theme .hero-frame { background: #000814; }
+body.bielstein-theme .court-col { border-color: var(--blue); }
+body.bielstein-theme .court-hdr { border-color: var(--blue); background: #000814; }
+
+/* Unsichtbare Klick-Zone über dem weißen Ball oben rechts */
+.easter-egg-zone {
+  position: absolute;
+  right: 12.5%;
+  top: 3%;
+  width: 10%;
+  aspect-ratio: 1;
+  cursor: pointer;
+  z-index: 20;
+  border-radius: 50%;
+  /* debug: outline: 2px solid red; */
+}
+
+/* Easter-Egg Toast */
+.ee-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #FFD700;
+  color: #001F5B;
+  font-family: "Arial Narrow","Impact",sans-serif;
+  font-weight: 900;
+  font-size: 0.85rem;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 10px 22px;
+  border-radius: 30px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s ease;
+  z-index: 9999;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.ee-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
 
@@ -548,8 +608,10 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 <div class="hero" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');" style="cursor:default;">
   <div class="hero-frame">
     <img class="hero-img" src="Padel Bielstein Header 2027 XL ULTIMATE.png" alt="Padel Bielstein">
+    <div class="easter-egg-zone" onclick="event.stopPropagation(); toggleBielsteinTheme();" title=""></div>
 </div>
 </div>
+<div class="ee-toast" id="eeToast"></div>
 
 <main>
   <!-- USER BAR -->
@@ -3922,6 +3984,34 @@ function formatDateDE(dateStr) {
   if (!dateStr) return '—';
   const [y,m,d] = dateStr.split('-');
   return `${d}.${m}.${y}`;
+}
+
+// ============================================================
+//  EASTER EGG – Bielstein Theme (gelb/blau)
+// ============================================================
+let eeToastTimer = null;
+
+function toggleBielsteinTheme() {
+  const isOn = document.body.classList.toggle('bielstein-theme');
+  const img = document.querySelector('.hero-img');
+  if (img) {
+    img.src = isOn
+      ? 'Header Padel Bielstein - Gelb Blau.png'
+      : 'Padel Bielstein Header 2027 XL ULTIMATE.png';
+  }
+  const msg = isOn
+    ? '⚡ BIELSTEIN MODE – Blau & Gold!'
+    : '🎾 Zurück zum klassischen Look';
+  showEeToast(msg);
+}
+
+function showEeToast(msg) {
+  const t = document.getElementById('eeToast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(eeToastTimer);
+  eeToastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
 init();
