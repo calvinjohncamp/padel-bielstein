@@ -8,23 +8,23 @@
 <title>Padel Bielstein – Courts buchen</title>
 <style>
 :root {
-  --bg: #000000;
-  --card: #0d0d0d;
-  --border: #222222;
-  --blue: #1F6FD2;
-  --blue-dk: #1657A8;
-  --gold: #E6EA18;
-  --gold-dk: #C9CD14;
-  --gray: #a0a0a0;
-  --gray-lt: #d0d0d0;
-  --white: #ffffff;
+  --bg: #161616;
+  --card: #1E1E1E;
+  --border: #2A2A2A;
+  --blue: #F44A22;
+  --blue-dk: #D93F1C;
+  --gold: #FEF8E8;
+  --gold-dk: #E4E2E3;
+  --gray: #A8AAAC;
+  --gray-lt: #E4E2E3;
+  --white: #FEF8E8;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
 
 /* ■■ HEADER ■■ */
-.hero { margin-bottom: 18px; border-bottom: 1px solid var(--border); background: #000; overflow: hidden; }
-.hero-frame { width: 100%; aspect-ratio: 3830 / 1563; background: #000; position: relative; }
+.hero { margin-bottom: 18px; border-bottom: none; background: #161616; overflow: hidden; }
+.hero-frame { width: 100%; aspect-ratio: 3830 / 1563; background: #161616; position: relative; }
 .hero-img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
 .hero-launch {
   position: absolute;
@@ -39,10 +39,10 @@ body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color
   letter-spacing: 0.18em;
   text-transform: uppercase;
   white-space: nowrap;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.75);
+  text-shadow: 0 2px 12px rgba(0,0,0,0.75), 0 0 14px rgba(244,74,34,0.22);
   pointer-events: none;
 }
-.hero-launch .launch-gold { color: var(--gold); }
+.hero-launch .launch-gold { color: var(--gray); }
 .hero-launch .launch-blue { color: var(--blue); }
 @media (max-width: 560px) {
   .hero-launch {
@@ -73,14 +73,18 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .mode-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
 .mode-tab {
   height: 60px; padding: 0 20px; border-radius: 12px; cursor: pointer; transition: all 0.2s;
-  border: 1.5px solid var(--border); background: var(--card);
+  border: 1.5px solid #2A2A2A; background: #1E1E1E;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem;
-  letter-spacing: 0.08em; text-transform: uppercase; color: var(--white);
+  letter-spacing: 0.08em; text-transform: uppercase; color: #A8AAAC;
 }
-#tabAbo:not(.active) { color: var(--blue); border-color: var(--blue); }
+#tabAbo:not(.active) { color: #F44A22; border-color: rgba(244,74,34,0.65); }
 .mode-tab:hover { border-color: #444; }
-.mode-tab.active { background: var(--gold); border-color: var(--gold-dk); color: #0a0a0a !important; }
+.mode-tab.active {
+  background: #A8AAAC;
+  border: none;
+  color: #161616 !important;
+}
 .mode-tab .tab-icon { font-size: 1.1rem; }
 
 /* ■■ STEPS ■■ */
@@ -107,7 +111,11 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .dur-row { display: flex; gap: 10px; }
 .dur-btn { flex: 1; height: 60px; padding: 0 16px; background: var(--card); border: 1.5px solid var(--border); color: var(--white); font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 10px; cursor: pointer; transition: all 0.16s; display: flex; align-items: center; justify-content: center; gap: 12px; }
 .dur-btn:hover { border-color: var(--white); }
-.dur-btn.selected { background: var(--gold); border-color: var(--gold-dk); color: #0a0a0a; }
+.dur-btn.selected {
+  background: #A8AAAC;
+  border: none;
+  color: #161616;
+}
 .dur-btn .dprice { font-size: 0.78rem; font-weight: 600; opacity: 0.75; }
 .dur-btn.selected .dprice { opacity: 0.65; }
 .dur-sub { font-size: 0.72rem; color: #888; text-align: center; margin-top: 8px; letter-spacing: 0.04em; }
@@ -120,8 +128,8 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 /* ■■ COURTS ■■ */
 .courts-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.court-col { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--blue); }
-.court-hdr { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; background: #000; border-bottom: 1px solid var(--blue); }
+.court-col { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid rgba(244,74,34,0.65); }
+.court-hdr { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; background: #161616; border-bottom: 1px solid rgba(244,74,34,0.65); }
 .court-name { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
 .slots-grid { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
 .slot { border-radius: 8px; padding: 10px 13px; cursor: pointer; transition: all 0.13s; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid transparent; }
@@ -155,15 +163,38 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .disc-badge { background: rgba(31,111,210,0.18); border: 1px solid rgba(31,111,210,0.55); color: var(--blue); font-size: 0.65rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; margin-left: 6px; }
 
 /* ■■ BOOK BTN ■■ */
-.book-btn { width: 100%; height: 60px; background: var(--blue); color: #fff; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.12em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: none; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 24px rgba(31,111,210,0.3); }
+.book-btn {
+  width: 100%;
+  height: 60px;
+  background: #F44A22;
+  color: #FEF8E8;
+  border: none;
+  font-family: "Arial Narrow","Impact",sans-serif;
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  /* box-shadow removed: */ box-shadow: 0 4px 24px rgba(244,74,34,0.28);
+}
 .book-btn.visible { display: flex; }
-.book-btn:hover { background: var(--blue-dk); transform: translateY(-2px); }
+.book-btn:hover { background: #D93F1C; transform: translateY(-2px); }
 
 /* ■■ ABO ■■ */
 .weekday-row { display: flex; gap: 7px; flex-wrap: wrap; }
 .wd-btn { flex: 1; min-width: 50px; background: var(--card); border: 1.5px solid var(--border); color: var(--gray-lt); font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 11px 6px; border-radius: 10px; cursor: pointer; transition: all 0.16s; text-align: center; }
 .wd-btn:hover { border-color: #555; color: var(--white); }
-.wd-btn.selected { background: var(--gold); border-color: var(--gold-dk); color: #0a0a0a; }
+.wd-btn.selected {
+  background: #A8AAAC;
+  border: none;
+  color: #161616;
+}
 .abo-summary { background: var(--card); border: 1.5px solid var(--gold); border-radius: 14px; padding: 20px 22px; margin-top: 20px; display: none; animation: fadeUp 0.25s ease; }
 .abo-summary.visible { display: block; }
 .abo-sum-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
@@ -181,8 +212,23 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .abo-benefit { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #c0c0c0; }
 .abo-benefit-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
 .abo-weather { font-size: 0.82rem; color: #999; line-height: 1.5; margin-bottom: 18px; font-style: italic; }
-.abo-cta { width: 100%; height: 60px; background: var(--gold); color: #0a0a0a; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 28px rgba(230,234,24,0.2); }
-.abo-cta:hover { background: var(--gold-dk); transform: translateY(-2px); }
+.abo-cta {
+  width: 100%;
+  height: 60px;
+  background: #F44A22;
+  color: #FEF8E8;
+  border: none;
+  font-family: "Arial Narrow","Impact",sans-serif;
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  /* box-shadow removed: */ box-shadow: 0 4px 28px rgba(244,74,34,0.24);
+}
+.abo-cta:hover { background: #D93F1C; transform: translateY(-2px); }
 
 /* ■■ AUTH MODAL ■■ */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -219,11 +265,11 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .user-bar-out { background: none; border: 1px solid #444; color: #888; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; }
 .user-bar-out:hover { border-color: #888; color: #fff; }
 .user-bar-portal { background: none; border: 1px solid var(--gold); color: var(--gold); font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; margin-right: 6px; }
-.user-bar-portal:hover { background: var(--gold); color: #000; }
+.user-bar-portal:hover { background: var(--gold); color: #161616; }
 .user-bar-login { background: var(--blue); border: none; color: #fff; font-size: 0.72rem; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; }
 .user-bar-login:hover { background: var(--blue-dk); }
 .user-bar-register { background: none; border: 1px solid var(--gold); color: var(--gold); font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; margin-right: 6px; }
-.user-bar-register:hover { background: var(--gold); color: #000; }
+.user-bar-register:hover { background: var(--gold); color: #161616; }
 
 /* ■■ JETZT SPIELEN ■■ */
 .play-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
@@ -240,11 +286,11 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .door-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
 .door-btn { height: 86px; border-radius: 14px; border: none; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
 .door-btn-icon { font-size: 1.7rem; line-height: 1; }
-.door-btn.access { background: var(--blue); color: #fff; box-shadow: 0 4px 20px rgba(31,111,210,0.35); }
+.door-btn.access { background: var(--blue); color: #fff; /* box-shadow removed: */ box-shadow: 0 4px 20px rgba(31,111,210,0.35); }
 .door-btn.access:hover:not(:disabled) { background: var(--blue-dk); transform: translateY(-2px); }
-.door-btn.court { background: var(--gold); color: #0a0a0a; box-shadow: 0 4px 20px rgba(230,234,24,0.25); }
+.door-btn.court { background: var(--gold); color: #0a0a0a; /* box-shadow removed: */ box-shadow: 0 4px 20px rgba(230,234,24,0.25); }
 .door-btn.court:hover:not(:disabled) { background: var(--gold-dk); transform: translateY(-2px); }
-.door-btn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
+.door-btn:disabled { opacity: 0.3; cursor: not-allowed; /* box-shadow removed: */ box-shadow: none; }
 
 .door-info { background: #0a1a0a; border: 1px solid #1a3a1a; border-radius: 10px; padding: 12px 16px; font-size: 0.78rem; color: #6a9a6a; line-height: 1.6; margin-bottom: 14px; }
 .door-info strong { color: #4ade80; }
@@ -327,14 +373,14 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 }
 
 /* ■■ TOAST ■■ */
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #000; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.92rem; letter-spacing: 0.06em; padding: 11px 22px; border-radius: 10px; box-shadow: 0 4px 24px rgba(230,234,24,0.25); transition: transform 0.3s ease; z-index: 999; white-space: nowrap; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #161616; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.92rem; letter-spacing: 0.06em; padding: 11px 22px; border-radius: 10px; /* box-shadow removed: */ box-shadow: 0 4px 24px rgba(230,234,24,0.25); transition: transform 0.3s ease; z-index: 999; white-space: nowrap; }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
 /* ■■ SCROLLBAR ■■ */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-track { background: #161616; }
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-* { scrollbar-width: thin; scrollbar-color: #333 #0a0a0a; }
+* { scrollbar-width: thin; scrollbar-color: #333 #161616; }
 
 /* ════════════════════════════════════════
    MOBILE ≤ 560px
@@ -477,11 +523,8 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 <div class="hero" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');" style="cursor:default;">
   <div class="hero-frame">
-    <img class="hero-img" src="padel_bielstein_header_ULTIMATE_BLUE_ohne_Ball.jpg" alt="Padel Bielstein">
-    <div class="hero-launch" aria-label="Ab Frühjahr 2027">
-      <span class="launch-gold">Ab</span> <span class="launch-blue">Frühjahr</span> <span class="launch-gold">2027</span>
-    </div>
-  </div>
+    <img class="hero-img" src="Pade Bielstein Header 2027 XL ULTIMATE.png" alt="Padel Bielstein">
+</div>
 </div>
 
 <main>
@@ -946,7 +989,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
       </div>
 
       <!-- ── TAGESVERLAUF ── -->
-      <div id="misTage" style="background:#fff;border-radius:0 0 12px 12px;padding:24px;box-shadow:0 4px 24px rgba(0,0,0,0.18);">
+      <div id="misTage" style="background:#fff;border-radius:0 0 12px 12px;padding:24px;/* box-shadow removed: */ box-shadow:0 4px 24px rgba(0,0,0,0.18);">
 
         <!-- KPIs -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;">
@@ -1001,7 +1044,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
       </div><!-- /misTage -->
 
       <!-- ── MONATSBERICHT ── -->
-      <div id="misMonat" style="display:none;background:#fff;border-radius:0 0 12px 12px;padding:24px;box-shadow:0 4px 24px rgba(0,0,0,0.18);">
+      <div id="misMonat" style="display:none;background:#fff;border-radius:0 0 12px 12px;padding:24px;/* box-shadow removed: */ box-shadow:0 4px 24px rgba(0,0,0,0.18);">
 
         <!-- Header -->
         <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:20px;">
