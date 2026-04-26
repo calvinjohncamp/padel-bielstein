@@ -1737,11 +1737,11 @@ function showLoader(on) { document.getElementById('loadingBar').classList.toggle
 
 
 // ============================================================
-//  TEST-ABOS: lokales Slot-Blocking für Sandbox-Echtgefühl
-//  Hinweis: Live-Blockierung später sauber über Webhook + Supabase subscriptions.
+//  TEST-ABOS: Supabase-/Sandbox-Übergang im Frontend
+//  Dient nur für Test-Echtgefühl. Live später per Webhook + subscriptions.
 // ============================================================
-const LOCAL_ABOS_KEY = 'pb_test_active_abos_v1';
-const LOCAL_PENDING_ABO_KEY = 'pb_pending_abo_checkout_v1';
+const LOCAL_ABOS_KEY = 'pb_test_active_abos_v2';
+const LOCAL_PENDING_ABO_KEY = 'pb_pending_abo_checkout_v2';
 
 function getLocalTestAbos() {
   try { return JSON.parse(localStorage.getItem(LOCAL_ABOS_KEY) || '[]'); }
@@ -1796,14 +1796,25 @@ function localAboAppliesToDate(abo, dateStr) {
   return Number(d.getDay()) === Number(abo.weekday);
 }
 
+// Prüft einen konkreten 1-Stunden-Slot.
+// WICHTIG: Keine -1h Verschiebung. 19:00–21:00 blockt exakt 19 und 20.
+function isAboBlockingHour(abo, court, hour) {
+  if (Number(abo.court) !== Number(court)) return false;
+  const start = Number(abo.hour_start);
+  const dur = Number(abo.duration || 1);
+  return Number(hour) >= start && Number(hour) < start + dur;
+}
+
 function isLocalAboBlockedOnDate(dateStr, court, hour) {
-  return getLocalTestAbos().some(a => {
-    if (Number(a.court) !== Number(court)) return false;
-    if (!localAboAppliesToDate(a, dateStr)) return false;
-    const start = Number(a.hour_start);
-    const dur = Number(a.duration || 1);
-    return Number(hour) >= start && Number(hour) < start + dur;
-  });
+  return getLocalTestAbos().some(a =>
+    localAboAppliesToDate(a, dateStr) && isAboBlockingHour(a, court, hour)
+  );
+}
+
+function isLocalAboBlockedOnWeekday(weekday, court, hour) {
+  return getLocalTestAbos().some(a =>
+    Number(a.weekday) === Number(weekday) && isAboBlockingHour(a, court, hour)
+  );
 }
 
 function addLocalAboBlocksForDate(dateStr) {
@@ -1814,6 +1825,8 @@ function addLocalAboBlocksForDate(dateStr) {
     const start = Number(s.hour_start);
     const dur = Number(s.duration || 1);
     if (!booked[court]) booked[court] = new Set();
+
+    // exakt duration Stunden blockieren: 19 + 2 = 19,20
     for (let i = 0; i < dur; i++) {
       booked[court].add(`${dateStr}-${start + i}`);
     }
@@ -1827,8 +1840,9 @@ function addLocalAboBlocksForWeekday(weekday) {
     const court = Number(s.court);
     const start = Number(s.hour_start);
     const dur = Number(s.duration || 1);
-    if (!aboBooked[court]) continue;
+    if (!aboBooked[court]) aboBooked[court] = new Set();
 
+    // exakt duration Stunden blockieren: 19 + 2 = 19,20
     for (let i = 0; i < dur; i++) {
       aboBooked[court].add(`${weekday}-${start + i}`);
     }
@@ -2113,8 +2127,7 @@ async function checkHasAbo() {
       { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
     );
     const data = await res.json();
-    const localHasAbo = getLocalTestAbos().some(a => (a.email || '') === (email || ''));
-    document.getElementById('portalBtn').style.display = ((data && data.length > 0) || localHasAbo) ? 'inline-block' : 'none';
+    document.getElementById('portalBtn').style.display = (data && data.length > 0) ? 'inline-block' : 'none';
   } catch(e) {
     console.warn('Abo-Check fehlgeschlagen', e);
   }
@@ -2776,7 +2789,6 @@ async function submitAbo(skipAuthCheck) {
   const birthYear = currentProfile?.birth_year || null;
   const custType = currentProfile?.customer_type || 'account';
 
-  // Für Sandbox-Echtgefühl: Nach erfolgreicher Rückkehr wird daraus ein lokales aktives Test-Abo.
   storePendingAboCheckout({
     booking_type: 'abo',
     court,
@@ -2833,12 +2845,10 @@ async function submitAbo(skipAuthCheck) {
     if (data.url) {
       window.location.href = data.url;
     } else {
-      localStorage.removeItem(LOCAL_PENDING_ABO_KEY);
       showToast('Fehler: ' + (data.error || 'Stripe-Checkout für Jahresabo noch nicht verfügbar'));
       console.error('Abo checkout error:', data);
     }
   } catch (e) {
-    localStorage.removeItem(LOCAL_PENDING_ABO_KEY);
     console.error(e);
     showToast('Netzwerkfehler – bitte erneut versuchen.');
   }
@@ -2875,31 +2885,37 @@ function renderAboSlots() {
   [1, 2].forEach(ct => {
     const c = document.getElementById("aboSlots" + ct);
     c.innerHTML = "";
-    const priceMap = (aboWd===0||aboWd===6) ? PE : PW;
+    if (aboWd === null) return;
+
     Object.keys(PW).map(Number).forEach(h => {
-      const abKey  = `${aboWd}-${h}`;
-      const abKey2 = `${aboWd}-${h+1}`;
-      const isAboBk = aboBooked[ct].has(abKey) || (aboDur===2 && aboBooked[ct].has(abKey2));
-      const isSel = aboSlot?.court===ct && aboSlot?.hour===h;
-      const isSec = aboSlot?.court===ct && aboSlot?.hour===h-1 && aboDur===2;
-      const p = (priceMap[h] || 0) * aboDur;
       const h1 = `${String(h).padStart(2,"0")}:00`;
       const h2 = `${String(h+1).padStart(2,"0")}:00`;
+
+      const keyThis = `${aboWd}-${h}`;
+      const keyNext = `${aboWd}-${h+1}`;
+
+      const isAboThis = aboBooked[ct].has(keyThis);
+      const isAboNext = aboDur === 2 && aboBooked[ct].has(keyNext);
+      const blockedForSelection = isAboThis || isAboNext;
+
+      const isSel = aboSlot?.court === ct && aboSlot?.hour === h;
+      const isSec = aboSlot?.court === ct && aboSlot?.hour === h - 1 && aboDur === 2;
+
+      const priceMap = (aboWd===0 || aboWd===6) ? PE : PW;
+      const weeklyPrice = (priceMap[h] || 0) * aboDur;
+
       const sl = document.createElement("div");
-      if (isAboBk) {
-        sl.className = "slot abo-booked";
+      sl.className = "slot " + (blockedForSelection ? "abo-booked" : isSel ? "selected" : isSec ? "selected-second" : "free");
+
+      if (blockedForSelection) {
         sl.innerHTML = `<span class="slot-time">${h1}</span><span class="abo-lbl">Abo vergeben</span>`;
-      } else if (isSel) {
-        sl.className = "slot selected";
-        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;
       } else if (isSec) {
-        sl.className = "slot selected-second";
         sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span>`;
       } else {
-        sl.className = "slot free";
-        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${weeklyPrice} €/Wo</span>`;
         sl.onclick = () => pickAboSlot(ct, h);
       }
+
       c.appendChild(sl);
     });
   });
