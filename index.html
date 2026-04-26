@@ -37,20 +37,74 @@ body.bielstein-theme {
 body.bielstein-theme { background: #000814; }
 body.bielstein-theme .hero { background: #000814; }
 body.bielstein-theme .hero-frame { background: #000814; }
-body.bielstein-theme .court-col { border-color: var(--blue); }
-body.bielstein-theme .court-hdr { border-color: var(--blue); background: #000814; }
+body.bielstein-theme .court-col { border-color: #003566; }
+body.bielstein-theme .court-hdr { border-color: #003566; background: #000814; }
 
-/* Unsichtbare Klick-Zone über dem weißen Ball oben rechts */
+/* Hardcodierte Orange-Schatten überschreiben */
+body.bielstein-theme .book-btn {
+  box-shadow: 0 4px 24px rgba(255,195,0,0.3);
+}
+body.bielstein-theme .book-btn:hover {
+  box-shadow: 0 6px 28px rgba(255,195,0,0.45);
+}
+
+/* Mode-Tabs im Bielstein-Theme */
+body.bielstein-theme .mode-tab.active {
+  background: #FFC300;
+  border-color: #E6AF00;
+  color: #000814 !important;
+}
+body.bielstein-theme #tabAbo:not(.active) {
+  color: #FFC300;
+  border-color: #FFC300;
+}
+
+/* Hauptbuttons (JETZT BUCHEN etc.) */
+body.bielstein-theme .mode-tab:not(.active) {
+  background: #001D3D;
+  border-color: #003566;
+  color: #8AABCC;
+}
+
+/* Slot-Farben */
+body.bielstein-theme .slot.free:hover { border-color: #FFC300; }
+body.bielstein-theme .date-chip.selected { background: #003566; border-color: #FFC300; }
+body.bielstein-theme .scroll-btn { background: #003566; }
+
+/* Door-Buttons – hardcodierte Orange-Schatten überschreiben */
+body.bielstein-theme .door-btn.access {
+  box-shadow: 0 4px 20px rgba(255,195,0,0.35);
+}
+body.bielstein-theme .door-btn.court {
+  box-shadow: 0 4px 20px rgba(255,195,0,0.25);
+}
+
+/* Door-Log Einträge */
+body.bielstein-theme .door-log-entry {
+  background: #001D3D;
+}
+
+/* Tab-Farben inaktiv */
+body.bielstein-theme .mode-tab:not(.active) {
+  background: #001D3D;
+  border-color: #003566;
+  color: #8AABCC;
+}
+body.bielstein-theme #tabPlay:not(.active) {
+  color: #8AABCC;
+}
+
+/* Unsichtbare Klick-Zone – neu kalibriert für beide Header */
 .easter-egg-zone {
   position: absolute;
-  right: 12.5%;
-  top: 3%;
-  width: 10%;
+  right: 15%;
+  top: 4%;
+  width: 12%;
   aspect-ratio: 1;
   cursor: pointer;
   z-index: 20;
   border-radius: 50%;
-  outline: 3px solid red;
+  /* debug: outline: 3px solid red; */
 }
 
 /* Easter-Egg Toast */
