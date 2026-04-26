@@ -1734,7 +1734,7 @@ function showLoader(on) { document.getElementById('loadingBar').classList.toggle
 
 // ============================================================
 //  TEST-ABOS: lokales Slot-Blocking für Sandbox-Echtgefühl
-//  Hinweis: echte Live-Blockierung muss später serverseitig im Webhook erfolgen.
+//  Hinweis: Live-Blockierung später sauber über Webhook + Supabase subscriptions.
 // ============================================================
 const LOCAL_ABOS_KEY = 'pb_test_active_abos_v1';
 const LOCAL_PENDING_ABO_KEY = 'pb_pending_abo_checkout_v1';
@@ -1755,7 +1755,8 @@ function storePendingAboCheckout(abo) {
 function finalizePendingAboCheckout() {
   try {
     const raw = localStorage.getItem(LOCAL_PENDING_ABO_KEY);
-    if (!raw) return false;
+    if (!raw) return null;
+
     const pending = JSON.parse(raw);
     const list = getLocalTestAbos();
 
@@ -1778,11 +1779,11 @@ function finalizePendingAboCheckout() {
     }
 
     localStorage.removeItem(LOCAL_PENDING_ABO_KEY);
-    return true;
+    return pending;
   } catch(e) {
     console.warn('Lokales Test-Abo konnte nicht finalisiert werden', e);
     localStorage.removeItem(LOCAL_PENDING_ABO_KEY);
-    return false;
+    return null;
   }
 }
 
@@ -1794,6 +1795,7 @@ function addLocalAboBlocksForWeekday(weekday) {
     const start = Number(s.hour_start);
     const dur = Number(s.duration || 1);
     if (!aboBooked[court]) continue;
+
     for (let i = 0; i < dur; i++) {
       aboBooked[court].add(`${weekday}-${start + i}`);
     }
@@ -1818,11 +1820,21 @@ async function init() {
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('booking') === 'success') {
-    const aboFinalized = finalizePendingAboCheckout();
+    const finalizedAbo = finalizePendingAboCheckout();
     window.history.replaceState({}, '', '/');
-    showToast(aboFinalized ? '🎾 Jahresabo erfolgreich! Slot ist jetzt reserviert.' : '🎾 Buchung erfolgreich! Bestätigung kommt per E-Mail.');
-    await loadBookings(selDate);
-    renderSlots();
+
+    if (finalizedAbo) {
+      showToast('🎾 Jahresabo erfolgreich! Slot ist jetzt reserviert.');
+      await loadBookings(selDate);
+      renderSlots();
+      setMode('abo');
+      setAboDur(Number(finalizedAbo.duration || 1));
+      await setWd(Number(finalizedAbo.weekday));
+    } else {
+      showToast('🎾 Buchung erfolgreich! Bestätigung kommt per E-Mail.');
+      await loadBookings(selDate);
+      renderSlots();
+    }
   } else if (params.get('booking') === 'cancelled') {
     window.history.replaceState({}, '', '/');
     showToast('Buchung abgebrochen.');
@@ -2707,7 +2719,7 @@ async function confirmBooking(skipAuthCheck) {
   }
 }
 
-async async function submitAbo(skipAuthCheck) {
+async function submitAbo(skipAuthCheck) {
   if (!aboSlot || aboWd===null) {
     showToast('Bitte Wochentag und Slot wählen');
     return;
@@ -2728,7 +2740,7 @@ async async function submitAbo(skipAuthCheck) {
   const birthYear = currentProfile?.birth_year || null;
   const custType = currentProfile?.customer_type || 'account';
 
-  // Für Sandbox-Echtgefühl: erst nach erfolgreicher Rückkehr wird daraus ein lokaler aktiver Blocker.
+  // Für Sandbox-Echtgefühl: Nach erfolgreicher Rückkehr wird daraus ein lokales aktives Test-Abo.
   storePendingAboCheckout({
     booking_type: 'abo',
     court,
@@ -3702,7 +3714,25 @@ function formatDateDE(dateStr) {
   return `${d}.${m}.${y}`;
 }
 
-init();
+
+try {
+  init();
+} catch(e) {
+  console.error('Init Fehler:', e);
+  try {
+    PW = {...PW_FB};
+    PE = {...PE_FB};
+    buildDates();
+    selDate = todayStr();
+    document.querySelectorAll(".date-chip").forEach(c => c.classList.toggle("selected", c.dataset.date===selDate));
+    updDurPrices();
+    renderSlots();
+    showToast('Ansicht wurde im Notfallmodus geladen.');
+  } catch(inner) {
+    console.error('Notfallmodus fehlgeschlagen:', inner);
+  }
+}
+
 </script>
 <!-- ■■ EDIT-MODALS ■■ -->
 <div id="closureEditOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;align-items:center;justify-content:center;padding:16px;">
