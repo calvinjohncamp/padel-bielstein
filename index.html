@@ -8,16 +8,16 @@
 <title>Padel Bielstein – Courts buchen</title>
 <style>
 :root {
-  --bg: #000000;
-  --card: #0d0d0d;
-  --border: #222222;
-  --blue: #1F6FD2;
-  --blue-dk: #1657A8;
-  --gold: #E6EA18;
-  --gold-dk: #C9CD14;
-  --gray: #a0a0a0;
-  --gray-lt: #d0d0d0;
-  --white: #ffffff;
+  --bg: #161616;
+  --card: #1E1E1E;
+  --border: #2A2A2A;
+  --blue: #F44A22;
+  --blue-dk: #D93F1C;
+  --gold: #F6F6F6;
+  --gold-dk: #E4E2E3;
+  --gray: #A8AAAC;
+  --gray-lt: #E4E2E3;
+  --white: #F6F6F6;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
@@ -152,10 +152,10 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .sum-row .sv { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 1rem; }
 .sum-row.total .sl { color: var(--white); font-weight: 600; }
 .sum-row.total .sv { font-size: 1.5rem; color: var(--blue); }
-.disc-badge { background: rgba(31,111,210,0.18); border: 1px solid rgba(31,111,210,0.55); color: var(--blue); font-size: 0.65rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; margin-left: 6px; }
+.disc-badge { background: rgba(244,74,34,0.18); border: 1px solid rgba(244,74,34,0.55); color: var(--blue); font-size: 0.65rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; margin-left: 6px; }
 
 /* ■■ BOOK BTN ■■ */
-.book-btn { width: 100%; height: 60px; background: var(--blue); color: #fff; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.12em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: none; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 24px rgba(31,111,210,0.3); }
+.book-btn { width: 100%; height: 60px; background: var(--blue); color: #fff; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.12em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: none; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 24px rgba(244,74,34,0.3); }
 .book-btn.visible { display: flex; }
 .book-btn:hover { background: var(--blue-dk); transform: translateY(-2px); }
 
@@ -181,7 +181,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .abo-benefit { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #c0c0c0; }
 .abo-benefit-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
 .abo-weather { font-size: 0.82rem; color: #999; line-height: 1.5; margin-bottom: 18px; font-style: italic; }
-.abo-cta { width: 100%; height: 60px; background: var(--gold); color: #0a0a0a; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 28px rgba(230,234,24,0.2); }
+.abo-cta { width: 100%; height: 60px; background: var(--gold); color: #0a0a0a; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 28px rgba(246,246,246,0.2); }
 .abo-cta:hover { background: var(--gold-dk); transform: translateY(-2px); }
 
 /* ■■ AUTH MODAL ■■ */
@@ -234,29 +234,29 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .play-booking-court { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; color: var(--gold); }
 .play-booking-time { font-size: 0.82rem; color: #b0b0b0; }
 .play-badge-now  { border: 1.5px solid #4ade80; background: rgba(74,222,128,0.08); color: #4ade80; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
-.play-badge-soon { border: 1.5px solid var(--gold); background: rgba(230,234,24,0.08); color: var(--gold); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.play-badge-soon { border: 1.5px solid var(--gold); background: rgba(246,246,246,0.08); color: var(--gold); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
 .play-badge-past { border: 1.5px solid #444; color: #555; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
 
 .door-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
 .door-btn { height: 86px; border-radius: 14px; border: none; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
 .door-btn-icon { font-size: 1.7rem; line-height: 1; }
-.door-btn.access { background: var(--blue); color: #fff; box-shadow: 0 4px 20px rgba(31,111,210,0.35); }
+.door-btn.access { background: var(--blue); color: #fff; box-shadow: 0 4px 20px rgba(244,74,34,0.35); }
 .door-btn.access:hover:not(:disabled) { background: var(--blue-dk); transform: translateY(-2px); }
-.door-btn.court { background: var(--gold); color: #0a0a0a; box-shadow: 0 4px 20px rgba(230,234,24,0.25); }
+.door-btn.court { background: var(--gold); color: #0a0a0a; box-shadow: 0 4px 20px rgba(246,246,246,0.25); }
 .door-btn.court:hover:not(:disabled) { background: var(--gold-dk); transform: translateY(-2px); }
 .door-btn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
 
 .door-info { background: #0a1a0a; border: 1px solid #1a3a1a; border-radius: 10px; padding: 12px 16px; font-size: 0.78rem; color: #6a9a6a; line-height: 1.6; margin-bottom: 14px; }
 .door-info strong { color: #4ade80; }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
-.door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #0d0d0d; border-radius: 8px; border: 1px solid var(--border); }
+.door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
 .door-log-icon { font-size: 1rem; }
 .door-log-text { font-size: 0.78rem; color: #b0b0b0; flex: 1; }
 .door-log-time { font-size: 0.68rem; color: #555; font-family: "Arial Narrow","Impact",sans-serif; }
 .play-empty { text-align: center; padding: 56px 16px; color: #555; }
 .play-empty-icon { font-size: 2.8rem; margin-bottom: 14px; }
 .play-empty-text { font-size: 0.88rem; line-height: 1.6; }
-.play-no-active { background: #0d0d0d; border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; color: #666; font-size: 0.82rem; margin-bottom: 16px; }
+.play-no-active { background: #1E1E1E; border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; color: #666; font-size: 0.82rem; margin-bottom: 16px; }
 
 /* ■■ ADMIN ■■ */
 .admin-section { margin-bottom: 28px; }
@@ -286,15 +286,15 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .admin-table th { text-align: left; padding: 8px 10px; color: #666; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.68rem; border-bottom: 1px solid var(--border); }
 .admin-table td { padding: 9px 10px; border-bottom: 1px solid #111; color: #c0c0c0; vertical-align: middle; }
 .admin-table tr:last-child td { border-bottom: none; }
-.admin-table tr:hover td { background: #0d0d0d; }
+.admin-table tr:hover td { background: #1E1E1E; }
 .admin-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .admin-badge.paid    { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid #166534; }
-.admin-badge.active  { background: rgba(230,234,24,0.10); color: var(--gold); border: 1px solid #713f12; }
-.admin-badge.member  { background: rgba(31,111,210,0.15); color: var(--blue); border: 1px solid var(--blue-dk); }
+.admin-badge.active  { background: rgba(246,246,246,0.10); color: var(--gold); border: 1px solid #713f12; }
+.admin-badge.member  { background: rgba(244,74,34,0.15); color: var(--blue); border: 1px solid var(--blue-dk); }
 .admin-badge.account { background: #1a1a1a; color: #666; border: 1px solid #333; }
 .admin-badge.guest   { background: #1a1a1a; color: #555; border: 1px solid #333; }
 .admin-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-.admin-stat { background: #0d0d0d; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center; }
+.admin-stat { background: #1E1E1E; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center; }
 .admin-stat-val { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.6rem; color: var(--gold); line-height: 1; margin-bottom: 4px; }
 .admin-stat-lbl { font-size: 0.68rem; color: #666; text-transform: uppercase; letter-spacing: 0.08em; }
 .admin-tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
@@ -327,7 +327,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 }
 
 /* ■■ TOAST ■■ */
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #000; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.92rem; letter-spacing: 0.06em; padding: 11px 22px; border-radius: 10px; box-shadow: 0 4px 24px rgba(230,234,24,0.25); transition: transform 0.3s ease; z-index: 999; white-space: nowrap; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #000; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.92rem; letter-spacing: 0.06em; padding: 11px 22px; border-radius: 10px; box-shadow: 0 4px 24px rgba(246,246,246,0.25); transition: transform 0.3s ease; z-index: 999; white-space: nowrap; }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
 /* ■■ SCROLLBAR ■■ */
@@ -385,6 +385,60 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   .mode-tab { font-size: 0.9rem; }
   .step-lbl { font-size: 0.78rem; }
 }
+
+/* FINAL SELECTED STATES */
+.mode-tab.active,
+.dur-btn.selected,
+.wd-btn.selected {
+  background: #A8AAAC !important;
+  border: none !important;
+  color: #161616 !important;
+}
+
+.book-btn,
+.abo-cta,
+.user-bar-login,
+.modal-btn,
+.admin-save-btn,
+.date-chip.selected,
+.scroll-btn,
+.slot.selected,
+.slot.selected-second,
+.admin-tab.active {
+  background: #F44A22 !important;
+  border-color: #F44A22 !important;
+  color: #F6F6F6 !important;
+}
+
+#tabAbo:not(.active) {
+  color: #F44A22 !important;
+  border-color: rgba(244,74,34,0.65) !important;
+}
+
+.hero,
+.hero-frame {
+  background: #161616 !important;
+  border-bottom: none !important;
+}
+
+.abo-summary .dv,
+.abo-summary .sv,
+.abo-summary .abo-price-total,
+.abo-summary .abo-detail-row div:last-child {
+  color: #F6F6F6 !important;
+}
+
+.abo-summary .dl,
+.abo-summary .abo-price-reg,
+.abo-summary .abo-52,
+.abo-summary .abo-benefit {
+  color: #A8AAAC !important;
+}
+
+.abo-price-save {
+  color: #4ADE80 !important;
+}
+
 </style>
 </head>
 <body>
@@ -477,11 +531,8 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 <div class="hero" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');" style="cursor:default;">
   <div class="hero-frame">
-    <img class="hero-img" src="padel_bielstein_header_ULTIMATE_BLUE_ohne_Ball.jpg" alt="Padel Bielstein">
-    <div class="hero-launch" aria-label="Ab Frühjahr 2027">
-      <span class="launch-gold">Ab</span> <span class="launch-blue">Frühjahr</span> <span class="launch-gold">2027</span>
-    </div>
-  </div>
+    <img class="hero-img" src="Padel Bielstein Header 2027 XL ULTIMATE.png" alt="Padel Bielstein">
+</div>
 </div>
 
 <main>
@@ -975,7 +1026,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
           <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#22c55e;margin:0 auto 5px;"></div><div style="font-size:18px;font-weight:600;color:#111;">21</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-top:2px;">Grüne Tage</div></div>
           <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#facc15;margin:0 auto 5px;"></div><div style="font-size:18px;font-weight:600;color:#111;">5</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-top:2px;">Gelbe Tage</div></div>
           <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#ef4444;margin:0 auto 5px;"></div><div style="font-size:18px;font-weight:600;color:#111;">3</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-top:2px;">Rote Tage</div></div>
-          <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#1F6FD2;margin:0 auto 5px;"></div><div style="font-size:18px;font-weight:600;color:#111;">267 h</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-top:2px;">Bespielbar</div></div>
+          <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#F44A22;margin:0 auto 5px;"></div><div style="font-size:18px;font-weight:600;color:#111;">267 h</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-top:2px;">Bespielbar</div></div>
           <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#E6A800;margin:0 auto 5px;"></div><div style="font-size:18px;font-weight:600;color:#111;">66,8 %</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-top:2px;">Bespielbarkeit</div></div>
         </div>
 
@@ -1026,12 +1077,12 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
         <!-- 2. Umsatz 12M -->
         <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:8px;">2 · Umsatzentwicklung — letzte 12 Monate vs. Vorjahr</div>
-        <div style="display:flex;gap:12px;margin-bottom:7px;font-size:10px;color:#999;"><span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#1F6FD2;display:inline-block;"></span>Aktuelles Jahr</span><span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#ccc;display:inline-block;"></span>Vorjahr</span></div>
+        <div style="display:flex;gap:12px;margin-bottom:7px;font-size:10px;color:#999;"><span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#F44A22;display:inline-block;"></span>Aktuelles Jahr</span><span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#ccc;display:inline-block;"></span>Vorjahr</span></div>
         <div style="position:relative;width:100%;height:220px;margin-bottom:24px;"><canvas id="misBar12"></canvas></div>
 
         <!-- 3. Rollierend -->
         <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:#666;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:8px;">3 · Kumulierter Umsatz — rollierende 12 Monate</div>
-        <div style="display:flex;gap:12px;margin-bottom:7px;font-size:10px;color:#999;"><span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#1F6FD2;display:inline-block;"></span>Aktuelles Jahr</span><span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#ccc;display:inline-block;"></span>Vorjahr</span></div>
+        <div style="display:flex;gap:12px;margin-bottom:7px;font-size:10px;color:#999;"><span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#F44A22;display:inline-block;"></span>Aktuelles Jahr</span><span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#ccc;display:inline-block;"></span>Vorjahr</span></div>
         <div style="position:relative;width:100%;height:200px;margin-bottom:24px;"><canvas id="misRoll"></canvas></div>
 
         <!-- 4. Struktur -->
@@ -1057,7 +1108,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
           <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#22c55e;margin:0 auto 5px;"></div><div style="font-size:17px;font-weight:600;color:#111;">20</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#999;margin-top:2px;">Grüne Tage</div></div>
           <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#facc15;margin:0 auto 5px;"></div><div style="font-size:18px;font-weight:600;color:#111;">5</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-top:2px;">Gelbe Tage</div></div>
           <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#ef4444;margin:0 auto 5px;"></div><div style="font-size:18px;font-weight:600;color:#111;">3</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-top:2px;">Rote Tage</div></div>
-          <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#1F6FD2;margin:0 auto 5px;"></div><div style="font-size:17px;font-weight:600;color:#111;">252 h</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#999;margin-top:2px;">Bespielbar</div></div>
+          <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#F44A22;margin:0 auto 5px;"></div><div style="font-size:17px;font-weight:600;color:#111;">252 h</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#999;margin-top:2px;">Bespielbar</div></div>
           <div style="flex:1;min-width:80px;background:#f5f5f5;border-radius:10px;padding:10px;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;background:#E6A800;margin:0 auto 5px;"></div><div style="font-size:17px;font-weight:600;color:#111;">64,3 %</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#999;margin-top:2px;">Bespielbarkeit</div></div>
         </div>
         <div style="font-size:10px;color:#666;background:#f5f5f5;border-radius:8px;padding:9px 13px;margin-bottom:22px;line-height:1.5;">
@@ -1110,7 +1161,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
       const wCol={g:'#22c55e',y:'#facc15',r:'#ef4444'};
       const wTxt={g:'1A bespielbar',y:'Eingeschränkt',r:'Unbespielbar'};
       let tageRows='';
-      raw.forEach(r=>{tageRows+=`<tr><td>${r.d}</td><td>${r.h} h</td><td>${r.u.toLocaleString('de-DE')} €</td><td>${r.eph.toFixed(1)} €</td><td>${r.k}</td><td><span style="display:inline-block;height:4px;width:${Math.round(r.au*0.45)}px;border-radius:2px;background:#1F6FD2;vertical-align:middle;margin-right:3px;"></span>${r.au} %</td><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${wCol[r.w]};vertical-align:middle;margin-right:3px;"></span>${wTxt[r.w]}</td><td>${r.bs} h</td></tr>`;});
+      raw.forEach(r=>{tageRows+=`<tr><td>${r.d}</td><td>${r.h} h</td><td>${r.u.toLocaleString('de-DE')} €</td><td>${r.eph.toFixed(1)} €</td><td>${r.k}</td><td><span style="display:inline-block;height:4px;width:${Math.round(r.au*0.45)}px;border-radius:2px;background:#F44A22;vertical-align:middle;margin-right:3px;"></span>${r.au} %</td><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${wCol[r.w]};vertical-align:middle;margin-right:3px;"></span>${wTxt[r.w]}</td><td>${r.bs} h</td></tr>`;});
       const sH=raw.reduce((a,r)=>a+r.h,0),sU=raw.reduce((a,r)=>a+r.u,0);
       tageRows+=`<tr style="font-weight:600;background:#f5f5f5;"><td>Gesamt / Ø</td><td>${sH} h</td><td>${sU.toLocaleString('de-DE')} €</td><td>${(sU/sH).toFixed(1)} €</td><td>—</td><td>41,0 %</td><td>—</td><td>252/392 h</td></tr>`;
       w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Management-Report Feb 2027 · Padel Bielstein</title>
@@ -1149,6 +1200,60 @@ tr.bold td{font-weight:600;background:#f5f5f5;}
 .wnote{font-size:10px;color:#666;background:#f5f5f5;border-radius:5px;padding:7px 9px;margin-bottom:14px;line-height:1.5;}
 .hint{font-size:8px;color:#bbb;margin-top:14px;}
 @media print{body{padding:12px 16px;}}
+
+/* FINAL SELECTED STATES */
+.mode-tab.active,
+.dur-btn.selected,
+.wd-btn.selected {
+  background: #A8AAAC !important;
+  border: none !important;
+  color: #161616 !important;
+}
+
+.book-btn,
+.abo-cta,
+.user-bar-login,
+.modal-btn,
+.admin-save-btn,
+.date-chip.selected,
+.scroll-btn,
+.slot.selected,
+.slot.selected-second,
+.admin-tab.active {
+  background: #F44A22 !important;
+  border-color: #F44A22 !important;
+  color: #F6F6F6 !important;
+}
+
+#tabAbo:not(.active) {
+  color: #F44A22 !important;
+  border-color: rgba(244,74,34,0.65) !important;
+}
+
+.hero,
+.hero-frame {
+  background: #161616 !important;
+  border-bottom: none !important;
+}
+
+.abo-summary .dv,
+.abo-summary .sv,
+.abo-summary .abo-price-total,
+.abo-summary .abo-detail-row div:last-child {
+  color: #F6F6F6 !important;
+}
+
+.abo-summary .dl,
+.abo-summary .abo-price-reg,
+.abo-summary .abo-52,
+.abo-summary .abo-benefit {
+  color: #A8AAAC !important;
+}
+
+.abo-price-save {
+  color: #4ADE80 !important;
+}
+
 </style></head><body>
 <div class="hdr"><h1>Management-Report · Februar 2027</h1><div style="font-size:9px;color:#999;">Tennisfreunde Bielstein e.V.</div></div>
 <div class="sub">Erstellt: 01.03.2027 · Alle Angaben auf Basis bestätigter Zahlungen · Musterbericht mit Beispieldaten</div>
@@ -1166,10 +1271,10 @@ tr.bold td{font-weight:600;background:#f5f5f5;}
   <div class="kpi"><div class="kpi-lbl">Roll. 12M-Umsatz</div><div class="kpi-val star">100.640 €</div><div class="kpi-d">▲ Erstmals über 100k !</div></div>
 </div>
 <div class="sec">2 · Umsatzentwicklung — letzte 12 Monate vs. Vorjahr</div>
-<div class="leg-row"><span class="leg"><span class="leg-dot" style="background:#1F6FD2"></span>Aktuelles Jahr</span><span class="leg"><span class="leg-dot" style="background:#bbb"></span>Vorjahr</span></div>
+<div class="leg-row"><span class="leg"><span class="leg-dot" style="background:#F44A22"></span>Aktuelles Jahr</span><span class="leg"><span class="leg-dot" style="background:#bbb"></span>Vorjahr</span></div>
 <div class="chart-wrap ch170"><canvas id="pBar12"></canvas></div>
 <div class="sec">3 · Kumulierter Umsatz — rollierende 12 Monate</div>
-<div class="leg-row"><span class="leg"><span class="leg-dot" style="background:#1F6FD2"></span>Aktuelles Jahr</span><span class="leg"><span class="leg-dot" style="background:#bbb"></span>Vorjahr</span></div>
+<div class="leg-row"><span class="leg"><span class="leg-dot" style="background:#F44A22"></span>Aktuelles Jahr</span><span class="leg"><span class="leg-dot" style="background:#bbb"></span>Vorjahr</span></div>
 <div class="chart-wrap ch150"><canvas id="pRoll"></canvas></div>
 <div class="sec">4 · Struktur — Kundentyp &amp; Altersgruppe &amp; Tageszeit (gespielte Stunden)</div>
 <div class="two-col" style="margin-bottom:10px;">
@@ -1182,7 +1287,7 @@ tr.bold td{font-weight:600;background:#f5f5f5;}
   <div class="amp"><div class="amp-icon" style="background:#22c55e"></div><div class="amp-val">20</div><div class="amp-sub">Grüne Tage</div></div>
   <div class="amp"><div class="amp-icon" style="background:#facc15"></div><div class="amp-val">5</div><div class="amp-sub">Gelbe Tage</div></div>
   <div class="amp"><div class="amp-icon" style="background:#ef4444"></div><div class="amp-val">3</div><div class="amp-sub">Rote Tage</div></div>
-  <div class="amp"><div class="amp-icon" style="background:#1F6FD2"></div><div class="amp-val">252 h</div><div class="amp-sub">Bespielbar</div></div>
+  <div class="amp"><div class="amp-icon" style="background:#F44A22"></div><div class="amp-val">252 h</div><div class="amp-sub">Bespielbar</div></div>
   <div class="amp"><div class="amp-icon" style="background:#E6A800"></div><div class="amp-val">64,3 %</div><div class="amp-sub">Bespielbarkeit</div></div>
 </div>
 <div class="wnote">Wetterbereinigt: Bei 64,3 % Bespielbarkeit entspricht die Auslastung (41,0 %) einer effektiven Kapazitätsauslastung von <strong>63,8 %</strong>. Vorjahr Feb 2026: 3 Rote Tage mehr, 58,1 % Bespielbarkeit.</div>
@@ -1211,11 +1316,11 @@ const pDLP={id:'pDL',afterDatasetsDraw(chart){const{ctx}=chart,pcts=chart.config
 function pHBar(id,labels,data,colors,max){const pcts=pLR(data);new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:3,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:110,left:4}},_pcts:pcts,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false,max},y:{ticks:{font:{size:11,family:'Arial Narrow,Arial,sans-serif'},color:'#444',padding:3},grid:{display:false},border:{display:false}}}},plugins:[pDLP]});}
 const mo=['Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez','Jan','Feb'];
 const gc='rgba(0,0,0,0.05)';
-new Chart(document.getElementById('pBar12'),{type:'bar',data:{labels:mo,datasets:[{label:'Vorjahr',data:[3100,4100,4200,4100,4200,6000,6300,7800,8100,9400,9600,4628],backgroundColor:'#ddd',borderColor:'#ccc',borderWidth:1,borderRadius:3},{label:'Aktuell',data:[4802,5326,6719,5912,6726,8495,9213,10534,11622,11080,13939,6272],backgroundColor:'#1F6FD244',borderColor:'#1F6FD2',borderWidth:1,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},color:'#999'},grid:{display:false}},y:{ticks:{font:{size:9},color:'#999',callback:v=>(v/1000).toFixed(0)+'k'},grid:{color:gc}}}}});
-new Chart(document.getElementById('pRoll'),{type:'line',data:{labels:mo,datasets:[{data:[18000,21000,24000,27000,30000,33000,36000,40000,44000,48000,53000,58000],borderColor:'#ccc',borderDash:[5,3],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#ccc',tension:0.3,fill:false},{data:[38117,42351,47562,51557,55893,61364,67121,73794,81339,88801,98316,100640],borderColor:'#1F6FD2',borderWidth:2,pointRadius:4,pointBackgroundColor:'#1F6FD2',tension:0.3,fill:{target:'origin',above:'rgba(31,111,210,0.07)'}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},color:'#999'},grid:{display:false}},y:{ticks:{font:{size:9},color:'#999',callback:v=>(v/1000).toFixed(0)+'k'},grid:{color:gc}}}}});
-pHBar('pKt',['Buchungen Externe','Buchungen Mitglieder','Abos Mitglieder','Abos Externe'],[114,68,28,14],['#1F6FD2','#3d9be9','#E6A800','#c9a800'],148);
-pHBar('pAlt',['30–49 Jahre','< 30 Jahre','50–70 Jahre','> 70 Jahre'],[108,58,48,10],['#E6A800','#1F6FD2','#3d9be9','#aaa'],140);
-pHBar('pTz',['16–19 Uhr','12–16 Uhr','19–22 Uhr','08–12 Uhr'],[81,55,46,42],['#1F6FD2','#3d9be9','#E6A800','#aaa'],110);
+new Chart(document.getElementById('pBar12'),{type:'bar',data:{labels:mo,datasets:[{label:'Vorjahr',data:[3100,4100,4200,4100,4200,6000,6300,7800,8100,9400,9600,4628],backgroundColor:'#ddd',borderColor:'#ccc',borderWidth:1,borderRadius:3},{label:'Aktuell',data:[4802,5326,6719,5912,6726,8495,9213,10534,11622,11080,13939,6272],backgroundColor:'#F44A2244',borderColor:'#F44A22',borderWidth:1,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},color:'#999'},grid:{display:false}},y:{ticks:{font:{size:9},color:'#999',callback:v=>(v/1000).toFixed(0)+'k'},grid:{color:gc}}}}});
+new Chart(document.getElementById('pRoll'),{type:'line',data:{labels:mo,datasets:[{data:[18000,21000,24000,27000,30000,33000,36000,40000,44000,48000,53000,58000],borderColor:'#ccc',borderDash:[5,3],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#ccc',tension:0.3,fill:false},{data:[38117,42351,47562,51557,55893,61364,67121,73794,81339,88801,98316,100640],borderColor:'#F44A22',borderWidth:2,pointRadius:4,pointBackgroundColor:'#F44A22',tension:0.3,fill:{target:'origin',above:'rgba(244,74,34,0.07)'}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},color:'#999'},grid:{display:false}},y:{ticks:{font:{size:9},color:'#999',callback:v=>(v/1000).toFixed(0)+'k'},grid:{color:gc}}}}});
+pHBar('pKt',['Buchungen Externe','Buchungen Mitglieder','Abos Mitglieder','Abos Externe'],[114,68,28,14],['#F44A22','#3d9be9','#E6A800','#c9a800'],148);
+pHBar('pAlt',['30–49 Jahre','< 30 Jahre','50–70 Jahre','> 70 Jahre'],[108,58,48,10],['#E6A800','#F44A22','#3d9be9','#aaa'],140);
+pHBar('pTz',['16–19 Uhr','12–16 Uhr','19–22 Uhr','08–12 Uhr'],[81,55,46,42],['#F44A22','#3d9be9','#E6A800','#aaa'],110);
 const wCol={g:'#22c55e',y:'#facc15',r:'#ef4444'};
 new Chart(document.getElementById('pTageBar'),{type:'bar',data:{labels:['01.02.','02.02.','03.02.','04.02.','05.02.','06.02.','07.02.','08.02.','09.02.','10.02.','11.02.','12.02.','13.02.','14.02.','15.02.','16.02.','17.02.','18.02.','19.02.','20.02.','21.02.','22.02.','23.02.','24.02.','25.02.','26.02.','27.02.','28.02.'],datasets:[{data:[330,231,364,399,176,272,156,149,291,285,476,117,298,201,164,316,316,405,148,159,266,250,146,480,457,234,263,331],backgroundColor:['#22c55e44','#22c55e44','#22c55e44','#22c55e44','#facc1544','#22c55e44','#facc1544','#ef444444','#22c55e44','#22c55e44','#22c55e44','#ef444444','#22c55e44','#facc1544','#22c55e44','#22c55e44','#22c55e44','#22c55e44','#facc1544','#ef444444','#22c55e44','#22c55e44','#facc1544','#22c55e44','#22c55e44','#22c55e44','#22c55e44','#22c55e44'],borderColor:['#22c55e','#22c55e','#22c55e','#22c55e','#facc15','#22c55e','#facc15','#ef4444','#22c55e','#22c55e','#22c55e','#ef4444','#22c55e','#facc15','#22c55e','#22c55e','#22c55e','#22c55e','#facc15','#ef4444','#22c55e','#22c55e','#facc15','#22c55e','#22c55e','#22c55e','#22c55e','#22c55e'],borderWidth:1,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:8},maxRotation:45,color:'#999'},grid:{display:false}},y:{ticks:{font:{size:8},color:'#999',callback:v=>v+' €'},grid:{color:gc}}}}});
 setTimeout(()=>window.print(),1400);
@@ -1318,7 +1423,7 @@ setTimeout(()=>window.print(),1400);
       const n=misRawData.length,sH=misRawData.reduce((a,r)=>a+r.h,0),sU=misRawData.reduce((a,r)=>a+r.u,0),sK=misRawData.reduce((a,r)=>a+r.k,0);
       const avgAu=(misRawData.reduce((a,r)=>a+r.au,0)/n).toFixed(1);
       tb.innerHTML+=`<tr style="background:#111;color:#aaa;font-size:0.75rem;"><td style="text-align:left;">Ø 30-Tage-Schnitt</td><td>${(sH/n).toFixed(1)} h</td><td>${Math.round(sU/n).toLocaleString('de-DE')} €</td><td>${(sU/sH).toFixed(1)} €</td><td>${(sK/n).toFixed(1)}</td><td>${avgAu} %</td><td></td><td></td></tr>`;
-      tb.innerHTML+=`<tr style="background:#0d0d0d;color:#aaa;font-size:0.75rem;border-top:1px solid #333;"><td style="text-align:left;color:#fff;font-weight:600;">Summe 30 Tage</td><td>${sH} h</td><td>${sU.toLocaleString('de-DE')} €</td><td>—</td><td>${sK}</td><td>—</td><td></td><td></td></tr>`;
+      tb.innerHTML+=`<tr style="background:#1E1E1E;color:#aaa;font-size:0.75rem;border-top:1px solid #333;"><td style="text-align:left;color:#fff;font-weight:600;">Summe 30 Tage</td><td>${sH} h</td><td>${sU.toLocaleString('de-DE')} €</td><td>—</td><td>${sK}</td><td>—</td><td></td><td></td></tr>`;
 
       // Sparkline
       new Chart(document.getElementById('misSparkline'),{type:'bar',data:{
@@ -1329,9 +1434,9 @@ setTimeout(()=>window.print(),1400);
                 y:{ticks:{font:{size:8},color:'#666',callback:v=>(v/1000).toFixed(1)+'k'},grid:{color:'rgba(255,255,255,0.05)'}}}}});
 
       // Balken 30T
-      misHBar('misKt30',['Buchungen Externe','Buchungen Mitglieder','Abos Mitglieder','Abos Externe'],[114,68,28,14],['#1F6FD2','#3d9be9','#E6EA18','#c9cd14'],148);
-      misHBar('misAlt30',['30–49 Jahre','< 30 Jahre','50–70 Jahre','> 70 Jahre'],[108,58,48,10],['#E6EA18','#1F6FD2','#3d9be9','#888'],140);
-      misHBar('misTz30',['16–19 Uhr','12–16 Uhr','19–22 Uhr','08–12 Uhr'],[81,55,46,42],['#1F6FD2','#3d9be9','#E6EA18','#888'],110);
+      misHBar('misKt30',['Buchungen Externe','Buchungen Mitglieder','Abos Mitglieder','Abos Externe'],[114,68,28,14],['#F44A22','#3d9be9','#F6F6F6','#E4E2E3'],148);
+      misHBar('misAlt30',['30–49 Jahre','< 30 Jahre','50–70 Jahre','> 70 Jahre'],[108,58,48,10],['#F6F6F6','#F44A22','#3d9be9','#888'],140);
+      misHBar('misTz30',['16–19 Uhr','12–16 Uhr','19–22 Uhr','08–12 Uhr'],[81,55,46,42],['#F44A22','#3d9be9','#F6F6F6','#888'],110);
     }
 
     // ── MONATSBERICHT INIT ──
@@ -1362,21 +1467,21 @@ setTimeout(()=>window.print(),1400);
 
       new Chart(document.getElementById('misBar12'),{type:'bar',data:{labels:mo,datasets:[
         {label:'Vorjahr',data:vor,backgroundColor:'#33333388',borderColor:'#555',borderWidth:1,borderRadius:3},
-        {label:'Aktuell',data:akt,backgroundColor:'#1F6FD266',borderColor:'#1F6FD2',borderWidth:1,borderRadius:3}
+        {label:'Aktuell',data:akt,backgroundColor:'#F44A2266',borderColor:'#F44A22',borderWidth:1,borderRadius:3}
       ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toLocaleString('de-DE')} €`}}},
         scales:{x:{ticks:{font:{size:9},color:'#888'},grid:{display:false}},
                 y:{ticks:{font:{size:9},color:'#888',callback:v=>(v/1000).toFixed(0)+'k'},grid:{color:gc}}}}});
 
       new Chart(document.getElementById('misRoll'),{type:'line',data:{labels:mo,datasets:[
         {label:'Vorjahr',data:rollV,borderColor:'#555',borderDash:[5,3],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#555',tension:0.3,fill:false},
-        {label:'Aktuell',data:roll,borderColor:'#E6EA18',borderWidth:2,pointRadius:4,pointBackgroundColor:'#E6EA18',tension:0.3,fill:{target:'origin',above:'rgba(230,234,24,0.06)'}}
+        {label:'Aktuell',data:roll,borderColor:'#F6F6F6',borderWidth:2,pointRadius:4,pointBackgroundColor:'#F6F6F6',tension:0.3,fill:{target:'origin',above:'rgba(246,246,246,0.06)'}}
       ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toLocaleString('de-DE')} €`}}},
         scales:{x:{ticks:{font:{size:9},color:'#888'},grid:{display:false}},
                 y:{ticks:{font:{size:9},color:'#888',callback:v=>(v/1000).toFixed(0)+'k'},grid:{color:gc}}}}});
 
-      misHBar('misKtMon',['Buchungen Externe','Buchungen Mitglieder','Abos Mitglieder','Abos Externe'],[114,68,28,14],['#1F6FD2','#3d9be9','#E6EA18','#c9cd14'],148);
-      misHBar('misAltMon',['30–49 Jahre','< 30 Jahre','50–70 Jahre','> 70 Jahre'],[108,58,48,10],['#E6EA18','#1F6FD2','#3d9be9','#888'],140);
-      misHBar('misTzMon',['16–19 Uhr','12–16 Uhr','19–22 Uhr','08–12 Uhr'],[81,55,46,42],['#1F6FD2','#3d9be9','#E6EA18','#888'],110);
+      misHBar('misKtMon',['Buchungen Externe','Buchungen Mitglieder','Abos Mitglieder','Abos Externe'],[114,68,28,14],['#F44A22','#3d9be9','#F6F6F6','#E4E2E3'],148);
+      misHBar('misAltMon',['30–49 Jahre','< 30 Jahre','50–70 Jahre','> 70 Jahre'],[108,58,48,10],['#F6F6F6','#F44A22','#3d9be9','#888'],140);
+      misHBar('misTzMon',['16–19 Uhr','12–16 Uhr','19–22 Uhr','08–12 Uhr'],[81,55,46,42],['#F44A22','#3d9be9','#F6F6F6','#888'],110);
 
       new Chart(document.getElementById('misTageBarMon'),{type:'bar',data:{
         labels:mon28.map(r=>r.d),
@@ -2500,7 +2605,7 @@ async function renderPlaySection() {
 
   // Demo-Badge über der Liste
   const demoBanner = isDemo
-    ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:7px 12px;background:rgba(230,234,24,0.07);border:1px solid rgba(230,234,24,0.25);border-radius:8px;">
+    ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:7px 12px;background:rgba(246,246,246,0.07);border:1px solid rgba(246,246,246,0.25);border-radius:8px;">
         <span style="font-size:0.7rem;color:var(--gold);font-family:'Arial Narrow','Impact',sans-serif;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;">◉ Demo-Ansicht</span>
         <span style="font-size:0.72rem;color:#666;">Echte Buchungen erscheinen hier automatisch</span>
        </div>`
