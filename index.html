@@ -1858,13 +1858,18 @@ async function saveTestAboToSupabase(abo) {
       weekday: Number(abo.weekday),
       hour_start: Number(abo.hour_start),
       duration: Number(abo.duration || 1),
+
+      // Pflichtfelder in Supabase subscriptions
+      price_per_week_cents: Number(abo.price_per_week_cents || 0),
+      price_cents: Number(abo.price_cents || 0),
+
       status: 'active'
     };
 
     const { data, error } = await sb
       .from('subscriptions')
       .insert([payload])
-      .select('id,court,weekday,hour_start,duration,status')
+      .select('id,court,weekday,hour_start,duration,price_per_week_cents,price_cents,status')
       .single();
 
     if (error) {
