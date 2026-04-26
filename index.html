@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>Padel Bielstein – Courts buchen</title>
+<!-- Version: v0.14-abo-supabase-fix | 2026-04-26 -->
 <style>
 :root {
   --bg: #161616;
@@ -1849,36 +1850,123 @@ function addLocalAboFallback(abo) {
   }
 }
 
+function isoDatePlusDays(days) {
+  const d = new Date();
+  d.setDate(d.getDate() + Number(days || 0));
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function cleanDbPayload(obj) {
+  const out = {};
+  Object.keys(obj || {}).forEach(k => {
+    const v = obj[k];
+    if (v !== undefined && v !== null && v !== '') out[k] = v;
+  });
+  return out;
+}
+
+function buildSubscriptionPayload(abo, lean=false) {
+  const pricePerWeekCents = Math.max(1, Math.round(Number(abo.price_per_week_cents ?? 0)));
+  const priceTotalCents   = Math.max(pricePerWeekCents, Math.round(Number(abo.price_total_cents ?? abo.price_cents ?? pricePerWeekCents * 30)));
+
+  const base = {
+    court: Number(abo.court),
+    weekday: Number(abo.weekday),
+    hour_start: Number(abo.hour_start),
+    duration: Number(abo.duration || 1),
+    price_per_week_cents: pricePerWeekCents,
+    price_total_cents: priceTotalCents,
+    price_cents: priceTotalCents,
+    weeks_billed: Number(abo.weeks_billed || 30),
+    weeks_reserved: Number(abo.weeks_reserved || 52),
+    starts_on: abo.starts_on || isoDatePlusDays(0),
+    ends_on: abo.ends_on || isoDatePlusDays(364),
+    status: 'active'
+  };
+
+  if (lean) return cleanDbPayload(base);
+
+  return cleanDbPayload({
+    ...base,
+    user_id: abo.user_id || currentUser?.id || null,
+    customer_type: abo.customer_type || currentProfile?.customer_type || 'account',
+    email: abo.email || currentProfile?.email || currentUser?.email || null,
+    full_name: abo.full_name || currentProfile?.full_name || null,
+    birth_year: abo.birth_year || currentProfile?.birth_year || null,
+    weekday_name: abo.weekday_name || WDNAMES?.[Number(abo.weekday)] || null,
+    source: 'frontend-test-reservation',
+    created_at: new Date().toISOString()
+  });
+}
+
+function missingColumnName(msg) {
+  const text = String(msg || '');
+  const m = text.match(/Could not find the '([^']+)' column/i) || text.match(/column [\"']?([a-zA-Z0-9_]+)[\"']?/i);
+  return m ? m[1] : null;
+}
+
+async function insertSubscriptionPayload(payload) {
+  const { data, error } = await sb
+    .from('subscriptions')
+    .insert([payload])
+    .select('*')
+    .single();
+  return { data, error };
+}
+
 async function saveTestAboToSupabase(abo) {
   if (!abo) return { ok: false, error: 'Kein Abo vorhanden' };
 
+  const court = Number(abo.court);
+  const weekday = Number(abo.weekday);
+  const hourStart = Number(abo.hour_start);
+  const duration = Number(abo.duration || 1);
+  const email = abo.email || currentProfile?.email || currentUser?.email || null;
+
   try {
-    const payload = {
-      court: Number(abo.court),
-      weekday: Number(abo.weekday),
-      hour_start: Number(abo.hour_start),
-      duration: Number(abo.duration || 1),
-
-      // Pflichtfelder in Supabase subscriptions
-      price_per_week_cents: Number(abo.price_per_week_cents || 0),
-      price_cents: Number(abo.price_cents || 0),
-
-      status: 'active'
-    };
-
-    const { data, error } = await sb
+    let existingQuery = sb
       .from('subscriptions')
-      .insert([payload])
-      .select('id,court,weekday,hour_start,duration,price_per_week_cents,price_cents,status')
-      .single();
+      .select('id,court,weekday,hour_start,duration,status')
+      .eq('court', court)
+      .eq('weekday', weekday)
+      .eq('hour_start', hourStart)
+      .eq('duration', duration)
+      .eq('status', 'active')
+      .limit(1);
 
-    if (error) {
-      console.warn('Test-Abo konnte nicht in Supabase gespeichert werden:', error);
-      return { ok: false, error: error.message || JSON.stringify(error) };
+    if (email) existingQuery = existingQuery.eq('email', email);
+
+    const { data: existing, error: existingError } = await existingQuery;
+    if (!existingError && existing && existing.length > 0) {
+      console.log('Abo existiert bereits in Supabase:', existing[0]);
+      return { ok: true, data: existing[0], alreadyExists: true };
     }
 
-    console.log('Test-Abo in Supabase gespeichert:', data);
-    return { ok: true, data };
+    let payload = buildSubscriptionPayload(abo, false);
+    let result = await insertSubscriptionPayload(payload);
+
+    let safety = 0;
+    while (result.error && safety < 8) {
+      const col = missingColumnName(result.error.message || result.error.details || result.error.hint || JSON.stringify(result.error));
+      if (!col || !(col in payload)) break;
+      console.warn('Subscriptions-Spalte nicht vorhanden, retry ohne:', col);
+      delete payload[col];
+      result = await insertSubscriptionPayload(payload);
+      safety++;
+    }
+
+    if (result.error) {
+      const leanPayload = buildSubscriptionPayload(abo, true);
+      result = await insertSubscriptionPayload(leanPayload);
+    }
+
+    if (result.error) {
+      console.warn('Test-Abo konnte nicht in Supabase gespeichert werden:', result.error);
+      return { ok: false, error: result.error.message || JSON.stringify(result.error) };
+    }
+
+    console.log('Test-Abo in Supabase gespeichert:', result.data);
+    return { ok: true, data: result.data };
   } catch(e) {
     console.warn('Test-Abo Supabase-Speicherung fehlgeschlagen:', e);
     return { ok: false, error: e.message || String(e) };
@@ -2923,6 +3011,7 @@ async function submitAbo(skipAuthCheck) {
     hour_start: hour,
     duration: aboDur,
     price_cents,
+    price_total_cents: price_cents,
     price_per_week_cents: Math.round(pricePerWeek * 100),
     weeks_billed: 30,
     weeks_reserved: 52,
@@ -2975,6 +3064,7 @@ async function submitAbo(skipAuthCheck) {
           hour_start: hour,
           duration: aboDur,
           price_cents,
+          price_total_cents: price_cents,
           price_per_week_cents: Math.round(pricePerWeek * 100),
           weeks_billed: 30,
           weeks_reserved: 52,
