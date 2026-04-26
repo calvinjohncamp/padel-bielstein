@@ -2629,14 +2629,72 @@ async function confirmBooking(skipAuthCheck) {
   }
 }
 
-function submitAbo(skipAuthCheck) {
-  if (!aboSlot || aboWd===null) { showToast('Bitte Wochentag und Slot wählen'); return; }
+async function submitAbo(skipAuthCheck) {
+  if (!aboSlot || aboWd===null) {
+    showToast('Bitte Wochentag und Slot wählen');
+    return;
+  }
   if (!skipAuthCheck && !currentUser) {
     openModal('abo');
     return;
   }
-  // TODO: Stripe Checkout aufrufen (nächster Schritt)
-  showToast('Abo-Anfrage gesendet! Weiter zur Zahlung …');
+
+  const { court, hour } = aboSlot;
+  const priceMap = (aboWd===0 || aboWd===6) ? PE : PW;
+  const pricePerWeek = (priceMap[hour] || 0) * aboDur;
+  const totalAbo = pricePerWeek * 30;
+  const price_cents = Math.round(totalAbo * 100);
+
+  const email = currentProfile?.email || currentUser?.email;
+  const fullName = currentProfile?.full_name || '';
+  const birthYear = currentProfile?.birth_year || null;
+  const custType = currentProfile?.customer_type || 'account';
+
+  showToast('Weiter zu Stripe …');
+
+  try {
+    const res = await fetch(
+      'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7`,
+          'apikey': 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7'
+        },
+        body: JSON.stringify({
+          booking_type: 'abo',
+          abo: true,
+          court,
+          weekday: aboWd,
+          weekday_name: WDNAMES[aboWd],
+          hour_start: hour,
+          duration: aboDur,
+          price_cents,
+          price_per_week_cents: Math.round(pricePerWeek * 100),
+          weeks_billed: 30,
+          weeks_reserved: 52,
+          user_id: currentUser?.id || null,
+          customer_type: custType,
+          email,
+          full_name: fullName,
+          birth_year: birthYear
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      showToast('Fehler: ' + (data.error || 'Stripe-Checkout für Jahresabo noch nicht verfügbar'));
+      console.error('Abo checkout error:', data);
+    }
+  } catch (e) {
+    console.error(e);
+    showToast('Netzwerkfehler – bitte erneut versuchen.');
+  }
 }
 
 
