@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Padel Bielstein v0.16 – Abo Supabase Fix: no price_cents in subscriptions payload -->
+<!-- Padel Bielstein v0.17 – Abo Blocking Display Fix -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -1171,7 +1171,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
     </div><!-- /adminMis -->
 
     <script>
-console.info("Padel Bielstein index v0.16 – Abo payload uses total_price_cents, not price_cents");
+console.info("Padel Bielstein index v0.17 – Abo blocking display: occupied hours vs unavailable start slots");
     function misPrintReport() {
       const w = window.open('', '_blank');
       const raw=[{d:'01.02.',h:11,u:330,eph:30.0,k:7,au:56,w:'g',bs:'14/14'},{d:'02.02.',h:9,u:231,eph:25.7,k:6,au:46,w:'g',bs:'14/14'},{d:'03.02.',h:13,u:364,eph:28.0,k:10,au:66,w:'g',bs:'14/14'},{d:'04.02.',h:15,u:399,eph:26.6,k:14,au:77,w:'g',bs:'13/14'},{d:'05.02.',h:6,u:176,eph:29.3,k:5,au:31,w:'y',bs:'9/14'},{d:'06.02.',h:10,u:272,eph:27.2,k:8,au:51,w:'g',bs:'14/14'},{d:'07.02.',h:6,u:156,eph:26.0,k:6,au:31,w:'y',bs:'10/14'},{d:'08.02.',h:5,u:149,eph:29.8,k:5,au:26,w:'r',bs:'4/14'},{d:'09.02.',h:10,u:291,eph:29.1,k:12,au:51,w:'g',bs:'14/14'},{d:'10.02.',h:11,u:285,eph:25.9,k:10,au:56,w:'g',bs:'14/14'},{d:'11.02.',h:18,u:476,eph:26.4,k:12,au:92,w:'g',bs:'14/14'},{d:'12.02.',h:4,u:117,eph:29.2,k:3,au:20,w:'r',bs:'3/14'},{d:'13.02.',h:10,u:298,eph:29.8,k:11,au:51,w:'g',bs:'14/14'},{d:'14.02.',h:7,u:201,eph:28.7,k:6,au:36,w:'y',bs:'8/14'},{d:'15.02.',h:6,u:164,eph:27.3,k:5,au:31,w:'g',bs:'14/14'},{d:'16.02.',h:11,u:316,eph:28.7,k:11,au:56,w:'g',bs:'14/14'},{d:'17.02.',h:12,u:316,eph:26.3,k:12,au:61,w:'g',bs:'14/14'},{d:'18.02.',h:14,u:405,eph:28.9,k:11,au:71,w:'g',bs:'13/14'},{d:'19.02.',h:5,u:148,eph:29.6,k:6,au:26,w:'y',bs:'7/14'},{d:'20.02.',h:6,u:159,eph:26.5,k:8,au:31,w:'r',bs:'2/14'},{d:'21.02.',h:10,u:266,eph:26.6,k:10,au:51,w:'g',bs:'14/14'},{d:'22.02.',h:9,u:250,eph:27.8,k:7,au:46,w:'g',bs:'14/14'},{d:'23.02.',h:5,u:146,eph:29.2,k:7,au:26,w:'y',bs:'6/14'},{d:'24.02.',h:16,u:480,eph:30.0,k:14,au:82,w:'g',bs:'14/14'},{d:'25.02.',h:15,u:457,eph:30.5,k:13,au:77,w:'g',bs:'14/14'},{d:'26.02.',h:9,u:234,eph:26.0,k:6,au:46,w:'g',bs:'14/14'},{d:'27.02.',h:10,u:263,eph:26.3,k:9,au:51,w:'g',bs:'14/14'},{d:'28.02.',h:12,u:331,eph:27.6,k:8,au:61,w:'g',bs:'14/14'}];
@@ -3042,16 +3042,27 @@ function renderAboSlots() {
     Object.keys(PW).map(Number).forEach(h => {
       const abKey  = `${aboWd}-${h}`;
       const abKey2 = `${aboWd}-${h+1}`;
-      const isAboBk = aboBooked[ct].has(abKey) || (aboDur===2 && aboBooked[ct].has(abKey2));
+
+      // Belegte Stunden und nicht buchbare Startzeiten werden getrennt.
+      // Beispiel: Abo 19–21 (duration=2) belegt exakt 19 und 20.
+      // 18–20 ist bei 2h-Auswahl zwar nicht auswählbar, wird aber nicht als dritte Abo-Stunde angezeigt.
+      const isOccupiedHour = aboBooked[ct].has(abKey);
+      const conflictsWithNextHour = aboDur === 2 && !isOccupiedHour && aboBooked[ct].has(abKey2);
+
       const isSel = aboSlot?.court===ct && aboSlot?.hour===h;
       const isSec = aboSlot?.court===ct && aboSlot?.hour===h-1 && aboDur===2;
       const p = (priceMap[h] || 0) * aboDur;
       const h1 = `${String(h).padStart(2,"0")}:00`;
       const h2 = `${String(h+1).padStart(2,"0")}:00`;
+      const hEnd = `${String(h+aboDur).padStart(2,"0")}:00`;
       const sl = document.createElement("div");
-      if (isAboBk) {
+
+      if (isOccupiedHour) {
         sl.className = "slot abo-booked";
         sl.innerHTML = `<span class="slot-time">${h1}</span><span class="abo-lbl">Abo vergeben</span>`;
+      } else if (conflictsWithNextHour) {
+        sl.className = "slot booked";
+        sl.innerHTML = `<span class="slot-time">${h1} – ${hEnd}</span><span class="bkd-lbl">nicht verfügbar</span>`;
       } else if (isSel) {
         sl.className = "slot selected";
         sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;
