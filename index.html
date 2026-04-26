@@ -133,6 +133,10 @@ body.bielstein-theme #tabPlay:not(.active) {
   z-index: 9999;
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
+.ee-toast.orange {
+  background: #F44A22;
+  color: #ffffff;
+}
 .ee-toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
@@ -4262,13 +4266,15 @@ function toggleBielsteinTheme() {
   const msg = isOn
     ? '⚡ BIELSTEIN MODE – Gelb & Blau!'
     : '🎾 Zurück zum klassischen Look';
-  showEeToast(msg);
+  showEeToast(msg, isOn);
 }
 
-function showEeToast(msg) {
+function showEeToast(msg, bielsteinOn) {
   const t = document.getElementById('eeToast');
   if (!t) return;
   t.textContent = msg;
+  t.classList.remove('orange');
+  if (!bielsteinOn) t.classList.add('orange');
   t.classList.add('show');
   clearTimeout(eeToastTimer);
   eeToastTimer = setTimeout(() => t.classList.remove('show'), 2800);
