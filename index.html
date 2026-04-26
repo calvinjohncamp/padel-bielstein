@@ -1641,11 +1641,15 @@ async function loadBookings(date) {
         }
       }
     }
+    // Lokale Test-Jahresabos blockieren auch Einzelbuchungen am passenden Wochentag
+    addLocalAboBlocksForDate(date);
+
     console.log('Buchungen geladen:', data.length, 'Einträge');
   } catch(e) {
     console.warn('Buchungen Fehler:', e.message);
     booked = {1: new Set(), 2: new Set()};
     blockedSlots = {1: {}, 2: {}};
+    addLocalAboBlocksForDate(date);
   }
 }
 
@@ -1784,6 +1788,35 @@ function finalizePendingAboCheckout() {
     console.warn('Lokales Test-Abo konnte nicht finalisiert werden', e);
     localStorage.removeItem(LOCAL_PENDING_ABO_KEY);
     return null;
+  }
+}
+
+function localAboAppliesToDate(abo, dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return Number(d.getDay()) === Number(abo.weekday);
+}
+
+function isLocalAboBlockedOnDate(dateStr, court, hour) {
+  return getLocalTestAbos().some(a => {
+    if (Number(a.court) !== Number(court)) return false;
+    if (!localAboAppliesToDate(a, dateStr)) return false;
+    const start = Number(a.hour_start);
+    const dur = Number(a.duration || 1);
+    return Number(hour) >= start && Number(hour) < start + dur;
+  });
+}
+
+function addLocalAboBlocksForDate(dateStr) {
+  const list = getLocalTestAbos();
+  for (const s of list) {
+    if (!localAboAppliesToDate(s, dateStr)) continue;
+    const court = Number(s.court);
+    const start = Number(s.hour_start);
+    const dur = Number(s.duration || 1);
+    if (!booked[court]) booked[court] = new Set();
+    for (let i = 0; i < dur; i++) {
+      booked[court].add(`${dateStr}-${start + i}`);
+    }
   }
 }
 
@@ -1940,18 +1973,21 @@ function renderSlots() {
       const k  = `${selDate}-${h}`;
       const k2 = `${selDate}-${h+1}`;
       const bk = booked[ct].has(k) || (selDur===2 && booked[ct].has(k2));
+      const isLocalAbo = isLocalAboBlockedOnDate(selDate, ct, h) || (selDur===2 && isLocalAboBlockedOnDate(selDate, ct, h+1));
       const isSel = selSlot?.court===ct && selSlot?.hour===h;
       const isSec = selSlot?.court===ct && selSlot?.hour===h-1 && selDur===2;
       const rp = rawP(h, selDate), p = mP(rp), isMp = member && p < rp;
       const h1 = `${String(h).padStart(2,"0")}:00`;
       const h2 = `${String(h+1).padStart(2,"0")}:00`;
       const sl = document.createElement("div");
-      sl.className = "slot " + (bk ? "booked" : isSel ? "selected" : isSec ? "selected-second" : "free");
+      sl.className = "slot " + (bk ? (isLocalAbo ? "abo-booked" : "booked") : isSel ? "selected" : isSec ? "selected-second" : "free");
       const isBlocked = !!blockedSlots[ct][k];
       const blockReason = blockedSlots[ct][k] || '';
       if (bk) {
         if (isBlocked) {
           sl.innerHTML = `<span class="slot-time">${h1}</span><span class="bkd-lbl" style="color:#c97316;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${blockReason}">${blockReason}</span>`;
+        } else if (isLocalAbo) {
+          sl.innerHTML = `<span class="slot-time">${h1}</span><span class="abo-lbl">Abo vergeben</span>`;
         } else {
           sl.innerHTML = `<span class="slot-time">${h1}</span><span class="bkd-lbl">Belegt</span>`;
         }
@@ -3714,25 +3750,7 @@ function formatDateDE(dateStr) {
   return `${d}.${m}.${y}`;
 }
 
-
-try {
-  init();
-} catch(e) {
-  console.error('Init Fehler:', e);
-  try {
-    PW = {...PW_FB};
-    PE = {...PE_FB};
-    buildDates();
-    selDate = todayStr();
-    document.querySelectorAll(".date-chip").forEach(c => c.classList.toggle("selected", c.dataset.date===selDate));
-    updDurPrices();
-    renderSlots();
-    showToast('Ansicht wurde im Notfallmodus geladen.');
-  } catch(inner) {
-    console.error('Notfallmodus fehlgeschlagen:', inner);
-  }
-}
-
+init();
 </script>
 <!-- ■■ EDIT-MODALS ■■ -->
 <div id="closureEditOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;align-items:center;justify-content:center;padding:16px;">
