@@ -97,14 +97,14 @@ body.bielstein-theme #tabPlay:not(.active) {
 /* Unsichtbare Klick-Zone – neu kalibriert für beide Header */
 .easter-egg-zone {
   position: absolute;
-  right: 15%;
-  top: 4%;
-  width: 12%;
+  right: 6%;
+  top: 5%;
+  width: 18%;
   aspect-ratio: 1;
   cursor: pointer;
   z-index: 20;
   border-radius: 50%;
-  /* debug: outline: 3px solid red; */
+  background: transparent;
 }
 
 /* Easter-Egg Toast */
@@ -568,6 +568,64 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   --gray-lt: #E4E2E3;
   --white: #F6F6F6;
 }
+
+/* ════════════════════════════════════════
+   BIELSTEIN THEME – OVERRIDE FINAL GUARDS
+   Muss nach allen !important-Blöcken stehen
+════════════════════════════════════════ */
+body.bielstein-theme {
+  --bg: #000814 !important;
+  --card: #001D3D !important;
+  --border: #003566 !important;
+  --blue: #FFC300 !important;
+  --blue-dk: #E6AF00 !important;
+  --gold: #FFC300 !important;
+  --gold-dk: #FFD60A !important;
+  --white: #FFFFFF !important;
+}
+body.bielstein-theme { background: #000814 !important; }
+body.bielstein-theme .hero { background: #000814 !important; }
+body.bielstein-theme .hero-frame { background: #000814 !important; }
+
+body.bielstein-theme .mode-tab.active,
+body.bielstein-theme .dur-btn.selected,
+body.bielstein-theme .wd-btn.selected {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+body.bielstein-theme .book-btn,
+body.bielstein-theme .abo-cta,
+body.bielstein-theme .user-bar-login,
+body.bielstein-theme .modal-btn,
+body.bielstein-theme .admin-save-btn,
+body.bielstein-theme .date-chip.selected,
+body.bielstein-theme .scroll-btn,
+body.bielstein-theme .slot.selected,
+body.bielstein-theme .slot.selected-second,
+body.bielstein-theme .admin-tab.active,
+body.bielstein-theme .modal-tab.active {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+body.bielstein-theme #tabAbo:not(.active),
+body.bielstein-theme #tabPlay:not(.active) {
+  color: #FFC300 !important;
+  border-color: rgba(255,195,0,0.65) !important;
+}
+body.bielstein-theme .book-btn {
+  box-shadow: 0 4px 24px rgba(255,195,0,0.35) !important;
+}
+body.bielstein-theme .door-btn.access {
+  box-shadow: 0 4px 20px rgba(255,195,0,0.35) !important;
+}
+body.bielstein-theme .disc-badge {
+  background: rgba(255,195,0,0.18) !important;
+  border: 1px solid rgba(255,195,0,0.55) !important;
+}
+body.bielstein-theme .court-col { border-color: #003566 !important; }
+body.bielstein-theme .court-hdr { border-color: #003566 !important; background: #000814 !important; }
 
 </style>
 </head>
@@ -1400,6 +1458,45 @@ tr.bold td{font-weight:600;background:#f5f5f5;}
   --gray: #A8AAAC;
   --gray-lt: #E4E2E3;
   --white: #F6F6F6;
+}
+
+/* BIELSTEIN THEME – Override second guard block */
+body.bielstein-theme {
+  --bg: #000814 !important;
+  --card: #001D3D !important;
+  --border: #003566 !important;
+  --blue: #FFC300 !important;
+  --blue-dk: #E6AF00 !important;
+  --gold: #FFC300 !important;
+  --gold-dk: #FFD60A !important;
+  --white: #FFFFFF !important;
+}
+body.bielstein-theme .mode-tab.active,
+body.bielstein-theme .dur-btn.selected,
+body.bielstein-theme .wd-btn.selected {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+body.bielstein-theme .book-btn,
+body.bielstein-theme .abo-cta,
+body.bielstein-theme .user-bar-login,
+body.bielstein-theme .modal-btn,
+body.bielstein-theme .admin-save-btn,
+body.bielstein-theme .date-chip.selected,
+body.bielstein-theme .scroll-btn,
+body.bielstein-theme .slot.selected,
+body.bielstein-theme .slot.selected-second,
+body.bielstein-theme .admin-tab.active,
+body.bielstein-theme .modal-tab.active {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+body.bielstein-theme #tabAbo:not(.active),
+body.bielstein-theme #tabPlay:not(.active) {
+  color: #FFC300 !important;
+  border-color: rgba(255,195,0,0.65) !important;
 }
 
 </style></head><body>
