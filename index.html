@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>Padel Bielstein – Courts buchen v0.38</title>
+<title>Padel Bielstein – Courts buchen v0.39</title>
 <style>
 :root {
   --bg: #161616;
@@ -4900,6 +4900,144 @@ body.bielstein-theme .date-chip.selected .dmon {
 
 body.bielstein-theme .date-chip.selected:hover {
   background-color: #003566 !important;
+  border-color: #FFC300 !important;
+}
+</style>
+
+
+<!-- BIELSTEIN THEME v0.39 – Header-Blau exakt aus Pixelmator: #06203A -->
+<style id="bielsteinOverrideV039">
+/*
+  Finale Farbanpassung:
+  - Header-Blau aus Pixelmator: #06203A
+  - Gelb bleibt: #FFC300
+  - Hover-Blau: #0A2A4A
+  - Original-Theme bleibt unberührt, nur body.bielstein-theme wird überschrieben
+*/
+
+body.bielstein-theme {
+  --blue: #06203A !important;
+  --blue-dk: #04182C !important;
+  --gold: #FFC300 !important;
+  --gold-dk: #E6AF00 !important;
+}
+
+/* Alle sichtbaren Blauflächen im Bielstein-Theme */
+body.bielstein-theme .user-bar,
+body.bielstein-theme .mode-tab:not(.active),
+body.bielstein-theme .dur-btn:not(.selected),
+body.bielstein-theme .date-chip:not(.selected),
+body.bielstein-theme .scroll-btn,
+body.bielstein-theme .door-btn.court {
+  background-color: #06203A !important;
+  background-image: none !important;
+  border-color: #0A2A4A !important;
+}
+
+/* Inaktive Hauptbuttons: gelbe Schrift + gelber Rahmen */
+body.bielstein-theme .mode-tab:not(.active) {
+  color: #FFC300 !important;
+  border: 1.5px solid rgba(255,195,0,0.62) !important;
+}
+body.bielstein-theme .mode-tab:not(.active) .tab-icon,
+body.bielstein-theme #tabAbo:not(.active),
+body.bielstein-theme #tabPlay:not(.active) {
+  color: #FFC300 !important;
+}
+
+/* Hover für Blauflächen */
+body.bielstein-theme .mode-tab:not(.active):hover,
+body.bielstein-theme .dur-btn:not(.selected):hover,
+body.bielstein-theme .date-chip:not(.selected):hover,
+body.bielstein-theme .scroll-btn:hover,
+body.bielstein-theme .door-btn.court:hover {
+  background-color: #0A2A4A !important;
+  border-color: #FFC300 !important;
+}
+
+/* Registrieren: Header-Blau + gelbe Schrift + gelber Rahmen */
+body.bielstein-theme .user-bar-register {
+  background-color: #06203A !important;
+  background-image: none !important;
+  border: 1px solid #FFC300 !important;
+  color: #FFC300 !important;
+  box-shadow: none !important;
+}
+
+/* Registrieren Hover */
+body.bielstein-theme .user-bar-register:hover {
+  background-color: #0A2A4A !important;
+  border-color: #FFC300 !important;
+  color: #FFC300 !important;
+}
+
+/* Anmelden bleibt gelb */
+body.bielstein-theme .user-bar-login {
+  background-color: #FFC300 !important;
+  background-image: none !important;
+  border: 1px solid #E6AF00 !important;
+  color: #000814 !important;
+  box-shadow: none !important;
+}
+body.bielstein-theme .user-bar-login:hover {
+  background-color: #FFD60A !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+
+/* Aktuelles Datum: Header-Blau + weißer Text + gelber Rahmen */
+body.bielstein-theme .date-chip.selected {
+  background-color: #06203A !important;
+  background-image: none !important;
+  border: 1.5px solid #FFC300 !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+}
+body.bielstein-theme .date-chip.selected .dname,
+body.bielstein-theme .date-chip.selected .dnum,
+body.bielstein-theme .date-chip.selected .dmon {
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+}
+
+/* Inaktive Datum-Chips: Header-Blau + weißer Text */
+body.bielstein-theme .date-chip:not(.selected) .dname,
+body.bielstein-theme .date-chip:not(.selected) .dnum,
+body.bielstein-theme .date-chip:not(.selected) .dmon {
+  color: #FFFFFF !important;
+}
+
+/* Inaktive Spieldauer: Header-Blau + weißer Text */
+body.bielstein-theme .dur-btn:not(.selected),
+body.bielstein-theme .dur-btn:not(.selected) .dprice {
+  color: #FFFFFF !important;
+}
+
+/* Aktive große Auswahlflächen bleiben gelb */
+body.bielstein-theme .mode-tab.active,
+body.bielstein-theme .dur-btn.selected,
+body.bielstein-theme .wd-btn.selected,
+body.bielstein-theme .book-btn,
+body.bielstein-theme .abo-cta,
+body.bielstein-theme .modal-tab.active,
+body.bielstein-theme .modal-btn,
+body.bielstein-theme .admin-save-btn,
+body.bielstein-theme .admin-tab.active,
+body.bielstein-theme .slot.selected,
+body.bielstein-theme .slot.selected-second {
+  background-color: #FFC300 !important;
+  background-image: none !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+
+/* Slots bleiben Anthrazit */
+body.bielstein-theme .slot.free {
+  background-color: #1A1A1A !important;
+  border-color: #333333 !important;
+}
+body.bielstein-theme .slot.free:hover {
+  background-color: #202020 !important;
   border-color: #FFC300 !important;
 }
 </style>
