@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<!-- Padel Bielstein v0.17 – Abo Blocking Display Fix -->
+<!-- Padel Bielstein v0.29 – Original restored + Bielstein theme color fix -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>Padel Bielstein – Courts buchen v0.28</title>
+<title>Padel Bielstein – Courts buchen v0.38</title>
 <style>
 :root {
   --bg: #161616;
@@ -22,18 +22,34 @@
 }
 
 /* ■■ BIELSTEIN EASTER-EGG THEME (Navy/Gold – Palette 2) ■■ */
+
 body.bielstein-theme {
-  --bg: #000814;
-  --card: #001D3D;
-  --border: #003566;
-  --blue: #FFC300;
-  --blue-dk: #E6AF00;
-  --gold: #FFC300;
-  --gold-dk: #FFD60A;
-  --gray: #4376AB;
-  --gray-lt: #8AABCC;
-  --white: #FFFFFF;
+  --bg: #000814 !important;
+  --card: #1A1A1A !important;
+  --border: #2A2A2A !important;
+
+  --blue: #001D3D !important;
+  --blue-dk: #000814 !important;
+
+  --gold: #FFC300 !important;
+  --gold-dk: #E6AF00 !important;
+
+  --gray: #A8AAAC !important;
+  --gray-lt: #E4E2E3 !important;
+  --white: #FFFFFF !important;
+  background: #000814 !important;
 }
+
+/* Blue usage */
+body.bielstein-theme .mode-tab:not(.active),
+body.bielstein-theme .dur-btn:not(.selected),
+body.bielstein-theme .date-chip:not(.selected),
+body.bielstein-theme .scroll-btn {
+  background: #001D3D !important;
+  color: #FFC300 !important;
+  border-color: #2A2A2A !important;
+}
+
 body.bielstein-theme { background: #000814; }
 body.bielstein-theme .hero { background: #000814; }
 body.bielstein-theme .hero-frame { background: #000814; }
@@ -649,98 +665,497 @@ body.bielstein-theme .court-hdr { border-color: #003566 !important; background: 
 
 <!-- ■■ BIELSTEIN THEME MASTER OVERRIDE – muss nach allen Style-Blöcken kommen ■■ -->
 <style id="bielsteinOverride">
+/* ════════════════════════════════════════
+   BIELSTEIN THEME v0.29 FINAL
+   Original-Theme bleibt Orange/Anthrazit.
+   Nur body.bielstein-theme wird gelb/blau angepasst.
+   Header bleibt externe GitHub-Datei über <img src="...">.
+════════════════════════════════════════ */
 body.bielstein-theme {
+  --bg: #000814 !important;
+  --card: #1A1A1A !important;
+  --border: #2A2A2A !important;
+  --blue: #E3B200 !important;
+  --blue-dk: #C99A00 !important;
+  --gold: #E3B200 !important;
+  --gold-dk: #F0C94A !important;
+  --gray: #A8AAAC !important;
+  --gray-lt: #E4E2E3 !important;
+  --white: #FFFFFF !important;
   background: #000814 !important;
 }
+
 body.bielstein-theme .hero,
 body.bielstein-theme .hero-frame {
   background: #000814 !important;
   border-bottom: none !important;
 }
-/* Tabs */
-body.bielstein-theme .mode-tab.active {
-  background: #FFC300 !important;
-  border-color: #E6AF00 !important;
+
+/* Arbeitsflächen bewusst Anthrazit statt Blau */
+body.bielstein-theme .user-bar,
+body.bielstein-theme .play-card,
+body.bielstein-theme .admin-card,
+body.bielstein-theme .summary-card,
+body.bielstein-theme .abo-summary,
+body.bielstein-theme .modal,
+body.bielstein-theme .court-col,
+body.bielstein-theme .date-chip,
+body.bielstein-theme .dur-btn,
+body.bielstein-theme .wd-btn,
+body.bielstein-theme .mode-tab:not(.active) {
+  background: #1A1A1A !important;
+  border-color: #2A2A2A !important;
+}
+
+/* Fokus-/Aktivfarben passend zum neuen Header */
+body.bielstein-theme .mode-tab.active,
+body.bielstein-theme .dur-btn.selected,
+body.bielstein-theme .wd-btn.selected,
+body.bielstein-theme .book-btn,
+body.bielstein-theme .abo-cta,
+body.bielstein-theme .user-bar-login,
+body.bielstein-theme .modal-btn,
+body.bielstein-theme .modal-tab.active,
+body.bielstein-theme .admin-save-btn,
+body.bielstein-theme .admin-tab.active,
+body.bielstein-theme .slot.selected,
+body.bielstein-theme .slot.selected-second {
+  background: #E3B200 !important;
+  border-color: #C99A00 !important;
   color: #000814 !important;
 }
-body.bielstein-theme .mode-tab:not(.active) {
-  background: transparent !important;
-  border-color: #003566 !important;
-  color: #888 !important;
+
+body.bielstein-theme .book-btn,
+body.bielstein-theme .abo-cta,
+body.bielstein-theme .door-btn.access {
+  box-shadow: 0 4px 24px rgba(227,178,0,0.35) !important;
 }
+
+body.bielstein-theme #tabAbo:not(.active),
+body.bielstein-theme #tabPlay:not(.active),
+body.bielstein-theme .court-name,
+body.bielstein-theme .slot.free .slot-price,
+body.bielstein-theme .abo-sum-title,
+body.bielstein-theme .abo-price-total,
+body.bielstein-theme .play-booking-court,
+body.bielstein-theme .user-bar-name strong,
+body.bielstein-theme .modal-title {
+  color: #E3B200 !important;
+}
+
 body.bielstein-theme #tabAbo:not(.active),
 body.bielstein-theme #tabPlay:not(.active) {
-  color: #FFC300 !important;
-  border-color: rgba(255,195,0,0.55) !important;
+  border-color: rgba(227,178,0,0.65) !important;
 }
-/* Duration & weekday buttons */
-body.bielstein-theme .dur-btn.selected,
-body.bielstein-theme .wd-btn.selected {
-  background: #FFC300 !important;
-  border-color: #E6AF00 !important;
-  color: #000814 !important;
-}
-/* Primary action buttons */
-body.bielstein-theme .book-btn,
-body.bielstein-theme .abo-cta {
-  background: #FFC300 !important;
-  border-color: #E6AF00 !important;
-  color: #000814 !important;
-  box-shadow: 0 4px 24px rgba(255,195,0,0.35) !important;
-}
-/* Login / register bar */
-body.bielstein-theme .user-bar-login {
-  background: #FFC300 !important;
-  border-color: #E6AF00 !important;
-  color: #000814 !important;
-}
-/* Modal */
-body.bielstein-theme .modal-btn,
-body.bielstein-theme .modal-tab.active {
-  background: #FFC300 !important;
-  border-color: #E6AF00 !important;
-  color: #000814 !important;
-}
-/* Admin */
-body.bielstein-theme .admin-save-btn,
-body.bielstein-theme .admin-tab.active {
-  background: #FFC300 !important;
-  border-color: #E6AF00 !important;
-  color: #000814 !important;
-}
-/* Date chips & scroll buttons */
-body.bielstein-theme .date-chip.selected {
-  background: #003566 !important;
-  border-color: #FFC300 !important;
-  color: #fff !important;
-}
+
+body.bielstein-theme .date-chip.selected,
 body.bielstein-theme .scroll-btn {
-  background: #003566 !important;
+  background: #E3B200 !important;
+  border-color: #C99A00 !important;
+  color: #000814 !important;
 }
-/* Slots */
+
+body.bielstein-theme .court-hdr {
+  background: #000814 !important;
+  border-color: #2A2A2A !important;
+}
+
+body.bielstein-theme .slot.free {
+  background: #1A1A1A !important;
+  border-color: #333333 !important;
+}
+body.bielstein-theme .slot.free:hover {
+  background: #202020 !important;
+  border-color: #E3B200 !important;
+}
+body.bielstein-theme .slot.booked {
+  background: #111111 !important;
+}
+
+body.bielstein-theme .door-btn.access {
+  background: #E3B200 !important;
+  color: #000814 !important;
+}
+body.bielstein-theme .door-btn.court {
+  background: #1A1A1A !important;
+  color: #E3B200 !important;
+  border: 1px solid #2A2A2A !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35) !important;
+}
+body.bielstein-theme .disc-badge {
+  background: rgba(227,178,0,0.18) !important;
+  border: 1px solid rgba(227,178,0,0.55) !important;
+  color: #E3B200 !important;
+}
+</style>
+
+<!-- ■■ BIELSTEIN THEME v0.33 – Blau/Weiß Feinschliff ■■ -->
+<style id="bielsteinOverrideV032">
+/*
+  v0.32
+  - Header bleibt externe GitHub-Datei / bestehendes <img>.
+  - Original-Theme bleibt unverändert Orange/Anthrazit.
+  - Nur body.bielstein-theme wird übersteuert.
+  - Blau = Bühne/Struktur, Anthrazit = Slots/Arbeitsfläche, Gelb = aktive Auswahl.
+*/
+body.bielstein-theme {
+  --bg: #000814 !important;
+  --card: #1A1A1A !important;
+  --border: #2A2A2A !important;
+  --blue: #001D3D !important;
+  --blue-dk: #003566 !important;
+  --gold: #FFC300 !important;
+  --gold-dk: #E6AF00 !important;
+  --gray: #8AABCC !important;
+  --gray-lt: #E4E2E3 !important;
+  --white: #FFFFFF !important;
+  background: #000814 !important;
+}
+
+body.bielstein-theme .hero,
+body.bielstein-theme .hero-frame {
+  background: #000814 !important;
+  border-bottom: none !important;
+}
+
+/* Oberer Login-/Registrieren-Balken jetzt wieder im Header-Blau */
+body.bielstein-theme .user-bar {
+  background: #001D3D !important;
+  border-color: #003566 !important;
+}
+body.bielstein-theme .user-bar span,
+body.bielstein-theme .user-bar-name {
+  color: #FFFFFF !important;
+}
+body.bielstein-theme .user-bar-name strong {
+  color: #FFFFFF !important;
+}
+body.bielstein-theme .user-bar-register,
+body.bielstein-theme .user-bar-login,
+body.bielstein-theme .user-bar-portal,
+body.bielstein-theme .user-bar-out {
+  background: #003566 !important;
+  border: 1px solid rgba(255,255,255,0.28) !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+}
+body.bielstein-theme .user-bar-register:hover,
+body.bielstein-theme .user-bar-login:hover,
+body.bielstein-theme .user-bar-portal:hover,
+body.bielstein-theme .user-bar-out:hover {
+  background: #00457F !important;
+  color: #FFFFFF !important;
+}
+
+/* Blaue Strukturflächen: Schrift weiß statt gelb */
+body.bielstein-theme .date-chip,
+body.bielstein-theme .dur-btn:not(.selected),
+body.bielstein-theme .mode-tab:not(.active) {
+  background: #001D3D !important;
+  border-color: #003566 !important;
+  color: #FFFFFF !important;
+}
+body.bielstein-theme .date-chip .dname,
+body.bielstein-theme .date-chip .dnum,
+body.bielstein-theme .date-chip .dmon,
+body.bielstein-theme .dur-btn:not(.selected),
+body.bielstein-theme .dur-btn:not(.selected) .dprice,
+body.bielstein-theme #tabAbo:not(.active),
+body.bielstein-theme #tabPlay:not(.active) {
+  color: #FFFFFF !important;
+}
+body.bielstein-theme .date-chip:hover,
+body.bielstein-theme .dur-btn:not(.selected):hover,
+body.bielstein-theme .mode-tab:not(.active):hover {
+  border-color: #FFC300 !important;
+}
+
+/* Gelb nur für aktive Auswahl / echte Aktion */
+body.bielstein-theme .mode-tab.active,
+body.bielstein-theme .dur-btn.selected,
+body.bielstein-theme .wd-btn.selected,
+body.bielstein-theme .book-btn,
+body.bielstein-theme .abo-cta,
+body.bielstein-theme .modal-tab.active,
+body.bielstein-theme .modal-btn,
+body.bielstein-theme .admin-save-btn,
+body.bielstein-theme .admin-tab.active,
+body.bielstein-theme .date-chip.selected,
 body.bielstein-theme .slot.selected,
 body.bielstein-theme .slot.selected-second {
   background: #FFC300 !important;
   border-color: #E6AF00 !important;
   color: #000814 !important;
 }
-/* Courts */
-body.bielstein-theme .court-col { border-color: #003566 !important; }
-body.bielstein-theme .court-hdr { border-color: #003566 !important; background: #000814 !important; }
-/* Shadows & badges */
+body.bielstein-theme .date-chip.selected .dname,
+body.bielstein-theme .date-chip.selected .dnum,
+body.bielstein-theme .date-chip.selected .dmon,
+body.bielstein-theme .dur-btn.selected .dprice {
+  color: #000814 !important;
+}
+body.bielstein-theme .book-btn,
+body.bielstein-theme .abo-cta {
+  box-shadow: 0 4px 24px rgba(255,195,0,0.35) !important;
+}
+
+/* Pfeile: Blau mit weißer Schrift, nicht gelb */
+body.bielstein-theme .scroll-btn {
+  background: #001D3D !important;
+  border: 1px solid #003566 !important;
+  color: #FFFFFF !important;
+}
+body.bielstein-theme .scroll-btn:hover {
+  background: #003566 !important;
+}
+
+/* Arbeitsbereiche / Slots bleiben bewusst Anthrazit */
+body.bielstein-theme .play-card,
+body.bielstein-theme .admin-card,
+body.bielstein-theme .summary-card,
+body.bielstein-theme .abo-summary,
+body.bielstein-theme .modal,
+body.bielstein-theme .court-col,
+body.bielstein-theme .wd-btn {
+  background: #1A1A1A !important;
+  border-color: #2A2A2A !important;
+}
+body.bielstein-theme .court-hdr {
+  background: #000814 !important;
+  border-color: #2A2A2A !important;
+}
+body.bielstein-theme .slot.free {
+  background: #1A1A1A !important;
+  border-color: #333333 !important;
+}
+body.bielstein-theme .slot.free:hover {
+  background: #202020 !important;
+  border-color: #FFC300 !important;
+}
+body.bielstein-theme .slot.booked {
+  background: #111111 !important;
+}
+
+/* Inhalts-/Label-Schriften: Blau/Weiß statt zu viel Gelb */
+body.bielstein-theme .step-lbl,
+body.bielstein-theme .legend-item,
+body.bielstein-theme .price-tag {
+  color: #E4E2E3 !important;
+}
+body.bielstein-theme .court-name,
+body.bielstein-theme .play-booking-court {
+  color: #FFFFFF !important;
+}
+body.bielstein-theme .slot.free .slot-price,
+body.bielstein-theme .abo-sum-title,
+body.bielstein-theme .abo-price-total,
+body.bielstein-theme .modal-title {
+  color: #FFC300 !important;
+}
+
 body.bielstein-theme .door-btn.access {
   background: #FFC300 !important;
   color: #000814 !important;
-  box-shadow: 0 4px 20px rgba(255,195,0,0.35) !important;
+  box-shadow: 0 4px 24px rgba(255,195,0,0.35) !important;
 }
 body.bielstein-theme .door-btn.court {
-  background: #003566 !important;
-  color: #FFC300 !important;
-  box-shadow: 0 4px 20px rgba(0,53,102,0.4) !important;
+  background: #001D3D !important;
+  color: #FFFFFF !important;
+  border: 1px solid #003566 !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35) !important;
 }
 body.bielstein-theme .disc-badge {
   background: rgba(255,195,0,0.18) !important;
   border: 1px solid rgba(255,195,0,0.55) !important;
+  color: #FFC300 !important;
+}
+</style>
+
+
+
+<!-- ■■ BIELSTEIN THEME v0.34 – Korrektur nach Screenshot ■■ -->
+<style id="bielsteinOverrideV034">
+/*
+  v0.34 Ziel:
+  - Original-Theme bleibt unverändert.
+  - Nur body.bielstein-theme wird korrigiert.
+  - Jahresabo sichern + Jetzt Spielen bleiben gelb.
+  - Registrieren + Anmelden bleiben gelb.
+  - Hinweistext "Zum Buchen bitte anmelden" bleibt dezent grau/anthrazit.
+  - Slots bleiben dunkles Anthrazit.
+*/
+body.bielstein-theme {
+  --bg: #000814 !important;
+  --card: #1A1A1A !important;
+  --border: #2A2A2A !important;
+  --blue: #001D3D !important;
+  --blue-dk: #003566 !important;
+  --gold: #FFC300 !important;
+  --gold-dk: #E6AF00 !important;
+  --gray: #A8AAAC !important;
+  --gray-lt: #E4E2E3 !important;
+  --white: #FFFFFF !important;
+  background: #000814 !important;
+}
+
+body.bielstein-theme .hero,
+body.bielstein-theme .hero-frame {
+  background: #000814 !important;
+  border-bottom: none !important;
+}
+
+/* Oberer Anmeldebalken: Blau wie Header, Hinweistext aber bewusst dezent grau */
+body.bielstein-theme .user-bar {
+  background: #001D3D !important;
+  border-color: #003566 !important;
+}
+body.bielstein-theme #userBarLoggedOut > span,
+body.bielstein-theme .user-bar span:not(.user-bar-name),
+body.bielstein-theme .user-bar-name {
+  color: #A8AAAC !important;
+}
+
+/* Registrieren / Anmelden: gelb wie gewünscht */
+body.bielstein-theme .user-bar-register,
+body.bielstein-theme .user-bar-login,
+body.bielstein-theme .user-bar-portal {
+  background: #FFC300 !important;
+  border: 1px solid #E6AF00 !important;
+  color: #000814 !important;
+  box-shadow: none !important;
+}
+body.bielstein-theme .user-bar-register:hover,
+body.bielstein-theme .user-bar-login:hover,
+body.bielstein-theme .user-bar-portal:hover {
+  background: #FFD60A !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+body.bielstein-theme .user-bar-out {
+  background: #1A1A1A !important;
+  border: 1px solid #2A2A2A !important;
+  color: #A8AAAC !important;
+}
+
+/* Haupttabs: inaktiv blau, Schrift/Icon gelb */
+body.bielstein-theme .mode-tab:not(.active) {
+  background: #001D3D !important;
+  border-color: rgba(255,195,0,0.55) !important;
+  color: #FFC300 !important;
+}
+body.bielstein-theme #tabAbo:not(.active),
+body.bielstein-theme #tabPlay:not(.active),
+body.bielstein-theme .mode-tab:not(.active) .tab-icon {
+  color: #FFC300 !important;
+}
+body.bielstein-theme .mode-tab:not(.active):hover {
+  border-color: #FFC300 !important;
+  background: #003566 !important;
+}
+
+/* Aktive Hauptauswahl bleibt gelb */
+body.bielstein-theme .mode-tab.active,
+body.bielstein-theme .dur-btn.selected,
+body.bielstein-theme .wd-btn.selected,
+body.bielstein-theme .book-btn,
+body.bielstein-theme .abo-cta,
+body.bielstein-theme .modal-tab.active,
+body.bielstein-theme .modal-btn,
+body.bielstein-theme .admin-save-btn,
+body.bielstein-theme .admin-tab.active,
+body.bielstein-theme .date-chip.selected,
+body.bielstein-theme .slot.selected,
+body.bielstein-theme .slot.selected-second {
+  background: #FFC300 !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+body.bielstein-theme .date-chip.selected .dname,
+body.bielstein-theme .date-chip.selected .dnum,
+body.bielstein-theme .date-chip.selected .dmon,
+body.bielstein-theme .dur-btn.selected .dprice {
+  color: #000814 !important;
+}
+
+/* Datums-/Dauerflächen: blau, aber nicht weiß überstrahlt */
+body.bielstein-theme .date-chip,
+body.bielstein-theme .dur-btn:not(.selected) {
+  background: #001D3D !important;
+  border-color: #003566 !important;
+  color: #FFFFFF !important;
+}
+body.bielstein-theme .date-chip .dname,
+body.bielstein-theme .date-chip .dmon,
+body.bielstein-theme .dur-btn:not(.selected) .dprice {
+  color: #A8AAAC !important;
+}
+body.bielstein-theme .date-chip .dnum,
+body.bielstein-theme .dur-btn:not(.selected) {
+  color: #FFFFFF !important;
+}
+body.bielstein-theme .date-chip:hover,
+body.bielstein-theme .dur-btn:not(.selected):hover {
+  border-color: #FFC300 !important;
+}
+
+/* Pfeilbuttons passend, aber nicht dominante Gelbflächen */
+body.bielstein-theme .scroll-btn {
+  background: #001D3D !important;
+  border: 1px solid #003566 !important;
+  color: #FFC300 !important;
+}
+body.bielstein-theme .scroll-btn:hover {
+  background: #003566 !important;
+}
+
+/* Arbeitsbereiche / Slots bleiben dunkles Anthrazit */
+body.bielstein-theme .play-card,
+body.bielstein-theme .admin-card,
+body.bielstein-theme .summary-card,
+body.bielstein-theme .abo-summary,
+body.bielstein-theme .modal,
+body.bielstein-theme .court-col,
+body.bielstein-theme .wd-btn {
+  background: #1A1A1A !important;
+  border-color: #2A2A2A !important;
+}
+body.bielstein-theme .court-hdr {
+  background: #000814 !important;
+  border-color: #2A2A2A !important;
+}
+body.bielstein-theme .slot.free {
+  background: #1A1A1A !important;
+  border-color: #333333 !important;
+}
+body.bielstein-theme .slot.free:hover {
+  background: #202020 !important;
+  border-color: #FFC300 !important;
+}
+body.bielstein-theme .slot.booked {
+  background: #111111 !important;
+}
+
+/* Lesbarkeit / Akzenttexte */
+body.bielstein-theme .step-lbl,
+body.bielstein-theme .legend-item,
+body.bielstein-theme .price-tag {
+  color: #E4E2E3 !important;
+}
+body.bielstein-theme .court-name,
+body.bielstein-theme .slot.free .slot-price,
+body.bielstein-theme .abo-sum-title,
+body.bielstein-theme .abo-price-total,
+body.bielstein-theme .play-booking-court,
+body.bielstein-theme .modal-title {
+  color: #FFC300 !important;
+}
+body.bielstein-theme .book-btn,
+body.bielstein-theme .abo-cta {
+  box-shadow: 0 4px 24px rgba(255,195,0,0.35) !important;
+}
+body.bielstein-theme .disc-badge {
+  background: rgba(255,195,0,0.18) !important;
+  border: 1px solid rgba(255,195,0,0.55) !important;
+  color: #FFC300 !important;
 }
 </style>
 
@@ -1691,6 +2106,54 @@ body.bielstein-theme .slot.free {
 body.bielstein-theme .slot.free:hover {
   background: #222222 !important;
   border-color: #E3B200 !important;
+}
+</style>
+
+
+
+<!-- ■■ BIELSTEIN THEME v0.33 – finale Korrektur Userbar & Tab-Schriften ■■ -->
+<style id="bielsteinOverrideV033">
+/*
+  v0.33
+  - Original-Theme bleibt unverändert.
+  - Header bleibt externe/bestehende Bilddatei.
+  - Gelb bleibt bei Registrieren/Anmelden und bei den inaktiven Haupttabs.
+  - Hinweistext in der User-Bar bleibt dezent grau/blau.
+*/
+body.bielstein-theme .user-bar {
+  background: #001D3D !important;
+  border-color: #003566 !important;
+}
+
+body.bielstein-theme #userBarLoggedOut > span {
+  color: #8A8A8A !important;
+}
+
+body.bielstein-theme .user-bar-register,
+body.bielstein-theme .user-bar-login {
+  background: #FFC300 !important;
+  border: 1px solid #E6AF00 !important;
+  color: #000814 !important;
+  box-shadow: none !important;
+}
+
+body.bielstein-theme .user-bar-register:hover,
+body.bielstein-theme .user-bar-login:hover {
+  background: #FFD60A !important;
+  border-color: #FFC300 !important;
+  color: #000814 !important;
+}
+
+body.bielstein-theme #tabAbo:not(.active),
+body.bielstein-theme #tabPlay:not(.active),
+body.bielstein-theme #tabAbo:not(.active) .tab-icon,
+body.bielstein-theme #tabPlay:not(.active) .tab-icon {
+  color: #FFC300 !important;
+}
+
+body.bielstein-theme #tabAbo:not(.active),
+body.bielstein-theme #tabPlay:not(.active) {
+  border-color: rgba(255,195,0,0.65) !important;
 }
 </style>
 
@@ -4342,3 +4805,102 @@ body.bielstein-theme .slot.free:hover {
 
 </body>
 </html>
+
+<!-- BIELSTEIN THEME v0.35 – finale Korrektur Tabs + Loginbuttons -->
+<style id="bielsteinOverrideV035">
+body.bielstein-theme #tabAbo:not(.active),
+body.bielstein-theme #tabPlay:not(.active) {
+  background: #000814 !important;
+  border: 1.5px solid rgba(255,195,0,0.65) !important;
+  color: #FFC300 !important;
+}
+body.bielstein-theme #tabAbo:not(.active) .tab-icon,
+body.bielstein-theme #tabPlay:not(.active) .tab-icon {
+  color: #FFC300 !important;
+}
+body.bielstein-theme #tabAbo:not(.active):hover,
+body.bielstein-theme #tabPlay:not(.active):hover {
+  background: #000814 !important;
+  border-color: #FFC300 !important;
+}
+body.bielstein-theme .user-bar-register,
+body.bielstein-theme .user-bar-login {
+  background-color: #FFC300 !important;
+  background-image: none !important;
+  border: 1px solid #E6AF00 !important;
+  color: #000814 !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+body.bielstein-theme .user-bar-register:hover,
+body.bielstein-theme .user-bar-login:hover {
+  background-color: #FFD60A !important;
+  background-image: none !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+body.bielstein-theme #userBarLoggedOut > span {
+  color: #8A8A8A !important;
+}
+</style>
+
+
+<!-- BIELSTEIN THEME v0.38 – finale Korrektur: Registrieren + aktuelles Datum -->
+<style id="bielsteinOverrideV038">
+/* 1) REGISTRIEREN: blau gefüllt, gelbe Schrift, gelber Rahmen */
+body.bielstein-theme .user-bar-register {
+  background-color: #001D3D !important;
+  background-image: none !important;
+  border: 1px solid #FFC300 !important;
+  color: #FFC300 !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+body.bielstein-theme .user-bar-register:hover {
+  background-color: #003566 !important;
+  background-image: none !important;
+  border-color: #FFC300 !important;
+  color: #FFC300 !important;
+}
+
+/* ANMELDEN bleibt gelb */
+body.bielstein-theme .user-bar-login {
+  background-color: #FFC300 !important;
+  background-image: none !important;
+  border: 1px solid #E6AF00 !important;
+  color: #000814 !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+body.bielstein-theme .user-bar-login:hover {
+  background-color: #FFD60A !important;
+  background-image: none !important;
+  border-color: #E6AF00 !important;
+  color: #000814 !important;
+}
+
+/* 2) AKTUELLES DATUM: blau gefüllt, weißer Text, gelber Rahmen */
+body.bielstein-theme .date-chip.selected {
+  background-color: #001D3D !important;
+  background-image: none !important;
+  border: 1.5px solid #FFC300 !important;
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+body.bielstein-theme .date-chip.selected .dname,
+body.bielstein-theme .date-chip.selected .dnum,
+body.bielstein-theme .date-chip.selected .dmon {
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+}
+
+body.bielstein-theme .date-chip.selected:hover {
+  background-color: #003566 !important;
+  border-color: #FFC300 !important;
+}
+</style>
+
