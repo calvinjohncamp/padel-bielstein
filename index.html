@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>Padel Bielstein – Courts buchen v0.40</title>
+<title>Padel Bielstein – Courts buchen v0.41</title>
 <style>
 :root {
   --bg: #161616;
@@ -3642,6 +3642,50 @@ function translateAuthError(msg) {
   return 'Fehler: ' + msg;
 }
 
+
+// ============================================================
+//  EMAIL-THEME FÜR BUCHUNGSBESTÄTIGUNG
+//  Wird an Supabase Edge Function create-checkout übergeben.
+//  Original = Orange/Anthrazit, Bielstein = Gelb/Blau.
+// ============================================================
+function getCheckoutEmailTheme() {
+  const isBielstein = document.body.classList.contains('bielstein-theme');
+
+  if (isBielstein) {
+    return {
+      key: 'bielstein',
+      name: 'Padel Bielstein Gelb-Blau',
+      bg: '#000814',
+      card: '#0B0B0B',
+      panel: '#111111',
+      accent: '#FFC300',
+      accent_dark: '#E6AF00',
+      blue: '#06203A',
+      border: '#06203A',
+      text: '#FFFFFF',
+      muted: '#A8AAAC',
+      amount: '#FFC300',
+      link: '#FFC300'
+    };
+  }
+
+  return {
+    key: 'original',
+    name: 'Padel Bielstein Original',
+    bg: '#161616',
+    card: '#1E1E1E',
+    panel: '#111111',
+    accent: '#F44A22',
+    accent_dark: '#D93F1C',
+    blue: '#F44A22',
+    border: '#F44A22',
+    text: '#F6F6F6',
+    muted: '#A8AAAC',
+    amount: '#F44A22',
+    link: '#F44A22'
+  };
+}
+
 // ============================================================
 //  BUCHUNG BESTÄTIGEN — Stripe Checkout
 // ============================================================
@@ -3661,6 +3705,7 @@ async function confirmBooking(skipAuthCheck) {
   const fullName = currentProfile?.full_name || '';
   const birthYear = currentProfile?.birth_year || null;
   const custType = currentProfile?.customer_type || 'account';
+  const emailTheme = getCheckoutEmailTheme();
 
   showToast('Weiter zu Stripe …');
 
@@ -3685,6 +3730,9 @@ async function confirmBooking(skipAuthCheck) {
           email,
           full_name: fullName,
           birth_year: birthYear,
+          ui_theme: emailTheme.key,
+          email_theme: emailTheme,
+          email_theme_key: emailTheme.key,
         }),
       }
     );
@@ -3719,6 +3767,7 @@ async function submitAbo(skipAuthCheck) {
   const fullName = currentProfile?.full_name || '';
   const birthYear = currentProfile?.birth_year || null;
   const custType = currentProfile?.customer_type || 'account';
+  const emailTheme = getCheckoutEmailTheme();
 
   const pendingAbo = {
     booking_type: 'abo',
@@ -3737,7 +3786,10 @@ async function submitAbo(skipAuthCheck) {
     customer_type: custType,
     email,
     full_name: fullName,
-    birth_year: birthYear
+    birth_year: birthYear,
+    ui_theme: emailTheme.key,
+    email_theme: emailTheme,
+    email_theme_key: emailTheme.key
   };
 
   storePendingAboCheckout(pendingAbo);
@@ -3790,7 +3842,10 @@ async function submitAbo(skipAuthCheck) {
           customer_type: custType,
           email,
           full_name: fullName,
-          birth_year: birthYear
+          birth_year: birthYear,
+          ui_theme: emailTheme.key,
+          email_theme: emailTheme,
+          email_theme_key: emailTheme.key
         }),
       }
     );
@@ -5042,4 +5097,4 @@ body.bielstein-theme .slot.free:hover {
 }
 </style>
 
-<!-- v0.40: Bielstein-Header mit Cache-Buster ?v=20260429 -->
+<!-- v0.41: Header-Cache-Buster + email_theme Payload für Original/Bielstein-Mailfarben -->
