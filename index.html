@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>Padel Bielstein – Courts buchen v0.15</title>
+<title>Padel Bielstein – Courts buchen v0.28</title>
 <style>
 :root {
   --bg: #161616;
@@ -1682,7 +1682,19 @@ pHBar('pTz',['16–19 Uhr','12–16 Uhr','19–22 Uhr','08–12 Uhr'],[81,55,46,
 const wCol={g:'#22c55e',y:'#facc15',r:'#ef4444'};
 new Chart(document.getElementById('pTageBar'),{type:'bar',data:{labels:['01.02.','02.02.','03.02.','04.02.','05.02.','06.02.','07.02.','08.02.','09.02.','10.02.','11.02.','12.02.','13.02.','14.02.','15.02.','16.02.','17.02.','18.02.','19.02.','20.02.','21.02.','22.02.','23.02.','24.02.','25.02.','26.02.','27.02.','28.02.'],datasets:[{data:[330,231,364,399,176,272,156,149,291,285,476,117,298,201,164,316,316,405,148,159,266,250,146,480,457,234,263,331],backgroundColor:['#22c55e44','#22c55e44','#22c55e44','#22c55e44','#facc1544','#22c55e44','#facc1544','#ef444444','#22c55e44','#22c55e44','#22c55e44','#ef444444','#22c55e44','#facc1544','#22c55e44','#22c55e44','#22c55e44','#22c55e44','#facc1544','#ef444444','#22c55e44','#22c55e44','#facc1544','#22c55e44','#22c55e44','#22c55e44','#22c55e44','#22c55e44'],borderColor:['#22c55e','#22c55e','#22c55e','#22c55e','#facc15','#22c55e','#facc15','#ef4444','#22c55e','#22c55e','#22c55e','#ef4444','#22c55e','#facc15','#22c55e','#22c55e','#22c55e','#22c55e','#facc15','#ef4444','#22c55e','#22c55e','#facc15','#22c55e','#22c55e','#22c55e','#22c55e','#22c55e'],borderWidth:1,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:8},maxRotation:45,color:'#999'},grid:{display:false}},y:{ticks:{font:{size:8},color:'#999',callback:v=>v+' €'},grid:{color:gc}}}}});
 setTimeout(()=>window.print(),1400);
-<\/script></body></html>`);
+<\/script>
+<style>
+body.bielstein-theme .slot.free {
+  background: #1A1A1A !important;
+  border-color: #2A2A2A !important;
+}
+body.bielstein-theme .slot.free:hover {
+  background: #222222 !important;
+  border-color: #E3B200 !important;
+}
+</style>
+
+</body></html>`);
       w.document.close();
     }
     // ── MIS Tab-Switch ──
@@ -4315,6 +4327,18 @@ init();
     </div>
   </div>
 </div>
+
+
+<style>
+body.bielstein-theme .slot.free {
+  background: #1A1A1A !important;
+  border-color: #2A2A2A !important;
+}
+body.bielstein-theme .slot.free:hover {
+  background: #222222 !important;
+  border-color: #E3B200 !important;
+}
+</style>
 
 </body>
 </html>
