@@ -1215,14 +1215,35 @@ body.bielstein-theme .disc-badge {
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Geburtsjahr</label>
-        <input class="form-input" type="number" id="regYear" placeholder="z.B. 1985" min="1920" max="2015">
-        <div class="form-hint">Wird für die Altersstatistik benötigt</div>
+        <label class="form-label">Telefon</label>
+        <input class="form-input" type="tel" id="regPhone" placeholder="z.B. 0170 1234567" autocomplete="tel">
+        <div class="form-hint">Für Rückfragen bei Wetter/Zugangsproblemen</div>
       </div>
       <div class="form-group">
-        <label class="form-label">TFB-Mitgliedsnummer (optional)</label>
-        <input class="form-input" type="text" id="regMember" placeholder="z.B. TFB001">
-        <div class="form-hint">Nur für TFB-Mitglieder – aktiviert Mitgliederrabatt</div>
+        <label class="form-label">Geburtsjahr</label>
+        <input class="form-input" type="number" id="regYear" placeholder="z.B. 1985" min="1920" max="2015">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Geschlecht</label>
+        <select class="form-input" id="regGender">
+          <option value="">Bitte wählen</option>
+          <option value="weiblich">weiblich</option>
+          <option value="maennlich">männlich</option>
+          <option value="divers">divers</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mitgliedschaft (optional)</label>
+        <select class="form-input" id="regMemberSource" onchange="onMemberSourceChange()">
+          <option value="">Keine – externer Bucher</option>
+          <option value="tfb">TFB-Mitglied</option>
+          <option value="freibad">Freibad-Dauerkarte</option>
+        </select>
+      </div>
+      <div class="form-group" id="regMemberNumberGroup" style="display:none;">
+        <label class="form-label">Mitgliedsnummer</label>
+        <input class="form-input" type="text" id="regMember" placeholder="z.B. 3000" onblur="lookupMemberNumber()">
+        <div class="form-hint" id="regMemberHint">Wird geprüft und füllt Name/E-Mail/Telefon automatisch aus</div>
       </div>
       <button class="modal-btn gold" id="regBtn" onclick="doRegister()">Konto erstellen →</button>
     </div>
@@ -2413,6 +2434,15 @@ const SUPABASE_URL  = 'https://hioaqcwqzeqcvvikollq.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+// Fuer Admin-geschuetzte Schreibzugriffe: echten Login-Token statt nur des
+// oeffentlichen Anon-Keys mitschicken, damit RLS-Regeln wie "...admin_all"
+// den eingeloggten Nutzer per auth.uid() erkennen koennen.
+async function authHeaders() {
+  const { data: { session } } = await sb.auth.getSession();
+  const token = session?.access_token || SUPABASE_ANON;
+  return { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+}
+
 // ============================================================
 //  PREISE – aus Supabase geladen, Fallback auf hardcoded
 // ============================================================
@@ -2457,19 +2487,7 @@ async function loadPrices() {
     PW = {...PW_FB}; PE = {...PE_FB};
   }
 
-  // Mitgliederrabatt aus app_config laden
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/app_config?key=eq.member_discount&select=value&limit=1`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
-    );
-    if (res.ok) {
-      const data = await res.json();
-      if (data.length > 0 && member) {
-        member.discount = parseFloat(data[0].value);
-      }
-    }
-  } catch(e) { /* Fallback: 10% bleibt */ }
+  // Mitgliederrabatt kommt jetzt aus discount_rules, siehe loadMemberDiscount()
 }
 
 // ============================================================
@@ -3019,13 +3037,27 @@ async function loadProfile(authId) {
     const data = await res.json();
     if (data && data.length > 0) {
       currentProfile = data[0];
-      if (currentProfile.customer_type === 'member' && currentProfile.discount_pct > 0) {
-        member = { discount: parseFloat(currentProfile.discount_pct) };
-      } else {
-        member = null;
-      }
+      await loadMemberDiscount();
     }
   } catch(e) { console.warn('Profil laden fehlgeschlagen', e.message); }
+}
+
+// Laedt den aktuell gueltigen Rabattsatz aus discount_rules (ersetzt frueheres app_config.member_discount)
+async function loadMemberDiscount() {
+  member = null;
+  if (!currentProfile || currentProfile.customer_type !== 'member' || !currentProfile.membership_source) return;
+  try {
+    const ruleType = currentProfile.membership_source === 'tfb' ? 'member_tfb' : 'member_freibad';
+    const today = new Date().toISOString().slice(0,10);
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/discount_rules?rule_type=eq.${ruleType}&applies_to=eq.single&active=eq.true&select=discount_pct,valid_from,valid_until`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return;
+    const rows = await res.json();
+    const rule = (rows || []).find(r => (!r.valid_from || r.valid_from <= today) && (!r.valid_until || r.valid_until >= today));
+    if (rule) member = { discount: parseFloat(rule.discount_pct) / 100 };
+  } catch(e) { console.warn('Rabatt laden fehlgeschlagen', e.message); }
 }
 
 function updateUserBar() {
@@ -3182,19 +3214,74 @@ async function doLogin() {
 document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
 // ============================================================
+//  MITGLIEDSNUMMER-PRUEFUNG (TFB / Freibad)
+// ============================================================
+let matchedClubMember = null; // { source, member_number, full_name, email, phone } oder null
+
+function onMemberSourceChange() {
+  const source = document.getElementById('regMemberSource').value;
+  const group  = document.getElementById('regMemberNumberGroup');
+  group.style.display = source ? 'block' : 'none';
+  document.getElementById('regMember').value = '';
+  matchedClubMember = null;
+  document.getElementById('regMemberHint').textContent = 'Wird geprüft und füllt Name/E-Mail/Telefon automatisch aus';
+  document.getElementById('regMemberHint').style.color = '';
+}
+
+async function lookupMemberNumber() {
+  const source = document.getElementById('regMemberSource').value;
+  const number = document.getElementById('regMember').value.trim();
+  const hint   = document.getElementById('regMemberHint');
+  matchedClubMember = null;
+  if (!source || !number) return;
+
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/club_members?source=eq.${source}&member_number=eq.${encodeURIComponent(number)}&active=eq.true&select=source,member_number,full_name,email,phone`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    const rows = await res.json();
+    if (Array.isArray(rows) && rows.length) {
+      matchedClubMember = rows[0];
+      if (matchedClubMember.full_name) document.getElementById('regName').value  = matchedClubMember.full_name;
+      if (matchedClubMember.email)     document.getElementById('regEmail').value = matchedClubMember.email;
+      if (matchedClubMember.phone)     document.getElementById('regPhone').value = matchedClubMember.phone;
+      hint.textContent = '✓ Mitgliedschaft gefunden – Daten wurden ausgefüllt, bitte prüfen.';
+      hint.style.color = '#4caf50';
+    } else {
+      hint.textContent = 'Mitgliedsnummer nicht gefunden – bitte prüfen oder beim Vorstand melden. Ohne gültige Nummer kein Mitgliederrabatt.';
+      hint.style.color = '#e05a5a';
+    }
+  } catch(e) {
+    hint.textContent = 'Prüfung fehlgeschlagen – bitte später erneut versuchen.';
+    hint.style.color = '#e05a5a';
+  }
+}
+
+// ============================================================
 //  REGISTRIERUNG
 // ============================================================
 async function doRegister() {
   const name   = document.getElementById('regName').value.trim();
   const email  = document.getElementById('regEmail').value.trim();
   const pw     = document.getElementById('regPw').value;
+  const phone  = document.getElementById('regPhone').value.trim() || null;
   const year   = parseInt(document.getElementById('regYear').value);
-  const member_number = document.getElementById('regMember').value.trim().toUpperCase() || null;
+  const gender = document.getElementById('regGender').value || null;
+  const memberSource = document.getElementById('regMemberSource').value || null;
+  const memberNumberInput = document.getElementById('regMember').value.trim() || null;
 
   if (!name)            { showAuthErr('Bitte Name eingeben.'); return; }
   if (!email)           { showAuthErr('Bitte E-Mail eingeben.'); return; }
   if (pw.length < 8)    { showAuthErr('Passwort mindestens 8 Zeichen.'); return; }
   if (!year || year < 1920 || year > 2015) { showAuthErr('Bitte gültiges Geburtsjahr eingeben.'); return; }
+  if (!gender)           { showAuthErr('Bitte Geschlecht auswählen.'); return; }
+
+  // Nur als Mitglied werten, wenn die zuletzt geprüfte Nummer tatsächlich noch zum eingegebenen Wert passt
+  const isVerifiedMember = memberSource && memberNumberInput
+    && matchedClubMember
+    && matchedClubMember.source === memberSource
+    && matchedClubMember.member_number === memberNumberInput;
 
   const btn = document.getElementById('regBtn');
   btn.disabled = true; btn.textContent = '…';
@@ -3206,8 +3293,7 @@ async function doRegister() {
     if (authErr) { showAuthErr(translateAuthError(authErr.message)); return; }
 
     // 2. users-Tabelle befüllen via upsert
-    const customer_type = member_number ? 'member' : 'account';
-    const discount_pct  = member_number ? 0.10 : 0;
+    const customer_type = isVerifiedMember ? 'member' : 'account';
     const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
       method: 'POST',
       headers: {
@@ -3220,9 +3306,11 @@ async function doRegister() {
         auth_id:       authData.user.id,
         email,
         full_name:     name,
+        phone,
+        gender,
         customer_type,
-        member_number: member_number || null,
-        discount_pct,
+        membership_source: isVerifiedMember ? memberSource : null,
+        member_number: isVerifiedMember ? memberNumberInput : null,
         birth_year:    year,
       }),
     });
@@ -4553,20 +4641,23 @@ async function saveDiscount() {
   if (isNaN(pct) || pct < 0 || pct > 50) {
     showAdminMsg('discountErr', 'Bitte Wert zwischen 0 und 50 eingeben.'); return;
   }
+  // Aktualisiert den TFB- und Freibad-Mitgliederrabatt (Einzelbuchung + Abo) gleichzeitig.
+  // Fuer Frühbucher-/Schnupper-/Promo-Rabatte mit eigenem Prozentsatz oder Zeitfenster:
+  // direkt in discount_rules per SQL Editor pflegen.
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify({ key: 'member_discount', value: String(pct / 100) }),
-    });
+    const headers = await authHeaders();
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/discount_rules?rule_type=in.(member_tfb,member_freibad)`,
+      {
+        method: 'PATCH',
+        headers: { ...headers, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ discount_pct: pct }),
+      }
+    );
     if (!res.ok) throw new Error(await res.text());
     // Lokalen member-Rabatt aktualisieren falls eingeloggt
     if (member) { member.discount = pct / 100; updDurPrices(); renderSlots(); }
-    showAdminMsg('discountOk', `✓ Mitgliederrabatt auf ${pct} % gesetzt`);
+    showAdminMsg('discountOk', `✓ TFB- und Freibad-Mitgliederrabatt auf ${pct} % gesetzt`);
   } catch(e) {
     showAdminMsg('discountErr', 'Fehler: ' + e.message);
   }
