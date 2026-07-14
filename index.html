@@ -3291,12 +3291,16 @@ async function lookupMemberNumber() {
 
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/club_members?source=eq.${source}&member_number=eq.${encodeURIComponent(number)}&active=eq.true&select=source,member_number,full_name,email,phone`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      `${SUPABASE_URL}/rest/v1/rpc/lookup_club_member`,
+      {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_source: source, p_member_number: number }),
+      }
     );
     const rows = await res.json();
     if (Array.isArray(rows) && rows.length) {
-      matchedClubMember = rows[0];
+      matchedClubMember = { source, member_number: number, ...rows[0] };
       if (matchedClubMember.full_name) document.getElementById('regName').value  = matchedClubMember.full_name;
       if (matchedClubMember.email)     document.getElementById('regEmail').value = matchedClubMember.email;
       if (matchedClubMember.phone)     document.getElementById('regPhone').value = matchedClubMember.phone;
