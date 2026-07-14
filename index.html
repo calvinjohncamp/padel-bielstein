@@ -2444,40 +2444,6 @@ body.bielstein-theme #tabPlay:not(.active) {
         </div>
       </div>
 
-      <!-- Neuen Nutzer anlegen -->
-      <div class="admin-section">
-        <div class="admin-section-title">+ Neuen Nutzer / Mitglied anlegen</div>
-        <div class="admin-card">
-          <div class="admin-row">
-            <span class="admin-label">Name</span>
-            <input class="admin-input" type="text" id="newUserName" placeholder="Vor- und Nachname">
-          </div>
-          <div class="admin-row">
-            <span class="admin-label">E-Mail</span>
-            <input class="admin-input" type="email" id="newUserEmail" placeholder="email@beispiel.de">
-          </div>
-          <div class="admin-row">
-            <span class="admin-label">Typ</span>
-            <select class="admin-input" id="newUserType" style="max-width:180px;" onchange="document.getElementById('newUserMemberRow').style.display=this.value==='member'?'flex':'none'">
-              <option value="account">Konto (kein Mitglied)</option>
-              <option value="member">TFB-Mitglied</option>
-            </select>
-          </div>
-          <div class="admin-row" id="newUserMemberRow" style="display:none;">
-            <span class="admin-label">Mitgliedsnr.</span>
-            <input class="admin-input" type="text" id="newUserMember" placeholder="z.B. TFB042" style="max-width:160px;">
-            <span class="admin-label" style="min-width:60px;">Jahrgang</span>
-            <input class="admin-input" type="number" id="newUserYear" placeholder="z.B. 1975" style="max-width:110px;">
-          </div>
-          <div class="admin-row">
-            <button class="admin-save-btn gold" onclick="createUserByAdmin()">+ Nutzer anlegen</button>
-            <span style="font-size:0.72rem;color:#666;margin-left:8px;">Nutzer erhält E-Mail zur Passwort-Vergabe</span>
-          </div>
-          <div class="admin-ok"  id="newUserOk"></div>
-          <div class="admin-err" id="newUserErr"></div>
-        </div>
-      </div>
-
     </div><!-- /adminUsers -->
 
   </div><!-- /modeAdmin -->
@@ -4673,50 +4639,10 @@ async function loadAdminAbos() {
 }
 
 // ============================================================
-//  ADMIN – Nutzerverwaltung
+//  ADMIN – Nutzerverwaltung (nur Übersicht, keine manuelle Anlage -
+//  jeder registriert sich selbst; TFB-Mitglieder werden ohnehin
+//  nicht hier, sondern separat vom Verein gepflegt)
 // ============================================================
-async function createUserByAdmin() {
-  const __authH = await authHeaders();
-  const name       = document.getElementById('newUserName').value.trim();
-  const email      = document.getElementById('newUserEmail').value.trim();
-  const type       = document.getElementById('newUserType').value;
-  const memberNum  = document.getElementById('newUserMember').value.trim().toUpperCase() || null;
-  const birthYear  = parseInt(document.getElementById('newUserYear').value) || null;
-
-  if (!name)  { showAdminMsg('newUserErr', 'Bitte Name eingeben.'); return; }
-  if (!email) { showAdminMsg('newUserErr', 'Bitte E-Mail eingeben.'); return; }
-
-  try {
-    // Einladung + Nutzer-Anlage laeuft jetzt serverseitig ueber die Edge Function
-    // admin-invite-user (prueft dort selbst, ob der Aufrufer wirklich Admin ist,
-    // und nutzt den geheimen Service-Key nur dort, nie im Browser).
-    const res = await fetch(
-      `${SUPABASE_URL}/functions/v1/admin-invite-user`,
-      {
-        method: 'POST',
-        headers: { ...__authH },
-        body: JSON.stringify({
-          email,
-          full_name: name,
-          customer_type: type,
-          member_number: type === 'member' ? memberNum : null,
-          birth_year: birthYear,
-        }),
-      }
-    );
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Unbekannter Fehler');
-
-    showAdminMsg('newUserOk', `✓ ${name} angelegt – Einladungs-E-Mail an ${email} gesendet`);
-    document.getElementById('newUserName').value   = '';
-    document.getElementById('newUserEmail').value  = '';
-    document.getElementById('newUserMember').value = '';
-    document.getElementById('newUserYear').value   = '';
-    adminTabLoaded.users = false;
-    loadAdminUsers();
-  } catch(e) { showAdminMsg('newUserErr', 'Fehler: ' + e.message); }
-}
-
 async function loadAdminUsers() {
   const __authH = await authHeaders();
   try {
