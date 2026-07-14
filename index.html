@@ -3832,6 +3832,10 @@ async function confirmBooking(skipAuthCheck) {
     openModal('book');
     return;
   }
+  // Profil ggf. frisch nachladen, falls es noch nicht (oder fuer einen anderen Nutzer) geladen wurde
+  if (currentUser && (!currentProfile || currentProfile.auth_id !== currentUser.id)) {
+    await loadProfile(currentUser.id);
+  }
   const {court, hour} = selSlot;
   const priceRaw = rawP(hour, selDate);
   const price = mP(priceRaw);
@@ -3891,6 +3895,9 @@ async function submitAbo(skipAuthCheck) {
   if (!skipAuthCheck && !currentUser) {
     openModal('abo');
     return;
+  }
+  if (currentUser && (!currentProfile || currentProfile.auth_id !== currentUser.id)) {
+    await loadProfile(currentUser.id);
   }
   const { court, hour } = aboSlot;
   const priceMap = (aboWd===0 || aboWd===6) ? PE : PW;
