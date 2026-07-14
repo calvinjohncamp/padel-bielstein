@@ -3242,8 +3242,13 @@ async function doLogin() {
   btn.disabled = true; btn.textContent = '…';
   clearAuthMessages();
   try {
-    const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
     if (error) { showAuthErr(translateAuthError(error.message)); return; }
+    // Nicht auf den asynchronen onAuthStateChange-Listener warten - Profil direkt
+    // jetzt laden, damit Name/Rabatt bei einer sofort folgenden Buchung bereitstehen.
+    currentUser = data.user;
+    await loadProfile(data.user.id);
+    updateUserBar();
     closeModal();
     showToast('Willkommen zurück! 🎾');
     if (pendingAction === 'book') confirmBooking(true);
