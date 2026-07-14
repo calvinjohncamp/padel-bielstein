@@ -2669,6 +2669,17 @@ function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+// Slot gilt als abgelaufen, wenn er in der Vergangenheit liegt oder seine
+// Startzeit vor mehr als 30 Minuten war (Kulanzfrist). Serverseitig wird das
+// nochmal unabhaengig geprueft (create-checkout) - hier nur fuer die Anzeige.
+function isSlotExpired(dateStr, hour) {
+  const today = todayStr();
+  if (dateStr < today) return true;
+  if (dateStr > today) return false;
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  return nowMinutes >= (hour * 60 + 30);
+}
 function isWE(d) { const x = new Date(d+'T12:00:00'); return x.getDay()===0||x.getDay()===6; }
 function prices(d) { return isWE(d) ? PE : PW; }
 function rawP(h, d) { return (prices(d)[h] || 0) * selDur; }
@@ -3000,6 +3011,7 @@ function renderSlots() {
       const k  = `${selDate}-${h}`;
       const k2 = `${selDate}-${h+1}`;
       const bk = booked[ct].has(k) || (selDur===2 && booked[ct].has(k2));
+      const expired = isSlotExpired(selDate, h);
       const isSel = selSlot?.court===ct && selSlot?.hour===h;
       const isSec = selSlot?.court===ct && selSlot?.hour===h-1 && selDur===2;
       const rp = rawP(h, selDate), p = mP(rp), isMp = member && p < rp;
@@ -3009,8 +3021,10 @@ function renderSlots() {
       const isBlocked = !!blockedSlots[ct][k];
       const blockReason = blockedSlots[ct][k] || '';
       const isAboBlock = blockReason === 'Abo vergeben' || isLocalAboBlockedOnDate(selDate, ct, h) || (selDur===2 && isLocalAboBlockedOnDate(selDate, ct, h+1));
-      sl.className = "slot " + (bk ? (isAboBlock ? "abo-booked" : "booked") : isSel ? "selected" : isSec ? "selected-second" : "free");
-      if (bk) {
+      sl.className = "slot " + (expired ? "booked" : bk ? (isAboBlock ? "abo-booked" : "booked") : isSel ? "selected" : isSec ? "selected-second" : "free");
+      if (expired) {
+        sl.innerHTML = `<span class="slot-time">${h1}</span><span class="bkd-lbl">Abgelaufen</span>`;
+      } else if (bk) {
         if (isAboBlock) {
           sl.innerHTML = `<span class="slot-time">${h1}</span><span class="abo-lbl">Abo vergeben</span>`;
         } else if (isBlocked) {
