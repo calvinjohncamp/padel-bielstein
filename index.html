@@ -1340,10 +1340,6 @@ body.bielstein-theme .disc-badge {
       <div class="sum-row" id="discRow" style="display:none;"><span class="sl">Rabatt <span class="disc-badge" id="discBadge"></span></span><span class="sv" id="sDisc" style="color:#4ade80">—</span></div>
       <div class="sum-row total"><span class="sl">Gesamt</span><span class="sv" id="sTotal">—</span></div>
     </div>
-    <label style="display:flex;align-items:flex-start;gap:8px;margin:10px 0;font-size:0.8rem;color:#aaa;cursor:pointer;">
-      <input type="checkbox" id="liabilityCheck" style="margin-top:3px;">
-      <span>Ich übernehme die Verantwortung für die Plätze während meiner Buchung.</span>
-    </label>
     <button class="book-btn" id="bookBtn" onclick="confirmBooking()">Jetzt buchen &amp; bezahlen →</button>
   </div>
 
@@ -1397,10 +1393,6 @@ body.bielstein-theme .disc-badge {
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>Ihr spielt zu viert – jeder zahlt somit nur <strong id="as-perperson" style="color:var(--gold)">—</strong></div>
       </div>
       <div class="abo-weather">Dein Slot gehört dir – gespielt wird, wenn das Wetter es zulässt.</div>
-      <label style="display:flex;align-items:flex-start;gap:8px;margin:10px 0;font-size:0.8rem;color:#aaa;cursor:pointer;">
-        <input type="checkbox" id="liabilityCheckAbo" style="margin-top:3px;">
-        <span>Ich übernehme die Verantwortung für die Plätze während meiner Buchungen.</span>
-      </label>
       <button class="abo-cta" onclick="submitAbo(false)">■ Jahresabo sichern</button>
     </div>
   </div>
@@ -2739,8 +2731,7 @@ async function saveTestAboToSupabase(abo) {
       starts_on: abo.starts_on || new Date().toISOString().slice(0,10),
       ends_on: abo.ends_on || (() => { const d = new Date(); d.setFullYear(d.getFullYear() + 1); return d.toISOString().slice(0,10); })(),
 
-      status: 'active',
-      liability_accepted: true
+      status: 'active'
     };
 
     const { data, error } = await sb
@@ -3841,12 +3832,6 @@ async function confirmBooking(skipAuthCheck) {
     openModal('book');
     return;
   }
-  const liabilityBox = document.getElementById('liabilityCheck');
-  if (liabilityBox && !liabilityBox.checked) {
-    showToast('Bitte bestätige die Haftungs-Checkbox, um fortzufahren.');
-    return;
-  }
-
   const {court, hour} = selSlot;
   const priceRaw = rawP(hour, selDate);
   const price = mP(priceRaw);
@@ -3881,7 +3866,6 @@ async function confirmBooking(skipAuthCheck) {
           email,
           full_name: fullName,
           birth_year: birthYear,
-          liability_accepted: true,
           ui_theme: emailTheme.key,
           email_theme: emailTheme,
           email_theme_key: emailTheme.key,
@@ -3908,12 +3892,6 @@ async function submitAbo(skipAuthCheck) {
     openModal('abo');
     return;
   }
-  const liabilityBoxAbo = document.getElementById('liabilityCheckAbo');
-  if (liabilityBoxAbo && !liabilityBoxAbo.checked) {
-    showToast('Bitte bestätige die Haftungs-Checkbox, um fortzufahren.');
-    return;
-  }
-
   const { court, hour } = aboSlot;
   const priceMap = (aboWd===0 || aboWd===6) ? PE : PW;
   const pricePerWeek = (priceMap[hour] || 0) * aboDur;
@@ -4000,7 +3978,6 @@ async function submitAbo(skipAuthCheck) {
           email,
           full_name: fullName,
           birth_year: birthYear,
-          liability_accepted: true,
           ui_theme: emailTheme.key,
           email_theme: emailTheme,
           email_theme_key: emailTheme.key
