@@ -3074,9 +3074,10 @@ sb.auth.onAuthStateChange(async (event, session) => {
 
 async function loadProfile(authId) {
   try {
+    const headers = await authHeaders();
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/users?auth_id=eq.${authId}&limit=1`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      { headers }
     );
     if (!res.ok) return;
     const data = await res.json();
