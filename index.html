@@ -4565,34 +4565,25 @@ async function createUserByAdmin() {
   if (!email) { showAdminMsg('newUserErr', 'Bitte E-Mail eingeben.'); return; }
 
   try {
-    // Supabase Auth: Einladungs-E-Mail senden (Magic Link / Invite)
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/invite`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
-    });
-    const authData = res.ok ? await res.json() : null;
-
-    // users-Tabelle direkt befüllen
-    await fetch(`${SUPABASE_URL}/rest/v1/users`, {
-      method: 'POST',
-      headers: {
-        ...__authH,
-        'Prefer': 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify({
-        auth_id:       authData?.id || null,
-        email,
-        full_name:     name,
-        customer_type: type,
-        member_number: type === 'member' ? memberNum : null,
-        discount_pct:  type === 'member' ? 0.10 : 0,
-        birth_year:    birthYear,
-      }),
-    });
+    // Einladung + Nutzer-Anlage laeuft jetzt serverseitig ueber die Edge Function
+    // admin-invite-user (prueft dort selbst, ob der Aufrufer wirklich Admin ist,
+    // und nutzt den geheimen Service-Key nur dort, nie im Browser).
+    const res = await fetch(
+      `${SUPABASE_URL}/functions/v1/admin-invite-user`,
+      {
+        method: 'POST',
+        headers: { ...__authH },
+        body: JSON.stringify({
+          email,
+          full_name: name,
+          customer_type: type,
+          member_number: type === 'member' ? memberNum : null,
+          birth_year: birthYear,
+        }),
+      }
+    );
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Unbekannter Fehler');
 
     showAdminMsg('newUserOk', `✓ ${name} angelegt – Einladungs-E-Mail an ${email} gesendet`);
     document.getElementById('newUserName').value   = '';
