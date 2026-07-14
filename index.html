@@ -1296,10 +1296,11 @@ body.bielstein-theme .disc-badge {
   </div>
 
 
-  <div class="mode-tabs" style="grid-template-columns:1fr 1fr 1fr;" id="mainTabs">
+  <div class="mode-tabs" style="grid-template-columns:1fr 1fr 1fr 1fr;" id="mainTabs">
     <div class="mode-tab active" id="tabBook" onclick="setMode('book')"><span class="tab-icon">■</span> Jetzt buchen</div>
     <div class="mode-tab" id="tabAbo" onclick="setMode('abo')"><span class="tab-icon">■</span> Jahresabo sichern</div>
     <div class="mode-tab" id="tabPlay" onclick="setMode('play')"><span class="tab-icon">▶</span> Jetzt spielen</div>
+    <div class="mode-tab" id="tabMy" onclick="setMode('my')"><span class="tab-icon">📋</span> Meine Buchungen</div>
   </div>
   <!-- Admin Tab entfernt – Admin-Zugang über Fußzeile -->
 
@@ -1452,6 +1453,35 @@ body.bielstein-theme .disc-badge {
         <div class="door-log" id="doorLogList"></div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- MEINE BUCHUNGEN -->
+  <div id="modeMy" style="display:none;">
+    <div id="myNotLoggedIn" style="display:none;">
+      <div class="play-empty">
+        <div class="play-empty-icon">🔒</div>
+        <div class="play-empty-text">Bitte <strong style="color:var(--white);">anmelden</strong>, um deine Buchungen zu sehen.</div>
+        <button class="user-bar-login" style="margin-top:18px;padding:10px 28px;font-size:0.82rem;" onclick="openModal('login')">Jetzt anmelden</button>
+      </div>
+    </div>
+    <div id="myLoggedIn" style="display:none;">
+      <div class="play-card">
+        <div class="play-card-title">■ Kommende Einzelbuchungen</div>
+        <div id="mySingleBookingsList">
+          <div class="play-empty" style="padding:24px 0;">
+            <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
+          </div>
+        </div>
+      </div>
+      <div class="play-card" style="margin-top:14px;">
+        <div class="play-card-title">⭐ Aktive Jahresabos</div>
+        <div id="myAbosList">
+          <div class="play-empty" style="padding:24px 0;">
+            <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2924,14 +2954,17 @@ function setMode(m) {
   document.getElementById('modeBook').style.display  = m==='book'  ? 'block' : 'none';
   document.getElementById('modeAbo').style.display   = m==='abo'   ? 'block' : 'none';
   document.getElementById('modePlay').style.display  = m==='play'  ? 'block' : 'none';
+  document.getElementById('modeMy').style.display    = m==='my'    ? 'block' : 'none';
   document.getElementById('modeAdmin').style.display = m==='admin' ? 'block' : 'none';
   document.getElementById('tabBook').classList.toggle('active',  m==='book');
   document.getElementById('tabAbo').classList.toggle('active',   m==='abo');
   document.getElementById('tabPlay').classList.toggle('active',  m==='play');
+  document.getElementById('tabMy').classList.toggle('active',    m==='my');
   const adminFooter = document.getElementById('adminFooterBtn');
   if (adminFooter) adminFooter.style.fontWeight = m==='admin' ? '900' : '700';
   if (m==='abo')  { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
   if (m==='play') { renderPlaySection(); }
+  if (m==='my')   { renderMySection(); }
   if (m==='admin') {
     document.getElementById('mainTabs').style.display = 'none';
     document.getElementById('heroHeader').style.cursor = 'pointer';
@@ -3552,6 +3585,82 @@ async function loadTodayAboSlot() {
     const s = data[0];
     return { court: s.court, date: todayStr(), hour_start: s.hour_start, duration: s.duration, isAbo: true };
   } catch(e) { return null; }
+}
+
+// ============================================================
+//  MEINE BUCHUNGEN – kommende Einzelbuchungen + aktive Abos
+// ============================================================
+async function loadUpcomingBookings() {
+  if (!currentUser) return [];
+  const today = todayStr();
+  const email = currentProfile?.email || currentUser.email;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/bookings?select=court,date,hour_start,duration,price_paid_cents&date=gte.${today}&status=eq.paid&email=eq.${encodeURIComponent(email)}&order=date.asc,hour_start.asc&limit=100`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return [];
+    return await res.json();
+  } catch(e) { return []; }
+}
+
+async function loadActiveAbos() {
+  if (!currentUser) return [];
+  const email = currentProfile?.email || currentUser.email;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/subscriptions?select=court,weekday,hour_start,duration,starts_on,ends_on&status=eq.active&email=eq.${encodeURIComponent(email)}&order=weekday.asc`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return [];
+    return await res.json();
+  } catch(e) { return []; }
+}
+
+async function renderMySection() {
+  const notLoggedIn = document.getElementById('myNotLoggedIn');
+  const loggedIn     = document.getElementById('myLoggedIn');
+  if (!currentUser) {
+    notLoggedIn.style.display = 'block';
+    loggedIn.style.display    = 'none';
+    return;
+  }
+  notLoggedIn.style.display = 'none';
+  loggedIn.style.display    = 'block';
+
+  const [bookings, abos] = await Promise.all([loadUpcomingBookings(), loadActiveAbos()]);
+
+  const bookingsEl = document.getElementById('mySingleBookingsList');
+  if (!bookings.length) {
+    bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Keine kommenden Buchungen</div></div>`;
+  } else {
+    bookingsEl.innerHTML = bookings.map(b => {
+      const dateStr = new Date(b.date+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+      const timeStr = `${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start+b.duration).padStart(2,'0')}:00`;
+      const price = b.price_paid_cents ? (b.price_paid_cents/100).toFixed(2)+' €' : '';
+      return `<div class="closure-item">
+        <div style="flex:1;">
+          <div class="closure-item-date">${dateStr} · ${timeStr} Uhr</div>
+          <div class="closure-item-note">Court #${b.court}${price ? ' · '+price : ''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const abosEl = document.getElementById('myAbosList');
+  if (!abos.length) {
+    abosEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Kein aktives Jahresabo</div></div>`;
+  } else {
+    abosEl.innerHTML = abos.map(a => {
+      const timeStr = `${String(a.hour_start).padStart(2,'0')}:00–${String(a.hour_start+a.duration).padStart(2,'0')}:00`;
+      return `<div class="closure-item">
+        <div style="flex:1;">
+          <div class="closure-item-date">${WDNAMES[a.weekday]}s · ${timeStr} Uhr</div>
+          <div class="closure-item-note">Court #${a.court} · gültig bis ${formatDateDE(a.ends_on)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
 }
 
 // Prüft ob eine Buchung gerade aktiv ist (±15 Min)
