@@ -2547,8 +2547,9 @@ async function loadBookings(date) {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8000);
+    // Belegungs-Uebersicht ohne Namen (oeffentlich, keine Kundendaten preisgeben)
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/bookings?select=court,date,hour_start,duration,status,full_name,customer_type&date=eq.${date}&status=in.(paid,blocked)`,
+      `${SUPABASE_URL}/rest/v1/bookings?select=court,date,hour_start,duration,status,customer_type&date=eq.${date}&status=in.(paid,blocked)`,
       { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }, signal: controller.signal }
     );
     clearTimeout(timer);
@@ -2560,11 +2561,25 @@ async function loadBookings(date) {
       for (let i = 0; i < b.duration; i++) {
         const key = `${b.date}-${b.hour_start + i}`;
         booked[b.court].add(key);
-        if (b.customer_type === 'internal') {
-          blockedSlots[b.court][key] = b.full_name || 'Gesperrt';
-        }
       }
     }
+    // Sperrgrund fuer interne Blockierungen separat holen - serverseitig gefiltert,
+    // damit echte Kundennamen (status=paid) nie mit abgefragt werden koennen.
+    try {
+      const resReason = await fetch(
+        `${SUPABASE_URL}/rest/v1/bookings?select=court,hour_start,duration,full_name&date=eq.${date}&status=eq.blocked&customer_type=eq.internal`,
+        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      );
+      if (resReason.ok) {
+        const reasons = await resReason.json();
+        for (const b of (reasons || [])) {
+          for (let i = 0; i < b.duration; i++) {
+            const key = `${date}-${b.hour_start + i}`;
+            blockedSlots[b.court][key] = b.full_name || 'Gesperrt';
+          }
+        }
+      }
+    } catch(e) { /* Sperrgrund ist nur Komfort-Anzeige, kein harter Fehler */ }
     // Jahresabos blockieren auch die normale Einzelbuchungsansicht.
     await addSupabaseAboBlocksForDate(date);
     addLocalAboBlocksForDate(date);
@@ -4173,6 +4188,7 @@ async function loadAdminFreibad() {
 }
 
 async function saveFreibadConfig() {
+  const __authH = await authHeaders();
   const startVal = document.getElementById('cfgSeasonStart').value;
   const endVal   = document.getElementById('cfgSeasonEnd').value;
   const openH    = parseInt(document.getElementById('cfgOpenH').value);
@@ -4197,8 +4213,8 @@ async function saveFreibadConfig() {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/freibad_config`, {
       method: 'POST',
       headers: {
-        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal',
+        ...__authH,
+        'Prefer': 'resolution=merge-duplicates,return=minimal',
       },
       body: JSON.stringify(payload),
     });
@@ -4214,6 +4230,7 @@ async function saveFreibadConfig() {
 //  ADMIN – Schließtage
 // ============================================================
 async function addClosure() {
+  const __authH = await authHeaders();
   const date    = document.getElementById('newClosureDate').value;
   const target  = document.getElementById('newClosureTarget').value;
   const note    = document.getElementById('newClosureNote').value.trim();
@@ -4239,7 +4256,7 @@ async function addClosure() {
       if (useTime) { fcPayload.from_hour = fromH; fcPayload.to_hour = toH; }
       await fetch(`${SUPABASE_URL}/rest/v1/freibad_closures`, {
         method: 'POST',
-        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        headers: { ...__authH, 'Prefer': 'return=minimal' },
         body: JSON.stringify(fcPayload),
       });
     }
@@ -4252,7 +4269,7 @@ async function addClosure() {
       }));
       const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, {
         method: 'POST',
-        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        headers: { ...__authH, 'Prefer': 'return=minimal' },
         body: JSON.stringify(rows),
       });
       if (!res.ok) throw new Error(await res.text());
@@ -4272,18 +4289,19 @@ async function addClosure() {
 let closureBookings = [];
 
 async function loadClosureList() {
+  const __authH = await authHeaders();
   const today = todayStr();
   try {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/bookings?select=id,date,court,hour_start,duration,full_name&customer_type=eq.internal&status=eq.blocked&recur_group=is.null&recurring=eq.false&date=gte.${today}&order=date.asc,hour_start.asc&limit=200`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      { headers: __authH }
     );
     closureBookings = res.ok ? await res.json() : [];
   } catch(e) { closureBookings = []; }
   try {
     const res2 = await fetch(
       `${SUPABASE_URL}/rest/v1/freibad_closures?select=*&order=date.asc`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      { headers: __authH }
     );
     freibadClosures = res2.ok ? await res2.json() : [];
   } catch(e) { freibadClosures = []; }
@@ -4291,20 +4309,21 @@ async function loadClosureList() {
 }
 
 async function removeClosure(fcDate, bookingIds) {
+  const __authH = await authHeaders();
   if (!confirm('Sperrung wirklich löschen?')) return;
   try {
     if (bookingIds) {
       for (const id of bookingIds.split(',')) {
         await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, {
           method: 'DELETE',
-          headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` },
+          headers: __authH,
         });
       }
     }
     if (fcDate) {
       await fetch(`${SUPABASE_URL}/rest/v1/freibad_closures?date=eq.${fcDate}`, {
         method: 'DELETE',
-        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` },
+        headers: __authH,
       });
     }
     await loadClosureList();
@@ -4323,6 +4342,7 @@ function openClosureEdit(idsStr, note, fromH, toH) {
 function closeClosureEdit() { document.getElementById('closureEditOverlay').style.display = 'none'; }
 
 async function saveClosureEdit() {
+  const __authH = await authHeaders();
   const idsStr = document.getElementById('editClosureIds').value;
   const note   = document.getElementById('editClosureNote').value.trim();
   const fromH  = parseInt(document.getElementById('editClosureFrom').value);
@@ -4333,7 +4353,7 @@ async function saveClosureEdit() {
     for (const id of idsStr.split(',')) {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, {
         method: 'PATCH',
-        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        headers: { ...__authH, 'Prefer': 'return=minimal' },
         body: JSON.stringify({ full_name: note, hour_start: fromH, duration: toH - fromH }),
       });
       if (!res.ok) throw new Error(await res.text());
@@ -4398,6 +4418,7 @@ function renderClosureList() {
 //  ADMIN – Datumsausnahmen (abweichende Öffnungszeiten)
 // ============================================================
 async function addException(type) {
+  const __authH = await authHeaders();
   const dateId  = type === 'freibad' ? 'excDateFB' : 'excDatePD';
   const openId  = type === 'freibad' ? 'excOpenFB' : 'excOpenPD';
   const closeId = type === 'freibad' ? 'excCloseFB': 'excClosePD';
@@ -4410,8 +4431,8 @@ async function addException(type) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/freibad_exceptions`, {
       method: 'POST',
       headers: {
-        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal',
+        ...__authH,
+        'Prefer': 'resolution=merge-duplicates,return=minimal',
       },
       body: JSON.stringify({ date, type, open_hour: openH, close_hour: closeH }),
     });
@@ -4428,10 +4449,11 @@ async function addException(type) {
 }
 
 async function removeException(date, type) {
+  const __authH = await authHeaders();
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/freibad_exceptions?date=eq.${date}&type=eq.${type}`, {
       method: 'DELETE',
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` },
+      headers: __authH,
     });
     freibadExceptions = freibadExceptions.filter(e => !(e.date === date && e.type === type));
     renderExceptionList();
@@ -4458,13 +4480,14 @@ function renderExceptionList() {
 //  ADMIN – Buchungsübersicht
 // ============================================================
 async function loadAdminStats() {
+  const __authH = await authHeaders();
   const today = todayStr();
   try {
     const [bRes, aRes] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/bookings?select=price_cents&status=eq.paid&date=gte.${today}`,
-        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }),
+        { headers: __authH }),
       fetch(`${SUPABASE_URL}/rest/v1/subscriptions?select=total_price_cents&status=eq.active`,
-        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }),
+        { headers: __authH }),
     ]);
     const bookings = bRes.ok ? await bRes.json() : [];
     const abos     = aRes.ok ? await aRes.json() : [];
@@ -4477,11 +4500,12 @@ async function loadAdminStats() {
 }
 
 async function loadAdminBookings() {
+  const __authH = await authHeaders();
   const today = todayStr();
   try {
     const res  = await fetch(
       `${SUPABASE_URL}/rest/v1/bookings?select=*&status=eq.paid&date=gte.${today}&order=date.asc,hour_start.asc&limit=200`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      { headers: __authH }
     );
     const data = res.ok ? await res.json() : [];
     const tbody = document.getElementById('bookingsTbody');
@@ -4501,10 +4525,11 @@ async function loadAdminBookings() {
 }
 
 async function loadAdminAbos() {
+  const __authH = await authHeaders();
   try {
     const res  = await fetch(
       `${SUPABASE_URL}/rest/v1/subscriptions?select=*&status=eq.active&order=created_at.desc`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      { headers: __authH }
     );
     const data = res.ok ? await res.json() : [];
     const wdNames = ['So','Mo','Di','Mi','Do','Fr','Sa'];
@@ -4529,6 +4554,7 @@ async function loadAdminAbos() {
 //  ADMIN – Nutzerverwaltung
 // ============================================================
 async function createUserByAdmin() {
+  const __authH = await authHeaders();
   const name       = document.getElementById('newUserName').value.trim();
   const email      = document.getElementById('newUserEmail').value.trim();
   const type       = document.getElementById('newUserType').value;
@@ -4554,8 +4580,8 @@ async function createUserByAdmin() {
     await fetch(`${SUPABASE_URL}/rest/v1/users`, {
       method: 'POST',
       headers: {
-        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal',
+        ...__authH,
+        'Prefer': 'resolution=merge-duplicates,return=minimal',
       },
       body: JSON.stringify({
         auth_id:       authData?.id || null,
@@ -4579,10 +4605,11 @@ async function createUserByAdmin() {
 }
 
 async function loadAdminUsers() {
+  const __authH = await authHeaders();
   try {
     const res  = await fetch(
       `${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc&limit=500`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      { headers: __authH }
     );
     const data = res.ok ? await res.json() : [];
     const tbody = document.getElementById('usersTbody');
@@ -4608,12 +4635,13 @@ async function loadAdminUsers() {
 const HOURS = [8,9,10,11,12,13,14,15,16,17,18,19,20,21];
 
 async function loadAdminPrices() {
+  const __authH = await authHeaders();
   // Mitgliederrabatt aus users-Tabelle (discount_pct vom Typ 'member')
   // Wir nutzen einen eigenen config-Eintrag — Fallback auf 10%
   try {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/prices?select=hour,day_type,price_cents&order=day_type,hour`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      { headers: __authH }
     );
     const data = res.ok ? await res.json() : [];
 
@@ -4635,7 +4663,7 @@ async function loadAdminPrices() {
   try {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/discount_rules?rule_type=eq.member_tfb&applies_to=eq.single&select=discount_pct&limit=1`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      { headers: __authH }
     );
     const data = res.ok ? await res.json() : [];
     if (data.length > 0) {
@@ -4650,11 +4678,12 @@ async function loadAdminPrices() {
 //  RABATT-REGELN (discount_rules) - Admin-Verwaltung
 // ============================================================
 async function loadDiscountRules() {
+  const __authH = await authHeaders();
   const body = document.getElementById('discountRulesBody');
   try {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/discount_rules?select=*&order=created_at.asc`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      { headers: __authH }
     );
     const rows = res.ok ? await res.json() : [];
     if (!rows.length) { body.innerHTML = '<tr><td colspan="9" style="color:#555;">Keine Regeln vorhanden.</td></tr>'; return; }
@@ -4677,6 +4706,7 @@ async function loadDiscountRules() {
 }
 
 async function saveDiscountRule(id) {
+  const __authH = await authHeaders();
   const pct    = parseFloat(document.getElementById(`rulePct-${id}`).value);
   const from   = document.getElementById(`ruleFrom-${id}`).value || null;
   const until  = document.getElementById(`ruleUntil-${id}`).value || null;
@@ -4699,6 +4729,7 @@ async function saveDiscountRule(id) {
 }
 
 async function createDiscountRule() {
+  const __authH = await authHeaders();
   const label   = document.getElementById('newRuleLabel').value.trim();
   const rule_type = document.getElementById('newRuleType').value;
   const pct     = parseFloat(document.getElementById('newRulePct').value);
@@ -4746,6 +4777,7 @@ function renderPriceGrid(containerId, dayType, prices) {
 }
 
 async function savePrices() {
+  const __authH = await authHeaders();
   const rows = [];
   const today = new Date().toISOString().split('T')[0];
 
@@ -4761,8 +4793,7 @@ async function savePrices() {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/prices`, {
       method: 'POST',
       headers: {
-        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json',
+        ...__authH,
         'Prefer': 'resolution=merge-duplicates,return=minimal',
       },
       body: JSON.stringify(rows),
@@ -4783,6 +4814,7 @@ async function savePrices() {
 }
 
 async function saveDiscount() {
+  const __authH = await authHeaders();
   const pct = parseFloat(document.getElementById('priceDiscount').value);
   if (isNaN(pct) || pct < 0 || pct > 50) {
     showAdminMsg('discountErr', 'Bitte Wert zwischen 0 und 50 eingeben.'); return;
@@ -4822,6 +4854,7 @@ function setIntType(t) {
 }
 
 async function saveInternalBooking() {
+  const __authH = await authHeaders();
   const date    = document.getElementById('intDate').value;
   const court   = document.getElementById('intCourt').value;
   const from    = parseInt(document.getElementById('intFrom').value);
@@ -4867,10 +4900,7 @@ async function saveInternalBooking() {
     }
     const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, {
       method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json', 'Prefer': 'return=minimal',
-      },
+      headers: { ...__authH, 'Prefer': 'return=minimal' },
       body: JSON.stringify(rows),
     });
     if (!res.ok) throw new Error(await res.text());
@@ -4890,12 +4920,13 @@ async function saveInternalBooking() {
 }
 
 async function loadInternalBookings() {
+  const __authH = await authHeaders();
   const today = todayStr();
   const WDNAMES = ['So','Mo','Di','Mi','Do','Fr','Sa'];
   try {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/bookings?select=id,date,hour_start,duration,court,full_name,price_cents,recur_group,recurring&customer_type=eq.internal&status=in.(blocked)&date=gte.${today}&order=date.asc,hour_start.asc&limit=500`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      { headers: __authH }
     );
     const data = res.ok ? await res.json() : [];
     console.log('Interne Buchungen geladen:', data.length);
@@ -4951,6 +4982,7 @@ function openIntEdit(id, recurGroup, reason, fromH, toH, pricePerH, isRecurring)
 function closeIntEdit() { document.getElementById('intEditOverlay').style.display = 'none'; }
 
 async function saveIntEdit() {
+  const __authH = await authHeaders();
   const id        = parseInt(document.getElementById('editIntId').value);
   const recurGroup= document.getElementById('editIntRecurGroup').value;
   const reason    = document.getElementById('editIntReason').value.trim();
@@ -4965,14 +4997,14 @@ async function saveIntEdit() {
     if (recurGroup) {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?recur_group=eq.${recurGroup}&customer_type=eq.internal&date=gte.${todayStr()}`, {
         method: 'PATCH',
-        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        headers: { ...__authH, 'Prefer': 'return=minimal' },
         body: JSON.stringify(patch),
       });
       if (!res.ok) throw new Error(await res.text());
     } else {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, {
         method: 'PATCH',
-        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        headers: { ...__authH, 'Prefer': 'return=minimal' },
         body: JSON.stringify(patch),
       });
       if (!res.ok) throw new Error(await res.text());
@@ -4986,6 +5018,7 @@ async function saveIntEdit() {
 }
 
 async function deleteInternalBooking(id, recurGroup) {
+  const __authH = await authHeaders();
   const deleteAll = recurGroup && confirm('Alle Termine dieser Buchungsreihe löschen?');
   try {
     let url = deleteAll
@@ -4993,7 +5026,7 @@ async function deleteInternalBooking(id, recurGroup) {
       : `${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`;
     await fetch(url, {
       method: 'DELETE',
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` },
+      headers: __authH,
     });
     loadInternalBookings();
     if (selDate) { await loadBookings(selDate); renderSlots(); }
