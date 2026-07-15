@@ -2145,7 +2145,13 @@ let aboBooked = {1: new Set(), 2: new Set()};
 
 let blockedSlots = {1: {}, 2: {}};  // {court: {key: reason}}
 
+// Generation-Zähler gegen Race Conditions: Wenn zwei loadBookings()-Aufrufe
+// überlappen (z.B. schneller Datums-/Dauerwechsel), darf die Antwort eines
+// veralteten (älteren) Aufrufs nicht mehr die Daten eines neueren überschreiben.
+let bookingsLoadGeneration = 0;
+
 async function loadBookings(date) {
+  const myGen = ++bookingsLoadGeneration;
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8000);
@@ -2157,6 +2163,7 @@ async function loadBookings(date) {
     clearTimeout(timer);
     if (!res.ok) { console.warn('Buchungen HTTP Fehler:', res.status); return; }
     const data = await res.json();
+    if (myGen !== bookingsLoadGeneration) return; // inzwischen lief ein neuerer Aufruf los - dieses Ergebnis ist veraltet, verwerfen
     booked       = {1: new Set(), 2: new Set()};
     blockedSlots = {1: {}, 2: {}};
     for (const b of (data || [])) {
@@ -2189,6 +2196,7 @@ async function loadBookings(date) {
     console.log('Buchungen geladen:', data.length, 'Einträge');
   } catch(e) {
     console.warn('Buchungen Fehler:', e.message);
+    if (myGen !== bookingsLoadGeneration) return; // veralteter Aufruf, nicht mehr über neuere Daten drüberschreiben
     booked = {1: new Set(), 2: new Set()};
     blockedSlots = {1: {}, 2: {}};
     addLocalAboBlocksForDate(date);
@@ -2607,8 +2615,25 @@ function setDur(d) {
 // ============================================================
 //  SLOTS RENDERN
 // ============================================================
+// Prüft, ob eine Einzelbuchung (Startstunde + Dauer) unter dem aktuellen
+// Belegungsstand komplett frei ist - für 2h-Buchungen muss auch die Folgestunde frei sein.
+function isSlotRangeFree(court, hour, duration) {
+  for (let i = 0; i < duration; i++) {
+    if (booked[court].has(`${selDate}-${hour + i}`)) return false;
+  }
+  return true;
+}
+
 function renderSlots() {
   if (!selDate) return;
+  // Falls die aktuelle Auswahl durch frisch geladene Daten (z.B. inzwischen
+  // vergebenes Abo, Race Condition beim schnellen Umschalten) ungültig
+  // geworden ist: Auswahl verwerfen statt eine nicht mehr verfügbare
+  // Buchung zur Zahlung anzubieten.
+  if (selSlot && !isSlotRangeFree(selSlot.court, selSlot.hour, selDur)) {
+    selSlot = null;
+    showToast('⚠️ Der ausgewählte Slot ist inzwischen nicht mehr verfügbar.');
+  }
   [1, 2].forEach(ct => {
     const c = document.getElementById("slots" + ct);
     c.innerHTML = "";
@@ -2645,6 +2670,8 @@ function renderSlots() {
       c.appendChild(sl);
     });
   });
+  // Zusammenfassungs-Karte immer synchron zur (ggf. gerade oben korrigierten) Auswahl halten.
+  updateSummary();
 }
 
 function pickSlot(ct, h) {
@@ -3548,6 +3575,17 @@ async function confirmBooking(skipAuthCheck) {
     openModal('book');
     return;
   }
+  // Letzte, frische Prüfung direkt vor der Zahlung: Belegung neu laden und
+  // Auswahl gegenprüfen. Verhindert, dass für einen zwischenzeitlich (z.B.
+  // durch ein anderes Mitglied) vergebenen Slot bezahlt wird. Serverseitig
+  // greift zusätzlich die Prüfung in create-checkout / DB-Exclusion-Constraint.
+  showLoader(true);
+  await loadBookings(selDate);
+  renderSlots();
+  showLoader(false);
+  if (!selSlot) {
+    return; // renderSlots() hat die Auswahl bereits verworfen + Hinweis angezeigt
+  }
   // Profil ggf. frisch nachladen, falls es noch nicht (oder fuer einen anderen Nutzer) geladen wurde
   if (currentUser && (!currentProfile || currentProfile.auth_id !== currentUser.id)) {
     await loadProfile(currentUser.id);
@@ -3611,6 +3649,14 @@ async function submitAbo(skipAuthCheck) {
   if (!skipAuthCheck && !currentUser) {
     openModal('abo');
     return;
+  }
+  // Letzte, frische Prüfung direkt vor der Zahlung (siehe confirmBooking()).
+  showLoader(true);
+  await loadAboBookings(aboWd);
+  renderAboSlots();
+  showLoader(false);
+  if (!aboSlot) {
+    return; // renderAboSlots() hat die Auswahl bereits verworfen + Hinweis angezeigt
   }
   if (currentUser && (!currentProfile || currentProfile.auth_id !== currentUser.id)) {
     await loadProfile(currentUser.id);
@@ -3748,7 +3794,19 @@ function setAboDur(d) {
   updateAboSummary();
 }
 
+// Prüft, ob ein Abo-Startslot + Dauer unter dem aktuellen Belegungsstand komplett frei ist.
+function isAboRangeFree(court, hour, duration) {
+  for (let i = 0; i < duration; i++) {
+    if (aboBooked[court].has(`${aboWd}-${hour + i}`)) return false;
+  }
+  return true;
+}
+
 function renderAboSlots() {
+  if (aboSlot && !isAboRangeFree(aboSlot.court, aboSlot.hour, aboDur)) {
+    aboSlot = null;
+    showToast('⚠️ Der ausgewählte Abo-Slot ist inzwischen nicht mehr verfügbar.');
+  }
   [1, 2].forEach(ct => {
     const c = document.getElementById("aboSlots" + ct);
     c.innerHTML = "";
@@ -3791,6 +3849,7 @@ function renderAboSlots() {
       c.appendChild(sl);
     });
   });
+  updateAboSummary();
 }
 
 function pickAboSlot(ct, h) {
