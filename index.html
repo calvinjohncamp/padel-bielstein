@@ -974,6 +974,15 @@ main {
 
   <!-- GUTSCHEINE MODE -->
   <div id="modeGutscheine" style="display:none;">
+    <div class="play-card" id="myCardsSection" style="display:none;margin-bottom:14px;">
+      <div class="play-card-title">🎟️ Meine Karten</div>
+      <div id="myCardsList">
+        <div class="play-empty" style="padding:24px 0;">
+          <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
+        </div>
+      </div>
+    </div>
+
     <div class="play-card">
       <div class="play-card-title">🎁 Karte oder Gutschein kaufen</div>
       <div class="form-hint" style="margin-bottom:16px;">Fester Preis: 24 € pro Stunde, unabhängig von Uhrzeit und Wochentag.</div>
@@ -1003,7 +1012,7 @@ main {
         <span id="cardTotalPrice" style="float:right;font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1.3rem;color:var(--gold);"></span>
       </div>
 
-      <button class="book-btn" style="width:100%;" onclick="confirmCardPurchase()">Jetzt kaufen &amp; bezahlen →</button>
+      <button class="book-btn visible" style="width:100%;position:static;" onclick="confirmCardPurchase()">Jetzt kaufen &amp; bezahlen →</button>
     </div>
   </div>
 
@@ -2473,7 +2482,7 @@ function setMode(m) {
   if (m==='abo')  { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
   if (m==='play') { renderPlaySection(); }
   if (m==='my')   { renderMySection(); }
-  if (m==='gutscheine') { renderCardSizeGrid(); }
+  if (m==='gutscheine') { renderCardSizeGrid(); loadMyCards(); }
   if (m==='admin') {
     document.getElementById('mainTabs').style.display = 'none';
     document.getElementById('heroHeader').style.cursor = 'pointer';
@@ -4753,6 +4762,46 @@ const CARD_SIZES = [1, 2, 5, 10, 20];
 const CARD_PRICE_PER_HOUR = 24;
 let selectedCardSize = null;
 let cardIsGift = false;
+
+// Zeigt die bereits gekauften Karten des eingeloggten Nutzers (als Käufer,
+// auch wenn die Karte verschenkt wurde). Für Beschenkte, die die Karte
+// eingelöst bekommen sollen, folgt das Einlösen als eigener Bauabschnitt.
+async function loadMyCards() {
+  const section = document.getElementById('myCardsSection');
+  const list = document.getElementById('myCardsList');
+  if (!currentUser) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Wird geladen …</div></div>`;
+  try {
+    const { data, error } = await sb
+      .from('card_purchases')
+      .select('id, card_size, hours_used, is_gift, recipient_name, created_at')
+      .eq('purchaser_auth_id', currentUser.id)
+      .eq('status', 'paid')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Noch keine Karten gekauft.</div></div>`;
+      return;
+    }
+    list.innerHTML = data.map(c => {
+      const remaining = c.card_size - c.hours_used;
+      const label = c.card_size === 1 ? '1 Stunde' : c.card_size === 2 ? '2 Stunden' : `${c.card_size}er-Karte`;
+      const giftNote = c.is_gift ? ` · verschenkt an ${c.recipient_name || 'jemanden'}` : '';
+      return `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-weight:700;">${label}${giftNote}</div>
+            <div style="font-size:0.75rem;color:var(--gray);">${remaining} von ${c.card_size} Stunde${c.card_size>1?'n':''} übrig</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch(e) {
+    console.warn('Meine Karten laden fehlgeschlagen', e);
+    list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Konnte nicht geladen werden.</div></div>`;
+  }
+}
 
 function renderCardSizeGrid() {
   const grid = document.getElementById('cardSizeGrid');
