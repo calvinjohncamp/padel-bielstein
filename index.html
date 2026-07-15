@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>Padel Bielstein – Courts buchen v0.41</title>
+<title>Padel Bielstein – Courts buchen v0.42</title>
 <style>
 :root {
   --bg: #161616;
@@ -5099,7 +5099,7 @@ function toggleBielsteinTheme() {
   const img = document.querySelector('.hero-img');
   if (img) {
     img.src = isOn
-      ? 'Header Padel Bielstein.png?v=20260429'
+      ? 'Header Padel Bielstein.png?v=20260715'
       : 'Header Padel Original.png';
   }
   const msg = isOn
@@ -5403,6 +5403,192 @@ body.bielstein-theme .slot.free {
 body.bielstein-theme .slot.free:hover {
   background-color: #202020 !important;
   border-color: #FFC300 !important;
+}
+</style>
+
+
+<!-- BIELSTEIN THEME v0.42 – Modernes Navy/Gold-System -->
+<style id="bielsteinOverrideV042">
+/*
+  Easter-Egg-Farbwelt – nur aktiv bei body.bielstein-theme
+  Navy: #061A40 · Dark Navy: #04132F · Gold: #F2C200
+  Hover: #FFD43B · Gold Dark: #E0AE00 · Border: #1D376C
+*/
+body.bielstein-theme {
+  --bg: #04132F !important;
+  --card: #061A40 !important;
+  --border: #1D376C !important;
+  --blue: #F2C200 !important;
+  --blue-dk: #E0AE00 !important;
+  --gold: #F2C200 !important;
+  --gold-dk: #E0AE00 !important;
+  --gray: #7F90A8 !important;
+  --gray-lt: #C7D3E5 !important;
+  --white: #FFFFFF !important;
+  background: #04132F !important;
+  color: #FFFFFF !important;
+}
+
+body.bielstein-theme .hero,
+body.bielstein-theme .hero-frame {
+  background: #04132F !important;
+  border-color: #1D376C !important;
+}
+
+/* Ruhige Navy-Flächen */
+body.bielstein-theme .user-bar,
+body.bielstein-theme .play-card,
+body.bielstein-theme .admin-card,
+body.bielstein-theme .summary-card,
+body.bielstein-theme .abo-summary,
+body.bielstein-theme .modal,
+body.bielstein-theme .court-col,
+body.bielstein-theme .date-chip,
+body.bielstein-theme .dur-btn,
+body.bielstein-theme .wd-btn,
+body.bielstein-theme .mode-tab:not(.active),
+body.bielstein-theme .door-log-entry,
+body.bielstein-theme .price-tag {
+  background-color: #061A40 !important;
+  background-image: none !important;
+  border-color: #1D376C !important;
+}
+
+body.bielstein-theme .court-hdr {
+  background: #04132F !important;
+  border-color: #1D376C !important;
+}
+
+/* Gold nur für Fokus und primäre Aktionen */
+body.bielstein-theme .mode-tab.active,
+body.bielstein-theme .dur-btn.selected,
+body.bielstein-theme .wd-btn.selected,
+body.bielstein-theme .book-btn,
+body.bielstein-theme .abo-cta,
+body.bielstein-theme .user-bar-login,
+body.bielstein-theme .modal-btn,
+body.bielstein-theme .modal-tab.active,
+body.bielstein-theme .admin-save-btn,
+body.bielstein-theme .admin-tab.active,
+body.bielstein-theme .slot.selected,
+body.bielstein-theme .slot.selected-second,
+body.bielstein-theme .door-btn.access {
+  background-color: #F2C200 !important;
+  background-image: none !important;
+  border-color: #E0AE00 !important;
+  color: #04132F !important;
+  box-shadow: 0 5px 22px rgba(242,194,0,.22) !important;
+}
+
+body.bielstein-theme .mode-tab.active:hover,
+body.bielstein-theme .dur-btn.selected:hover,
+body.bielstein-theme .wd-btn.selected:hover,
+body.bielstein-theme .book-btn:hover,
+body.bielstein-theme .abo-cta:hover,
+body.bielstein-theme .user-bar-login:hover,
+body.bielstein-theme .modal-btn:hover,
+body.bielstein-theme .admin-save-btn:hover,
+body.bielstein-theme .door-btn.access:hover:not(:disabled) {
+  background-color: #FFD43B !important;
+  border-color: #F2C200 !important;
+  color: #04132F !important;
+}
+
+/* Sekundäre Navigation: Navy mit feinem Goldrand */
+body.bielstein-theme .mode-tab:not(.active),
+body.bielstein-theme #tabAbo:not(.active),
+body.bielstein-theme #tabPlay:not(.active),
+body.bielstein-theme .user-bar-register,
+body.bielstein-theme .user-bar-portal,
+body.bielstein-theme .door-btn.court {
+  background-color: #061A40 !important;
+  border-color: rgba(242,194,0,.70) !important;
+  color: #F2C200 !important;
+  box-shadow: none !important;
+}
+
+body.bielstein-theme .mode-tab:not(.active):hover,
+body.bielstein-theme .user-bar-register:hover,
+body.bielstein-theme .user-bar-portal:hover,
+body.bielstein-theme .door-btn.court:hover:not(:disabled) {
+  background-color: #0A2A4A !important;
+  border-color: #FFD43B !important;
+  color: #FFD43B !important;
+}
+
+/* Datum: markiert, aber nicht gelb gefüllt */
+body.bielstein-theme .date-chip.selected {
+  background-color: #061A40 !important;
+  border: 1.5px solid #F2C200 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 0 2px rgba(242,194,0,.08) !important;
+}
+body.bielstein-theme .date-chip.selected .dname,
+body.bielstein-theme .date-chip.selected .dnum,
+body.bielstein-theme .date-chip.selected .dmon {
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+}
+body.bielstein-theme .date-chip:not(.selected):hover,
+body.bielstein-theme .dur-btn:not(.selected):hover,
+body.bielstein-theme .wd-btn:not(.selected):hover {
+  background-color: #0A2A4A !important;
+  border-color: #F2C200 !important;
+}
+
+/* Slots bewusst anthrazit – bessere Lesbarkeit und weniger Gelbfläche */
+body.bielstein-theme .slot.free {
+  background-color: #1A1A1A !important;
+  border-color: #333333 !important;
+}
+body.bielstein-theme .slot.free:hover {
+  background-color: #202020 !important;
+  border-color: #F2C200 !important;
+}
+body.bielstein-theme .slot.free .slot-price,
+body.bielstein-theme .court-name,
+body.bielstein-theme .abo-sum-title,
+body.bielstein-theme .abo-price-total,
+body.bielstein-theme .user-bar-name strong {
+  color: #F2C200 !important;
+}
+
+/* Typografie und feine UI-Farben */
+body.bielstein-theme .step-lbl,
+body.bielstein-theme .user-bar-name,
+body.bielstein-theme .sum-row .sl,
+body.bielstein-theme .abo-detail-row .dl,
+body.bielstein-theme .abo-benefit,
+body.bielstein-theme .legend-item,
+body.bielstein-theme .price-tag {
+  color: #C7D3E5 !important;
+}
+body.bielstein-theme .dur-sub,
+body.bielstein-theme .form-hint,
+body.bielstein-theme .modal-sub,
+body.bielstein-theme .site-footer-right {
+  color: #7F90A8 !important;
+}
+body.bielstein-theme .scroll-btn {
+  background: #061A40 !important;
+  border: 1px solid #1D376C !important;
+  color: #F2C200 !important;
+}
+body.bielstein-theme .scroll-btn:hover {
+  background: #0A2A4A !important;
+  border-color: #F2C200 !important;
+}
+body.bielstein-theme .disc-badge {
+  background: rgba(242,194,0,.12) !important;
+  border-color: rgba(242,194,0,.45) !important;
+  color: #F2C200 !important;
+}
+
+/* Toast passend zur neuen Marke */
+body.bielstein-theme + .ee-toast,
+.ee-toast:not(.orange) {
+  background: #F2C200 !important;
+  color: #04132F !important;
 }
 </style>
 
