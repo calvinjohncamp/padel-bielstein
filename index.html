@@ -309,6 +309,32 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .user-bar-register { background: none; border: 1px solid var(--gold); color: var(--gold); font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; margin-right: 6px; }
 .user-bar-register:hover { background: var(--gold); color: #000; }
 
+/* ■■ ACCOUNT-ICON / TREUEKARTE ■■ */
+.account-icon-btn { width: 30px; height: 30px; border-radius: 50%; background: none; border: 1.5px solid var(--border); color: var(--gray); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; padding: 0; flex-shrink: 0; }
+.account-icon-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+.loyalty-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 28px 24px; text-align: center; }
+.loyalty-card-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 2px; }
+.loyalty-card-email { font-size: 0.75rem; color: var(--gray); margin-bottom: 18px; }
+.loyalty-card-number { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 3.2rem; line-height: 1; margin-bottom: 4px; }
+.loyalty-card-sub { font-size: 0.7rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 22px; }
+.loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; max-width: 340px; margin: 0 auto; }
+.loyalty-dot { aspect-ratio: 1; border-radius: 50%; background: var(--white); position: relative; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.loyalty-dot.filled { background: var(--gold); }
+.loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.42rem; font-weight: 800; color: var(--bg); white-space: nowrap; pointer-events: none; }
+.loyalty-legend { margin-top: 18px; font-size: 0.72rem; color: var(--gray); line-height: 1.6; }
+
+/* ■■ GUTSCHEINE ■■ */
+.card-size-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.card-size-btn { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
+.card-size-btn:hover { border-color: var(--gold); }
+.card-size-btn.selected { background: var(--gold); border-color: var(--gold-dk); color: #000; }
+.card-size-btn .cs-hours { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.3rem; display: block; }
+.card-size-btn .cs-price { font-size: 0.75rem; opacity: 0.8; }
+.gift-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+.gift-toggle-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--card); color: var(--gray); text-align: center; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; transition: all 0.15s; }
+.gift-toggle-btn.selected { background: var(--gold); border-color: var(--gold-dk); color: #000; }
+
 /* ■■ JETZT SPIELEN ■■ */
 .play-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
 .play-card-title { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray); margin-bottom: 14px; }
@@ -569,6 +595,13 @@ main {
     width: 100% !important;
     padding: 18px 14px 56px !important;
   }
+
+  /* 5 Kacheln (Buchen/Abo/Spielen/Meine Buchungen/Gutscheine) passen auf
+     schmalen Screens nicht in eine Reihe - zweispaltig umbrechen statt
+     seitlich abzuschneiden. */
+  #mainTabs {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
 }
 
 /* Sehr kleine iPhones: Dauer-Auswahl untereinander */
@@ -691,6 +724,26 @@ main {
   </div>
 </div>
 
+<!-- TREUEKARTE MODAL -->
+<div class="modal-overlay" id="loyaltyModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeLoyaltyModal()">✕</button>
+    <div class="modal-title">Meine Treuekarte</div>
+    <div class="modal-sub">Jede gespielte Stunde zählt – automatische Rabatte inklusive</div>
+
+    <div class="loyalty-card">
+      <div class="loyalty-card-name" id="loyaltyName">—</div>
+      <div class="loyalty-card-email" id="loyaltyEmail">—</div>
+      <div class="loyalty-card-number" id="loyaltyNumber">0</div>
+      <div class="loyalty-card-sub">Stunden gespielt</div>
+      <div class="loyalty-grid" id="loyaltyGrid"></div>
+      <div class="loyalty-legend">
+        Bei 5, 10, 25 und 50 Stunden gibt's automatisch Rabatt auf die nächste Stunde – bei 100 eine Stunde geschenkt. Danach geht's von vorne los.
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="loading-bar" id="loadingBar"><div class="loading-bar-inner"></div></div>
 
 <div class="hero" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');" style="cursor:default;">
@@ -708,6 +761,9 @@ main {
     <div id="userBarLoggedIn" style="display:none;width:100%;align-items:center;justify-content:space-between;">
       <span class="user-bar-name">Angemeldet als <strong id="userBarName">—</strong></span>
       <div style="display:flex;gap:6px;align-items:center;">
+        <button class="account-icon-btn" onclick="openLoyaltyCard()" aria-label="Meine Treuekarte" title="Meine Treuekarte">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
         <button class="user-bar-portal" id="portalBtn" style="display:none;" onclick="openPortal()">■ Abo verwalten</button>
         <button class="user-bar-out" onclick="doLogout()">Abmelden</button>
       </div>
@@ -716,6 +772,9 @@ main {
     <div id="userBarLoggedOut" style="width:100%;display:flex;align-items:center;justify-content:space-between;">
       <span style="font-size:0.82rem;color:#666;">Zum Buchen bitte anmelden</span>
       <div style="display:flex;gap:6px;align-items:center;">
+        <button class="account-icon-btn" onclick="openLoyaltyCard()" aria-label="Meine Treuekarte" title="Meine Treuekarte">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
         <button class="user-bar-register" onclick="openModal('register')">Registrieren</button>
         <button class="user-bar-login" onclick="openModal('login')">Anmelden</button>
       </div>
@@ -723,11 +782,12 @@ main {
   </div>
 
 
-  <div class="mode-tabs" style="grid-template-columns:1fr 1fr 1fr 1fr;" id="mainTabs">
+  <div class="mode-tabs" style="grid-template-columns:1fr 1fr 1fr 1fr 1fr;" id="mainTabs">
     <div class="mode-tab active" id="tabBook" onclick="setMode('book')"><span class="tab-icon">■</span> Jetzt buchen</div>
     <div class="mode-tab" id="tabAbo" onclick="setMode('abo')"><span class="tab-icon">■</span> Jahresabo sichern</div>
     <div class="mode-tab" id="tabPlay" onclick="setMode('play')"><span class="tab-icon">▶</span> Jetzt spielen</div>
     <div class="mode-tab" id="tabMy" onclick="setMode('my')"><span class="tab-icon">📋</span> Meine Buchungen</div>
+    <div class="mode-tab" id="tabGutscheine" onclick="setMode('gutscheine')"><span class="tab-icon">🎁</span> Gutscheine</div>
   </div>
   <!-- Admin Tab entfernt – Admin-Zugang über Fußzeile -->
 
@@ -909,6 +969,41 @@ main {
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- GUTSCHEINE MODE -->
+  <div id="modeGutscheine" style="display:none;">
+    <div class="play-card">
+      <div class="play-card-title">🎁 Karte oder Gutschein kaufen</div>
+      <div class="form-hint" style="margin-bottom:16px;">Fester Preis: 24 € pro Stunde, unabhängig von Uhrzeit und Wochentag.</div>
+
+      <div class="card-size-grid" id="cardSizeGrid"></div>
+
+      <div class="gift-toggle">
+        <div class="gift-toggle-btn selected" id="giftToggleSelf" onclick="setCardGiftMode(false)">Für mich</div>
+        <div class="gift-toggle-btn" id="giftToggleGift" onclick="setCardGiftMode(true)">Verschenken</div>
+      </div>
+
+      <div id="giftFields" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Name der beschenkten Person</label>
+          <input class="form-input" type="text" id="giftName" placeholder="Vor- und Nachname">
+        </div>
+        <div class="form-group">
+          <label class="form-label">E-Mail der beschenkten Person</label>
+          <input class="form-input" type="email" id="giftEmail" placeholder="empfaenger@email.de">
+        </div>
+      </div>
+
+      <div class="modal-err" id="cardErr"></div>
+
+      <div id="cardSummary" style="display:none;margin:18px 0;padding:14px 16px;background:var(--bg);border-radius:10px;border:1px solid var(--border);justify-content:space-between;align-items:center;">
+        <span style="font-size:0.85rem;color:var(--gray);">Gesamtpreis</span>
+        <span id="cardTotalPrice" style="float:right;font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1.3rem;color:var(--gold);"></span>
+      </div>
+
+      <button class="book-btn" style="width:100%;" onclick="confirmCardPurchase()">Jetzt kaufen &amp; bezahlen →</button>
     </div>
   </div>
 
@@ -2362,20 +2457,23 @@ async function init() {
 // ============================================================
 function setMode(m) {
   curMode = m;
-  document.getElementById('modeBook').style.display  = m==='book'  ? 'block' : 'none';
-  document.getElementById('modeAbo').style.display   = m==='abo'   ? 'block' : 'none';
-  document.getElementById('modePlay').style.display  = m==='play'  ? 'block' : 'none';
-  document.getElementById('modeMy').style.display    = m==='my'    ? 'block' : 'none';
-  document.getElementById('modeAdmin').style.display = m==='admin' ? 'block' : 'none';
+  document.getElementById('modeBook').style.display       = m==='book'       ? 'block' : 'none';
+  document.getElementById('modeAbo').style.display        = m==='abo'        ? 'block' : 'none';
+  document.getElementById('modePlay').style.display       = m==='play'       ? 'block' : 'none';
+  document.getElementById('modeMy').style.display          = m==='my'         ? 'block' : 'none';
+  document.getElementById('modeGutscheine').style.display  = m==='gutscheine' ? 'block' : 'none';
+  document.getElementById('modeAdmin').style.display       = m==='admin'      ? 'block' : 'none';
   document.getElementById('tabBook').classList.toggle('active',  m==='book');
   document.getElementById('tabAbo').classList.toggle('active',   m==='abo');
   document.getElementById('tabPlay').classList.toggle('active',  m==='play');
   document.getElementById('tabMy').classList.toggle('active',    m==='my');
+  document.getElementById('tabGutscheine').classList.toggle('active', m==='gutscheine');
   const adminFooter = document.getElementById('adminFooterBtn');
   if (adminFooter) adminFooter.style.fontWeight = m==='admin' ? '900' : '700';
   if (m==='abo')  { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
   if (m==='play') { renderPlaySection(); }
   if (m==='my')   { renderMySection(); }
+  if (m==='gutscheine') { renderCardSizeGrid(); }
   if (m==='admin') {
     document.getElementById('mainTabs').style.display = 'none';
     document.getElementById('heroHeader').style.cursor = 'pointer';
@@ -2685,7 +2783,7 @@ async function openPortal() {
 //  MODAL STEUERUNG
 // ============================================================
 function openModal(action) {
-  pendingAction = (action === 'book' || action === 'abo') ? action : null;
+  pendingAction = (action === 'book' || action === 'abo' || action === 'card' || action === 'loyalty') ? action : null;
   const startTab = (action === 'register') ? 'register' : 'login';
   switchAuthTab(startTab);
   clearAuthMessages();
@@ -2760,8 +2858,10 @@ async function doLogin() {
     updateUserBar();
     closeModal();
     showToast('Willkommen zurück! 🎾');
-    if (pendingAction === 'book') confirmBooking(true);
-    if (pendingAction === 'abo')  submitAbo(true);
+    if (pendingAction === 'book')    confirmBooking(true);
+    if (pendingAction === 'abo')     submitAbo(true);
+    if (pendingAction === 'card')    confirmCardPurchase(true);
+    if (pendingAction === 'loyalty') openLoyaltyCard();
   } catch(e) {
     showAuthErr('Netzwerkfehler – bitte versuche es erneut.');
   } finally {
@@ -4644,6 +4744,174 @@ function showEeToast(msg, bielsteinOn) {
   t.classList.add('show');
   clearTimeout(eeToastTimer);
   eeToastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ============================================================
+//  GUTSCHEINE / KARTEN
+// ============================================================
+const CARD_SIZES = [1, 2, 5, 10, 20];
+const CARD_PRICE_PER_HOUR = 24;
+let selectedCardSize = null;
+let cardIsGift = false;
+
+function renderCardSizeGrid() {
+  const grid = document.getElementById('cardSizeGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  CARD_SIZES.forEach(size => {
+    const btn = document.createElement('div');
+    btn.className = 'card-size-btn' + (selectedCardSize === size ? ' selected' : '');
+    const label = size === 1 ? '1 Stunde' : size === 2 ? '2 Stunden' : `${size}er-Karte`;
+    btn.innerHTML = `<span class="cs-hours">${label}</span><span class="cs-price">${size * CARD_PRICE_PER_HOUR} €</span>`;
+    btn.onclick = () => selectCardSize(size);
+    grid.appendChild(btn);
+  });
+  updateCardSummary();
+}
+
+function selectCardSize(size) {
+  selectedCardSize = size;
+  clearCardErr();
+  renderCardSizeGrid();
+}
+
+function setCardGiftMode(isGift) {
+  cardIsGift = isGift;
+  document.getElementById('giftToggleSelf').classList.toggle('selected', !isGift);
+  document.getElementById('giftToggleGift').classList.toggle('selected', isGift);
+  document.getElementById('giftFields').style.display = isGift ? 'block' : 'none';
+}
+
+function updateCardSummary() {
+  const summary = document.getElementById('cardSummary');
+  const totalEl = document.getElementById('cardTotalPrice');
+  if (!selectedCardSize) { summary.style.display = 'none'; return; }
+  summary.style.display = 'flex';
+  totalEl.textContent = `${selectedCardSize * CARD_PRICE_PER_HOUR} €`;
+}
+
+function showCardErr(msg) {
+  const el = document.getElementById('cardErr');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function clearCardErr() {
+  document.getElementById('cardErr').classList.remove('show');
+}
+
+async function confirmCardPurchase(skipAuthCheck) {
+  clearCardErr();
+  if (!selectedCardSize) { showCardErr('Bitte wähle zuerst eine Kartengröße.'); return; }
+  if (!skipAuthCheck && !currentUser) { openModal('card'); return; }
+
+  let recipientName = '', recipientEmail = '';
+  if (cardIsGift) {
+    recipientName = document.getElementById('giftName').value.trim();
+    recipientEmail = document.getElementById('giftEmail').value.trim();
+    if (!recipientName || !recipientEmail) {
+      showCardErr('Bitte Name und E-Mail der beschenkten Person eingeben.');
+      return;
+    }
+  }
+
+  if (currentUser && (!currentProfile || currentProfile.auth_id !== currentUser.id)) {
+    await loadProfile(currentUser.id);
+  }
+
+  const purchaserEmail = currentProfile?.email || currentUser?.email;
+  const fullName = currentProfile?.full_name || '';
+
+  showToast('Weiter zu Stripe …');
+
+  try {
+    const res = await fetch(
+      'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7`,
+          'apikey': 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7'
+        },
+        body: JSON.stringify({
+          booking_type: 'card',
+          card_size: selectedCardSize,
+          is_gift: cardIsGift,
+          recipient_name: recipientName,
+          recipient_email: recipientEmail,
+          user_id: currentUser?.id || null,
+          purchaser_email: purchaserEmail,
+          full_name: fullName,
+        }),
+      }
+    );
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      showCardErr('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+    }
+  } catch(e) {
+    showCardErr('Netzwerkfehler – bitte erneut versuchen.');
+  }
+}
+
+// ============================================================
+//  TREUEKARTE
+// ============================================================
+// Meilenstein-Rabatte: Schluessel = Punkt, ab dem der Rabatt greift
+// (z.B. 6 = die 6. Stunde, nachdem 5 Stunden gespielt wurden).
+const LOYALTY_MILESTONES = { 6: 5, 11: 10, 26: 25, 51: 50, 100: 100 };
+
+async function openLoyaltyCard() {
+  if (!currentUser) { openModal('loyalty'); return; }
+  document.getElementById('loyaltyModal').classList.add('open');
+  await loadLoyaltyCard();
+}
+
+function closeLoyaltyModal() {
+  document.getElementById('loyaltyModal').classList.remove('open');
+}
+
+document.getElementById('loyaltyModal').addEventListener('click', function(e) {
+  if (e.target === this) closeLoyaltyModal();
+});
+
+async function loadLoyaltyCard() {
+  document.getElementById('loyaltyName').textContent = currentProfile?.full_name || '—';
+  document.getElementById('loyaltyEmail').textContent = currentProfile?.email || currentUser?.email || '—';
+
+  let hoursPlayed = 0;
+  try {
+    const { data, error } = await sb
+      .from('loyalty_progress')
+      .select('hours_played')
+      .eq('auth_id', currentUser.id)
+      .maybeSingle();
+    if (!error && data) hoursPlayed = data.hours_played;
+  } catch(e) {
+    console.warn('Treuekarte laden fehlgeschlagen', e);
+  }
+
+  renderLoyaltyCard(hoursPlayed);
+}
+
+function renderLoyaltyCard(hoursPlayed) {
+  document.getElementById('loyaltyNumber').textContent = hoursPlayed;
+  const grid = document.getElementById('loyaltyGrid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 100; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'loyalty-dot' + (i <= hoursPlayed ? ' filled' : '');
+    const milestone = LOYALTY_MILESTONES[i];
+    if (milestone) {
+      const lbl = document.createElement('span');
+      lbl.className = 'loyalty-dot-milestone';
+      lbl.textContent = milestone === 100 ? 'GRATIS' : `-${milestone}%`;
+      dot.appendChild(lbl);
+    }
+    grid.appendChild(dot);
+  }
 }
 
 init();
