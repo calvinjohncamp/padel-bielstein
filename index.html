@@ -126,6 +126,13 @@ body.bielstein-theme #tabPlay:not(.active) {
   border: 0;
   padding: 0;
   background: transparent;
+  border-radius: 50%;
+  filter: drop-shadow(0 5px 10px rgba(0,0,0,.28));
+  transition: transform .28s cubic-bezier(.2,.8,.2,1), filter .28s ease;
+}
+.easter-egg-zone:hover:not(.ball-wobble) {
+  transform: scale(1.08) rotate(-5deg);
+  filter: drop-shadow(0 7px 14px rgba(0,0,0,.38));
 }
 .easter-egg-zone img {
   width: 100%;
@@ -133,6 +140,23 @@ body.bielstein-theme #tabPlay:not(.active) {
   display: block;
   object-fit: contain;
   pointer-events: none;
+}
+
+/* Kurzer Wackel-/Bounce-Effekt beim Klick auf den Tennisball */
+.easter-egg-zone.ball-wobble {
+  animation: ballWobble 520ms cubic-bezier(.22,.78,.25,1);
+  transform-origin: 50% 62%;
+}
+@keyframes ballWobble {
+  0%   { transform: translate(0,0) rotate(0deg) scale(1); }
+  18%  { transform: translate(-2px,-2px) rotate(-10deg) scale(1.05); }
+  38%  { transform: translate(3px,1px) rotate(9deg) scale(.97); }
+  58%  { transform: translate(-2px,0) rotate(-6deg) scale(1.025); }
+  76%  { transform: translate(1px,0) rotate(3deg) scale(.995); }
+  100% { transform: translate(0,0) rotate(0deg) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .easter-egg-zone.ball-wobble { animation-duration: 1ms; }
 }
 
 /* Easter-Egg Toast */
@@ -5105,6 +5129,14 @@ function formatDateDE(dateStr) {
 let eeToastTimer = null;
 
 function toggleBielsteinTheme() {
+  const ballButton = document.querySelector('.easter-egg-zone');
+  if (ballButton) {
+    ballButton.classList.remove('ball-wobble');
+    void ballButton.offsetWidth;
+    ballButton.classList.add('ball-wobble');
+    window.setTimeout(() => ballButton.classList.remove('ball-wobble'), 560);
+  }
+
   const isOn = document.body.classList.toggle('bielstein-theme');
   const img = document.querySelector('.hero-img');
   if (img) {
