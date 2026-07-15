@@ -2645,10 +2645,14 @@ function renderSlots() {
       // separat als "spillover" behandelt - das ist keine echte Belegung von h,
       // sondern nur "hier kann keine 2-Stunden-Buchung starten".
       const bk = booked[ct].has(k);
-      const spillover = !bk && selDur===2 && booked[ct].has(k2);
       const expired = isSlotExpired(selDate, h);
       const isSel = selSlot?.court===ct && selSlot?.hour===h;
       const isSec = selSlot?.court===ct && selSlot?.hour===h-1 && selDur===2;
+      // Spillover gilt nur für Stunden, die gerade NICHT Teil der aktuell
+      // ausgewählten Buchung sind - sonst würde die zweite Stunde einer
+      // gültigen Auswahl faelschlich wieder als "frei/unausgewählt" gezeigt,
+      // nur weil irgendeine spätere Stunde ebenfalls belegt ist.
+      const spillover = !bk && !isSel && !isSec && selDur===2 && booked[ct].has(k2);
       const rp = rawP(h, selDate), p = mP(rp), isMp = member && p < rp;
       const rp1h = (prices(selDate)[h] || 0), p1h = mP(rp1h), isMp1h = member && p1h < rp1h;
       const h1 = `${String(h).padStart(2,"0")}:00`;
@@ -3831,10 +3835,12 @@ function renderAboSlots() {
       // Beispiel: Abo 19–21 (duration=2) belegt exakt 19 und 20.
       // 18–20 ist bei 2h-Auswahl zwar nicht auswählbar, wird aber nicht als dritte Abo-Stunde angezeigt.
       const isOccupiedHour = aboBooked[ct].has(abKey);
-      const conflictsWithNextHour = aboDur === 2 && !isOccupiedHour && aboBooked[ct].has(abKey2);
-
       const isSel = aboSlot?.court===ct && aboSlot?.hour===h;
       const isSec = aboSlot?.court===ct && aboSlot?.hour===h-1 && aboDur===2;
+      // Gilt nur für Stunden außerhalb der aktuell ausgewählten Buchung - sonst
+      // würde die zweite Stunde einer gültigen Auswahl fälschlich wieder als
+      // "frei/unausgewählt" markiert.
+      const conflictsWithNextHour = aboDur === 2 && !isOccupiedHour && !isSel && !isSec && aboBooked[ct].has(abKey2);
       const p = (priceMap[h] || 0) * aboDur;
       const p1h = (priceMap[h] || 0);
       const h1 = `${String(h).padStart(2,"0")}:00`;
