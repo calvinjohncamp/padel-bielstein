@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>Padel Bielstein – Courts buchen v0.44</title>
+<title>Padel Bielstein – Courts buchen v0.45</title>
 <style>
 :root {
   --bg: #161616;
@@ -117,10 +117,10 @@ body.bielstein-theme #tabPlay:not(.active) {
 /* Sichtbarer Markenball – zugleich Easter-Egg-Schalter */
 .easter-egg-zone {
   position: absolute;
-  /* Exakt an Position und Größe des früheren gelben Kreises angepasst */
-  left: 66.35%;
-  top: 1.5%;
-  width: 4.85%;
+  /* Exakt auf die ursprüngliche Kreis-/Klickzone des Headers gelegt */
+  left: 64%;
+  top: 10%;
+  width: 8%;
   aspect-ratio: 1;
   cursor: pointer;
   z-index: 20;
@@ -159,8 +159,8 @@ body.bielstein-theme .easter-egg-zone {
   100% { transform: scale(1) rotate(0); }
 }
 @media (max-width: 560px) {
-  /* Dieselbe relative Position wie im ursprünglichen Header – ohne Vergrößerung auf Mobilgeräten */
-  .easter-egg-zone { left: 66.35%; top: 1.5%; width: 4.85%; }
+  /* Auf Mobilgeräten dieselben relativen Header-Koordinaten beibehalten */
+  .easter-egg-zone { left: 64%; top: 10%; width: 8%; }
 }
 
 /* Easter-Egg Toast */
