@@ -2640,18 +2640,24 @@ function renderSlots() {
     Object.keys(PW).map(Number).forEach(h => {
       const k  = `${selDate}-${h}`;
       const k2 = `${selDate}-${h+1}`;
-      const bk = booked[ct].has(k) || (selDur===2 && booked[ct].has(k2));
+      // "bk" heißt jetzt ausschließlich: die Stunde h selbst ist wirklich belegt.
+      // Ob eine 2h-Buchung ab h in die Folgestunde hineinlaufen würde, wird
+      // separat als "spillover" behandelt - das ist keine echte Belegung von h,
+      // sondern nur "hier kann keine 2-Stunden-Buchung starten".
+      const bk = booked[ct].has(k);
+      const spillover = !bk && selDur===2 && booked[ct].has(k2);
       const expired = isSlotExpired(selDate, h);
       const isSel = selSlot?.court===ct && selSlot?.hour===h;
       const isSec = selSlot?.court===ct && selSlot?.hour===h-1 && selDur===2;
       const rp = rawP(h, selDate), p = mP(rp), isMp = member && p < rp;
+      const rp1h = (prices(selDate)[h] || 0), p1h = mP(rp1h), isMp1h = member && p1h < rp1h;
       const h1 = `${String(h).padStart(2,"0")}:00`;
       const h2 = `${String(h+1).padStart(2,"0")}:00`;
       const sl = document.createElement("div");
       const isBlocked = !!blockedSlots[ct][k];
       const blockReason = blockedSlots[ct][k] || '';
-      const isAboBlock = blockReason === 'Abo vergeben' || isLocalAboBlockedOnDate(selDate, ct, h) || (selDur===2 && isLocalAboBlockedOnDate(selDate, ct, h+1));
-      sl.className = "slot " + (expired ? "booked" : bk ? (isAboBlock ? "abo-booked" : "booked") : isSel ? "selected" : isSec ? "selected-second" : "free");
+      const isAboBlock = blockReason === 'Abo vergeben' || isLocalAboBlockedOnDate(selDate, ct, h);
+      sl.className = "slot " + (expired ? "booked" : bk ? (isAboBlock ? "abo-booked" : "booked") : spillover ? "free" : isSel ? "selected" : isSec ? "selected-second" : "free");
       if (expired) {
         sl.innerHTML = `<span class="slot-time">${h1}</span><span class="bkd-lbl">Abgelaufen</span>`;
       } else if (bk) {
@@ -2662,6 +2668,12 @@ function renderSlots() {
         } else {
           sl.innerHTML = `<span class="slot-time">${h1}</span><span class="bkd-lbl">Belegt</span>`;
         }
+      } else if (spillover) {
+        // Diese Einzelstunde ist frei (deshalb weiß/frei angezeigt), taugt aber
+        // nicht als Start einer 2-Stunden-Buchung, weil die Folgestunde belegt
+        // ist. Bewusst nicht anklickbar, aber optisch nicht als "belegt" markiert.
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price${isMp1h?' mprice':''}">${p1h} €</span>`;
+        sl.title = 'Als 2-Stunden-Start nicht verfügbar – die Folgestunde ist belegt.';
       } else if(isSec){ sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span>`; }
       else {
         sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price${isMp?' mprice':''}">${p} €</span>`;
@@ -3824,17 +3836,21 @@ function renderAboSlots() {
       const isSel = aboSlot?.court===ct && aboSlot?.hour===h;
       const isSec = aboSlot?.court===ct && aboSlot?.hour===h-1 && aboDur===2;
       const p = (priceMap[h] || 0) * aboDur;
+      const p1h = (priceMap[h] || 0);
       const h1 = `${String(h).padStart(2,"0")}:00`;
       const h2 = `${String(h+1).padStart(2,"0")}:00`;
-      const hEnd = `${String(h+aboDur).padStart(2,"0")}:00`;
       const sl = document.createElement("div");
 
       if (isOccupiedHour) {
         sl.className = "slot abo-booked";
         sl.innerHTML = `<span class="slot-time">${h1}</span><span class="abo-lbl">Abo vergeben</span>`;
       } else if (conflictsWithNextHour) {
-        sl.className = "slot booked";
-        sl.innerHTML = `<span class="slot-time">${h1} – ${hEnd}</span><span class="bkd-lbl">nicht verfügbar</span>`;
+        // Diese Stunde ist als Einzelstunde frei (deshalb weiß/frei angezeigt),
+        // taugt aber nicht als Start eines 2-Stunden-Abos, weil die Folgestunde
+        // bereits vergeben ist. Bewusst nicht anklickbar.
+        sl.className = "slot free";
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p1h} €/Wo</span>`;
+        sl.title = 'Als 2-Stunden-Start nicht verfügbar – die Folgestunde ist vergeben.';
       } else if (isSel) {
         sl.className = "slot selected";
         sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;
