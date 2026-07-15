@@ -2292,7 +2292,18 @@ function isSlotExpired(dateStr, hour) {
 }
 function isWE(d) { const x = new Date(d+'T12:00:00'); return x.getDay()===0||x.getDay()===6; }
 function prices(d) { return isWE(d) ? PE : PW; }
-function rawP(h, d) { return (prices(d)[h] || 0) * selDur; }
+// Preis für [hour, hour+duration) durch Aufsummieren der EINZELNEN Stundenpreise -
+// nicht einfach Startstunden-Preis × Dauer, denn der Stundenpreis kann sich
+// innerhalb einer Buchung ändern (z.B. Wechsel 13→14 Uhr oder 15→16 Uhr).
+// Sonst würden Buchungen, die über eine Tarifgrenze laufen, falsch berechnet.
+function sumHourlyPrices(priceMap, hour, duration) {
+  let total = 0;
+  for (let i = 0; i < duration; i++) {
+    total += (priceMap[hour + i] || 0);
+  }
+  return total;
+}
+function rawP(h, d) { return sumHourlyPrices(prices(d), h, selDur); }
 function mP(p) { return member ? Math.round(p * (1 - member.discount)) : p; }
 function showLoader(on) { document.getElementById('loadingBar').classList.toggle('active', on); }
 
@@ -3679,7 +3690,7 @@ async function submitAbo(skipAuthCheck) {
   }
   const { court, hour } = aboSlot;
   const priceMap = (aboWd===0 || aboWd===6) ? PE : PW;
-  const pricePerWeek = (priceMap[hour] || 0) * aboDur;
+  const pricePerWeek = sumHourlyPrices(priceMap, hour, aboDur);
   const totalAbo = pricePerWeek * 30;
   const totalPriceCents = Math.round(totalAbo * 100);
 
@@ -3841,7 +3852,7 @@ function renderAboSlots() {
       // würde die zweite Stunde einer gültigen Auswahl fälschlich wieder als
       // "frei/unausgewählt" markiert.
       const conflictsWithNextHour = aboDur === 2 && !isOccupiedHour && !isSel && !isSec && aboBooked[ct].has(abKey2);
-      const p = (priceMap[h] || 0) * aboDur;
+      const p = sumHourlyPrices(priceMap, h, aboDur);
       const p1h = (priceMap[h] || 0);
       const h1 = `${String(h).padStart(2,"0")}:00`;
       const h2 = `${String(h+1).padStart(2,"0")}:00`;
@@ -3885,7 +3896,7 @@ function updateAboSummary() {
   if (!aboSlot || aboWd===null) { card.classList.remove("visible"); return; }
   const {court:ct, hour:h} = aboSlot;
   const priceMap = (aboWd===0||aboWd===6) ? PE : PW;
-  const pricePerWeek = (priceMap[h] || 0) * aboDur;
+  const pricePerWeek = sumHourlyPrices(priceMap, h, aboDur);
   const totalReg = pricePerWeek * 52, totalAbo = pricePerWeek * 30, saved = totalReg - totalAbo;
   document.getElementById("as-court").textContent = `Court #${ct}`;
   document.getElementById("as-day").textContent   = WDNAMES[aboWd];
