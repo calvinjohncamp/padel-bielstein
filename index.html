@@ -21,118 +21,20 @@
   --white: #F6F6F6;
 }
 
-/* ■■ BIELSTEIN EASTER-EGG THEME (Navy/Gold – Palette 2) ■■ */
-
-body.bielstein-theme {
-  --bg: #000814 !important;
-  --card: #1A1A1A !important;
-  --border: #2A2A2A !important;
-
-  --blue: #001D3D !important;
-  --blue-dk: #000814 !important;
-
-  --gold: #FFC300 !important;
-  --gold-dk: #E6AF00 !important;
-
-  --gray: #A8AAAC !important;
-  --gray-lt: #E4E2E3 !important;
-  --white: #FFFFFF !important;
-  background: #000814 !important;
-}
-
-/* Blue usage */
-body.bielstein-theme .mode-tab:not(.active),
-body.bielstein-theme .dur-btn:not(.selected),
-body.bielstein-theme .date-chip:not(.selected),
-body.bielstein-theme .scroll-btn {
-  background: #001D3D !important;
-  color: #FFC300 !important;
-  border-color: #2A2A2A !important;
-}
-
-body.bielstein-theme { background: #000814; }
-body.bielstein-theme .hero { background: #000814; }
-body.bielstein-theme .hero-frame { background: #000814; }
-body.bielstein-theme .court-col { border-color: #003566; }
-body.bielstein-theme .court-hdr { border-color: #003566; background: #000814; }
-
-/* Hardcodierte Orange-Schatten überschreiben */
-body.bielstein-theme .book-btn {
-  box-shadow: 0 4px 24px rgba(255,195,0,0.3);
-}
-body.bielstein-theme .book-btn:hover {
-  box-shadow: 0 6px 28px rgba(255,195,0,0.45);
-}
-
-/* Mode-Tabs im Bielstein-Theme */
-body.bielstein-theme .mode-tab.active {
-  background: #FFC300;
-  border-color: #E6AF00;
-  color: #000814 !important;
-}
-body.bielstein-theme #tabAbo:not(.active) {
-  color: #FFC300;
-  border-color: #FFC300;
-}
-
-/* Hauptbuttons (JETZT BUCHEN etc.) */
-body.bielstein-theme .mode-tab:not(.active) {
-  background: #001D3D;
-  border-color: #003566;
-  color: #8AABCC;
-}
-
-/* Slot-Farben */
-body.bielstein-theme .slot.free:hover { border-color: #FFC300; }
-body.bielstein-theme .date-chip.selected { background: #003566; border-color: #FFC300; }
-body.bielstein-theme .scroll-btn { background: #003566; }
-
-/* Door-Buttons – hardcodierte Orange-Schatten überschreiben */
-body.bielstein-theme .door-btn.access {
-  background: #FFC300;
-  color: #000814;
-  box-shadow: 0 4px 20px rgba(255,195,0,0.35);
-}
-body.bielstein-theme .door-btn.court {
-  background: #003566;
-  color: #FFC300;
-  box-shadow: 0 4px 20px rgba(0,53,102,0.4);
-}
-
-/* Door-Log Einträge */
-body.bielstein-theme .door-log-entry {
-  background: #001D3D;
-}
-
-/* Tab-Farben inaktiv */
-body.bielstein-theme .mode-tab:not(.active) {
-  background: #001D3D;
-  border-color: #003566;
-  color: #8AABCC;
-}
-body.bielstein-theme #tabPlay:not(.active) {
-  color: #8AABCC;
-}
-
-/* Sichtbarer Tennisball + Klick-Zone – externe PNG-Datei, ohne eingebettete Bilddaten */
+/* Unsichtbare Klick-Zone über dem schwarzen Punkt im Cararra-Header
+   (kein eigenes Bild mehr - simuliert den im Artwork gezeichneten Ball) */
 .easter-egg-zone {
   position: absolute;
-  left: 66.8%;
-  top: 10.8%;
-  width: 5.1%;
+  left: 66.09%;
+  top: 8.95%;
+  width: 6.3%;
   aspect-ratio: 1;
   cursor: pointer;
   z-index: 20;
   border: 0;
   padding: 0;
   background: transparent;
-}
-.easter-egg-zone img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain;
-  pointer-events: none;
+  border-radius: 50%;
 }
 
 /* Kurzer Wackel-/Bounce-Effekt beim Klick auf den Tennisball */
@@ -622,86 +524,6 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   color: #4ADE80 !important;
 }
 
-
-/* FINAL DESIGN GUARD – Orange/Midnight */
-:root {
-  --bg: #161616;
-  --card: #1E1E1E;
-  --border: #2A2A2A;
-  --blue: #F44A22;
-  --blue-dk: #D93F1C;
-  --gold: #F6F6F6;
-  --gold-dk: #E4E2E3;
-  --gray: #A8AAAC;
-  --gray-lt: #E4E2E3;
-  --white: #F6F6F6;
-}
-
-/* ════════════════════════════════════════
-   BIELSTEIN THEME – OVERRIDE FINAL GUARDS
-   Muss nach allen !important-Blöcken stehen
-════════════════════════════════════════ */
-body.bielstein-theme {
-  --bg: #000814 !important;
-  --card: #001D3D !important;
-  --border: #003566 !important;
-  --blue: #FFC300 !important;
-  --blue-dk: #E6AF00 !important;
-  --gold: #FFC300 !important;
-  --gold-dk: #FFD60A !important;
-  --white: #FFFFFF !important;
-}
-body.bielstein-theme { background: #000814 !important; }
-body.bielstein-theme .hero { background: #000814 !important; }
-body.bielstein-theme .hero-frame { background: #000814 !important; }
-
-body.bielstein-theme .mode-tab.active,
-body.bielstein-theme .dur-btn.selected,
-body.bielstein-theme .wd-btn.selected {
-  background: #FFC300 !important;
-  border-color: #E6AF00 !important;
-  color: #000814 !important;
-}
-body.bielstein-theme .book-btn,
-body.bielstein-theme .abo-cta,
-body.bielstein-theme .user-bar-login,
-body.bielstein-theme .modal-btn,
-body.bielstein-theme .admin-save-btn,
-body.bielstein-theme .date-chip.selected,
-body.bielstein-theme .scroll-btn,
-body.bielstein-theme .slot.selected,
-body.bielstein-theme .slot.selected-second,
-body.bielstein-theme .admin-tab.active,
-body.bielstein-theme .modal-tab.active {
-  background: #FFC300 !important;
-  border-color: #E6AF00 !important;
-  color: #000814 !important;
-}
-body.bielstein-theme #tabAbo:not(.active),
-body.bielstein-theme #tabPlay:not(.active) {
-  color: #FFC300 !important;
-  border-color: rgba(255,195,0,0.65) !important;
-}
-body.bielstein-theme .book-btn {
-  box-shadow: 0 4px 24px rgba(255,195,0,0.35) !important;
-}
-body.bielstein-theme .door-btn.access {
-  background: #FFC300 !important;
-  color: #000814 !important;
-  box-shadow: 0 4px 20px rgba(255,195,0,0.35) !important;
-}
-body.bielstein-theme .door-btn.court {
-  background: #003566 !important;
-  color: #FFC300 !important;
-  box-shadow: 0 4px 20px rgba(0,53,102,0.4) !important;
-}
-body.bielstein-theme .disc-badge {
-  background: rgba(255,195,0,0.18) !important;
-  border: 1px solid rgba(255,195,0,0.55) !important;
-}
-body.bielstein-theme .court-col { border-color: #003566 !important; }
-body.bielstein-theme .court-hdr { border-color: #003566 !important; background: #000814 !important; }
-
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -874,9 +696,7 @@ main {
 <div class="hero" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');" style="cursor:default;">
   <div class="hero-frame">
     <img class="hero-img" src="Header Padel Bielstein Rot ohne Ball.jpg?v=20260715-0852" alt="Padel Bielstein">
-    <button class="easter-egg-zone" type="button" onclick="event.stopPropagation(); toggleBielsteinTheme();" aria-label="Farbschema wechseln">
-      <img id="themeBall" src="Tennisball ROT 300.png" alt="">
-    </button>
+    <button class="easter-egg-zone" type="button" onclick="event.stopPropagation(); toggleBielsteinTheme();" aria-label="Farbschema wechseln"></button>
 </div>
 </div>
 <div class="ee-toast" id="eeToast"></div>
@@ -4806,17 +4626,11 @@ function toggleBielsteinTheme() {
   const img = document.querySelector('.hero-img');
   if (img) {
     img.src = isOn
-      ? 'Header Padel Bielstein Gelb NEU ohne Ball.jpg?v=20260715-1038'
+      ? 'Padel Bielstein Header Cararra.jpg?v=20260715-1551'
       : 'Header Padel Bielstein Rot ohne Ball.jpg?v=20260715-0852';
   }
-  const ball = document.getElementById('themeBall');
-  if (ball) {
-    ball.src = isOn
-      ? 'Tennisball GELB NEU 300.png'
-      : 'Tennisball ROT 300.png';
-  }
   const msg = isOn
-    ? '⚡ BIELSTEIN MODE – Gelb & Blau!'
+    ? '⚡ Bielstein Mode – Cararra & Tango!'
     : '🎾 Zurück zum klassischen Look';
   showEeToast(msg, isOn);
 }
@@ -4879,34 +4693,36 @@ init();
 
 
 <!-- BIELSTEIN THEME v0.42 – Modernes Navy/Gold-System -->
-<style id="bielsteinOverrideV042">
+<style id="bielsteinOverrideCararra">
 /*
-  Easter-Egg-Farbwelt – nur aktiv bei body.bielstein-theme
-  Navy: #061A40 · Dark Navy: #04132F · Gold: #F5D400
-  Hover: #FFE066 · Gold Dark: #D9BA00 · Border: #1D376C
+  Easter-Egg-Farbwelt "Cararra" – nur aktiv bei body.bielstein-theme
+  Cararra: #E8E7E3 · Heavy Metal: #121411 · Tango: #F16B24
+  Natural Grey: #91908C · Delta: #ACABA7
+  Inspiriert von einem minimalistischen Kalender-Design (Dieter-Rams-Stil,
+  15.07.2026 auf Wunsch von Jörn als Ersatz für die vorherige Navy/Gold-Welt).
 */
 body.bielstein-theme {
-  --bg: #04132F !important;
-  --card: #061A40 !important;
-  --border: #1D376C !important;
-  --blue: #F5D400 !important;
-  --blue-dk: #D9BA00 !important;
-  --gold: #F5D400 !important;
-  --gold-dk: #D9BA00 !important;
-  --gray: #7F90A8 !important;
-  --gray-lt: #C7D3E5 !important;
-  --white: #FFFFFF !important;
-  background: #04132F !important;
-  color: #FFFFFF !important;
+  --bg: #E8E7E3 !important;
+  --card: #FFFFFF !important;
+  --border: #ACABA7 !important;
+  --blue: #F16B24 !important;
+  --blue-dk: #D4591A !important;
+  --gold: #F16B24 !important;
+  --gold-dk: #D4591A !important;
+  --gray: #91908C !important;
+  --gray-lt: #D6D5D1 !important;
+  --white: #121411 !important;
+  background: #E8E7E3 !important;
+  color: #121411 !important;
 }
 
 body.bielstein-theme .hero,
 body.bielstein-theme .hero-frame {
-  background: #04132F !important;
-  border-color: #1D376C !important;
+  background: #E8E7E3 !important;
+  border-color: #ACABA7 !important;
 }
 
-/* Ruhige Navy-Flächen */
+/* Ruhige, helle Flächen für Karten/Kacheln */
 body.bielstein-theme .user-bar,
 body.bielstein-theme .play-card,
 body.bielstein-theme .admin-card,
@@ -4920,17 +4736,17 @@ body.bielstein-theme .wd-btn,
 body.bielstein-theme .mode-tab:not(.active),
 body.bielstein-theme .door-log-entry,
 body.bielstein-theme .price-tag {
-  background-color: #061A40 !important;
+  background-color: #FFFFFF !important;
   background-image: none !important;
-  border-color: #1D376C !important;
+  border-color: #ACABA7 !important;
 }
 
 body.bielstein-theme .court-hdr {
-  background: #04132F !important;
-  border-color: #1D376C !important;
+  background: #E8E7E3 !important;
+  border-color: #ACABA7 !important;
 }
 
-/* Gold nur für Fokus und primäre Aktionen */
+/* Tango-Orange nur für Fokus und primäre Aktionen - dunkler Text für Kontrast */
 body.bielstein-theme .mode-tab.active,
 body.bielstein-theme .dur-btn.selected,
 body.bielstein-theme .wd-btn.selected,
@@ -4944,11 +4760,11 @@ body.bielstein-theme .admin-tab.active,
 body.bielstein-theme .slot.selected,
 body.bielstein-theme .slot.selected-second,
 body.bielstein-theme .door-btn.access {
-  background-color: #F5D400 !important;
+  background-color: #F16B24 !important;
   background-image: none !important;
-  border-color: #D9BA00 !important;
-  color: #04132F !important;
-  box-shadow: 0 5px 22px rgba(245,212,0,.22) !important;
+  border-color: #D4591A !important;
+  color: #121411 !important;
+  box-shadow: 0 5px 22px rgba(241,107,36,.25) !important;
 }
 
 body.bielstein-theme .mode-tab.active:hover,
@@ -4960,21 +4776,23 @@ body.bielstein-theme .user-bar-login:hover,
 body.bielstein-theme .modal-btn:hover,
 body.bielstein-theme .admin-save-btn:hover,
 body.bielstein-theme .door-btn.access:hover:not(:disabled) {
-  background-color: #FFE066 !important;
-  border-color: #F5D400 !important;
-  color: #04132F !important;
+  background-color: #F4854B !important;
+  border-color: #F16B24 !important;
+  color: #121411 !important;
 }
 
-/* Sekundäre Navigation: Navy mit feinem Goldrand */
+/* Sekundäre Navigation: weiß mit Tango-Rand */
 body.bielstein-theme .mode-tab:not(.active),
 body.bielstein-theme #tabAbo:not(.active),
 body.bielstein-theme #tabPlay:not(.active),
 body.bielstein-theme .user-bar-register,
 body.bielstein-theme .user-bar-portal,
-body.bielstein-theme .door-btn.court {
-  background-color: #061A40 !important;
-  border-color: rgba(245,212,0,.70) !important;
-  color: #F5D400 !important;
+body.bielstein-theme .door-btn.court,
+body.bielstein-theme .modal-tab:not(.active),
+body.bielstein-theme .admin-tab:not(.active) {
+  background-color: #FFFFFF !important;
+  border-color: rgba(241,107,36,.55) !important;
+  color: #F16B24 !important;
   box-shadow: none !important;
 }
 
@@ -4982,49 +4800,75 @@ body.bielstein-theme .mode-tab:not(.active):hover,
 body.bielstein-theme .user-bar-register:hover,
 body.bielstein-theme .user-bar-portal:hover,
 body.bielstein-theme .door-btn.court:hover:not(:disabled) {
-  background-color: #0A2A4A !important;
-  border-color: #FFE066 !important;
-  color: #FFE066 !important;
+  background-color: #F2E4D8 !important;
+  border-color: #F16B24 !important;
+  color: #D4591A !important;
 }
 
-/* Datum: markiert, aber nicht gelb gefüllt */
+/* Datum: markiert, aber nicht orange gefüllt */
 body.bielstein-theme .date-chip.selected {
-  background-color: #061A40 !important;
-  border: 1.5px solid #F5D400 !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 0 0 2px rgba(245,212,0,.08) !important;
+  background-color: #FFFFFF !important;
+  border: 1.5px solid #F16B24 !important;
+  color: #121411 !important;
+  box-shadow: 0 0 0 2px rgba(241,107,36,.10) !important;
 }
 body.bielstein-theme .date-chip.selected .dname,
 body.bielstein-theme .date-chip.selected .dnum,
 body.bielstein-theme .date-chip.selected .dmon {
-  color: #FFFFFF !important;
+  color: #121411 !important;
   opacity: 1 !important;
 }
 body.bielstein-theme .date-chip:not(.selected):hover,
 body.bielstein-theme .dur-btn:not(.selected):hover,
 body.bielstein-theme .wd-btn:not(.selected):hover {
-  background-color: #0A2A4A !important;
-  border-color: #F5D400 !important;
+  background-color: #F2E4D8 !important;
+  border-color: #F16B24 !important;
 }
 
-/* Slots bewusst anthrazit – bessere Lesbarkeit und weniger Gelbfläche */
+/* Slots: helle Kacheln, Tango als Fokusfarbe */
 body.bielstein-theme .slot.free {
-  background-color: #1A1A1A !important;
-  border-color: #333333 !important;
+  background-color: #FFFFFF !important;
+  border-color: #ACABA7 !important;
 }
 body.bielstein-theme .slot.free:hover {
-  background-color: #202020 !important;
-  border-color: #F5D400 !important;
+  background-color: #F7F6F3 !important;
+  border-color: #F16B24 !important;
 }
 body.bielstein-theme .slot.free .slot-price,
 body.bielstein-theme .court-name,
 body.bielstein-theme .abo-sum-title,
 body.bielstein-theme .abo-price-total,
 body.bielstein-theme .user-bar-name strong {
-  color: #F5D400 !important;
+  color: #F16B24 !important;
+}
+/* Uhrzeit-Text auf Slots ist in der Basis fest auf weiß gesetzt (fürs dunkle
+   Theme gedacht) - auf hellen Kacheln sonst unsichtbar */
+body.bielstein-theme .slot.free .slot-time,
+body.bielstein-theme .slot.selected .slot-time,
+body.bielstein-theme .slot.selected-second .slot-time {
+  color: #121411 !important;
+}
+body.bielstein-theme .slot.selected .slot-price {
+  color: #121411 !important;
+}
+/* Abgelaufen/Belegt/Abo-vergeben-Kacheln nutzen feste dunkle Farben aus der
+   Basis - fürs helle Theme durch dezente Cararra-Töne ersetzen */
+body.bielstein-theme .slot.booked {
+  background: #F0EFEC !important;
+}
+body.bielstein-theme .slot.booked .slot-time {
+  color: #91908C !important;
+}
+body.bielstein-theme .slot.abo-booked {
+  background: #FBE9DD !important;
+  border-color: #F0C4A0 !important;
+}
+body.bielstein-theme .slot.abo-booked .slot-time {
+  color: #C77B4A !important;
 }
 
-/* Typografie und feine UI-Farben */
+/* Typografie - bewusst nur zwei Stufen (Haupttext / gedämpft), passend zum
+   reduzierten "less but better"-Vorbild */
 body.bielstein-theme .step-lbl,
 body.bielstein-theme .user-bar-name,
 body.bielstein-theme .sum-row .sl,
@@ -5032,35 +4876,91 @@ body.bielstein-theme .abo-detail-row .dl,
 body.bielstein-theme .abo-benefit,
 body.bielstein-theme .legend-item,
 body.bielstein-theme .price-tag {
-  color: #C7D3E5 !important;
+  color: #121411 !important;
 }
 body.bielstein-theme .dur-sub,
 body.bielstein-theme .form-hint,
 body.bielstein-theme .modal-sub,
-body.bielstein-theme .site-footer-right {
-  color: #7F90A8 !important;
+body.bielstein-theme .site-footer-right,
+body.bielstein-theme .bkd-lbl,
+body.bielstein-theme .abo-52,
+body.bielstein-theme .abo-price-reg,
+body.bielstein-theme .abo-weather,
+body.bielstein-theme .modal-close,
+body.bielstein-theme .form-label,
+body.bielstein-theme .user-bar-out,
+body.bielstein-theme .play-badge-past,
+body.bielstein-theme .door-log-time,
+body.bielstein-theme .play-empty,
+body.bielstein-theme .admin-label,
+body.bielstein-theme .admin-toggle-btn,
+body.bielstein-theme .closure-item-note,
+body.bielstein-theme .closure-remove,
+body.bielstein-theme .admin-stat-lbl,
+body.bielstein-theme .admin-footer-link,
+body.bielstein-theme .closure-item-date {
+  color: #91908C !important;
+}
+/* Randfarben, die in der Basis ebenfalls fest auf dunkel gesetzt sind */
+body.bielstein-theme .user-bar-out,
+body.bielstein-theme .play-badge-past {
+  border-color: #ACABA7 !important;
+}
+body.bielstein-theme .admin-toggle-btn {
+  background: #FFFFFF !important;
+  border-color: #ACABA7 !important;
 }
 body.bielstein-theme .scroll-btn {
-  background: #061A40 !important;
-  border: 1px solid #1D376C !important;
-  color: #F5D400 !important;
+  background: #FFFFFF !important;
+  border: 1px solid #ACABA7 !important;
+  color: #F16B24 !important;
 }
 body.bielstein-theme .scroll-btn:hover {
-  background: #0A2A4A !important;
-  border-color: #F5D400 !important;
+  background: #F2E4D8 !important;
+  border-color: #F16B24 !important;
 }
 body.bielstein-theme .disc-badge {
-  background: rgba(245,212,0,.12) !important;
-  border-color: rgba(245,212,0,.45) !important;
-  color: #F5D400 !important;
+  background: rgba(241,107,36,.12) !important;
+  border-color: rgba(241,107,36,.45) !important;
+  color: #D4591A !important;
 }
+
+/* Formulare & Admin-Bereich: hardcodierte dunkle Flächen der Basis-Styles
+   (waren fürs dunkle Standard-/Navy-Theme gedacht) für das helle Theme überschreiben */
+body.bielstein-theme .form-input,
+body.bielstein-theme .admin-input,
+body.bielstein-theme .closure-item,
+body.bielstein-theme .admin-stat,
+body.bielstein-theme .play-no-active {
+  background: #FFFFFF !important;
+  color: #121411 !important;
+  border-color: #ACABA7 !important;
+}
+body.bielstein-theme .form-input:focus,
+body.bielstein-theme .admin-input:focus {
+  border-color: #F16B24 !important;
+}
+body.bielstein-theme .admin-table td {
+  border-bottom-color: #ACABA7 !important;
+  color: #121411 !important;
+}
+body.bielstein-theme .admin-table tr:hover td {
+  background: #F2E4D8 !important;
+}
+body.bielstein-theme .admin-badge.account,
+body.bielstein-theme .admin-badge.guest {
+  background: #E8E7E3 !important;
+  color: #91908C !important;
+  border-color: #ACABA7 !important;
+}
+body.bielstein-theme ::-webkit-scrollbar-track { background: #E8E7E3 !important; }
+body.bielstein-theme ::-webkit-scrollbar-thumb { background: #ACABA7 !important; }
 
 /* Toast passend zur neuen Marke */
 body.bielstein-theme + .ee-toast,
 .ee-toast:not(.orange) {
-  background: #F5D400 !important;
-  color: #04132F !important;
+  background: #F16B24 !important;
+  color: #121411 !important;
 }
 </style>
-
 <!-- v0.41: Header-Cache-Buster + email_theme Payload für Original/Bielstein-Mailfarben -->
