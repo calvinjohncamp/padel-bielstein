@@ -326,8 +326,12 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; width: 288px; max-width: 100%; margin: 0 auto; }
 .loyalty-dot { aspect-ratio: 1; border-radius: 50%; background: var(--white); position: relative; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
 .loyalty-dot.filled { background: var(--gold); }
-/* Rabattstufen: heller Text auf den dunklen Punkten (Originalfarbe, gut lesbar) */
-.loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.4rem; font-weight: 800; color: var(--bg); white-space: nowrap; pointer-events: none; letter-spacing: -0.02em; }
+/* Rabattstufen-Punkte: neutrales Grau (zur Cararra-Welt passend), damit sie sich
+   klar von den schwarzen Punkten abheben; erreicht = orange. */
+.loyalty-dot.milestone { background: #91908C; }
+.loyalty-dot.milestone.filled { background: var(--gold); }
+/* gut lesbares "%" (bzw. ★ für die Gratis-Stunde) in Weiß */
+.loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.62rem; font-weight: 900; color: #fff; line-height: 1; pointer-events: none; }
 .loyalty-legend { margin-top: 18px; font-size: 0.72rem; color: var(--gray); line-height: 1.6; }
 /* Rewards-Karte bekommt eine fette orange Umrandung */
 .loyalty-card.rewards { border: 3px solid var(--gold); }
@@ -4865,8 +4869,8 @@ function loyaltyDotsHTML(hoursPlayed) {
   let h = '';
   for (let i = 1; i <= 100; i++) {
     const m = LOYALTY_MILESTONES[i];
-    const lbl = m ? `<span class="loyalty-dot-milestone">${m === 100 ? 'FREI' : '-' + m + '%'}</span>` : '';
-    h += `<div class="loyalty-dot${i <= hoursPlayed ? ' filled' : ''}">${lbl}</div>`;
+    const lbl = m ? `<span class="loyalty-dot-milestone">${m === 100 ? '★' : '%'}</span>` : '';
+    h += `<div class="loyalty-dot${m ? ' milestone' : ''}${i <= hoursPlayed ? ' filled' : ''}">${lbl}</div>`;
   }
   return h;
 }
@@ -4907,7 +4911,7 @@ function rewardsCardHTML(hoursPlayed) {
     <div class="loyalty-card-name">${esc(currentProfile?.full_name) || '—'}</div>
     <div class="loyalty-card-email">${esc(currentProfile?.email || currentUser?.email) || '—'}</div>
     <div class="loyalty-grid">${loyaltyDotsHTML(hoursPlayed)}</div>
-    <div class="loyalty-legend">Bei 5, 10, 25 und 50 Stunden gibt's automatisch Rabatt auf die nächste Stunde – bei 100 eine Stunde geschenkt. Danach geht's von vorne los.</div>
+    <div class="loyalty-legend">Die grauen Felder (%) sind Rabattstufen: <strong>5 %, 10 %, 25 %, 50 %</strong> auf die jeweils nächste Stunde – und die <strong>100. Stunde ist gratis</strong> (★). Danach beginnt der Zähler neu.</div>
   </div>`;
 }
 // Karten-Inhaber/Empfänger für Name/E-Mail-Zeile
@@ -4970,7 +4974,7 @@ function profileCardHTML() {
       <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
       <div class="form-group"><label class="form-label">E-Mail</label><input class="form-input" id="pfEmail" type="email" value="${email}"></div>
       <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
-      <button class="book-btn visible" style="width:100%;position:static;" onclick="saveProfile()">Speichern</button>
+      <button class="book-btn visible" style="width:100%;position:static;" onclick="saveProfile()">Ändern</button>
       <div class="profile-save-ok" id="pfSaveMsg"></div>
     </div>
   </div>`;
