@@ -333,8 +333,26 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 /* gut lesbares "%" (bzw. ★ für die Gratis-Stunde) in Weiß */
 .loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.62rem; font-weight: 900; color: #fff; line-height: 1; pointer-events: none; }
 .loyalty-legend { margin-top: 18px; font-size: 0.72rem; color: var(--gray); line-height: 1.6; }
-/* Rewards-Karte bekommt eine fette orange Umrandung */
-.loyalty-card.rewards { border: 3px solid var(--gold); }
+
+/* ■■ REWARDS-KARTE – eigenes, hochwertiges Layout (feste Farben, themenunabhängig) ■■ */
+.loyalty-card.rewards { background: #FAF8F4; border: 1.5px solid #F16B24; border-radius: 20px; padding: 28px 26px 24px; text-align: center; color: #16212C; }
+.rw-badge { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.45rem; margin: 0 auto 16px; }
+.rw-tagline { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #3E4A55; margin-bottom: 8px; }
+.rw-number { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 5rem; line-height: 0.86; color: #16212C; margin-bottom: 6px; }
+.rw-headline { font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #F16B24; line-height: 1.1; }
+.rw-subtitle { font-size: 0.82rem; color: #8C8B84; margin-top: 2px; }
+.rw-divider { height: 1px; background: #E7E0D5; margin: 16px auto; max-width: 300px; }
+.rw-name { font-size: 1.05rem; font-weight: 700; color: #16212C; }
+.rw-email { font-size: 0.8rem; color: #8C8B84; margin-top: 2px; }
+.rw-legend { margin-top: 18px; font-size: 0.75rem; color: #6E6E66; line-height: 1.65; }
+.rw-legend strong { color: #F16B24; }
+/* Punktfarben in der Rewards-Karte exakt wie im Entwurf: Navy / Tango / Grau */
+.loyalty-card.rewards .loyalty-dot { background: #16212C; }
+.loyalty-card.rewards .loyalty-dot.filled { background: #F16B24; }
+.loyalty-card.rewards .loyalty-dot.milestone { background: #9A9A93; }
+.loyalty-card.rewards .loyalty-dot.milestone.filled { background: #F16B24; }
+/* Modal im Rewards-Look: warmer Creme-Hintergrund, dezenter Rand (der orange Rahmen sitzt innen) */
+#loyaltyModal .modal.rewards-mode { background: #FAF8F4; border-color: #EDE7DD; }
 
 /* ■■ PUNCH-KARTE – feste Fläche für ALLE Karten (wie 20er), Punkte skalieren je Kartengröße ■■ */
 /* Würfel-Muster: 2 = Diagonale, 5 = 3+2, 10 = 5+5, 20 = 5×4. */
@@ -368,11 +386,11 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .buy-mini-amount { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.85rem; line-height: 1; }
 
 /* ■■ ACCOUNT-MODAL: Blätter-Steuerung ■■ */
-.card-pager { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
-.card-pager-label { font-size: 0.72rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.08em; margin-right: auto; }
-.card-pager button { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--card); color: var(--gold); font-size: 1.2rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-.card-pager button:hover:not(:disabled) { border-color: var(--gold); }
-.card-pager button:disabled { opacity: 0.3; cursor: default; }
+.card-pager { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+.card-pager-label { font-size: 0.72rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.1em; margin-right: auto; }
+.card-pager button { width: 40px; height: 40px; border-radius: 50%; border: 1.6px solid var(--gold); background: transparent; color: var(--gold); font-size: 1.35rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.card-pager button:hover:not(:disabled) { background: rgba(241,107,36,0.1); }
+.card-pager button:disabled { visibility: hidden; }
 
 /* ■■ ACCOUNT-MODAL: Persönliche Daten bearbeiten ■■ */
 .profile-form { text-align: left; margin-top: 4px; }
@@ -4906,12 +4924,17 @@ function punchCanvasHTML(size, used, scale) {
 // --- Karten im Kalender-Look als HTML (Zahl oben markant, dann Name/E-Mail, Punkte, Wert) ---
 function rewardsCardHTML(hoursPlayed) {
   return `<div class="loyalty-card rewards">
-    <div class="loyalty-card-number">${hoursPlayed}</div>
-    <div class="loyalty-card-sub">Stunden gebucht bzw. verschenkt</div>
-    <div class="loyalty-card-name">${esc(currentProfile?.full_name) || '—'}</div>
-    <div class="loyalty-card-email">${esc(currentProfile?.email || currentUser?.email) || '—'}</div>
+    <div class="rw-badge">★</div>
+    <div class="rw-tagline">Treue wird belohnt</div>
+    <div class="rw-number">${hoursPlayed}</div>
+    <div class="rw-headline">Stunden gebucht</div>
+    <div class="rw-subtitle">bzw. verschenkt</div>
+    <div class="rw-divider"></div>
+    <div class="rw-name">${esc(currentProfile?.full_name) || '—'}</div>
+    <div class="rw-email">${esc(currentProfile?.email || currentUser?.email) || '—'}</div>
+    <div class="rw-divider"></div>
     <div class="loyalty-grid">${loyaltyDotsHTML(hoursPlayed)}</div>
-    <div class="loyalty-legend">Die grauen Felder (%) sind Rabattstufen: <strong>5 %, 10 %, 25 %, 50 %</strong> auf die jeweils nächste Stunde – und die <strong>100. Stunde ist gratis</strong> (★). Danach beginnt der Zähler neu.</div>
+    <div class="rw-legend">Die grauen Felder (%) sind Rabattstufen: 5 %, 10 %, 25 %, 50 % auf die jeweils nächste Stunde – und die <strong>100. Stunde ist umsonst (★)</strong>.</div>
   </div>`;
 }
 // Karten-Inhaber/Empfänger für Name/E-Mail-Zeile
@@ -5224,6 +5247,9 @@ function renderAccountPage() {
   if (p.type === 'rewards')      { host.innerHTML = rewardsCardHTML(p.hours); label = 'Rewards'; }
   else if (p.type === 'card')    { host.innerHTML = anyCardHTML(p.card);     label = p.card.card_size ? cardLabel(p.card.card_size) : 'Guthaben'; }
   else if (p.type === 'profile') { host.innerHTML = profileCardHTML();       label = 'Meine Daten'; }
+
+  // Rewards-Seite: Modal in den warmen Creme-Look versetzen
+  document.querySelector('#loyaltyModal .modal').classList.toggle('rewards-mode', p.type === 'rewards');
 
   // Blätter-Steuerung nur, wenn es mehr als eine Seite gibt
   const pager = document.getElementById('cardPager');
