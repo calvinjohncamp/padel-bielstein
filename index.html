@@ -319,23 +319,23 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .loyalty-card-sub { font-size: 0.64rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 16px; }
 .loyalty-card-name { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
 .loyalty-card-email { font-size: 0.78rem; color: var(--gray); margin-bottom: 20px; }
-.loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; max-width: 340px; margin: 0 auto; }
+/* Rewards-Raster: gleiche Breite wie die Punch-Canvas (288px), damit die Karte
+   genauso groß ist wie die Guthaben-/Zwanzigerkarten. */
+.loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; width: 288px; max-width: 100%; margin: 0 auto; }
 .loyalty-dot { aspect-ratio: 1; border-radius: 50%; background: var(--white); position: relative; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
 .loyalty-dot.filled { background: var(--gold); }
-/* Rabattstufen: kräftiges Tango-Orange direkt auf den dunklen Punkten */
-.loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.5rem; font-weight: 900; color: var(--gold); white-space: nowrap; pointer-events: none; letter-spacing: -0.01em; }
-/* Ist der Punkt bereits eingelöst (orange), muss die Schrift dunkel sein, damit sie lesbar bleibt */
-.loyalty-dot.filled .loyalty-dot-milestone { color: var(--bg); }
+/* Rabattstufen: heller Text auf den dunklen Punkten (Originalfarbe, gut lesbar) */
+.loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.4rem; font-weight: 800; color: var(--bg); white-space: nowrap; pointer-events: none; letter-spacing: -0.02em; }
 .loyalty-legend { margin-top: 18px; font-size: 0.72rem; color: var(--gray); line-height: 1.6; }
+/* Rewards-Karte bekommt eine fette orange Umrandung */
+.loyalty-card.rewards { border: 3px solid var(--gold); }
 
-/* ■■ PUNCH-KARTE (5er/10er/20er …) – gleiche Optik wie Rewards, aber 5 Punkte pro Zeile ■■ */
-/* max-width so gewählt, dass eine 20er-Karte (4 Zeilen) etwa die gleiche Fläche
-   belegt wie das 10×10-Rewards-Raster (≈340px breit). */
-/* Flex statt Grid: wenige Punkte (1er/2er) werden so automatisch zentriert,
-   5 Punkte pro Zeile ergeben sich aus max-width (6. Punkt passt nicht mehr). */
-.punch-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 300px; margin: 0 auto; }
-.punch-dot { width: 48px; height: 48px; flex: 0 0 auto; border-radius: 50%; background: var(--white); transition: background 0.2s; }
-.punch-dot.filled { background: var(--gold); }
+/* ■■ PUNCH-KARTE – feste Fläche für ALLE Karten (wie 20er), Punkte skalieren je Kartengröße ■■ */
+/* Würfel-Muster: 2 = Diagonale, 5 = 3+2, 10 = 5+5, 20 = 5×4. */
+.punch-canvas { box-sizing: border-box; display: flex; flex-direction: column; align-items: center; margin: 0 auto; max-width: 100%; padding: 6px; }
+.punch-canvas .prow { display: flex; align-items: center; width: 100%; }
+.punch-canvas .pdot { border-radius: 50%; background: var(--white); flex: 0 0 auto; transition: background 0.2s; }
+.punch-canvas .pdot.filled { background: var(--gold); }
 .punch-value { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); text-align: center; }
 .punch-value .pv-worth { font-size: 0.72rem; color: var(--gray); }
 /* Restwert so groß & fett wie der Name oben (erbt Textfarbe der Karte) */
@@ -349,9 +349,17 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .gutschein-mine { flex: 0 1 320px; min-width: 260px; }
 /* mehrere eigene Karten werden untereinander gestapelt */
 .mycards-stack { display: flex; flex-direction: column; gap: 14px; }
-/* links: 3 Kacheln pro Zeile, damit sie kompakt neben die große Karte rechts passen */
-.card-size-grid.buy-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-@media (max-width: 480px) { .card-size-grid.buy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ■■ KAUFEN links: fünf kleine Hochformat-Karten nebeneinander ■■ */
+.buy-cards-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.buy-mini { flex: 1 1 0; min-width: 88px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 148px; border: 1.5px solid var(--border); border-radius: 12px; padding: 11px 6px 10px; background: var(--card); cursor: pointer; text-align: center; transition: all 0.15s; }
+.buy-mini:hover { border-color: var(--gold); }
+.buy-mini.selected { border-color: var(--gold); box-shadow: 0 0 0 1.5px var(--gold) inset; }
+.buy-mini-title { font-weight: 700; font-size: 0.72rem; line-height: 1.1; }
+.buy-mini-price { font-size: 0.72rem; color: var(--gray); }
+.buy-mini.selected .buy-mini-price { color: var(--gold); font-weight: 700; }
+/* Guthaben-Mini-Karten: fetter Betrag statt Punkten */
+.buy-mini-amount { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.85rem; line-height: 1; }
 
 /* ■■ ACCOUNT-MODAL: Blätter-Steuerung ■■ */
 .card-pager { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
@@ -1017,10 +1025,10 @@ main {
         <div class="play-card-title">🎁 Karte oder Gutschein kaufen</div>
         <div class="form-hint" style="margin-bottom:16px;">Fester Preis: 24 € pro Stunde, unabhängig von Uhrzeit und Wochentag.</div>
 
-        <div class="card-size-grid buy-grid" id="cardSizeGrid"></div>
+        <div class="buy-cards-row" id="cardSizeGrid"></div>
 
         <div class="form-hint" style="margin:18px 0 10px;">Oder Guthaben aufladen – flexibel für jede Buchung einsetzbar, jederzeit verschenkbar:</div>
-        <div class="card-size-grid buy-grid" id="cardBalanceGrid"></div>
+        <div class="buy-cards-row" id="cardBalanceGrid"></div>
 
         <div class="gift-toggle">
           <div class="gift-toggle-btn selected" id="giftToggleSelf" onclick="setCardGiftMode(false)">Für mich</div>
@@ -4857,20 +4865,43 @@ function loyaltyDotsHTML(hoursPlayed) {
   let h = '';
   for (let i = 1; i <= 100; i++) {
     const m = LOYALTY_MILESTONES[i];
-    const lbl = m ? `<span class="loyalty-dot-milestone">${m === 100 ? 'GRATIS' : '-' + m + '%'}</span>` : '';
+    const lbl = m ? `<span class="loyalty-dot-milestone">${m === 100 ? 'FREI' : '-' + m + '%'}</span>` : '';
     h += `<div class="loyalty-dot${i <= hoursPlayed ? ' filled' : ''}">${lbl}</div>`;
   }
   return h;
 }
-function punchDotsHTML(size, used) {
-  let h = '';
-  for (let i = 1; i <= size; i++) h += `<div class="punch-dot${i <= used ? ' filled' : ''}"></div>`;
-  return h;
+
+// Feste Fläche 288×224 für ALLE Karten; Punktgröße & Muster je Kartengröße
+// (Würfel-Optik: 2 = Diagonale, 5 = 3+2, 10 = 5+5, 20 = 5×4).
+const PUNCH_LAYOUTS = {
+  1:  { dot: 128, gap: 0,  justify: 'center',        rows: [1] },
+  2:  { dot: 104, gap: 0,  justify: 'space-between', rows: [1, 1], diag: true },
+  5:  { dot: 74,  gap: 16, justify: 'center',        rows: [3, 2] },
+  10: { dot: 50,  gap: 12, justify: 'center',        rows: [5, 5] },
+  20: { dot: 42,  gap: 11, justify: 'center',        rows: [5, 5, 5, 5] },
+};
+function punchCanvasHTML(size, used, scale) {
+  scale = scale || 1;
+  const L = PUNCH_LAYOUTS[size] || PUNCH_LAYOUTS[20];
+  const dot = Math.round(L.dot * scale);
+  const gap = Math.round((L.gap || 0) * scale);
+  const W = Math.round(288 * scale), H = Math.round(224 * scale);
+  let idx = 0;
+  const rows = L.rows.map((cnt, ri) => {
+    let dots = '';
+    for (let k = 0; k < cnt; k++) {
+      idx++;
+      dots += `<span class="pdot${idx <= used ? ' filled' : ''}" style="width:${dot}px;height:${dot}px;"></span>`;
+    }
+    const just = L.diag ? (ri === 0 ? 'flex-start' : 'flex-end') : 'center';
+    return `<div class="prow" style="justify-content:${just};gap:${gap}px;">${dots}</div>`;
+  }).join('');
+  return `<div class="punch-canvas" style="width:${W}px;height:${H}px;justify-content:${L.justify};gap:${gap}px;">${rows}</div>`;
 }
 
 // --- Karten im Kalender-Look als HTML (Zahl oben markant, dann Name/E-Mail, Punkte, Wert) ---
 function rewardsCardHTML(hoursPlayed) {
-  return `<div class="loyalty-card">
+  return `<div class="loyalty-card rewards">
     <div class="loyalty-card-number">${hoursPlayed}</div>
     <div class="loyalty-card-sub">Stunden gebucht bzw. verschenkt</div>
     <div class="loyalty-card-name">${esc(currentProfile?.full_name) || '—'}</div>
@@ -4890,7 +4921,7 @@ function punchCardHTML(card) {
     <div class="loyalty-card-sub">${esc(cardLabel(card.card_size))} · ${remaining} von ${card.card_size} offen</div>
     <div class="loyalty-card-name">${name}</div>
     <div class="loyalty-card-email">${email}</div>
-    <div class="punch-grid">${punchDotsHTML(card.card_size, card.hours_used)}</div>
+    ${punchCanvasHTML(card.card_size, card.hours_used)}
     <div class="punch-value">
       <div class="pv-worth">Ein Punkt entspricht 24 € Guthaben</div>
       <div class="pv-restwert">${rest} € Restwert</div>
@@ -4952,26 +4983,34 @@ async function loadMyCards() {
 }
 
 function renderCardSizeGrid() {
+  // Stunden-Karten als kleine Hochformat-Karten (echtes Würfel-Muster, alle Punkte offen)
   const grid = document.getElementById('cardSizeGrid');
   if (grid) {
     grid.innerHTML = '';
     CARD_SIZES.forEach(size => {
-      const btn = document.createElement('div');
-      btn.className = 'card-size-btn' + (selectedCardSize === size ? ' selected' : '');
-      btn.innerHTML = `<span class="cs-hours">${cardLabel(size)}</span><span class="cs-price">${size * CARD_PRICE_PER_HOUR} €</span>`;
-      btn.onclick = () => selectCardSize(size);
-      grid.appendChild(btn);
+      const el = document.createElement('div');
+      el.className = 'buy-mini' + (selectedCardSize === size ? ' selected' : '');
+      el.onclick = () => selectCardSize(size);
+      el.innerHTML =
+        `<div class="buy-mini-title">${cardLabel(size)}</div>` +
+        punchCanvasHTML(size, 0, 0.26) +
+        `<div class="buy-mini-price">${size * CARD_PRICE_PER_HOUR} €</div>`;
+      grid.appendChild(el);
     });
   }
+  // Guthaben-Karten: fetter Betrag statt Punkten
   const balGrid = document.getElementById('cardBalanceGrid');
   if (balGrid) {
     balGrid.innerHTML = '';
     CARD_BALANCES.forEach(eur => {
-      const btn = document.createElement('div');
-      btn.className = 'card-size-btn' + (selectedBalance === eur ? ' selected' : '');
-      btn.innerHTML = `<span class="cs-hours">${eur} €</span><span class="cs-price">Guthaben</span>`;
-      btn.onclick = () => selectBalance(eur);
-      balGrid.appendChild(btn);
+      const el = document.createElement('div');
+      el.className = 'buy-mini' + (selectedBalance === eur ? ' selected' : '');
+      el.onclick = () => selectBalance(eur);
+      el.innerHTML =
+        `<div class="buy-mini-title">Guthaben</div>` +
+        `<div class="buy-mini-amount">${eur} €</div>` +
+        `<div class="buy-mini-price">aufladen</div>`;
+      balGrid.appendChild(el);
     });
   }
   updateCardSummary();
