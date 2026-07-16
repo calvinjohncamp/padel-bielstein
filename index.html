@@ -321,8 +321,27 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; max-width: 340px; margin: 0 auto; }
 .loyalty-dot { aspect-ratio: 1; border-radius: 50%; background: var(--white); position: relative; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
 .loyalty-dot.filled { background: var(--gold); }
-.loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.42rem; font-weight: 800; color: var(--bg); white-space: nowrap; pointer-events: none; }
+/* Rabattstufen: kräftiges Tango-Orange direkt auf den dunklen Punkten */
+.loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.5rem; font-weight: 900; color: var(--gold); white-space: nowrap; pointer-events: none; letter-spacing: -0.01em; }
+/* Ist der Punkt bereits eingelöst (orange), muss die Schrift dunkel sein, damit sie lesbar bleibt */
+.loyalty-dot.filled .loyalty-dot-milestone { color: var(--bg); }
 .loyalty-legend { margin-top: 18px; font-size: 0.72rem; color: var(--gray); line-height: 1.6; }
+
+/* ■■ PUNCH-KARTE (5er/10er/20er …) – gleiche Optik wie Rewards, aber 5 Punkte pro Zeile ■■ */
+/* max-width so gewählt, dass eine 20er-Karte (4 Zeilen) etwa die gleiche Fläche
+   belegt wie das 10×10-Rewards-Raster (≈340px breit). */
+.punch-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; max-width: 300px; margin: 0 auto; }
+.punch-dot { aspect-ratio: 1; border-radius: 50%; background: var(--white); transition: background 0.2s; }
+.punch-dot.filled { background: var(--gold); }
+.punch-value { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--gray); line-height: 1.7; }
+.punch-value .pv-worth { color: var(--gray); }
+.punch-value .pv-bal { font-weight: 800; }
+.punch-value .pv-bal.plus { color: var(--gold); }
+.punch-value .pv-bal.minus { color: #d64545; }
+.punch-card-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border: none; border-bottom: 1px solid var(--border); background: none; color: inherit; cursor: pointer; text-align: left; font: inherit; transition: opacity 0.15s; }
+.punch-card-btn:hover { opacity: 0.7; }
+.punch-card-btn .pcb-remain { font-size: 0.75rem; color: var(--gray); }
+.punch-card-btn .pcb-chev { color: var(--gold); font-size: 1.1rem; }
 
 /* ■■ GUTSCHEINE ■■ */
 .card-size-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
@@ -728,17 +747,37 @@ main {
 <div class="modal-overlay" id="loyaltyModal">
   <div class="modal">
     <button class="modal-close" onclick="closeLoyaltyModal()">✕</button>
-    <div class="modal-title">Meine Treuekarte</div>
-    <div class="modal-sub">Jede gespielte Stunde zählt – automatische Rabatte inklusive</div>
+    <div class="modal-title">Rewards</div>
+    <div class="modal-sub">Jede gebuchte oder verschenkte Stunde zählt – automatische Rabatte inklusive</div>
 
     <div class="loyalty-card">
       <div class="loyalty-card-name" id="loyaltyName">—</div>
       <div class="loyalty-card-email" id="loyaltyEmail">—</div>
       <div class="loyalty-card-number" id="loyaltyNumber">0</div>
-      <div class="loyalty-card-sub">Stunden gespielt</div>
+      <div class="loyalty-card-sub">Stunden gebucht bzw. verschenkt</div>
       <div class="loyalty-grid" id="loyaltyGrid"></div>
       <div class="loyalty-legend">
         Bei 5, 10, 25 und 50 Stunden gibt's automatisch Rabatt auf die nächste Stunde – bei 100 eine Stunde geschenkt. Danach geht's von vorne los.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PUNCH-KARTE MODAL (Fünfer-/Zehner-/Zwanzigerkarte …) -->
+<div class="modal-overlay" id="punchModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closePunchModal()">✕</button>
+    <div class="modal-title" id="punchTitle">Zehnerkarte</div>
+    <div class="modal-sub">Gebuchte Stunden erscheinen orange – offene bleiben dunkel</div>
+
+    <div class="loyalty-card">
+      <div class="loyalty-card-name" id="punchName">—</div>
+      <div class="loyalty-card-email" id="punchEmail">—</div>
+      <div class="loyalty-card-number" id="punchNumber">0</div>
+      <div class="loyalty-card-sub" id="punchSub">von 10 Stunden übrig</div>
+      <div class="punch-grid" id="punchGrid"></div>
+      <div class="punch-value" id="punchValue">
+        <div class="pv-worth">1 Punkt = 24 € wert</div>
       </div>
     </div>
   </div>
@@ -749,7 +788,7 @@ main {
 <div class="hero" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');" style="cursor:default;">
   <div class="hero-frame">
     <img class="hero-img" src="Padel Bielstein Header Cararra.jpg?v=20260715-1551" alt="Padel Bielstein">
-    <button class="easter-egg-zone" type="button" onclick="event.stopPropagation(); toggleBielsteinTheme();" aria-label="Farbschema wechseln"></button>
+    <button class="easter-egg-zone" type="button" onclick="event.stopPropagation(); onEasterEggClick();" aria-label="Rewards öffnen"></button>
 </div>
 </div>
 <div class="ee-toast" id="eeToast"></div>
@@ -761,7 +800,8 @@ main {
     <div id="userBarLoggedIn" style="display:none;width:100%;align-items:center;justify-content:space-between;">
       <span class="user-bar-name">Angemeldet als <strong id="userBarName">—</strong></span>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button class="account-icon-btn" onclick="openLoyaltyCard()" aria-label="Meine Treuekarte" title="Meine Treuekarte">
+        <button class="user-bar-out dark-mode-btn" onclick="toggleBielsteinTheme()">Dark Mode</button>
+        <button class="account-icon-btn" style="margin-right:12px;" onclick="openLoyaltyCard()" aria-label="Rewards" title="Rewards">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
         <button class="user-bar-portal" id="portalBtn" style="display:none;" onclick="openPortal()">■ Abo verwalten</button>
@@ -772,7 +812,8 @@ main {
     <div id="userBarLoggedOut" style="width:100%;display:flex;align-items:center;justify-content:space-between;">
       <span style="font-size:0.82rem;color:#666;">Zum Buchen bitte anmelden</span>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button class="account-icon-btn" onclick="openLoyaltyCard()" aria-label="Meine Treuekarte" title="Meine Treuekarte">
+        <button class="user-bar-out dark-mode-btn" onclick="toggleBielsteinTheme()">Dark Mode</button>
+        <button class="account-icon-btn" style="margin-right:12px;" onclick="openLoyaltyCard()" aria-label="Rewards" title="Rewards">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
         <button class="user-bar-register" onclick="openModal('register')">Registrieren</button>
@@ -4722,7 +4763,10 @@ function formatDateDE(dateStr) {
 // ============================================================
 let eeToastTimer = null;
 
-function toggleBielsteinTheme() {
+// Klick auf den schwarzen Punkt im Header-Branding: öffnet ab sofort die
+// Rewards-Karte (früher: Theme-Umschaltung – die liegt jetzt auf dem
+// "Dark Mode"-Button in der User-Leiste).
+function onEasterEggClick() {
   const ballButton = document.querySelector('.easter-egg-zone');
   if (ballButton) {
     ballButton.classList.remove('ball-wobble');
@@ -4730,7 +4774,12 @@ function toggleBielsteinTheme() {
     ballButton.classList.add('ball-wobble');
     window.setTimeout(() => ballButton.classList.remove('ball-wobble'), 560);
   }
+  openLoyaltyCard();
+}
 
+// Voreingestellt ist der Cararra-Look (body.bielstein-theme). Der Button
+// schaltet in den dunklen Schwarz/Rot-"Dark Mode" (Basis-Theme) und zurück.
+function toggleBielsteinTheme() {
   const isOn = document.body.classList.toggle('bielstein-theme');
   const img = document.querySelector('.hero-img');
   if (img) {
@@ -4738,9 +4787,14 @@ function toggleBielsteinTheme() {
       ? 'Padel Bielstein Header Cararra.jpg?v=20260715-1551'
       : 'Header Padel Original.png?v=20260715-1620';
   }
+  // isOn === true  → Cararra aktiv, Button bietet Wechsel zu Dark Mode an
+  // isOn === false → Dark Mode aktiv, Button bietet Rückweg zum Original an
+  document.querySelectorAll('.dark-mode-btn').forEach(b => {
+    b.textContent = isOn ? 'Dark Mode' : 'Original';
+  });
   const msg = isOn
-    ? '⚡ Bielstein Mode – Cararra & Tango!'
-    : '🎾 Zurück zum klassischen Look';
+    ? '🎾 Zurück zum Cararra-Look'
+    : '🌙 Dark Mode – Schwarz & Rot';
   showEeToast(msg, isOn);
 }
 
@@ -4762,6 +4816,19 @@ const CARD_SIZES = [1, 2, 5, 10, 20];
 const CARD_PRICE_PER_HOUR = 24;
 let selectedCardSize = null;
 let cardIsGift = false;
+let myCardsData = [];
+
+// Einheitliche Benennung – egal ob selbst gekauft oder Gutschein
+function cardLabel(size) {
+  switch (size) {
+    case 1:  return 'Einzelstunde';
+    case 2:  return 'Doppelstunde';
+    case 5:  return 'Fünferkarte';
+    case 10: return 'Zehnerkarte';
+    case 20: return 'Zwanzigerkarte';
+    default: return `${size}er-Karte`;
+  }
+}
 
 // Zeigt die bereits gekauften Karten des eingeloggten Nutzers (als Käufer,
 // auch wenn die Karte verschenkt wurde). Für Beschenkte, die die Karte
@@ -4781,20 +4848,22 @@ async function loadMyCards() {
       .order('created_at', { ascending: false });
     if (error) throw error;
     if (!data || data.length === 0) {
+      myCardsData = [];
       list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Noch keine Karten gekauft.</div></div>`;
       return;
     }
-    list.innerHTML = data.map(c => {
+    myCardsData = data;
+    list.innerHTML = data.map((c, i) => {
       const remaining = c.card_size - c.hours_used;
-      const label = c.card_size === 1 ? '1 Stunde' : c.card_size === 2 ? '2 Stunden' : `${c.card_size}er-Karte`;
       const giftNote = c.is_gift ? ` · verschenkt an ${c.recipient_name || 'jemanden'}` : '';
       return `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
-          <div>
-            <div style="font-weight:700;">${label}${giftNote}</div>
-            <div style="font-size:0.75rem;color:var(--gray);">${remaining} von ${c.card_size} Stunde${c.card_size>1?'n':''} übrig</div>
-          </div>
-        </div>
+        <button class="punch-card-btn" onclick="openPunchCard(${i})">
+          <span>
+            <span style="font-weight:700;">${cardLabel(c.card_size)}${giftNote}</span>
+            <span class="pcb-remain" style="display:block;">${remaining} von ${c.card_size} Stunde${c.card_size>1?'n':''} übrig</span>
+          </span>
+          <span class="pcb-chev">›</span>
+        </button>
       `;
     }).join('');
   } catch(e) {
@@ -4810,8 +4879,7 @@ function renderCardSizeGrid() {
   CARD_SIZES.forEach(size => {
     const btn = document.createElement('div');
     btn.className = 'card-size-btn' + (selectedCardSize === size ? ' selected' : '');
-    const label = size === 1 ? '1 Stunde' : size === 2 ? '2 Stunden' : `${size}er-Karte`;
-    btn.innerHTML = `<span class="cs-hours">${label}</span><span class="cs-price">${size * CARD_PRICE_PER_HOUR} €</span>`;
+    btn.innerHTML = `<span class="cs-hours">${cardLabel(size)}</span><span class="cs-price">${size * CARD_PRICE_PER_HOUR} €</span>`;
     btn.onclick = () => selectCardSize(size);
     grid.appendChild(btn);
   });
@@ -4962,6 +5030,57 @@ function renderLoyaltyCard(hoursPlayed) {
     grid.appendChild(dot);
   }
 }
+
+// ============================================================
+//  PUNCH-KARTE (Fünfer-/Zehner-/Zwanzigerkarte …)
+// ============================================================
+function openPunchCard(index) {
+  const card = myCardsData[index];
+  if (!card) return;
+  const remaining = card.card_size - card.hours_used;
+
+  document.getElementById('punchTitle').textContent = cardLabel(card.card_size);
+  document.getElementById('punchName').textContent =
+    card.is_gift ? (card.recipient_name || 'Beschenkte Person') : (currentProfile?.full_name || '—');
+  document.getElementById('punchEmail').textContent =
+    card.is_gift ? 'Gutschein' : (currentProfile?.email || currentUser?.email || '—');
+  document.getElementById('punchNumber').textContent = card.hours_used;
+  document.getElementById('punchSub').textContent =
+    `von ${card.card_size} Stunde${card.card_size > 1 ? 'n' : ''} übrig: ${remaining}`;
+
+  // Punktraster: verbrauchte Stunden orange, offene dunkel
+  const grid = document.getElementById('punchGrid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= card.card_size; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'punch-dot' + (i <= card.hours_used ? ' filled' : '');
+    grid.appendChild(dot);
+  }
+
+  // Wert-Hinweis: 1 Punkt = 24 €, plus Saldo gegenüber den tatsächlich
+  // gebuchten Stundenpreisen (sobald das Backend den Saldo mitliefert).
+  const valEl = document.getElementById('punchValue');
+  let html = `<div class="pv-worth">1 Punkt = 24 € wert · Restwert ${remaining * CARD_PRICE_PER_HOUR} €</div>`;
+  if (card.value_balance_cents != null && card.hours_used > 0) {
+    const bal = Math.round(card.value_balance_cents) / 100;
+    const sign = bal >= 0 ? '+' : '−';
+    const cls = bal >= 0 ? 'plus' : 'minus';
+    html += `<div>${card.hours_used} × 24 € · Saldo <span class="pv-bal ${cls}">${sign}${Math.abs(bal)} €</span></div>`;
+  } else {
+    html += `<div style="opacity:.8;">Der ±-Saldo erscheint, sobald Stunden über die Karte gebucht wurden (teurere Stunde = im Plus, günstigere = im Minus).</div>`;
+  }
+  valEl.innerHTML = html;
+
+  document.getElementById('punchModal').classList.add('open');
+}
+
+function closePunchModal() {
+  document.getElementById('punchModal').classList.remove('open');
+}
+
+document.getElementById('punchModal').addEventListener('click', function(e) {
+  if (e.target === this) closePunchModal();
+});
 
 init();
 </script>
