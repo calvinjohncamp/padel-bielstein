@@ -313,58 +313,55 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .account-icon-btn { width: 30px; height: 30px; border-radius: 50%; background: none; border: 1.5px solid var(--border); color: var(--gray); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; padding: 0; flex-shrink: 0; }
 .account-icon-btn:hover { border-color: var(--gold); color: var(--gold); }
 
-.loyalty-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 26px 24px; text-align: center; }
-/* kleiner orangefarbener Kartentyp-Tag ganz oben */
-.loyalty-card-tag { font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
-/* Kalender-Look: die Zahl ist der markante Blickfang ganz oben */
-.loyalty-card-number { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 4.6rem; line-height: 0.86; letter-spacing: -0.03em; margin-bottom: 6px; }
-.loyalty-card-sub { font-size: 0.64rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 16px; }
-.loyalty-card-name { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
-.loyalty-card-email { font-size: 0.78rem; color: var(--gray); margin-bottom: 20px; }
+/* Elegante Karten-Basis: warmes Creme, oranger Rahmen, Navy-Text, CI-Schrift Arial */
+.loyalty-card { background: #FAF8F4; border: 1.5px solid #F16B24; border-radius: 22px; padding: 24px 22px; text-align: center; color: #16212C; font-family: "Arial","Helvetica",sans-serif; }
+.loyalty-card-tag { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #F16B24; margin-bottom: 12px; }
+/* Zahl: breite Arial-Bold (CI), nicht schmal – wie im Entwurf */
+.loyalty-card-number { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4rem; line-height: 0.9; letter-spacing: -0.02em; color: #16212C; margin-bottom: 4px; }
+.loyalty-card-sub { font-size: 0.66rem; color: #8C8B84; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 16px; }
+.loyalty-card-name { font-size: 1.02rem; font-weight: 700; color: #16212C; margin-bottom: 2px; }
+.loyalty-card-email { font-size: 0.8rem; color: #8C8B84; margin-bottom: 18px; }
 /* Rewards-Raster: gleiche Breite wie die Punch-Canvas (288px), damit die Karte
    genauso groß ist wie die Guthaben-/Zwanzigerkarten. */
 .loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; width: 288px; max-width: 100%; margin: 0 auto; }
-.loyalty-dot { aspect-ratio: 1; border-radius: 50%; background: var(--white); position: relative; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-.loyalty-dot.filled { background: var(--gold); }
-/* Rabattstufen-Punkte: neutrales Grau (zur Cararra-Welt passend), damit sie sich
-   klar von den schwarzen Punkten abheben; erreicht = orange. */
-.loyalty-dot.milestone { background: #91908C; }
-.loyalty-dot.milestone.filled { background: var(--gold); }
+.loyalty-dot { aspect-ratio: 1; border-radius: 50%; background: #16212C; position: relative; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.loyalty-dot.filled { background: #F16B24; }
+/* Rabattstufen-Punkte: neutrales Grau; erreicht = orange. */
+.loyalty-dot.milestone { background: #9A9A93; }
+.loyalty-dot.milestone.filled { background: #F16B24; }
 /* gut lesbares "%" (bzw. ★ für die Gratis-Stunde) in Weiß */
 .loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.62rem; font-weight: 900; color: #fff; line-height: 1; pointer-events: none; }
-.loyalty-legend { margin-top: 18px; font-size: 0.72rem; color: var(--gray); line-height: 1.6; }
+.loyalty-legend { margin-top: 18px; font-size: 0.72rem; color: #8C8B84; line-height: 1.6; }
+/* etwas mehr Luft zwischen den Rewards-Punkten (wie im Entwurf) */
+.loyalty-grid { gap: 6px; }
 
-/* ■■ REWARDS-KARTE – eigenes, hochwertiges Layout (feste Farben, themenunabhängig) ■■ */
-.loyalty-card.rewards { background: #FAF8F4; border: 1.5px solid #F16B24; border-radius: 20px; padding: 28px 26px 24px; text-align: center; color: #16212C; }
-.rw-badge { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.45rem; margin: 0 auto 16px; }
-.rw-tagline { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #3E4A55; margin-bottom: 8px; }
-.rw-number { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 5rem; line-height: 0.86; color: #16212C; margin-bottom: 6px; }
-.rw-headline { font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #F16B24; line-height: 1.1; }
+/* ■■ REWARDS-KARTE – 1:1 nach Entwurf; Stern-Emblem in den Rahmen eingelassen ■■ */
+.loyalty-card.rewards { position: relative; margin-top: 12px; padding: 34px 26px 26px; border-radius: 24px; }
+/* Der Kreis sitzt mittig auf der oberen Rahmenlinie; sein Creme-Füllung "öffnet" den Rahmen */
+.rw-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 54px; height: 54px; border-radius: 50%; background: #FAF8F4; border: 2px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.rw-tagline { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #3E4A55; margin-bottom: 6px; }
+.rw-number { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4.6rem; line-height: 0.92; letter-spacing: -0.02em; color: #16212C; }
+.rw-headline { font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #F16B24; line-height: 1.1; margin-top: 2px; }
 .rw-subtitle { font-size: 0.82rem; color: #8C8B84; margin-top: 2px; }
 .rw-divider { height: 1px; background: #E7E0D5; margin: 16px auto; max-width: 300px; }
 .rw-name { font-size: 1.05rem; font-weight: 700; color: #16212C; }
 .rw-email { font-size: 0.8rem; color: #8C8B84; margin-top: 2px; }
 .rw-legend { margin-top: 18px; font-size: 0.75rem; color: #6E6E66; line-height: 1.65; }
 .rw-legend strong { color: #F16B24; }
-/* Punktfarben in der Rewards-Karte exakt wie im Entwurf: Navy / Tango / Grau */
-.loyalty-card.rewards .loyalty-dot { background: #16212C; }
-.loyalty-card.rewards .loyalty-dot.filled { background: #F16B24; }
-.loyalty-card.rewards .loyalty-dot.milestone { background: #9A9A93; }
-.loyalty-card.rewards .loyalty-dot.milestone.filled { background: #F16B24; }
-/* Modal im Rewards-Look: warmer Creme-Hintergrund, dezenter Rand (der orange Rahmen sitzt innen) */
-#loyaltyModal .modal.rewards-mode { background: #FAF8F4; border-color: #EDE7DD; }
+/* Modal in der Account-Ansicht: durchgehend warmes Creme, dezenter Rand */
+#loyaltyModal .modal { background: #FAF8F4; border-color: #EDE7DD; }
 
 /* ■■ PUNCH-KARTE – feste Fläche für ALLE Karten (wie 20er), Punkte skalieren je Kartengröße ■■ */
 /* Würfel-Muster: 2 = Diagonale, 5 = 3+2, 10 = 5+5, 20 = 5×4. */
 .punch-canvas { box-sizing: border-box; display: flex; flex-direction: column; align-items: center; margin: 0 auto; max-width: 100%; padding: 6px; }
 .punch-canvas .prow { display: flex; align-items: center; width: 100%; }
-.punch-canvas .pdot { border-radius: 50%; background: var(--white); flex: 0 0 auto; transition: background 0.2s; }
-.punch-canvas .pdot.filled { background: var(--gold); }
-.punch-value { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); text-align: center; }
-.punch-value .pv-worth { font-size: 0.72rem; color: var(--gray); }
-/* Restwert so groß & fett wie der Name oben (erbt Textfarbe der Karte) */
-.punch-value .pv-restwert { margin-top: 8px; font-size: 1.35rem; font-weight: 800; }
-.punch-value .pv-games { margin-top: 4px; font-size: 0.72rem; color: var(--gray); }
+.punch-canvas .pdot { border-radius: 50%; background: #16212C; flex: 0 0 auto; transition: background 0.2s; }
+.punch-canvas .pdot.filled { background: #F16B24; }
+.punch-value { margin-top: 18px; padding-top: 14px; border-top: 1px solid #E7E0D5; text-align: center; }
+.punch-value .pv-worth { font-size: 0.72rem; color: #8C8B84; }
+/* Restwert so groß & fett wie der Name oben */
+.punch-value .pv-restwert { margin-top: 8px; font-size: 1.35rem; font-weight: 800; color: #16212C; }
+.punch-value .pv-games { margin-top: 4px; font-size: 0.72rem; color: #8C8B84; }
 
 /* ■■ GUTSCHEINE-TAB: zwei Spalten – links kaufen, rechts meine Karte(n) ■■ */
 .gutschein-layout { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
@@ -376,14 +373,14 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 /* ■■ KAUFEN links: fünf kleine Hochformat-Karten nebeneinander ■■ */
 .buy-cards-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-.buy-mini { flex: 1 1 0; min-width: 88px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 148px; border: 1.5px solid var(--border); border-radius: 12px; padding: 11px 6px 10px; background: var(--card); cursor: pointer; text-align: center; transition: all 0.15s; }
-.buy-mini:hover { border-color: var(--gold); }
-.buy-mini.selected { border-color: var(--gold); box-shadow: 0 0 0 1.5px var(--gold) inset; }
-.buy-mini-title { font-weight: 700; font-size: 0.72rem; line-height: 1.1; }
-.buy-mini-price { font-size: 0.72rem; color: var(--gray); }
-.buy-mini.selected .buy-mini-price { color: var(--gold); font-weight: 700; }
+.buy-mini { flex: 1 1 0; min-width: 88px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 150px; border: 1.5px solid #E7E0D5; border-radius: 16px; padding: 12px 6px 11px; background: #FAF8F4; color: #16212C; font-family: "Arial","Helvetica",sans-serif; cursor: pointer; text-align: center; transition: all 0.15s; }
+.buy-mini:hover { border-color: #F16B24; }
+.buy-mini.selected { border-color: #F16B24; box-shadow: 0 0 0 1.5px #F16B24 inset; }
+.buy-mini-title { font-weight: 700; font-size: 0.72rem; line-height: 1.1; color: #16212C; }
+.buy-mini-price { font-size: 0.72rem; color: #8C8B84; }
+.buy-mini.selected .buy-mini-price { color: #F16B24; font-weight: 700; }
 /* Guthaben-Mini-Karten: fetter Betrag statt Punkten */
-.buy-mini-amount { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.85rem; line-height: 1; }
+.buy-mini-amount { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 1.7rem; line-height: 1; color: #16212C; }
 
 /* ■■ ACCOUNT-MODAL: Blätter-Steuerung ■■ */
 .card-pager { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
@@ -395,7 +392,10 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 /* ■■ ACCOUNT-MODAL: Persönliche Daten bearbeiten ■■ */
 .profile-form { text-align: left; margin-top: 4px; }
 .profile-form .form-group { margin-bottom: 14px; }
-.profile-save-ok { font-size: 0.78rem; color: var(--gold); margin-top: 10px; text-align: center; min-height: 1em; }
+.profile-form .form-label { color: #8C8B84; }
+.profile-form .form-input { background: #fff; border: 1.5px solid #E7E0D5; color: #16212C; }
+.profile-form .form-input:focus { border-color: #F16B24; }
+.profile-save-ok { font-size: 0.78rem; color: #F16B24; margin-top: 10px; text-align: center; min-height: 1em; }
 
 /* ■■ GUTSCHEINE ■■ */
 .card-size-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
