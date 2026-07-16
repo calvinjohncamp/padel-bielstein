@@ -4958,7 +4958,7 @@ function balanceCardHTML(card) {
 }
 // Wählt je nach Kartentyp die passende Darstellung
 function anyCardHTML(card) {
-  return card.card_size ? punchCardHTML(card) : balanceCardHTML(card);
+  return card.balance_remaining_eur != null ? balanceCardHTML(card) : punchCardHTML(card);
 }
 function profileCardHTML() {
   const name = esc(currentProfile?.full_name);
@@ -4976,18 +4976,26 @@ function profileCardHTML() {
   </div>`;
 }
 
-// Lädt die gekauften Karten des eingeloggten Nutzers in myCardsData
+// Lädt die gekauften Karten des eingeloggten Nutzers in myCardsData.
+// select('*') → funktioniert auch, wenn die Guthaben-Spalten noch nicht existieren.
 async function fetchMyCards() {
   if (!currentUser) { myCardsData = []; return myCardsData; }
   try {
     const { data, error } = await sb
       .from('card_purchases')
-      .select('id, card_size, hours_used, is_gift, recipient_name, created_at')
+      .select('*')
       .eq('purchaser_auth_id', currentUser.id)
       .eq('status', 'paid')
       .order('created_at', { ascending: false });
     if (error) throw error;
-    myCardsData = data || [];
+    myCardsData = (data || []).map(c => {
+      // Guthaben-Karten: Cent-Beträge in Euro umrechnen (falls vorhanden)
+      if (c.balance_remaining_cents != null) {
+        c.balance_remaining_eur = Math.round(c.balance_remaining_cents) / 100;
+        c.balance_original_eur  = Math.round((c.balance_original_cents ?? c.balance_remaining_cents)) / 100;
+      }
+      return c;
+    });
   } catch(e) { console.warn('Karten laden fehlgeschlagen', e); myCardsData = []; }
   return myCardsData;
 }
