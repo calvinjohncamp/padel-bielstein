@@ -313,11 +313,12 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .account-icon-btn { width: 30px; height: 30px; border-radius: 50%; background: none; border: 1.5px solid var(--border); color: var(--gray); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; padding: 0; flex-shrink: 0; }
 .account-icon-btn:hover { border-color: var(--gold); color: var(--gold); }
 
-.loyalty-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 28px 24px; text-align: center; }
-.loyalty-card-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 2px; }
-.loyalty-card-email { font-size: 0.75rem; color: var(--gray); margin-bottom: 18px; }
-.loyalty-card-number { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 3.2rem; line-height: 1; margin-bottom: 4px; }
-.loyalty-card-sub { font-size: 0.7rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 22px; }
+.loyalty-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 26px 24px; text-align: center; }
+/* Kalender-Look: die Zahl ist der markante Blickfang ganz oben */
+.loyalty-card-number { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 4.6rem; line-height: 0.86; letter-spacing: -0.03em; margin-bottom: 6px; }
+.loyalty-card-sub { font-size: 0.64rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 16px; }
+.loyalty-card-name { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
+.loyalty-card-email { font-size: 0.78rem; color: var(--gray); margin-bottom: 20px; }
 .loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; max-width: 340px; margin: 0 auto; }
 .loyalty-dot { aspect-ratio: 1; border-radius: 50%; background: var(--white); position: relative; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
 .loyalty-dot.filled { background: var(--gold); }
@@ -330,18 +331,39 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 /* ■■ PUNCH-KARTE (5er/10er/20er …) – gleiche Optik wie Rewards, aber 5 Punkte pro Zeile ■■ */
 /* max-width so gewählt, dass eine 20er-Karte (4 Zeilen) etwa die gleiche Fläche
    belegt wie das 10×10-Rewards-Raster (≈340px breit). */
-.punch-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; max-width: 300px; margin: 0 auto; }
-.punch-dot { aspect-ratio: 1; border-radius: 50%; background: var(--white); transition: background 0.2s; }
+/* Flex statt Grid: wenige Punkte (1er/2er) werden so automatisch zentriert,
+   5 Punkte pro Zeile ergeben sich aus max-width (6. Punkt passt nicht mehr). */
+.punch-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 300px; margin: 0 auto; }
+.punch-dot { width: 48px; height: 48px; flex: 0 0 auto; border-radius: 50%; background: var(--white); transition: background 0.2s; }
 .punch-dot.filled { background: var(--gold); }
-.punch-value { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--gray); line-height: 1.7; }
-.punch-value .pv-worth { color: var(--gray); }
-.punch-value .pv-bal { font-weight: 800; }
-.punch-value .pv-bal.plus { color: var(--gold); }
-.punch-value .pv-bal.minus { color: #d64545; }
-.punch-card-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border: none; border-bottom: 1px solid var(--border); background: none; color: inherit; cursor: pointer; text-align: left; font: inherit; transition: opacity 0.15s; }
-.punch-card-btn:hover { opacity: 0.7; }
-.punch-card-btn .pcb-remain { font-size: 0.75rem; color: var(--gray); }
-.punch-card-btn .pcb-chev { color: var(--gold); font-size: 1.1rem; }
+.punch-value { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); text-align: center; }
+.punch-value .pv-worth { font-size: 0.72rem; color: var(--gray); }
+/* Restwert so groß & fett wie der Name oben (erbt Textfarbe der Karte) */
+.punch-value .pv-restwert { margin-top: 8px; font-size: 1.35rem; font-weight: 800; }
+.punch-value .pv-games { margin-top: 4px; font-size: 0.72rem; color: var(--gray); }
+
+/* ■■ GUTSCHEINE-TAB: zwei Spalten – links kaufen, rechts meine Karte(n) ■■ */
+.gutschein-layout { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.gutschein-buy { flex: 1 1 380px; margin-bottom: 0; }
+/* rechte Spalte im Hochformat, wie das Kalender-Vorbild */
+.gutschein-mine { flex: 0 1 320px; min-width: 260px; }
+/* mehrere eigene Karten werden untereinander gestapelt */
+.mycards-stack { display: flex; flex-direction: column; gap: 14px; }
+/* links: 3 Kacheln pro Zeile, damit sie kompakt neben die große Karte rechts passen */
+.card-size-grid.buy-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 480px) { .card-size-grid.buy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ■■ ACCOUNT-MODAL: Blätter-Steuerung ■■ */
+.card-pager { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.card-pager-label { font-size: 0.72rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.08em; margin-right: auto; }
+.card-pager button { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--card); color: var(--gold); font-size: 1.2rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.card-pager button:hover:not(:disabled) { border-color: var(--gold); }
+.card-pager button:disabled { opacity: 0.3; cursor: default; }
+
+/* ■■ ACCOUNT-MODAL: Persönliche Daten bearbeiten ■■ */
+.profile-form { text-align: left; margin-top: 4px; }
+.profile-form .form-group { margin-bottom: 14px; }
+.profile-save-ok { font-size: 0.78rem; color: var(--gold); margin-top: 10px; text-align: center; min-height: 1em; }
 
 /* ■■ GUTSCHEINE ■■ */
 .card-size-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
@@ -743,42 +765,15 @@ main {
   </div>
 </div>
 
-<!-- TREUEKARTE MODAL -->
+<!-- ACCOUNT-MODAL – blätterbar: Rewards → Guthabenkarte(n) → Meine Daten -->
 <div class="modal-overlay" id="loyaltyModal">
   <div class="modal">
     <button class="modal-close" onclick="closeLoyaltyModal()">✕</button>
-    <div class="modal-title">Rewards</div>
-    <div class="modal-sub">Jede gebuchte oder verschenkte Stunde zählt – automatische Rabatte inklusive</div>
-
-    <div class="loyalty-card">
-      <div class="loyalty-card-name" id="loyaltyName">—</div>
-      <div class="loyalty-card-email" id="loyaltyEmail">—</div>
-      <div class="loyalty-card-number" id="loyaltyNumber">0</div>
-      <div class="loyalty-card-sub">Stunden gebucht bzw. verschenkt</div>
-      <div class="loyalty-grid" id="loyaltyGrid"></div>
-      <div class="loyalty-legend">
-        Bei 5, 10, 25 und 50 Stunden gibt's automatisch Rabatt auf die nächste Stunde – bei 100 eine Stunde geschenkt. Danach geht's von vorne los.
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- PUNCH-KARTE MODAL (Fünfer-/Zehner-/Zwanzigerkarte …) -->
-<div class="modal-overlay" id="punchModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closePunchModal()">✕</button>
-    <div class="modal-title" id="punchTitle">Zehnerkarte</div>
-    <div class="modal-sub">Gebuchte Stunden erscheinen orange – offene bleiben dunkel</div>
-
-    <div class="loyalty-card">
-      <div class="loyalty-card-name" id="punchName">—</div>
-      <div class="loyalty-card-email" id="punchEmail">—</div>
-      <div class="loyalty-card-number" id="punchNumber">0</div>
-      <div class="loyalty-card-sub" id="punchSub">von 10 Stunden übrig</div>
-      <div class="punch-grid" id="punchGrid"></div>
-      <div class="punch-value" id="punchValue">
-        <div class="pv-worth">1 Punkt = 24 € wert</div>
-      </div>
+    <div id="accountPageHost"></div>
+    <div class="card-pager" id="cardPager" style="display:none;">
+      <span class="card-pager-label" id="cardPagerLabel"></span>
+      <button type="button" id="cardPagerPrev" onclick="pageCard(-1)" aria-label="Zurück">‹</button>
+      <button type="button" id="cardPagerNext" onclick="pageCard(1)" aria-label="Weiter">›</button>
     </div>
   </div>
 </div>
@@ -800,7 +795,7 @@ main {
     <div id="userBarLoggedIn" style="display:none;width:100%;align-items:center;justify-content:space-between;">
       <span class="user-bar-name">Angemeldet als <strong id="userBarName">—</strong></span>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button class="user-bar-out dark-mode-btn" onclick="toggleBielsteinTheme()">Dark Mode</button>
+        <button class="user-bar-out dark-mode-btn" style="margin-right:12px;" onclick="toggleBielsteinTheme()">Dark Mode</button>
         <button class="account-icon-btn" style="margin-right:12px;" onclick="openLoyaltyCard()" aria-label="Rewards" title="Rewards">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
@@ -812,7 +807,7 @@ main {
     <div id="userBarLoggedOut" style="width:100%;display:flex;align-items:center;justify-content:space-between;">
       <span style="font-size:0.82rem;color:#666;">Zum Buchen bitte anmelden</span>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button class="user-bar-out dark-mode-btn" onclick="toggleBielsteinTheme()">Dark Mode</button>
+        <button class="user-bar-out dark-mode-btn" style="margin-right:12px;" onclick="toggleBielsteinTheme()">Dark Mode</button>
         <button class="account-icon-btn" style="margin-right:12px;" onclick="openLoyaltyCard()" aria-label="Rewards" title="Rewards">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
@@ -1015,45 +1010,59 @@ main {
 
   <!-- GUTSCHEINE MODE -->
   <div id="modeGutscheine" style="display:none;">
-    <div class="play-card" id="myCardsSection" style="display:none;margin-bottom:14px;">
-      <div class="play-card-title">🎟️ Meine Karten</div>
-      <div id="myCardsList">
-        <div class="play-empty" style="padding:24px 0;">
-          <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
+    <div class="gutschein-layout">
+
+      <!-- LINKS: Kaufen -->
+      <div class="play-card gutschein-buy">
+        <div class="play-card-title">🎁 Karte oder Gutschein kaufen</div>
+        <div class="form-hint" style="margin-bottom:16px;">Fester Preis: 24 € pro Stunde, unabhängig von Uhrzeit und Wochentag.</div>
+
+        <div class="card-size-grid buy-grid" id="cardSizeGrid"></div>
+
+        <div class="form-hint" style="margin:18px 0 10px;">Oder Guthaben aufladen – flexibel für jede Buchung einsetzbar, jederzeit verschenkbar:</div>
+        <div class="card-size-grid buy-grid" id="cardBalanceGrid"></div>
+
+        <div class="gift-toggle">
+          <div class="gift-toggle-btn selected" id="giftToggleSelf" onclick="setCardGiftMode(false)">Für mich</div>
+          <div class="gift-toggle-btn" id="giftToggleGift" onclick="setCardGiftMode(true)">Verschenken</div>
+        </div>
+
+        <div id="giftFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">Name der beschenkten Person</label>
+            <input class="form-input" type="text" id="giftName" placeholder="Vor- und Nachname">
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-Mail der beschenkten Person</label>
+            <input class="form-input" type="email" id="giftEmail" placeholder="empfaenger@email.de">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Handynummer der beschenkten Person</label>
+            <input class="form-input" type="tel" id="giftPhone" placeholder="z.B. 0170 1234567">
+          </div>
+          <div class="form-hint">Wird nur genutzt, um der beschenkten Person die Einladung zum eigenen Konto zu schicken.</div>
+        </div>
+
+        <div class="modal-err" id="cardErr"></div>
+
+        <div id="cardSummary" style="display:none;margin:18px 0;padding:14px 16px;background:var(--bg);border-radius:10px;border:1px solid var(--border);justify-content:space-between;align-items:center;">
+          <span style="font-size:0.85rem;color:var(--gray);">Gesamtpreis</span>
+          <span id="cardTotalPrice" style="float:right;font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1.3rem;color:var(--gold);"></span>
+        </div>
+
+        <button class="book-btn visible" style="width:100%;position:static;" onclick="confirmCardPurchase()">Jetzt kaufen &amp; bezahlen →</button>
+      </div>
+
+      <!-- RECHTS: Meine Karten (Hochformat) -->
+      <div class="gutschein-mine" id="myCardsSection" style="display:none;">
+        <div class="play-card-title" style="margin-bottom:12px;">🎟️ Meine Karten</div>
+        <div id="myCardsList">
+          <div class="play-empty" style="padding:24px 0;">
+            <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="play-card">
-      <div class="play-card-title">🎁 Karte oder Gutschein kaufen</div>
-      <div class="form-hint" style="margin-bottom:16px;">Fester Preis: 24 € pro Stunde, unabhängig von Uhrzeit und Wochentag.</div>
-
-      <div class="card-size-grid" id="cardSizeGrid"></div>
-
-      <div class="gift-toggle">
-        <div class="gift-toggle-btn selected" id="giftToggleSelf" onclick="setCardGiftMode(false)">Für mich</div>
-        <div class="gift-toggle-btn" id="giftToggleGift" onclick="setCardGiftMode(true)">Verschenken</div>
-      </div>
-
-      <div id="giftFields" style="display:none;">
-        <div class="form-group">
-          <label class="form-label">Name der beschenkten Person</label>
-          <input class="form-input" type="text" id="giftName" placeholder="Vor- und Nachname">
-        </div>
-        <div class="form-group">
-          <label class="form-label">E-Mail der beschenkten Person</label>
-          <input class="form-input" type="email" id="giftEmail" placeholder="empfaenger@email.de">
-        </div>
-      </div>
-
-      <div class="modal-err" id="cardErr"></div>
-
-      <div id="cardSummary" style="display:none;margin:18px 0;padding:14px 16px;background:var(--bg);border-radius:10px;border:1px solid var(--border);justify-content:space-between;align-items:center;">
-        <span style="font-size:0.85rem;color:var(--gray);">Gesamtpreis</span>
-        <span id="cardTotalPrice" style="float:right;font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1.3rem;color:var(--gold);"></span>
-      </div>
-
-      <button class="book-btn visible" style="width:100%;position:static;" onclick="confirmCardPurchase()">Jetzt kaufen &amp; bezahlen →</button>
     </div>
   </div>
 
@@ -4813,8 +4822,10 @@ function showEeToast(msg, bielsteinOn) {
 //  GUTSCHEINE / KARTEN
 // ============================================================
 const CARD_SIZES = [1, 2, 5, 10, 20];
+const CARD_BALANCES = [10, 20, 50, 100, 200]; // Guthaben aufladen (in €)
 const CARD_PRICE_PER_HOUR = 24;
 let selectedCardSize = null;
+let selectedBalance = null;   // gewählter Guthaben-Betrag (€), Alternative zu selectedCardSize
 let cardIsGift = false;
 let myCardsData = [];
 
@@ -4830,15 +4841,82 @@ function cardLabel(size) {
   }
 }
 
-// Zeigt die bereits gekauften Karten des eingeloggten Nutzers (als Käufer,
-// auch wenn die Karte verschenkt wurde). Für Beschenkte, die die Karte
-// eingelöst bekommen sollen, folgt das Einlösen als eigener Bauabschnitt.
-async function loadMyCards() {
-  const section = document.getElementById('myCardsSection');
-  const list = document.getElementById('myCardsList');
-  if (!currentUser) { section.style.display = 'none'; return; }
-  section.style.display = 'block';
-  list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Wird geladen …</div></div>`;
+// Restwert einer Karte in € – kommt aus dem echten Guthaben-Saldo, sobald das
+// Backend ihn mitliefert; sonst Näherung über offene Stunden × 24 €.
+function cardRestwert(card) {
+  if (card.value_balance_cents != null) return Math.round(card.value_balance_cents) / 100;
+  return (card.card_size - card.hours_used) * CARD_PRICE_PER_HOUR;
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+// --- Punktraster als HTML-Strings ---
+function loyaltyDotsHTML(hoursPlayed) {
+  let h = '';
+  for (let i = 1; i <= 100; i++) {
+    const m = LOYALTY_MILESTONES[i];
+    const lbl = m ? `<span class="loyalty-dot-milestone">${m === 100 ? 'GRATIS' : '-' + m + '%'}</span>` : '';
+    h += `<div class="loyalty-dot${i <= hoursPlayed ? ' filled' : ''}">${lbl}</div>`;
+  }
+  return h;
+}
+function punchDotsHTML(size, used) {
+  let h = '';
+  for (let i = 1; i <= size; i++) h += `<div class="punch-dot${i <= used ? ' filled' : ''}"></div>`;
+  return h;
+}
+
+// --- Karten im Kalender-Look als HTML (Zahl oben markant, dann Name/E-Mail, Punkte, Wert) ---
+function rewardsCardHTML(hoursPlayed) {
+  return `<div class="loyalty-card">
+    <div class="loyalty-card-number">${hoursPlayed}</div>
+    <div class="loyalty-card-sub">Stunden gebucht bzw. verschenkt</div>
+    <div class="loyalty-card-name">${esc(currentProfile?.full_name) || '—'}</div>
+    <div class="loyalty-card-email">${esc(currentProfile?.email || currentUser?.email) || '—'}</div>
+    <div class="loyalty-grid">${loyaltyDotsHTML(hoursPlayed)}</div>
+    <div class="loyalty-legend">Bei 5, 10, 25 und 50 Stunden gibt's automatisch Rabatt auf die nächste Stunde – bei 100 eine Stunde geschenkt. Danach geht's von vorne los.</div>
+  </div>`;
+}
+function punchCardHTML(card) {
+  const remaining = card.card_size - card.hours_used;
+  const rest = cardRestwert(card);
+  const games = Math.floor(rest / CARD_PRICE_PER_HOUR);
+  const name = card.is_gift ? esc(card.recipient_name || 'Beschenkte Person') : (esc(currentProfile?.full_name) || '—');
+  const email = card.is_gift ? 'Gutschein' : (esc(currentProfile?.email || currentUser?.email) || '—');
+  return `<div class="loyalty-card">
+    <div class="loyalty-card-number">${card.hours_used}</div>
+    <div class="loyalty-card-sub">${esc(cardLabel(card.card_size))} · ${remaining} von ${card.card_size} offen</div>
+    <div class="loyalty-card-name">${name}</div>
+    <div class="loyalty-card-email">${email}</div>
+    <div class="punch-grid">${punchDotsHTML(card.card_size, card.hours_used)}</div>
+    <div class="punch-value">
+      <div class="pv-worth">Ein Punkt entspricht 24 € Guthaben</div>
+      <div class="pv-restwert">${rest} € Restwert</div>
+      <div class="pv-games">Reicht noch für ca. ${games} Spiel${games === 1 ? '' : 'e'} à 24 €</div>
+    </div>
+  </div>`;
+}
+function profileCardHTML() {
+  const name = esc(currentProfile?.full_name);
+  const email = esc(currentProfile?.email || currentUser?.email);
+  const phone = esc(currentProfile?.phone);
+  return `<div class="loyalty-card" style="text-align:left;">
+    <div style="font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1.15rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:20px;">Meine Daten</div>
+    <div class="profile-form">
+      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
+      <div class="form-group"><label class="form-label">E-Mail</label><input class="form-input" id="pfEmail" type="email" value="${email}"></div>
+      <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
+      <button class="book-btn visible" style="width:100%;position:static;" onclick="saveProfile()">Speichern</button>
+      <div class="profile-save-ok" id="pfSaveMsg"></div>
+    </div>
+  </div>`;
+}
+
+// Lädt die gekauften Karten des eingeloggten Nutzers in myCardsData
+async function fetchMyCards() {
+  if (!currentUser) { myCardsData = []; return myCardsData; }
   try {
     const { data, error } = await sb
       .from('card_purchases')
@@ -4847,47 +4925,69 @@ async function loadMyCards() {
       .eq('status', 'paid')
       .order('created_at', { ascending: false });
     if (error) throw error;
-    if (!data || data.length === 0) {
-      myCardsData = [];
-      list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Noch keine Karten gekauft.</div></div>`;
-      return;
-    }
-    myCardsData = data;
-    list.innerHTML = data.map((c, i) => {
-      const remaining = c.card_size - c.hours_used;
-      const giftNote = c.is_gift ? ` · verschenkt an ${c.recipient_name || 'jemanden'}` : '';
-      return `
-        <button class="punch-card-btn" onclick="openPunchCard(${i})">
-          <span>
-            <span style="font-weight:700;">${cardLabel(c.card_size)}${giftNote}</span>
-            <span class="pcb-remain" style="display:block;">${remaining} von ${c.card_size} Stunde${c.card_size>1?'n':''} übrig</span>
-          </span>
-          <span class="pcb-chev">›</span>
-        </button>
-      `;
-    }).join('');
-  } catch(e) {
-    console.warn('Meine Karten laden fehlgeschlagen', e);
-    list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Konnte nicht geladen werden.</div></div>`;
+    myCardsData = data || [];
+  } catch(e) { console.warn('Karten laden fehlgeschlagen', e); myCardsData = []; }
+  return myCardsData;
+}
+
+// Zeigt die bereits gekauften Karten des eingeloggten Nutzers (als Käufer,
+// auch wenn die Karte verschenkt wurde). Für Beschenkte, die die Karte
+// eingelöst bekommen sollen, folgt das Einlösen als eigener Bauabschnitt.
+// Meine Karten im Gutscheine-Tab: als große Karte(n) im Hochformat rechts.
+// Bei mehreren Karten werden sie untereinander gestapelt.
+async function loadMyCards() {
+  const section = document.getElementById('myCardsSection');
+  const list = document.getElementById('myCardsList');
+  if (!currentUser) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Wird geladen …</div></div>`;
+  await fetchMyCards();
+  if (!myCardsData.length) {
+    list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Noch keine Karte vorhanden.</div></div>`;
+    return;
   }
+  list.innerHTML = `<div class="mycards-stack">` + myCardsData.map((c, i) =>
+    `<div onclick="openLoyaltyCard(${i})" style="cursor:pointer;">${punchCardHTML(c)}</div>`
+  ).join('') + `</div>`;
 }
 
 function renderCardSizeGrid() {
   const grid = document.getElementById('cardSizeGrid');
-  if (!grid) return;
-  grid.innerHTML = '';
-  CARD_SIZES.forEach(size => {
-    const btn = document.createElement('div');
-    btn.className = 'card-size-btn' + (selectedCardSize === size ? ' selected' : '');
-    btn.innerHTML = `<span class="cs-hours">${cardLabel(size)}</span><span class="cs-price">${size * CARD_PRICE_PER_HOUR} €</span>`;
-    btn.onclick = () => selectCardSize(size);
-    grid.appendChild(btn);
-  });
+  if (grid) {
+    grid.innerHTML = '';
+    CARD_SIZES.forEach(size => {
+      const btn = document.createElement('div');
+      btn.className = 'card-size-btn' + (selectedCardSize === size ? ' selected' : '');
+      btn.innerHTML = `<span class="cs-hours">${cardLabel(size)}</span><span class="cs-price">${size * CARD_PRICE_PER_HOUR} €</span>`;
+      btn.onclick = () => selectCardSize(size);
+      grid.appendChild(btn);
+    });
+  }
+  const balGrid = document.getElementById('cardBalanceGrid');
+  if (balGrid) {
+    balGrid.innerHTML = '';
+    CARD_BALANCES.forEach(eur => {
+      const btn = document.createElement('div');
+      btn.className = 'card-size-btn' + (selectedBalance === eur ? ' selected' : '');
+      btn.innerHTML = `<span class="cs-hours">${eur} €</span><span class="cs-price">Guthaben</span>`;
+      btn.onclick = () => selectBalance(eur);
+      balGrid.appendChild(btn);
+    });
+  }
   updateCardSummary();
 }
 
+// Karte und Guthaben schließen sich gegenseitig aus (ein Kauf pro Vorgang)
 function selectCardSize(size) {
   selectedCardSize = size;
+  selectedBalance = null;
+  clearCardErr();
+  renderCardSizeGrid();
+}
+
+function selectBalance(eur) {
+  selectedBalance = eur;
+  selectedCardSize = null;
   clearCardErr();
   renderCardSizeGrid();
 }
@@ -4902,9 +5002,10 @@ function setCardGiftMode(isGift) {
 function updateCardSummary() {
   const summary = document.getElementById('cardSummary');
   const totalEl = document.getElementById('cardTotalPrice');
-  if (!selectedCardSize) { summary.style.display = 'none'; return; }
+  const amount = selectedCardSize ? selectedCardSize * CARD_PRICE_PER_HOUR : selectedBalance;
+  if (!amount) { summary.style.display = 'none'; return; }
   summary.style.display = 'flex';
-  totalEl.textContent = `${selectedCardSize * CARD_PRICE_PER_HOUR} €`;
+  totalEl.textContent = `${amount} €`;
 }
 
 function showCardErr(msg) {
@@ -4918,15 +5019,16 @@ function clearCardErr() {
 
 async function confirmCardPurchase(skipAuthCheck) {
   clearCardErr();
-  if (!selectedCardSize) { showCardErr('Bitte wähle zuerst eine Kartengröße.'); return; }
+  if (!selectedCardSize && !selectedBalance) { showCardErr('Bitte wähle zuerst eine Karte oder einen Guthaben-Betrag.'); return; }
   if (!skipAuthCheck && !currentUser) { openModal('card'); return; }
 
-  let recipientName = '', recipientEmail = '';
+  let recipientName = '', recipientEmail = '', recipientPhone = '';
   if (cardIsGift) {
     recipientName = document.getElementById('giftName').value.trim();
     recipientEmail = document.getElementById('giftEmail').value.trim();
-    if (!recipientName || !recipientEmail) {
-      showCardErr('Bitte Name und E-Mail der beschenkten Person eingeben.');
+    recipientPhone = document.getElementById('giftPhone').value.trim();
+    if (!recipientName || !recipientEmail || !recipientPhone) {
+      showCardErr('Bitte Name, E-Mail und Handynummer der beschenkten Person eingeben.');
       return;
     }
   }
@@ -4952,10 +5054,13 @@ async function confirmCardPurchase(skipAuthCheck) {
         },
         body: JSON.stringify({
           booking_type: 'card',
+          // Entweder eine Stunden-Karte (card_size) ODER ein Guthaben-Betrag (balance_eur)
           card_size: selectedCardSize,
+          balance_eur: selectedBalance,
           is_gift: cardIsGift,
           recipient_name: recipientName,
           recipient_email: recipientEmail,
+          recipient_phone: recipientPhone,
           user_id: currentUser?.id || null,
           purchaser_email: purchaserEmail,
           full_name: fullName,
@@ -4980,10 +5085,26 @@ async function confirmCardPurchase(skipAuthCheck) {
 // (z.B. 6 = die 6. Stunde, nachdem 5 Stunden gespielt wurden).
 const LOYALTY_MILESTONES = { 6: 5, 11: 10, 26: 25, 51: 50, 100: 100 };
 
-async function openLoyaltyCard() {
+// Account-Modal-Seiten: [Rewards] → [Guthabenkarte(n)] → [Meine Daten]
+let accountPages = [];
+let accountPageIndex = 0;
+
+// index (optional): direkt zur Karte mit diesem myCardsData-Index blättern
+async function openLoyaltyCard(index) {
   if (!currentUser) { openModal('loyalty'); return; }
-  document.getElementById('loyaltyModal').classList.add('open');
-  await loadLoyaltyCard();
+  const modal = document.getElementById('loyaltyModal');
+  modal.classList.add('open');
+  document.getElementById('cardPager').style.display = 'none';
+  document.getElementById('accountPageHost').innerHTML =
+    `<div class="loyalty-card"><div class="play-empty" style="padding:48px 0;color:#888;">Wird geladen …</div></div>`;
+  await buildAccountPages();
+  if (typeof index === 'number') {
+    const p = accountPages.findIndex(pg => pg.type === 'card' && pg.cardIndex === index);
+    accountPageIndex = p >= 0 ? p : 0;
+  } else {
+    accountPageIndex = 0;
+  }
+  renderAccountPage();
 }
 
 function closeLoyaltyModal() {
@@ -4994,10 +5115,7 @@ document.getElementById('loyaltyModal').addEventListener('click', function(e) {
   if (e.target === this) closeLoyaltyModal();
 });
 
-async function loadLoyaltyCard() {
-  document.getElementById('loyaltyName').textContent = currentProfile?.full_name || '—';
-  document.getElementById('loyaltyEmail').textContent = currentProfile?.email || currentUser?.email || '—';
-
+async function buildAccountPages() {
   let hoursPlayed = 0;
   try {
     const { data, error } = await sb
@@ -5006,81 +5124,77 @@ async function loadLoyaltyCard() {
       .eq('auth_id', currentUser.id)
       .maybeSingle();
     if (!error && data) hoursPlayed = data.hours_played;
-  } catch(e) {
-    console.warn('Treuekarte laden fehlgeschlagen', e);
-  }
+  } catch(e) { console.warn('Rewards laden fehlgeschlagen', e); }
 
-  renderLoyaltyCard(hoursPlayed);
+  await fetchMyCards();
+
+  accountPages = [{ type: 'rewards', hours: hoursPlayed }];
+  myCardsData.forEach((c, i) => accountPages.push({ type: 'card', card: c, cardIndex: i }));
+  accountPages.push({ type: 'profile' });
 }
 
-function renderLoyaltyCard(hoursPlayed) {
-  document.getElementById('loyaltyNumber').textContent = hoursPlayed;
-  const grid = document.getElementById('loyaltyGrid');
-  grid.innerHTML = '';
-  for (let i = 1; i <= 100; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'loyalty-dot' + (i <= hoursPlayed ? ' filled' : '');
-    const milestone = LOYALTY_MILESTONES[i];
-    if (milestone) {
-      const lbl = document.createElement('span');
-      lbl.className = 'loyalty-dot-milestone';
-      lbl.textContent = milestone === 100 ? 'GRATIS' : `-${milestone}%`;
-      dot.appendChild(lbl);
-    }
-    grid.appendChild(dot);
-  }
-}
+function renderAccountPage() {
+  const host = document.getElementById('accountPageHost');
+  const p = accountPages[accountPageIndex];
+  if (!p) { host.innerHTML = ''; return; }
 
-// ============================================================
-//  PUNCH-KARTE (Fünfer-/Zehner-/Zwanzigerkarte …)
-// ============================================================
-function openPunchCard(index) {
-  const card = myCardsData[index];
-  if (!card) return;
-  const remaining = card.card_size - card.hours_used;
+  let label = '';
+  if (p.type === 'rewards')      { host.innerHTML = rewardsCardHTML(p.hours); label = 'Rewards'; }
+  else if (p.type === 'card')    { host.innerHTML = punchCardHTML(p.card);   label = cardLabel(p.card.card_size); }
+  else if (p.type === 'profile') { host.innerHTML = profileCardHTML();       label = 'Meine Daten'; }
 
-  document.getElementById('punchTitle').textContent = cardLabel(card.card_size);
-  document.getElementById('punchName').textContent =
-    card.is_gift ? (card.recipient_name || 'Beschenkte Person') : (currentProfile?.full_name || '—');
-  document.getElementById('punchEmail').textContent =
-    card.is_gift ? 'Gutschein' : (currentProfile?.email || currentUser?.email || '—');
-  document.getElementById('punchNumber').textContent = card.hours_used;
-  document.getElementById('punchSub').textContent =
-    `von ${card.card_size} Stunde${card.card_size > 1 ? 'n' : ''} übrig: ${remaining}`;
-
-  // Punktraster: verbrauchte Stunden orange, offene dunkel
-  const grid = document.getElementById('punchGrid');
-  grid.innerHTML = '';
-  for (let i = 1; i <= card.card_size; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'punch-dot' + (i <= card.hours_used ? ' filled' : '');
-    grid.appendChild(dot);
-  }
-
-  // Wert-Hinweis: 1 Punkt = 24 €, plus Saldo gegenüber den tatsächlich
-  // gebuchten Stundenpreisen (sobald das Backend den Saldo mitliefert).
-  const valEl = document.getElementById('punchValue');
-  let html = `<div class="pv-worth">1 Punkt = 24 € wert · Restwert ${remaining * CARD_PRICE_PER_HOUR} €</div>`;
-  if (card.value_balance_cents != null && card.hours_used > 0) {
-    const bal = Math.round(card.value_balance_cents) / 100;
-    const sign = bal >= 0 ? '+' : '−';
-    const cls = bal >= 0 ? 'plus' : 'minus';
-    html += `<div>${card.hours_used} × 24 € · Saldo <span class="pv-bal ${cls}">${sign}${Math.abs(bal)} €</span></div>`;
+  // Blätter-Steuerung nur, wenn es mehr als eine Seite gibt
+  const pager = document.getElementById('cardPager');
+  if (accountPages.length > 1) {
+    pager.style.display = 'flex';
+    document.getElementById('cardPagerLabel').textContent = `${label} · ${accountPageIndex + 1}/${accountPages.length}`;
+    document.getElementById('cardPagerPrev').disabled = accountPageIndex === 0;
+    document.getElementById('cardPagerNext').disabled = accountPageIndex === accountPages.length - 1;
   } else {
-    html += `<div style="opacity:.8;">Der ±-Saldo erscheint, sobald Stunden über die Karte gebucht wurden (teurere Stunde = im Plus, günstigere = im Minus).</div>`;
+    pager.style.display = 'none';
   }
-  valEl.innerHTML = html;
-
-  document.getElementById('punchModal').classList.add('open');
 }
 
-function closePunchModal() {
-  document.getElementById('punchModal').classList.remove('open');
+function pageCard(dir) {
+  accountPageIndex = Math.max(0, Math.min(accountPages.length - 1, accountPageIndex + dir));
+  renderAccountPage();
 }
 
-document.getElementById('punchModal').addEventListener('click', function(e) {
-  if (e.target === this) closePunchModal();
-});
+// Persönliche Daten speichern (users-Tabelle + ggf. Login-E-Mail via Auth)
+async function saveProfile() {
+  const msg = document.getElementById('pfSaveMsg');
+  const name  = document.getElementById('pfName').value.trim();
+  const email = document.getElementById('pfEmail').value.trim();
+  const phone = document.getElementById('pfPhone').value.trim();
+  if (!name)  { msg.style.color = '#d64545'; msg.textContent = 'Bitte einen Namen angeben.'; return; }
+  if (!email) { msg.style.color = '#d64545'; msg.textContent = 'Bitte eine E-Mail angeben.'; return; }
+  msg.style.color = ''; msg.textContent = 'Wird gespeichert …';
+  try {
+    const headers = await authHeaders();
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?auth_id=eq.${currentUser.id}`, {
+      method: 'PATCH',
+      headers: { ...headers, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ full_name: name, phone: phone || null, email }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    // E-Mail ist zugleich der Login → Supabase Auth aktualisieren (mit Bestätigungsmail)
+    const oldEmail = currentProfile?.email || currentUser?.email;
+    let emailNote = '';
+    if (email && email !== oldEmail) {
+      const { error: authErr } = await sb.auth.updateUser({ email });
+      if (authErr) emailNote = ' (E-Mail-Login-Änderung fehlgeschlagen)';
+      else emailNote = ' – E-Mail bitte über den Bestätigungslink bestätigen';
+    }
+
+    if (currentProfile) { currentProfile.full_name = name; currentProfile.phone = phone; currentProfile.email = email; }
+    const nb = document.getElementById('userBarName'); if (nb) nb.textContent = name;
+
+    msg.style.color = ''; msg.textContent = '✓ Gespeichert' + emailNote;
+  } catch(e) {
+    msg.style.color = '#d64545'; msg.textContent = 'Fehler beim Speichern: ' + e.message;
+  }
+}
 
 init();
 </script>
