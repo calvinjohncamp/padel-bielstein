@@ -314,6 +314,8 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .account-icon-btn:hover { border-color: var(--gold); color: var(--gold); }
 
 .loyalty-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 26px 24px; text-align: center; }
+/* kleiner orangefarbener Kartentyp-Tag ganz oben */
+.loyalty-card-tag { font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
 /* Kalender-Look: die Zahl ist der markante Blickfang ganz oben */
 .loyalty-card-number { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 4.6rem; line-height: 0.86; letter-spacing: -0.03em; margin-bottom: 6px; }
 .loyalty-card-sub { font-size: 0.64rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 16px; }
@@ -4849,12 +4851,10 @@ function cardLabel(size) {
   }
 }
 
-// Restwert einer Karte in € – kommt aus dem echten Guthaben-Saldo, sobald das
-// Backend ihn mitliefert; sonst Näherung über offene Stunden × 24 €.
-function cardRestwert(card) {
-  if (card.value_balance_cents != null) return Math.round(card.value_balance_cents) / 100;
-  return (card.card_size - card.hours_used) * CARD_PRICE_PER_HOUR;
-}
+// Restwert einer Stunden-Karte in €: verbleibende (dunkle) Punkte × 24 €.
+// Verbraucht (orange) = hours_used, offen = card_size − hours_used.
+function cardRemaining(card) { return card.card_size - card.hours_used; }
+function cardRestwert(card) { return cardRemaining(card) * CARD_PRICE_PER_HOUR; }
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -4910,24 +4910,55 @@ function rewardsCardHTML(hoursPlayed) {
     <div class="loyalty-legend">Bei 5, 10, 25 und 50 Stunden gibt's automatisch Rabatt auf die nächste Stunde – bei 100 eine Stunde geschenkt. Danach geht's von vorne los.</div>
   </div>`;
 }
+// Karten-Inhaber/Empfänger für Name/E-Mail-Zeile
+function cardHolder(card) {
+  return {
+    name: card.is_gift ? esc(card.recipient_name || 'Beschenkte Person') : (esc(currentProfile?.full_name) || '—'),
+    email: card.is_gift ? 'Gutschein' : (esc(currentProfile?.email || currentUser?.email) || '—'),
+  };
+}
+// Stunden-Karte: oben die NOCH OFFENEN Stunden (nicht die verbrauchten).
+// Orange = verbraucht, dunkel = offen. Restwert = offene Punkte × 24 €.
 function punchCardHTML(card) {
-  const remaining = card.card_size - card.hours_used;
-  const rest = cardRestwert(card);
-  const games = Math.floor(rest / CARD_PRICE_PER_HOUR);
-  const name = card.is_gift ? esc(card.recipient_name || 'Beschenkte Person') : (esc(currentProfile?.full_name) || '—');
-  const email = card.is_gift ? 'Gutschein' : (esc(currentProfile?.email || currentUser?.email) || '—');
+  const remaining = cardRemaining(card);
+  const rest = cardRestwert(card);           // = remaining × 24
+  const { name, email } = cardHolder(card);
   return `<div class="loyalty-card">
-    <div class="loyalty-card-number">${card.hours_used}</div>
-    <div class="loyalty-card-sub">${esc(cardLabel(card.card_size))} · ${remaining} von ${card.card_size} offen</div>
+    <div class="loyalty-card-tag">${esc(cardLabel(card.card_size))}</div>
+    <div class="loyalty-card-number">${remaining}</div>
+    <div class="loyalty-card-sub">von ${card.card_size} Stunden noch offen</div>
     <div class="loyalty-card-name">${name}</div>
     <div class="loyalty-card-email">${email}</div>
     ${punchCanvasHTML(card.card_size, card.hours_used)}
     <div class="punch-value">
       <div class="pv-worth">Ein Punkt entspricht 24 € Guthaben</div>
       <div class="pv-restwert">${rest} € Restwert</div>
+      <div class="pv-games">Reicht noch für ${remaining} Spiel${remaining === 1 ? '' : 'e'} à 24 €</div>
+    </div>
+  </div>`;
+}
+// Guthaben-Karte (reiner Euro-Betrag): oben die RESTSUMME groß, darunter klein
+// "von ursprünglich X €". Erwartet card.balance_remaining_eur & card.balance_original_eur.
+function balanceCardHTML(card) {
+  const remaining = card.balance_remaining_eur != null ? card.balance_remaining_eur : (card.balance_original_eur || 0);
+  const original = card.balance_original_eur || remaining;
+  const games = Math.floor(remaining / CARD_PRICE_PER_HOUR);
+  const { name, email } = cardHolder(card);
+  return `<div class="loyalty-card">
+    <div class="loyalty-card-tag">Guthaben</div>
+    <div class="loyalty-card-number">${remaining} €</div>
+    <div class="loyalty-card-sub">von ursprünglich ${original} €</div>
+    <div class="loyalty-card-name">${name}</div>
+    <div class="loyalty-card-email">${email}</div>
+    <div class="punch-value" style="border-top:none;margin-top:8px;padding-top:0;">
+      <div class="pv-worth">Flexibel für jede Buchung einsetzbar</div>
       <div class="pv-games">Reicht noch für ca. ${games} Spiel${games === 1 ? '' : 'e'} à 24 €</div>
     </div>
   </div>`;
+}
+// Wählt je nach Kartentyp die passende Darstellung
+function anyCardHTML(card) {
+  return card.card_size ? punchCardHTML(card) : balanceCardHTML(card);
 }
 function profileCardHTML() {
   const name = esc(currentProfile?.full_name);
@@ -4978,7 +5009,7 @@ async function loadMyCards() {
     return;
   }
   list.innerHTML = `<div class="mycards-stack">` + myCardsData.map((c, i) =>
-    `<div onclick="openLoyaltyCard(${i})" style="cursor:pointer;">${punchCardHTML(c)}</div>`
+    `<div onclick="openLoyaltyCard(${i})" style="cursor:pointer;">${anyCardHTML(c)}</div>`
   ).join('') + `</div>`;
 }
 
@@ -5179,7 +5210,7 @@ function renderAccountPage() {
 
   let label = '';
   if (p.type === 'rewards')      { host.innerHTML = rewardsCardHTML(p.hours); label = 'Rewards'; }
-  else if (p.type === 'card')    { host.innerHTML = punchCardHTML(p.card);   label = cardLabel(p.card.card_size); }
+  else if (p.type === 'card')    { host.innerHTML = anyCardHTML(p.card);     label = p.card.card_size ? cardLabel(p.card.card_size) : 'Guthaben'; }
   else if (p.type === 'profile') { host.innerHTML = profileCardHTML();       label = 'Meine Daten'; }
 
   // Blätter-Steuerung nur, wenn es mehr als eine Seite gibt
