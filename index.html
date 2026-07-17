@@ -4989,7 +4989,7 @@ function rewardsCardHTML(hoursPlayed) {
 function cardHolder(card) {
   return {
     name: card.is_gift ? esc(card.recipient_name || 'Beschenkte Person') : (esc(currentProfile?.full_name) || '—'),
-    email: card.is_gift ? 'Geschenkkarte' : (esc(currentProfile?.email || currentUser?.email) || '—'),
+    email: card.is_gift ? esc(card.recipient_email || 'Übernommenes Guthaben') : (esc(currentProfile?.email || currentUser?.email) || '—'),
   };
 }
 // Stunden-Karte: oben die NOCH OFFENEN Stunden (nicht die verbrauchten).
@@ -5053,7 +5053,7 @@ function balanceCardHTML(card) {
   const remaining = card.balance_remaining_eur != null ? card.balance_remaining_eur : (card.balance_original_eur || 0);
   const original = card.balance_original_eur || remaining;
   const { name, email } = cardHolder(card);
-  const headline = card.is_gift ? 'Geschenkkarte' : 'Spielguthaben';
+  const headline = 'Spielguthaben';
   const tagline = 'Guthaben verfügbar';
   const code = card.redeem_code || card.gift_code || card.code || '';
   const giftMessage = esc(card.gift_message || card.message || '');
