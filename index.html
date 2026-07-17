@@ -5101,14 +5101,32 @@ function profileCardHTML() {
 async function fetchMyCards() {
   if (!currentUser) { myCardsData = []; return myCardsData; }
   try {
-    const { data, error } = await sb
+    const email = (currentProfile?.email || currentUser?.email || '').trim();
+    const ownedCards = await sb
       .from('card_purchases')
       .select('*')
       .eq('purchaser_auth_id', currentUser.id)
       .eq('status', 'paid')
       .order('created_at', { ascending: false });
-    if (error) throw error;
-    myCardsData = (data || []).map(c => {
+    if (ownedCards.error) throw ownedCards.error;
+
+    let receivedCards = { data: [], error: null };
+    if (email) {
+      receivedCards = await sb
+        .from('card_purchases')
+        .select('*')
+        .eq('recipient_email', email)
+        .eq('status', 'paid')
+        .not('balance_remaining_cents', 'is', null)
+        .order('created_at', { ascending: false });
+      if (receivedCards.error) throw receivedCards.error;
+    }
+
+    const merged = [...(ownedCards.data || []), ...(receivedCards.data || [])]
+      .filter((card, index, all) => all.findIndex(c => c.id === card.id) === index)
+      .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+
+    myCardsData = merged.map(c => {
       // Wertkarten: Cent-Beträge in Euro umrechnen (falls vorhanden)
       if (c.balance_remaining_cents != null) {
         c.balance_remaining_eur = Math.round(c.balance_remaining_cents) / 100;
