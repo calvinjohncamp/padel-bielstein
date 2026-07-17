@@ -323,7 +323,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .loyalty-card-email { font-size: 0.8rem; color: #8C8B84; margin-bottom: 18px; }
 /* Rewards-Raster: gleiche Breite wie die Punch-Canvas (288px), damit die Karte
    genauso groß ist wie die Guthaben-/Zwanzigerkarten. */
-.loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; width: 288px; max-width: 100%; margin: 0 auto; }
+.loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); column-gap: 9px; row-gap: 11px; width: 100%; max-width: 400px; margin: 0 auto; }
 .loyalty-dot { aspect-ratio: 1; border-radius: 50%; background: #16212C; position: relative; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
 .loyalty-dot.filled { background: #F16B24; }
 /* Rabattstufen-Punkte: neutrales Grau; erreicht = orange. */
@@ -332,15 +332,13 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 /* gut lesbares "%" (bzw. ★ für die Gratis-Stunde) in Weiß */
 .loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.62rem; font-weight: 900; color: #fff; line-height: 1; pointer-events: none; }
 .loyalty-legend { margin-top: 18px; font-size: 0.72rem; color: #8C8B84; line-height: 1.6; }
-/* etwas mehr Luft zwischen den Rewards-Punkten (wie im Entwurf) */
-.loyalty-grid { gap: 6px; }
 
 /* ■■ REWARDS-KARTE – 1:1 nach Entwurf; Stern-Emblem in den Rahmen eingelassen ■■ */
-.loyalty-card.rewards { position: relative; margin-top: 12px; padding: 34px 26px 26px; border-radius: 24px; }
+.loyalty-card.rewards { position: relative; margin-top: 12px; padding: 34px 30px 26px; border-radius: 24px; }
 /* Der Kreis sitzt mittig auf der oberen Rahmenlinie; sein Creme-Füllung "öffnet" den Rahmen */
 .rw-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 54px; height: 54px; border-radius: 50%; background: #FAF8F4; border: 2px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 .rw-tagline { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #3E4A55; margin-bottom: 6px; }
-.rw-number { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4.6rem; line-height: 0.92; letter-spacing: -0.02em; color: #16212C; }
+.rw-number { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4.2rem; line-height: 0.92; letter-spacing: -0.02em; color: #16212C; }
 .rw-headline { font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #F16B24; line-height: 1.1; margin-top: 2px; }
 .rw-subtitle { font-size: 0.82rem; color: #8C8B84; margin-top: 2px; }
 .rw-divider { height: 1px; background: #E7E0D5; margin: 16px auto; max-width: 300px; }
@@ -348,8 +346,8 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .rw-email { font-size: 0.8rem; color: #8C8B84; margin-top: 2px; }
 .rw-legend { margin-top: 18px; font-size: 0.75rem; color: #6E6E66; line-height: 1.65; }
 .rw-legend strong { color: #F16B24; }
-/* Modal in der Account-Ansicht: durchgehend warmes Creme, dezenter Rand */
-#loyaltyModal .modal { background: #FAF8F4; border-color: #EDE7DD; }
+/* Modal in der Account-Ansicht: breiter (Format ~1,5:1), durchgehend warmes Creme */
+#loyaltyModal .modal { background: #FAF8F4; border-color: #EDE7DD; max-width: 540px; padding: 18px; }
 
 /* ■■ PUNCH-KARTE – feste Fläche für ALLE Karten (wie 20er), Punkte skalieren je Kartengröße ■■ */
 /* Würfel-Muster: 2 = Diagonale, 5 = 3+2, 10 = 5+5, 20 = 5×4. */
