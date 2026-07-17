@@ -402,18 +402,24 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .value-card { position: relative; margin-top: 26px; padding: 40px 26px 28px; border-radius: 24px; }
 .value-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 800; box-shadow: 0 0 0 8px #FAF8F4; }
 .value-card .rw-number { font-size: 4.05rem; }
-.value-card-grid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 320px; margin: 20px auto 0; }
-.value-dot-row { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; }
+.value-card-grid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; width: 100%; max-width: 360px; margin: 22px auto 0; }
+.value-dot-row { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; }
 .value-dot { aspect-ratio: 1; border-radius: 50%; background: #16212C; box-shadow: inset 0 0 0 1px rgba(18,20,17,.06); }
-.value-card .value-dot { width: 34px; }
+.value-card .value-dot { width: 44px; }
 .value-dot.available { background: #16212C; }
 .value-dot.spent { background: #F16B24; }
 .value-dot.partial { background: conic-gradient(#F16B24 0 var(--spent), #16212C var(--spent) 100%); }
-.value-card-note { margin-top: 20px; font-size: 0.86rem; color: #3F464E; line-height: 1.75; max-width: 360px; margin-left: auto; margin-right: auto; text-align: center; }
+.value-card-note { margin-top: 20px; font-size: 0.78rem; color: #3F464E; line-height: 1.55; max-width: 390px; margin-left: auto; margin-right: auto; text-align: center; }
+.value-card-note div + div { margin-top: 5px; }
+.value-card-note strong, .value-card .rw-subtitle strong { font-weight: 800; color: #16212C; }
 .value-card-code { display: inline-flex; margin-top: 8px; padding: 5px 9px; border: 1px solid #F16B24; border-radius: 999px; color: #F16B24; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .gift-message-preview { margin: 12px auto 0; max-width: 260px; color: #3F464E; font-size: 0.78rem; line-height: 1.45; font-style: italic; }
 .gift-message-preview::before { content: "“"; color: #F16B24; font-size: 1rem; }
 .gift-message-preview::after { content: "”"; color: #F16B24; font-size: 1rem; }
+.gift-sender-box { margin: 10px 0 12px; padding: 12px 14px; border: 1px solid #E7E0D5; border-radius: 10px; background: #FAF8F4; color: #16212C; }
+.gift-sender-label { margin-bottom: 5px; color: #8C8B84; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+.gift-sender-name { font-size: 0.9rem; font-weight: 800; }
+.gift-sender-email { margin-top: 2px; color: #8C8B84; font-size: 0.8rem; }
 
 /* ■■ ACCOUNT-MODAL: Blätter-Steuerung ■■ */
 .card-pager { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 0 6px; }
@@ -1108,7 +1114,12 @@ main {
             <label class="form-label">Persönliche Nachricht</label>
             <textarea class="form-input" id="giftMessage" rows="3" maxlength="300" placeholder="Viel Spaß beim ersten Match!"></textarea>
           </div>
-          <div class="form-hint">Die Geschenkkarte kann später per Code oder Link in ein bestehendes oder neues Konto übernommen werden.</div>
+          <div class="gift-sender-box">
+            <div class="gift-sender-label">Absender</div>
+            <div class="gift-sender-name" id="giftSenderName">—</div>
+            <div class="gift-sender-email" id="giftSenderEmail">—</div>
+          </div>
+          <div class="form-hint">Die beschenkte Person sieht Absender, E-Mail-Adresse und deine Nachricht zusammen mit der Geschenkkarte.</div>
         </div>
 
         <div class="modal-err" id="cardErr"></div>
@@ -5051,7 +5062,7 @@ function balanceCardHTML(card) {
     <div class="rw-tagline">${tagline}</div>
     <div class="rw-number">${remaining} €</div>
     <div class="rw-headline">${headline}</div>
-    <div class="rw-subtitle">von ursprünglich ${original} €</div>
+    <div class="rw-subtitle">von ursprünglich <strong>${original} €</strong></div>
     <div class="rw-divider"></div>
     <div class="rw-name">${name}</div>
     <div class="rw-email">${email}</div>
@@ -5059,7 +5070,10 @@ function balanceCardHTML(card) {
     ${code ? `<div class="value-card-code">${esc(code)}</div>` : ''}
     ${giftMessage ? `<div class="gift-message-preview">${giftMessage}</div>` : ''}
     <div class="value-card-grid">${valueDotsHTML(original, remaining)}</div>
-    <div class="value-card-note">Bei deinen nächsten Buchungen wird verfügbares Guthaben automatisch verrechnet.<br>Dunkel ist verfügbar, Orange ist verbraucht.</div>
+    <div class="value-card-note">
+      <div>Verfügbares Guthaben wird automatisch mit den nächsten Buchungen verrechnet.</div>
+      <div><strong>Dunkel:</strong> noch verfügbar. <strong>Orange:</strong> bereits verwendet.</div>
+    </div>
   </div>`;
 }
 // Wählt je nach Kartentyp die passende Darstellung
@@ -5143,7 +5157,7 @@ function renderCardSizeGrid() {
       grid.appendChild(el);
     });
   }
-  // Wertkarten: 1 Punkt = 25 EUR Startguthaben.
+  // Wertkarten: 1 Credit = 25 EUR Startguthaben.
   const balGrid = document.getElementById('cardBalanceGrid');
   if (balGrid) {
     balGrid.innerHTML = '';
@@ -5155,7 +5169,7 @@ function renderCardSizeGrid() {
         `<div class="buy-mini-title">Wertkarte</div>` +
         `<div class="buy-mini-amount">${eur} €</div>` +
         `<div class="buy-mini-dots">${previewValueDotsHTML(eur)}</div>` +
-        `<div class="buy-mini-price">${eur / VALUE_DOT_EUR} Punkt${eur === VALUE_DOT_EUR ? '' : 'e'} à ${VALUE_DOT_EUR} €</div>`;
+        `<div class="buy-mini-price">${eur / VALUE_DOT_EUR} Credit${eur === VALUE_DOT_EUR ? '' : 's'} à ${VALUE_DOT_EUR} €</div>`;
       balGrid.appendChild(el);
     });
   }
@@ -5182,7 +5196,16 @@ function setCardGiftMode(isGift) {
   document.getElementById('giftToggleSelf').classList.toggle('selected', !isGift);
   document.getElementById('giftToggleGift').classList.toggle('selected', isGift);
   document.getElementById('giftFields').style.display = isGift ? 'block' : 'none';
+  updateGiftSenderInfo();
   updateCardSummary();
+}
+
+function updateGiftSenderInfo() {
+  const nameEl = document.getElementById('giftSenderName');
+  const emailEl = document.getElementById('giftSenderEmail');
+  if (!nameEl || !emailEl) return;
+  nameEl.textContent = currentProfile?.full_name || currentUser?.email || 'Nach Login sichtbar';
+  emailEl.textContent = currentProfile?.email || currentUser?.email || 'E-Mail nach Login sichtbar';
 }
 
 function updateCardSummary() {
@@ -5225,6 +5248,7 @@ async function confirmCardPurchase(skipAuthCheck) {
   if (currentUser && (!currentProfile || currentProfile.auth_id !== currentUser.id)) {
     await loadProfile(currentUser.id);
   }
+  updateGiftSenderInfo();
 
   const purchaserEmail = currentProfile?.email || currentUser?.email;
   const fullName = currentProfile?.full_name || '';
@@ -5251,6 +5275,8 @@ async function confirmCardPurchase(skipAuthCheck) {
           recipient_email: recipientEmail,
           recipient_phone: recipientPhone,
           gift_message: giftMessage,
+          sender_name: fullName,
+          sender_email: purchaserEmail,
           user_id: currentUser?.id || null,
           purchaser_email: purchaserEmail,
           full_name: fullName,
