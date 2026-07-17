@@ -370,7 +370,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .punch-value .pv-restwert { margin-top: 8px; font-size: 1.35rem; font-weight: 800; color: #16212C; }
 .punch-value .pv-games { margin-top: 4px; font-size: 0.72rem; color: #8C8B84; }
 
-/* ■■ GUTSCHEINE-TAB: zwei Spalten – links kaufen, rechts meine Karte(n) ■■ */
+/* ■■ WERTKARTEN-TAB: zwei Spalten – links kaufen, rechts meine Karte(n) ■■ */
 .gutschein-layout { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
 .gutschein-buy { flex: 1 1 380px; margin-bottom: 0; }
 /* rechte Spalte im Hochformat, wie das Kalender-Vorbild */
@@ -378,16 +378,33 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 /* mehrere eigene Karten werden untereinander gestapelt */
 .mycards-stack { display: flex; flex-direction: column; gap: 14px; }
 
-/* ■■ KAUFEN links: fünf kleine Hochformat-Karten nebeneinander ■■ */
-.buy-cards-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-.buy-mini { flex: 1 1 0; min-width: 88px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 150px; border: 1.5px solid #E7E0D5; border-radius: 16px; padding: 12px 6px 11px; background: #FAF8F4; color: #16212C; font-family: "Arial","Helvetica",sans-serif; cursor: pointer; text-align: center; transition: all 0.15s; }
-.buy-mini:hover { border-color: #F16B24; }
-.buy-mini.selected { border-color: #F16B24; box-shadow: 0 0 0 1.5px #F16B24 inset; }
-.buy-mini-title { font-weight: 700; font-size: 0.72rem; line-height: 1.1; color: #16212C; }
+/* ■■ KAUFEN links: Wertkarten als kompakte Card-Auswahl ■■ */
+.buy-cards-row { display: grid; grid-template-columns: repeat(5, minmax(104px, 1fr)); gap: 10px; margin-bottom: 18px; }
+.buy-mini { display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 170px; border: 1.5px solid #E7E0D5; border-radius: 18px; padding: 14px 8px 12px; background: #FAF8F4; color: #16212C; font-family: "Arial","Helvetica",sans-serif; cursor: pointer; text-align: center; transition: all 0.15s; }
+.buy-mini:hover { border-color: #F16B24; transform: translateY(-1px); }
+.buy-mini.selected { border-color: #F16B24; box-shadow: 0 0 0 1.5px #F16B24 inset, 0 10px 24px rgba(241,107,36,.14); }
+.buy-mini-title { font-weight: 800; font-size: 0.67rem; line-height: 1.1; letter-spacing: 0.14em; text-transform: uppercase; color: #F16B24; }
 .buy-mini-price { font-size: 0.72rem; color: #8C8B84; }
 .buy-mini.selected .buy-mini-price { color: #F16B24; font-weight: 700; }
-/* Guthaben-Mini-Karten: fetter Betrag statt Punkten */
-.buy-mini-amount { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 1.7rem; line-height: 1; color: #16212C; }
+.buy-mini-amount { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 2rem; line-height: 1; color: #16212C; }
+.buy-mini-dots { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; min-height: 42px; max-width: 112px; margin: 8px auto; }
+.buy-mini-dot { width: 15px; height: 15px; border-radius: 50%; background: #16212C; }
+.buy-mini-dot.on { background: #F16B24; }
+@media (max-width: 900px) {
+  .buy-cards-row { grid-template-columns: repeat(3, minmax(104px, 1fr)); }
+}
+@media (max-width: 560px) {
+  .buy-cards-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .buy-mini { min-height: 154px; }
+}
+.value-card .loyalty-card-number { font-size: 3.55rem; letter-spacing: -0.04em; }
+.value-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; width: min(100%, 280px); margin: 20px auto 0; }
+.value-dot { aspect-ratio: 1; border-radius: 50%; background: #16212C; box-shadow: inset 0 0 0 1px rgba(18,20,17,.06); }
+.value-dot.empty { background: #16212C; }
+.value-dot.full { background: #F16B24; }
+.value-dot.partial { background: conic-gradient(#F16B24 0 var(--fill), #16212C var(--fill) 100%); }
+.value-card-note { margin-top: 16px; padding-top: 14px; border-top: 1px solid #E7E0D5; font-size: 0.72rem; color: #8C8B84; line-height: 1.45; text-align: center; }
+.value-card-code { display: inline-flex; margin-top: 8px; padding: 5px 9px; border: 1px solid #F16B24; border-radius: 999px; color: #F16B24; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 
 /* ■■ ACCOUNT-MODAL: Blätter-Steuerung ■■ */
 .card-pager { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 0 6px; }
@@ -405,7 +422,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .profile-form .form-input:focus { border-color: #F16B24; }
 .profile-save-ok { font-size: 0.78rem; color: #F16B24; margin-top: 10px; text-align: center; min-height: 1em; }
 
-/* ■■ GUTSCHEINE ■■ */
+/* ■■ WERTKARTEN ■■ */
 .card-size-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
 .card-size-btn { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
 .card-size-btn:hover { border-color: var(--gold); }
@@ -677,7 +694,7 @@ main {
     padding: 18px 14px 56px !important;
   }
 
-  /* 5 Kacheln (Buchen/Abo/Spielen/Meine Buchungen/Gutscheine) passen auf
+  /* 5 Kacheln (Buchen/Abo/Spielen/Meine Buchungen/Wertkarten) passen auf
      schmalen Screens nicht in eine Reihe - zweispaltig umbrechen statt
      seitlich abzuschneiden. */
   #mainTabs {
@@ -805,7 +822,7 @@ main {
   </div>
 </div>
 
-<!-- ACCOUNT-MODAL – blätterbar: Rewards → Guthabenkarte(n) → Meine Daten -->
+<!-- ACCOUNT-MODAL – blätterbar: Rewards → Wertkarte(n) → Meine Daten -->
 <div class="modal-overlay" id="loyaltyModal">
   <div class="modal">
     <button class="modal-close" onclick="closeLoyaltyModal()">✕</button>
@@ -863,7 +880,7 @@ main {
     <div class="mode-tab" id="tabAbo" onclick="setMode('abo')"><span class="tab-icon">■</span> Jahresabo sichern</div>
     <div class="mode-tab" id="tabPlay" onclick="setMode('play')"><span class="tab-icon">▶</span> Jetzt spielen</div>
     <div class="mode-tab" id="tabMy" onclick="setMode('my')"><span class="tab-icon">📋</span> Meine Buchungen</div>
-    <div class="mode-tab" id="tabGutscheine" onclick="setMode('gutscheine')"><span class="tab-icon">🎁</span> Gutscheine</div>
+    <div class="mode-tab" id="tabGutscheine" onclick="setMode('gutscheine')"><span class="tab-icon">◆</span> Wertkarten</div>
   </div>
   <!-- Admin Tab entfernt – Admin-Zugang über Fußzeile -->
 
@@ -1048,23 +1065,21 @@ main {
     </div>
   </div>
 
-  <!-- GUTSCHEINE MODE -->
+  <!-- WERTKARTEN MODE -->
   <div id="modeGutscheine" style="display:none;">
     <div class="gutschein-layout">
 
       <!-- LINKS: Kaufen -->
       <div class="play-card gutschein-buy">
-        <div class="play-card-title">🎁 Karte oder Gutschein kaufen</div>
-        <div class="form-hint" style="margin-bottom:16px;">Fester Preis: 24 € pro Stunde, unabhängig von Uhrzeit und Wochentag.</div>
+        <div class="play-card-title">◆ Wertkarte kaufen</div>
+        <div class="form-hint" style="margin-bottom:16px;">Spielguthaben für dich selbst oder als Geschenkkarte. Der Betrag wird später flexibel mit echten Buchungspreisen verrechnet.</div>
 
-        <div class="buy-cards-row" id="cardSizeGrid"></div>
-
-        <div class="form-hint" style="margin:18px 0 10px;">Oder Guthaben aufladen – flexibel für jede Buchung einsetzbar, jederzeit verschenkbar:</div>
+        <div id="cardSizeGrid" style="display:none;"></div>
         <div class="buy-cards-row" id="cardBalanceGrid"></div>
 
         <div class="gift-toggle">
-          <div class="gift-toggle-btn selected" id="giftToggleSelf" onclick="setCardGiftMode(false)">Für mich</div>
-          <div class="gift-toggle-btn" id="giftToggleGift" onclick="setCardGiftMode(true)">Verschenken</div>
+          <div class="gift-toggle-btn selected" id="giftToggleSelf" onclick="setCardGiftMode(false)">Spielguthaben</div>
+          <div class="gift-toggle-btn" id="giftToggleGift" onclick="setCardGiftMode(true)">Geschenkkarte</div>
         </div>
 
         <div id="giftFields" style="display:none;">
@@ -1080,22 +1095,22 @@ main {
             <label class="form-label">Handynummer der beschenkten Person</label>
             <input class="form-input" type="tel" id="giftPhone" placeholder="z.B. 0170 1234567">
           </div>
-          <div class="form-hint">Wird nur genutzt, um der beschenkten Person die Einladung zum eigenen Konto zu schicken.</div>
+          <div class="form-hint">Die Geschenkkarte kann später per Code oder Link in ein bestehendes oder neues Konto übernommen werden.</div>
         </div>
 
         <div class="modal-err" id="cardErr"></div>
 
         <div id="cardSummary" style="display:none;margin:18px 0;padding:14px 16px;background:var(--bg);border-radius:10px;border:1px solid var(--border);justify-content:space-between;align-items:center;">
-          <span style="font-size:0.85rem;color:var(--gray);">Gesamtpreis</span>
+          <span id="cardSummaryLabel" style="font-size:0.85rem;color:var(--gray);">Wertkarte</span>
           <span id="cardTotalPrice" style="float:right;font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1.3rem;color:var(--gold);"></span>
         </div>
 
-        <button class="book-btn visible" style="width:100%;position:static;" onclick="confirmCardPurchase()">Jetzt kaufen &amp; bezahlen →</button>
+        <button class="book-btn visible" style="width:100%;position:static;" onclick="confirmCardPurchase()">Wertkarte kaufen &amp; bezahlen →</button>
       </div>
 
       <!-- RECHTS: Meine Karten (Hochformat) -->
       <div class="gutschein-mine" id="myCardsSection" style="display:none;">
-        <div class="play-card-title" style="margin-bottom:12px;">🎟️ Meine Karten</div>
+        <div class="play-card-title" style="margin-bottom:12px;">◆ Meine Wertkarten</div>
         <div id="myCardsList">
           <div class="play-empty" style="padding:24px 0;">
             <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
@@ -4859,13 +4874,14 @@ function showEeToast(msg, bielsteinOn) {
 }
 
 // ============================================================
-//  GUTSCHEINE / KARTEN
+//  WERTKARTEN
 // ============================================================
 const CARD_SIZES = [1, 2, 5, 10, 20];
-const CARD_BALANCES = [10, 20, 50, 100, 200]; // Guthaben aufladen (in €)
+const CARD_BALANCES = [25, 50, 100, 200, 250]; // Wertkarten-Betraege (in EUR)
 const CARD_PRICE_PER_HOUR = 24;
+const VALUE_DOT_EUR = 25;
 let selectedCardSize = null;
-let selectedBalance = null;   // gewählter Guthaben-Betrag (€), Alternative zu selectedCardSize
+let selectedBalance = 100;   // gewaehlter Wertkarten-Betrag (EUR), Alternative zu selectedCardSize
 let cardIsGift = false;
 let myCardsData = [];
 
@@ -4949,7 +4965,7 @@ function rewardsCardHTML(hoursPlayed) {
 function cardHolder(card) {
   return {
     name: card.is_gift ? esc(card.recipient_name || 'Beschenkte Person') : (esc(currentProfile?.full_name) || '—'),
-    email: card.is_gift ? 'Gutschein' : (esc(currentProfile?.email || currentUser?.email) || '—'),
+    email: card.is_gift ? 'Geschenkkarte' : (esc(currentProfile?.email || currentUser?.email) || '—'),
   };
 }
 // Stunden-Karte: oben die NOCH OFFENEN Stunden (nicht die verbrauchten).
@@ -4972,23 +4988,41 @@ function punchCardHTML(card) {
     </div>
   </div>`;
 }
-// Guthaben-Karte (reiner Euro-Betrag): oben die RESTSUMME groß, darunter klein
-// "von ursprünglich X €". Erwartet card.balance_remaining_eur & card.balance_original_eur.
+function valueDotsHTML(original, remaining) {
+  const dots = Math.max(1, Math.ceil(original / VALUE_DOT_EUR));
+  let html = '';
+  for (let i = 0; i < dots; i++) {
+    const blockStart = i * VALUE_DOT_EUR;
+    const blockRemaining = Math.max(0, Math.min(VALUE_DOT_EUR, remaining - blockStart));
+    const pct = Math.round((blockRemaining / VALUE_DOT_EUR) * 100);
+    const cls = pct >= 100 ? ' full' : pct <= 0 ? ' empty' : ' partial';
+    html += `<span class="value-dot${cls}" style="--fill:${pct}%;"></span>`;
+  }
+  return html;
+}
+
+function previewValueDotsHTML(eur) {
+  const dots = Math.max(1, Math.ceil(eur / VALUE_DOT_EUR));
+  return Array.from({ length: dots }, () => '<span class="buy-mini-dot on"></span>').join('');
+}
+
+// Wertkarte (reiner Euro-Betrag): oben die RESTSUMME gross, darunter klein
+// "von urspruenglich X EUR". Erwartet card.balance_remaining_eur & card.balance_original_eur.
 function balanceCardHTML(card) {
   const remaining = card.balance_remaining_eur != null ? card.balance_remaining_eur : (card.balance_original_eur || 0);
   const original = card.balance_original_eur || remaining;
-  const games = Math.floor(remaining / CARD_PRICE_PER_HOUR);
   const { name, email } = cardHolder(card);
-  return `<div class="loyalty-card">
-    <div class="loyalty-card-tag">Guthaben</div>
+  const kind = card.is_gift ? 'Geschenkkarte' : 'Spielguthaben';
+  const code = card.redeem_code || card.gift_code || card.code || '';
+  return `<div class="loyalty-card value-card">
+    <div class="loyalty-card-tag">${kind}</div>
     <div class="loyalty-card-number">${remaining} €</div>
     <div class="loyalty-card-sub">von ursprünglich ${original} €</div>
     <div class="loyalty-card-name">${name}</div>
     <div class="loyalty-card-email">${email}</div>
-    <div class="punch-value" style="border-top:none;margin-top:8px;padding-top:0;">
-      <div class="pv-worth">Flexibel für jede Buchung einsetzbar</div>
-      <div class="pv-games">Reicht noch für ca. ${games} Spiel${games === 1 ? '' : 'e'} à 24 €</div>
-    </div>
+    ${code ? `<div class="value-card-code">${esc(code)}</div>` : ''}
+    <div class="value-card-grid">${valueDotsHTML(original, remaining)}</div>
+    <div class="value-card-note">Ein Punkt entspricht ${VALUE_DOT_EUR} € Startguthaben.<br>Teilbeträge werden anteilig orange gefüllt.</div>
   </div>`;
 }
 // Wählt je nach Kartentyp die passende Darstellung
@@ -5012,7 +5046,7 @@ function profileCardHTML() {
 }
 
 // Lädt die gekauften Karten des eingeloggten Nutzers in myCardsData.
-// select('*') → funktioniert auch, wenn die Guthaben-Spalten noch nicht existieren.
+// select('*') → funktioniert auch, wenn die Wertkarten-Spalten noch nicht existieren.
 async function fetchMyCards() {
   if (!currentUser) { myCardsData = []; return myCardsData; }
   try {
@@ -5024,7 +5058,7 @@ async function fetchMyCards() {
       .order('created_at', { ascending: false });
     if (error) throw error;
     myCardsData = (data || []).map(c => {
-      // Guthaben-Karten: Cent-Beträge in Euro umrechnen (falls vorhanden)
+      // Wertkarten: Cent-Beträge in Euro umrechnen (falls vorhanden)
       if (c.balance_remaining_cents != null) {
         c.balance_remaining_eur = Math.round(c.balance_remaining_cents) / 100;
         c.balance_original_eur  = Math.round((c.balance_original_cents ?? c.balance_remaining_cents)) / 100;
@@ -5057,7 +5091,7 @@ async function loadMyCards() {
 }
 
 function renderCardSizeGrid() {
-  // Stunden-Karten als kleine Hochformat-Karten (echtes Würfel-Muster, alle Punkte offen)
+  // Alte Stundenkarten bleiben nur als Rueckwaertskompatibilitaet im Code.
   const grid = document.getElementById('cardSizeGrid');
   if (grid) {
     grid.innerHTML = '';
@@ -5072,7 +5106,7 @@ function renderCardSizeGrid() {
       grid.appendChild(el);
     });
   }
-  // Guthaben-Karten: fetter Betrag statt Punkten
+  // Wertkarten: 1 Punkt = 25 EUR Startguthaben.
   const balGrid = document.getElementById('cardBalanceGrid');
   if (balGrid) {
     balGrid.innerHTML = '';
@@ -5081,16 +5115,17 @@ function renderCardSizeGrid() {
       el.className = 'buy-mini' + (selectedBalance === eur ? ' selected' : '');
       el.onclick = () => selectBalance(eur);
       el.innerHTML =
-        `<div class="buy-mini-title">Guthaben</div>` +
+        `<div class="buy-mini-title">Wertkarte</div>` +
         `<div class="buy-mini-amount">${eur} €</div>` +
-        `<div class="buy-mini-price">aufladen</div>`;
+        `<div class="buy-mini-dots">${previewValueDotsHTML(eur)}</div>` +
+        `<div class="buy-mini-price">${eur / VALUE_DOT_EUR} Punkt${eur === VALUE_DOT_EUR ? '' : 'e'} à ${VALUE_DOT_EUR} €</div>`;
       balGrid.appendChild(el);
     });
   }
   updateCardSummary();
 }
 
-// Karte und Guthaben schließen sich gegenseitig aus (ein Kauf pro Vorgang)
+// Alte Stundenkarte und neue Wertkarte schließen sich gegenseitig aus (ein Kauf pro Vorgang)
 function selectCardSize(size) {
   selectedCardSize = size;
   selectedBalance = null;
@@ -5110,14 +5145,17 @@ function setCardGiftMode(isGift) {
   document.getElementById('giftToggleSelf').classList.toggle('selected', !isGift);
   document.getElementById('giftToggleGift').classList.toggle('selected', isGift);
   document.getElementById('giftFields').style.display = isGift ? 'block' : 'none';
+  updateCardSummary();
 }
 
 function updateCardSummary() {
   const summary = document.getElementById('cardSummary');
   const totalEl = document.getElementById('cardTotalPrice');
+  const labelEl = document.getElementById('cardSummaryLabel');
   const amount = selectedCardSize ? selectedCardSize * CARD_PRICE_PER_HOUR : selectedBalance;
   if (!amount) { summary.style.display = 'none'; return; }
   summary.style.display = 'flex';
+  if (labelEl) labelEl.textContent = cardIsGift ? 'Geschenkkarte' : 'Spielguthaben';
   totalEl.textContent = `${amount} €`;
 }
 
@@ -5132,7 +5170,7 @@ function clearCardErr() {
 
 async function confirmCardPurchase(skipAuthCheck) {
   clearCardErr();
-  if (!selectedCardSize && !selectedBalance) { showCardErr('Bitte wähle zuerst eine Karte oder einen Guthaben-Betrag.'); return; }
+  if (!selectedCardSize && !selectedBalance) { showCardErr('Bitte wähle zuerst eine Wertkarte.'); return; }
   if (!skipAuthCheck && !currentUser) { openModal('card'); return; }
 
   let recipientName = '', recipientEmail = '', recipientPhone = '';
@@ -5167,7 +5205,7 @@ async function confirmCardPurchase(skipAuthCheck) {
         },
         body: JSON.stringify({
           booking_type: 'card',
-          // Entweder eine Stunden-Karte (card_size) ODER ein Guthaben-Betrag (balance_eur)
+          // Entweder alte Stunden-Karte (card_size) ODER neue Wertkarte (balance_eur)
           card_size: selectedCardSize,
           balance_eur: selectedBalance,
           is_gift: cardIsGift,
@@ -5200,7 +5238,7 @@ async function confirmCardPurchase(skipAuthCheck) {
 // Platzierung im 10×10-Raster: 5=Z1/Sp5, 10=Z1/Sp10, 25=Z3-Mitte, 50=Z5-rechts, 100=letzter.
 const LOYALTY_MILESTONES = { 5: 5, 10: 10, 25: 25, 50: 50, 100: 100 };
 
-// Account-Modal-Seiten: [Rewards] → [Guthabenkarte(n)] → [Meine Daten]
+// Account-Modal-Seiten: [Rewards] → [Wertkarte(n)] → [Meine Daten]
 let accountPages = [];
 let accountPageIndex = 0;
 
@@ -5255,7 +5293,7 @@ function renderAccountPage() {
 
   let label = '';
   if (p.type === 'rewards')      { host.innerHTML = rewardsCardHTML(p.hours); label = 'Rewards'; }
-  else if (p.type === 'card')    { host.innerHTML = anyCardHTML(p.card);     label = p.card.card_size ? cardLabel(p.card.card_size) : 'Guthaben'; }
+  else if (p.type === 'card')    { host.innerHTML = anyCardHTML(p.card);     label = p.card.card_size ? cardLabel(p.card.card_size) : 'Wertkarte'; }
   else if (p.type === 'profile') { host.innerHTML = profileCardHTML();       label = 'Meine Daten'; }
 
   // Rewards-Seite: Modal in den warmen Creme-Look versetzen
