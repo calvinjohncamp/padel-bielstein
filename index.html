@@ -379,17 +379,18 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .mycards-stack { display: flex; flex-direction: column; gap: 14px; }
 
 /* ■■ KAUFEN links: Wertkarten als kompakte Card-Auswahl ■■ */
-.buy-cards-row { display: grid; grid-template-columns: repeat(5, minmax(104px, 1fr)); gap: 10px; margin-bottom: 18px; }
-.buy-mini { display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 170px; border: 1.5px solid #E7E0D5; border-radius: 18px; padding: 14px 8px 12px; background: #FAF8F4; color: #16212C; font-family: "Arial","Helvetica",sans-serif; cursor: pointer; text-align: center; transition: all 0.15s; }
-.buy-mini:hover { border-color: #F16B24; transform: translateY(-1px); }
-.buy-mini.selected { border-color: #F16B24; box-shadow: 0 0 0 1.5px #F16B24 inset, 0 10px 24px rgba(241,107,36,.14); }
-.buy-mini-title { font-weight: 800; font-size: 0.67rem; line-height: 1.1; letter-spacing: 0.14em; text-transform: uppercase; color: #F16B24; }
-.buy-mini-price { font-size: 0.72rem; color: #8C8B84; }
+.buy-cards-row { display: grid; grid-template-columns: repeat(5, minmax(116px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.buy-mini { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 190px; border: 1.5px solid #F16B24; border-radius: 22px; padding: 28px 10px 14px; background: #FAF8F4; color: #16212C; font-family: "Arial","Helvetica",sans-serif; cursor: pointer; text-align: center; transition: all 0.15s; }
+.buy-mini::before { content: "◆"; position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; box-shadow: 0 0 0 7px #FAF8F4; }
+.buy-mini:hover { border-color: #F16B24; transform: translateY(-2px); box-shadow: 0 10px 24px rgba(18,20,17,.08); }
+.buy-mini.selected { border-color: #F16B24; box-shadow: 0 0 0 1.5px #F16B24 inset, 0 12px 28px rgba(241,107,36,.16); }
+.buy-mini-title { font-weight: 800; font-size: 0.64rem; line-height: 1.1; letter-spacing: 0.18em; text-transform: uppercase; color: #F16B24; }
+.buy-mini-price { font-size: 0.72rem; color: #8C8B84; padding-top: 10px; border-top: 1px solid #E7E0D5; width: min(100%, 112px); }
 .buy-mini.selected .buy-mini-price { color: #F16B24; font-weight: 700; }
-.buy-mini-amount { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 2rem; line-height: 1; color: #16212C; }
+.buy-mini-amount { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 2.25rem; line-height: 1; color: #16212C; margin-top: 5px; }
 .buy-mini-dots { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; min-height: 42px; max-width: 112px; margin: 8px auto; }
 .buy-mini-dot { width: 15px; height: 15px; border-radius: 50%; background: #16212C; }
-.buy-mini-dot.on { background: #F16B24; }
+.buy-mini-dot.on { background: #16212C; }
 @media (max-width: 900px) {
   .buy-cards-row { grid-template-columns: repeat(3, minmax(104px, 1fr)); }
 }
@@ -398,13 +399,18 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   .buy-mini { min-height: 154px; }
 }
 .value-card .loyalty-card-number { font-size: 3.55rem; letter-spacing: -0.04em; }
+.value-card { position: relative; margin-top: 18px; padding: 38px 26px 26px; border-radius: 24px; }
+.value-card::before { content: "◆"; position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 42px; height: 42px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 0.88rem; box-shadow: 0 0 0 8px #FAF8F4; }
 .value-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; width: min(100%, 280px); margin: 20px auto 0; }
 .value-dot { aspect-ratio: 1; border-radius: 50%; background: #16212C; box-shadow: inset 0 0 0 1px rgba(18,20,17,.06); }
-.value-dot.empty { background: #16212C; }
-.value-dot.full { background: #F16B24; }
-.value-dot.partial { background: conic-gradient(#F16B24 0 var(--fill), #16212C var(--fill) 100%); }
+.value-dot.available { background: #16212C; }
+.value-dot.spent { background: #F16B24; }
+.value-dot.partial { background: conic-gradient(#F16B24 0 var(--spent), #16212C var(--spent) 100%); }
 .value-card-note { margin-top: 16px; padding-top: 14px; border-top: 1px solid #E7E0D5; font-size: 0.72rem; color: #8C8B84; line-height: 1.45; text-align: center; }
 .value-card-code { display: inline-flex; margin-top: 8px; padding: 5px 9px; border: 1px solid #F16B24; border-radius: 999px; color: #F16B24; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.gift-message-preview { margin: 12px auto 0; max-width: 260px; color: #3F464E; font-size: 0.78rem; line-height: 1.45; font-style: italic; }
+.gift-message-preview::before { content: "“"; color: #F16B24; font-size: 1rem; }
+.gift-message-preview::after { content: "”"; color: #F16B24; font-size: 1rem; }
 
 /* ■■ ACCOUNT-MODAL: Blätter-Steuerung ■■ */
 .card-pager { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 0 6px; }
@@ -1094,6 +1100,10 @@ main {
           <div class="form-group">
             <label class="form-label">Handynummer der beschenkten Person</label>
             <input class="form-input" type="tel" id="giftPhone" placeholder="z.B. 0170 1234567">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Persönliche Nachricht</label>
+            <textarea class="form-input" id="giftMessage" rows="3" maxlength="300" placeholder="Viel Spaß beim ersten Match!"></textarea>
           </div>
           <div class="form-hint">Die Geschenkkarte kann später per Code oder Link in ein bestehendes oder neues Konto übernommen werden.</div>
         </div>
@@ -4990,13 +5000,14 @@ function punchCardHTML(card) {
 }
 function valueDotsHTML(original, remaining) {
   const dots = Math.max(1, Math.ceil(original / VALUE_DOT_EUR));
+  const spent = Math.max(0, original - remaining);
   let html = '';
   for (let i = 0; i < dots; i++) {
     const blockStart = i * VALUE_DOT_EUR;
-    const blockRemaining = Math.max(0, Math.min(VALUE_DOT_EUR, remaining - blockStart));
-    const pct = Math.round((blockRemaining / VALUE_DOT_EUR) * 100);
-    const cls = pct >= 100 ? ' full' : pct <= 0 ? ' empty' : ' partial';
-    html += `<span class="value-dot${cls}" style="--fill:${pct}%;"></span>`;
+    const blockSpent = Math.max(0, Math.min(VALUE_DOT_EUR, spent - blockStart));
+    const pct = Math.round((blockSpent / VALUE_DOT_EUR) * 100);
+    const cls = pct >= 100 ? ' spent' : pct <= 0 ? ' available' : ' partial';
+    html += `<span class="value-dot${cls}" style="--spent:${pct}%;"></span>`;
   }
   return html;
 }
@@ -5014,6 +5025,7 @@ function balanceCardHTML(card) {
   const { name, email } = cardHolder(card);
   const kind = card.is_gift ? 'Geschenkkarte' : 'Spielguthaben';
   const code = card.redeem_code || card.gift_code || card.code || '';
+  const giftMessage = esc(card.gift_message || card.message || '');
   return `<div class="loyalty-card value-card">
     <div class="loyalty-card-tag">${kind}</div>
     <div class="loyalty-card-number">${remaining} €</div>
@@ -5021,8 +5033,9 @@ function balanceCardHTML(card) {
     <div class="loyalty-card-name">${name}</div>
     <div class="loyalty-card-email">${email}</div>
     ${code ? `<div class="value-card-code">${esc(code)}</div>` : ''}
+    ${giftMessage ? `<div class="gift-message-preview">${giftMessage}</div>` : ''}
     <div class="value-card-grid">${valueDotsHTML(original, remaining)}</div>
-    <div class="value-card-note">Ein Punkt entspricht ${VALUE_DOT_EUR} € Startguthaben.<br>Teilbeträge werden anteilig orange gefüllt.</div>
+    <div class="value-card-note">Ein Punkt entspricht ${VALUE_DOT_EUR} € Startguthaben.<br>Dunkel ist verfügbar, Orange ist verbraucht.</div>
   </div>`;
 }
 // Wählt je nach Kartentyp die passende Darstellung
@@ -5064,7 +5077,7 @@ async function fetchMyCards() {
         c.balance_original_eur  = Math.round((c.balance_original_cents ?? c.balance_remaining_cents)) / 100;
       }
       return c;
-    });
+    }).filter(c => c.balance_remaining_eur != null || c.balance_original_eur != null);
   } catch(e) { console.warn('Karten laden fehlgeschlagen', e); myCardsData = []; }
   return myCardsData;
 }
@@ -5173,11 +5186,12 @@ async function confirmCardPurchase(skipAuthCheck) {
   if (!selectedCardSize && !selectedBalance) { showCardErr('Bitte wähle zuerst eine Wertkarte.'); return; }
   if (!skipAuthCheck && !currentUser) { openModal('card'); return; }
 
-  let recipientName = '', recipientEmail = '', recipientPhone = '';
+  let recipientName = '', recipientEmail = '', recipientPhone = '', giftMessage = '';
   if (cardIsGift) {
     recipientName = document.getElementById('giftName').value.trim();
     recipientEmail = document.getElementById('giftEmail').value.trim();
     recipientPhone = document.getElementById('giftPhone').value.trim();
+    giftMessage = document.getElementById('giftMessage')?.value.trim() || '';
     if (!recipientName || !recipientEmail || !recipientPhone) {
       showCardErr('Bitte Name, E-Mail und Handynummer der beschenkten Person eingeben.');
       return;
@@ -5212,6 +5226,7 @@ async function confirmCardPurchase(skipAuthCheck) {
           recipient_name: recipientName,
           recipient_email: recipientEmail,
           recipient_phone: recipientPhone,
+          gift_message: giftMessage,
           user_id: currentUser?.id || null,
           purchaser_email: purchaserEmail,
           full_name: fullName,
