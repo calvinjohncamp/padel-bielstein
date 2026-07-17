@@ -5102,6 +5102,7 @@ async function fetchMyCards() {
   if (!currentUser) { myCardsData = []; return myCardsData; }
   try {
     const email = (currentProfile?.email || currentUser?.email || '').trim();
+    await claimReceivedValueCards();
     const ownedCards = await sb
       .from('card_purchases')
       .select('*')
@@ -5136,6 +5137,16 @@ async function fetchMyCards() {
     }).filter(c => c.balance_remaining_eur != null || c.balance_original_eur != null);
   } catch(e) { console.warn('Karten laden fehlgeschlagen', e); myCardsData = []; }
   return myCardsData;
+}
+
+async function claimReceivedValueCards() {
+  if (!currentUser) return;
+  try {
+    const { error } = await sb.rpc('claim_my_value_cards');
+    if (error) console.warn('Wertkarten-Zuordnung nicht verfügbar', error);
+  } catch(e) {
+    console.warn('Wertkarten-Zuordnung nicht verfügbar', e);
+  }
 }
 
 // Zeigt die bereits gekauften Karten des eingeloggten Nutzers (als Käufer,
