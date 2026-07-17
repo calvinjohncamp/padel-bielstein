@@ -380,15 +380,16 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 /* ■■ KAUFEN links: Wertkarten als kompakte Card-Auswahl ■■ */
 .buy-cards-row { display: grid; grid-template-columns: repeat(5, minmax(116px, 1fr)); gap: 12px; margin-bottom: 18px; }
-.buy-mini { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 190px; border: 1.5px solid #F16B24; border-radius: 22px; padding: 28px 10px 14px; background: #FAF8F4; color: #16212C; font-family: "Arial","Helvetica",sans-serif; cursor: pointer; text-align: center; transition: all 0.15s; }
-.buy-mini::before { content: "◆"; position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; box-shadow: 0 0 0 7px #FAF8F4; }
+.buy-mini { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 204px; border: 1.5px solid #F16B24; border-radius: 22px; padding: 30px 10px 14px; background: #FAF8F4; color: #16212C; font-family: "Arial","Helvetica",sans-serif; cursor: pointer; text-align: center; transition: all 0.15s; }
+.buy-mini::before { content: "€"; position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; box-shadow: 0 0 0 7px #FAF8F4; }
 .buy-mini:hover { border-color: #F16B24; transform: translateY(-2px); box-shadow: 0 10px 24px rgba(18,20,17,.08); }
 .buy-mini.selected { border-color: #F16B24; box-shadow: 0 0 0 1.5px #F16B24 inset, 0 12px 28px rgba(241,107,36,.16); }
 .buy-mini-title { font-weight: 800; font-size: 0.64rem; line-height: 1.1; letter-spacing: 0.18em; text-transform: uppercase; color: #F16B24; }
 .buy-mini-price { font-size: 0.72rem; color: #8C8B84; padding-top: 10px; border-top: 1px solid #E7E0D5; width: min(100%, 112px); }
 .buy-mini.selected .buy-mini-price { color: #F16B24; font-weight: 700; }
 .buy-mini-amount { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 2.25rem; line-height: 1; color: #16212C; margin-top: 5px; }
-.buy-mini-dots { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; min-height: 42px; max-width: 112px; margin: 8px auto; }
+.buy-mini-dots { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 42px; margin: 8px auto; }
+.buy-mini-dot-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
 .buy-mini-dot { width: 15px; height: 15px; border-radius: 50%; background: #16212C; }
 .buy-mini-dot.on { background: #16212C; }
 @media (max-width: 900px) {
@@ -398,15 +399,17 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   .buy-cards-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .buy-mini { min-height: 154px; }
 }
-.value-card .loyalty-card-number { font-size: 3.55rem; letter-spacing: -0.04em; }
-.value-card { position: relative; margin-top: 18px; padding: 38px 26px 26px; border-radius: 24px; }
-.value-card::before { content: "◆"; position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 42px; height: 42px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 0.88rem; box-shadow: 0 0 0 8px #FAF8F4; }
-.value-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; width: min(100%, 280px); margin: 20px auto 0; }
+.value-card { position: relative; margin-top: 26px; padding: 40px 26px 28px; border-radius: 24px; }
+.value-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 800; box-shadow: 0 0 0 8px #FAF8F4; }
+.value-card .rw-number { font-size: 4.05rem; }
+.value-card-grid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 320px; margin: 20px auto 0; }
+.value-dot-row { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; }
 .value-dot { aspect-ratio: 1; border-radius: 50%; background: #16212C; box-shadow: inset 0 0 0 1px rgba(18,20,17,.06); }
+.value-card .value-dot { width: 34px; }
 .value-dot.available { background: #16212C; }
 .value-dot.spent { background: #F16B24; }
 .value-dot.partial { background: conic-gradient(#F16B24 0 var(--spent), #16212C var(--spent) 100%); }
-.value-card-note { margin-top: 16px; padding-top: 14px; border-top: 1px solid #E7E0D5; font-size: 0.72rem; color: #8C8B84; line-height: 1.45; text-align: center; }
+.value-card-note { margin-top: 20px; font-size: 0.86rem; color: #3F464E; line-height: 1.75; max-width: 360px; margin-left: auto; margin-right: auto; text-align: center; }
 .value-card-code { display: inline-flex; margin-top: 8px; padding: 5px 9px; border: 1px solid #F16B24; border-radius: 999px; color: #F16B24; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .gift-message-preview { margin: 12px auto 0; max-width: 260px; color: #3F464E; font-size: 0.78rem; line-height: 1.45; font-style: italic; }
 .gift-message-preview::before { content: "“"; color: #F16B24; font-size: 1rem; }
@@ -5001,20 +5004,36 @@ function punchCardHTML(card) {
 function valueDotsHTML(original, remaining) {
   const dots = Math.max(1, Math.ceil(original / VALUE_DOT_EUR));
   const spent = Math.max(0, original - remaining);
-  let html = '';
+  let dotHtml = '';
   for (let i = 0; i < dots; i++) {
     const blockStart = i * VALUE_DOT_EUR;
     const blockSpent = Math.max(0, Math.min(VALUE_DOT_EUR, spent - blockStart));
     const pct = Math.round((blockSpent / VALUE_DOT_EUR) * 100);
     const cls = pct >= 100 ? ' spent' : pct <= 0 ? ' available' : ' partial';
-    html += `<span class="value-dot${cls}" style="--spent:${pct}%;"></span>`;
+    dotHtml += `<span class="value-dot${cls}" style="--spent:${pct}%;"></span>`;
   }
-  return html;
+  return valueDotRowsHTML(dotHtml, dots, 'value-dot-row');
 }
 
 function previewValueDotsHTML(eur) {
   const dots = Math.max(1, Math.ceil(eur / VALUE_DOT_EUR));
-  return Array.from({ length: dots }, () => '<span class="buy-mini-dot on"></span>').join('');
+  const dotHtml = Array.from({ length: dots }, () => '<span class="buy-mini-dot on"></span>').join('');
+  return valueDotRowsHTML(dotHtml, dots, 'buy-mini-dot-row');
+}
+
+function valueDotRowsHTML(dotHtml, count, rowClass) {
+  const rowCounts =
+    count === 8 ? [4, 4] :
+    count === 10 ? [5, 5] :
+    count > 5 ? [Math.ceil(count / 2), Math.floor(count / 2)] :
+    [count];
+  const dots = dotHtml.match(/<span\b[^>]*><\/span>/g) || [];
+  let idx = 0;
+  return rowCounts.map(n => {
+    const row = dots.slice(idx, idx + n).join('');
+    idx += n;
+    return `<div class="${rowClass}">${row}</div>`;
+  }).join('');
 }
 
 // Wertkarte (reiner Euro-Betrag): oben die RESTSUMME gross, darunter klein
@@ -5023,19 +5042,24 @@ function balanceCardHTML(card) {
   const remaining = card.balance_remaining_eur != null ? card.balance_remaining_eur : (card.balance_original_eur || 0);
   const original = card.balance_original_eur || remaining;
   const { name, email } = cardHolder(card);
-  const kind = card.is_gift ? 'Geschenkkarte' : 'Spielguthaben';
+  const headline = card.is_gift ? 'Geschenkkarte' : 'Spielguthaben';
+  const tagline = 'Guthaben verfügbar';
   const code = card.redeem_code || card.gift_code || card.code || '';
   const giftMessage = esc(card.gift_message || card.message || '');
   return `<div class="loyalty-card value-card">
-    <div class="loyalty-card-tag">${kind}</div>
-    <div class="loyalty-card-number">${remaining} €</div>
-    <div class="loyalty-card-sub">von ursprünglich ${original} €</div>
-    <div class="loyalty-card-name">${name}</div>
-    <div class="loyalty-card-email">${email}</div>
+    <div class="value-badge">€</div>
+    <div class="rw-tagline">${tagline}</div>
+    <div class="rw-number">${remaining} €</div>
+    <div class="rw-headline">${headline}</div>
+    <div class="rw-subtitle">von ursprünglich ${original} €</div>
+    <div class="rw-divider"></div>
+    <div class="rw-name">${name}</div>
+    <div class="rw-email">${email}</div>
+    <div class="rw-divider"></div>
     ${code ? `<div class="value-card-code">${esc(code)}</div>` : ''}
     ${giftMessage ? `<div class="gift-message-preview">${giftMessage}</div>` : ''}
     <div class="value-card-grid">${valueDotsHTML(original, remaining)}</div>
-    <div class="value-card-note">Ein Punkt entspricht ${VALUE_DOT_EUR} € Startguthaben.<br>Dunkel ist verfügbar, Orange ist verbraucht.</div>
+    <div class="value-card-note">Bei deinen nächsten Buchungen wird verfügbares Guthaben automatisch verrechnet.<br>Dunkel ist verfügbar, Orange ist verbraucht.</div>
   </div>`;
 }
 // Wählt je nach Kartentyp die passende Darstellung
