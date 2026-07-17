@@ -335,24 +335,27 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .loyalty-legend { margin-top: 18px; font-size: 0.72rem; color: #8C8B84; line-height: 1.6; }
 
 /* ■■ REWARDS-KARTE – 1:1 nach Entwurf; Stern-Emblem in den Rahmen eingelassen ■■ */
-.loyalty-card.rewards { position: relative; margin-top: 14px; padding: 40px 34px 28px; border-radius: 24px; }
-/* Der Kreis sitzt mittig auf der oberen Rahmenlinie; seine Creme-Füllung "öffnet" den Rahmen */
-.rw-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 56px; height: 56px; border-radius: 50%; background: #FAF8F4; border: 2px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.55rem; }
+.loyalty-card.rewards { position: relative; margin-top: 26px; padding: 40px 26px 28px; border-radius: 24px; }
+/* Kleiner, edler Kreis mittig auf der oberen Rahmenlinie. Der Creme-"Halo"
+   (box-shadow) maskiert die Linie rundum → sie berührt den Kreis nicht (Luft). */
+.rw-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; box-shadow: 0 0 0 8px #FAF8F4; }
 /* Kopf großzügig gesetzt, elegantere Abstände */
 .rw-tagline { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: #3E4A55; margin-bottom: 14px; }
 .rw-number { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4.4rem; line-height: 0.9; letter-spacing: -0.02em; color: #16212C; }
 .rw-headline { font-size: 1.18rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #F16B24; line-height: 1.1; margin-top: 8px; }
 .rw-subtitle { font-size: 0.82rem; color: #8C8B84; margin-top: 6px; }
 /* feine, kurze Trennlinien; oberhalb/unterhalb von Name & E-Mail */
-.rw-divider { height: 1px; background: #DED5C8; margin: 16px auto; max-width: 240px; }
+.rw-divider { height: 2px; background: #D6CBBB; margin: 16px auto; max-width: 240px; }
 .rw-name { font-size: 1.08rem; font-weight: 700; color: #16212C; margin-bottom: 8px; }
 .rw-email { font-size: 0.82rem; color: #8C8B84; }
 /* Legende: klar in 3 Zeilen, größer, mehr Zeilenabstand → gut lesbar */
-.rw-legend { margin-top: 20px; font-size: 0.84rem; color: #5A6169; line-height: 1.75; max-width: 400px; margin-left: auto; margin-right: auto; }
+.rw-legend { margin-top: 20px; font-size: 0.86rem; color: #3F464E; line-height: 1.8; max-width: 420px; margin-left: auto; margin-right: auto; }
 .rw-legend strong { color: #F16B24; }
 /* Modal = exakt gleiche Creme-Farbe wie die Karte (nahtlos, Rahmen "schwebt").
    !important schlägt den Cararra-Override, der Modals sonst auf Weiß zwingt. */
-#loyaltyModal .modal { background: #FAF8F4 !important; border-color: #EDE7DD !important; max-width: 600px; padding: 16px; }
+#loyaltyModal .modal { background: #FAF8F4 !important; border-color: #EDE7DD !important; max-width: 470px; padding: 18px 16px; }
+/* X mit mehr Luft in der Ecke */
+#loyaltyModal .modal-close { top: 20px; right: 20px; }
 
 /* ■■ PUNCH-KARTE – feste Fläche für ALLE Karten (wie 20er), Punkte skalieren je Kartengröße ■■ */
 /* Würfel-Muster: 2 = Diagonale, 5 = 3+2, 10 = 5+5, 20 = 5×4. */
@@ -4938,7 +4941,7 @@ function rewardsCardHTML(hoursPlayed) {
     <div class="rw-email">${esc(currentProfile?.email || currentUser?.email) || '—'}</div>
     <div class="rw-divider"></div>
     <div class="loyalty-grid">${loyaltyDotsHTML(hoursPlayed)}</div>
-    <div class="rw-legend">Die grauen Felder (%) sind Rabattstufen: 5 %, 10 %, 25 %, 50 % auf die jeweils nächste Stunde – und die <strong>100. Stunde ist umsonst (★)</strong>.</div>
+    <div class="rw-legend">Die grauen Felder (%) sind Rabattstufen:<br>5 %, 10 %, 25 %, 50 % auf die jeweils nächste Stunde –<br>und die <strong>100. Stunde ist umsonst (★)</strong>.</div>
   </div>`;
 }
 // Karten-Inhaber/Empfänger für Name/E-Mail-Zeile
