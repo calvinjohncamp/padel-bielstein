@@ -323,31 +323,36 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .loyalty-card-email { font-size: 0.8rem; color: #8C8B84; margin-bottom: 18px; }
 /* Rewards-Raster: gleiche Breite wie die Punch-Canvas (288px), damit die Karte
    genauso groß ist wie die Guthaben-/Zwanzigerkarten. */
-.loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); column-gap: 9px; row-gap: 11px; width: 100%; max-width: 400px; margin: 0 auto; }
+.loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); column-gap: 8px; row-gap: 11px; width: 100%; max-width: 360px; margin: 0 auto; }
 .loyalty-dot { aspect-ratio: 1; border-radius: 50%; background: #16212C; position: relative; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
 .loyalty-dot.filled { background: #F16B24; }
 /* Rabattstufen-Punkte: neutrales Grau; erreicht = orange. */
 .loyalty-dot.milestone { background: #9A9A93; }
 .loyalty-dot.milestone.filled { background: #F16B24; }
 /* gut lesbares "%" (bzw. ★ für die Gratis-Stunde) in Weiß */
-.loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.62rem; font-weight: 900; color: #fff; line-height: 1; pointer-events: none; }
+/* deutlich größere, gut lesbare "%"/★ in den Meilenstein-Punkten */
+.loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: "Arial","Helvetica",sans-serif; font-size: 0.86rem; font-weight: 700; color: #fff; line-height: 1; pointer-events: none; }
 .loyalty-legend { margin-top: 18px; font-size: 0.72rem; color: #8C8B84; line-height: 1.6; }
 
 /* ■■ REWARDS-KARTE – 1:1 nach Entwurf; Stern-Emblem in den Rahmen eingelassen ■■ */
-.loyalty-card.rewards { position: relative; margin-top: 12px; padding: 34px 30px 26px; border-radius: 24px; }
-/* Der Kreis sitzt mittig auf der oberen Rahmenlinie; sein Creme-Füllung "öffnet" den Rahmen */
-.rw-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 54px; height: 54px; border-radius: 50%; background: #FAF8F4; border: 2px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-.rw-tagline { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #3E4A55; margin-bottom: 6px; }
-.rw-number { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4.2rem; line-height: 0.92; letter-spacing: -0.02em; color: #16212C; }
-.rw-headline { font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #F16B24; line-height: 1.1; margin-top: 2px; }
-.rw-subtitle { font-size: 0.82rem; color: #8C8B84; margin-top: 2px; }
-.rw-divider { height: 1px; background: #E7E0D5; margin: 16px auto; max-width: 300px; }
-.rw-name { font-size: 1.05rem; font-weight: 700; color: #16212C; }
-.rw-email { font-size: 0.8rem; color: #8C8B84; margin-top: 2px; }
-.rw-legend { margin-top: 18px; font-size: 0.75rem; color: #6E6E66; line-height: 1.65; }
+.loyalty-card.rewards { position: relative; margin-top: 14px; padding: 40px 34px 28px; border-radius: 24px; }
+/* Der Kreis sitzt mittig auf der oberen Rahmenlinie; seine Creme-Füllung "öffnet" den Rahmen */
+.rw-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 56px; height: 56px; border-radius: 50%; background: #FAF8F4; border: 2px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.55rem; }
+/* Kopf großzügig gesetzt, elegantere Abstände */
+.rw-tagline { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: #3E4A55; margin-bottom: 14px; }
+.rw-number { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4.4rem; line-height: 0.9; letter-spacing: -0.02em; color: #16212C; }
+.rw-headline { font-size: 1.18rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #F16B24; line-height: 1.1; margin-top: 8px; }
+.rw-subtitle { font-size: 0.82rem; color: #8C8B84; margin-top: 6px; }
+/* feine, kurze Trennlinien; oberhalb/unterhalb von Name & E-Mail */
+.rw-divider { height: 1px; background: #DED5C8; margin: 16px auto; max-width: 240px; }
+.rw-name { font-size: 1.08rem; font-weight: 700; color: #16212C; margin-bottom: 8px; }
+.rw-email { font-size: 0.82rem; color: #8C8B84; }
+/* Legende: klar in 3 Zeilen, größer, mehr Zeilenabstand → gut lesbar */
+.rw-legend { margin-top: 20px; font-size: 0.84rem; color: #5A6169; line-height: 1.75; max-width: 400px; margin-left: auto; margin-right: auto; }
 .rw-legend strong { color: #F16B24; }
-/* Modal in der Account-Ansicht: breiter (Format ~1,5:1), durchgehend warmes Creme */
-#loyaltyModal .modal { background: #FAF8F4; border-color: #EDE7DD; max-width: 540px; padding: 18px; }
+/* Modal = exakt gleiche Creme-Farbe wie die Karte (nahtlos, Rahmen "schwebt").
+   !important schlägt den Cararra-Override, der Modals sonst auf Weiß zwingt. */
+#loyaltyModal .modal { background: #FAF8F4 !important; border-color: #EDE7DD !important; max-width: 600px; padding: 16px; }
 
 /* ■■ PUNCH-KARTE – feste Fläche für ALLE Karten (wie 20er), Punkte skalieren je Kartengröße ■■ */
 /* Würfel-Muster: 2 = Diagonale, 5 = 3+2, 10 = 5+5, 20 = 5×4. */
@@ -381,10 +386,11 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .buy-mini-amount { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 1.7rem; line-height: 1; color: #16212C; }
 
 /* ■■ ACCOUNT-MODAL: Blätter-Steuerung ■■ */
-.card-pager { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
-.card-pager-label { font-size: 0.72rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.1em; margin-right: auto; }
-.card-pager button { width: 40px; height: 40px; border-radius: 50%; border: 1.6px solid var(--gold); background: transparent; color: var(--gold); font-size: 1.35rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-.card-pager button:hover:not(:disabled) { background: rgba(241,107,36,0.1); }
+.card-pager { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 0 6px; }
+.card-pager-label { font-family: "Arial","Helvetica",sans-serif; font-size: 0.78rem; font-weight: 700; color: #8C8B84; text-transform: uppercase; letter-spacing: 0.14em; margin-right: auto; }
+.card-pager button { width: 44px; height: 44px; border-radius: 50%; border: 1.6px solid #F16B24; background: transparent; color: #F16B24; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; padding: 0; }
+.card-pager button svg { width: 18px; height: 18px; }
+.card-pager button:hover:not(:disabled) { background: #F16B24; color: #fff; }
 .card-pager button:disabled { visibility: hidden; }
 
 /* ■■ ACCOUNT-MODAL: Persönliche Daten bearbeiten ■■ */
@@ -802,8 +808,8 @@ main {
     <div id="accountPageHost"></div>
     <div class="card-pager" id="cardPager" style="display:none;">
       <span class="card-pager-label" id="cardPagerLabel"></span>
-      <button type="button" id="cardPagerPrev" onclick="pageCard(-1)" aria-label="Zurück">‹</button>
-      <button type="button" id="cardPagerNext" onclick="pageCard(1)" aria-label="Weiter">›</button>
+      <button type="button" id="cardPagerPrev" onclick="pageCard(-1)" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+      <button type="button" id="cardPagerNext" onclick="pageCard(1)" aria-label="Weiter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
     </div>
   </div>
 </div>
@@ -5186,7 +5192,9 @@ async function confirmCardPurchase(skipAuthCheck) {
 // ============================================================
 // Meilenstein-Rabatte: Schluessel = Punkt, ab dem der Rabatt greift
 // (z.B. 6 = die 6. Stunde, nachdem 5 Stunden gespielt wurden).
-const LOYALTY_MILESTONES = { 6: 5, 11: 10, 26: 25, 51: 50, 100: 100 };
+// Position (Kreis-Nr.) → Rabatt-Prozent; 100 = Gratis-Stunde (★).
+// Platzierung im 10×10-Raster: 5=Z1/Sp5, 10=Z1/Sp10, 25=Z3-Mitte, 50=Z5-rechts, 100=letzter.
+const LOYALTY_MILESTONES = { 5: 5, 10: 10, 25: 25, 50: 50, 100: 100 };
 
 // Account-Modal-Seiten: [Rewards] → [Guthabenkarte(n)] → [Meine Daten]
 let accountPages = [];
