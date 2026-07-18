@@ -3308,29 +3308,29 @@ function getFreibadHours(dateStr) {
 async function loadTodayBookings() {
   if (!currentUser) return [];
   const today = todayStr();
-  const email = currentProfile?.email || currentUser.email;
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/bookings?select=court,date,hour_start,duration&date=eq.${today}&status=eq.paid&email=eq.${encodeURIComponent(email)}`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
-    );
-    if (!res.ok) return [];
-    return await res.json();
-  } catch(e) { return []; }
+  const { data, error } = await sb
+    .from('bookings')
+    .select('court,date,hour_start,duration,status')
+    .eq('user_id', currentUser.id)
+    .eq('date', today)
+    .in('status', ['paid', 'active']);
+  if (error) throw error;
+  return data || [];
 }
 
 async function loadTodayAboSlot() {
   if (!currentUser) return null;
   const today = new Date();
   const weekday = today.getDay();
-  const email = currentProfile?.email || currentUser.email;
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/subscriptions?select=court,weekday,hour_start,duration&weekday=eq.${weekday}&status=eq.active&email=eq.${encodeURIComponent(email)}&limit=1`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
+    const { data, error } = await sb
+      .from('subscriptions')
+      .select('court,weekday,hour_start,duration')
+      .eq('user_id', currentUser.id)
+      .eq('weekday', weekday)
+      .eq('status', 'active')
+      .limit(1);
+    if (error) throw error;
     if (!data || data.length === 0) return null;
     // Als Buchungsobjekt zurückgeben (mit heutigem Datum)
     const s = data[0];
@@ -3344,28 +3344,29 @@ async function loadTodayAboSlot() {
 async function loadUpcomingBookings() {
   if (!currentUser) return [];
   const today = todayStr();
-  const email = currentProfile?.email || currentUser.email;
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/bookings?select=court,date,hour_start,duration,price_paid_cents&date=gte.${today}&status=eq.paid&email=eq.${encodeURIComponent(email)}&order=date.asc,hour_start.asc&limit=100`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
-    );
-    if (!res.ok) return [];
-    return await res.json();
-  } catch(e) { return []; }
+  const { data, error } = await sb
+    .from('bookings')
+    .select('id,court,date,hour_start,duration,price_paid_cents,status,stripe_session_id')
+    .eq('user_id', currentUser.id)
+    .gte('date', today)
+    .in('status', ['pending', 'paid', 'active'])
+    .order('date', { ascending: true })
+    .order('hour_start', { ascending: true })
+    .limit(100);
+  if (error) throw error;
+  return data || [];
 }
 
 async function loadActiveAbos() {
   if (!currentUser) return [];
-  const email = currentProfile?.email || currentUser.email;
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/subscriptions?select=court,weekday,hour_start,duration,starts_on,ends_on&status=eq.active&email=eq.${encodeURIComponent(email)}&order=weekday.asc`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
-    );
-    if (!res.ok) return [];
-    return await res.json();
-  } catch(e) { return []; }
+  const { data, error } = await sb
+    .from('subscriptions')
+    .select('id,court,weekday,hour_start,duration,starts_on,ends_on,status')
+    .eq('user_id', currentUser.id)
+    .in('status', ['pending', 'active'])
+    .order('weekday', { ascending: true });
+  if (error) throw error;
+  return data || [];
 }
 
 async function renderMySection() {
@@ -3379,9 +3380,22 @@ async function renderMySection() {
   notLoggedIn.style.display = 'none';
   loggedIn.style.display    = 'block';
 
-  const [bookings, abos] = await Promise.all([loadUpcomingBookings(), loadActiveAbos()]);
-
   const bookingsEl = document.getElementById('mySingleBookingsList');
+  const abosEl = document.getElementById('myAbosList');
+  bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Buchungen werden geladen …</div></div>`;
+  abosEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Abos werden geladen …</div></div>`;
+
+  let bookings, abos;
+  try {
+    [bookings, abos] = await Promise.all([loadUpcomingBookings(), loadActiveAbos()]);
+  } catch(e) {
+    const safeMessage = esc(e?.message || 'Unbekannter Datenbankfehler');
+    bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;color:#d64545;">Buchungen konnten nicht geladen werden:<br>${safeMessage}</div>`;
+    abosEl.innerHTML = `<div class="play-empty" style="padding:24px 0;color:#d64545;">Abos konnten nicht geladen werden:<br>${safeMessage}</div>`;
+    console.error('Meine Buchungen laden fehlgeschlagen:', e);
+    return;
+  }
+
   if (!bookings.length) {
     bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Keine kommenden Buchungen</div></div>`;
   } else {
@@ -3389,16 +3403,16 @@ async function renderMySection() {
       const dateStr = new Date(b.date+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
       const timeStr = `${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start+b.duration).padStart(2,'0')}:00`;
       const price = b.price_paid_cents ? (b.price_paid_cents/100).toFixed(2)+' €' : '';
+      const pending = b.status === 'pending';
       return `<div class="closure-item">
         <div style="flex:1;">
           <div class="closure-item-date">${dateStr} · ${timeStr} Uhr</div>
-          <div class="closure-item-note">Court #${b.court}${price ? ' · '+price : ''}</div>
+          <div class="closure-item-note">Court #${b.court}${price ? ' · '+price : ''}${pending ? ' · Zahlung wird bestätigt …' : ''}</div>
         </div>
       </div>`;
     }).join('');
   }
 
-  const abosEl = document.getElementById('myAbosList');
   if (!abos.length) {
     abosEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Kein aktives Jahresabo</div></div>`;
   } else {
@@ -5100,7 +5114,7 @@ function profileCardHTML() {
       <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
       <div class="form-group"><label class="form-label">E-Mail</label><input class="form-input" id="pfEmail" type="email" value="${email}"></div>
       <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
-      <button class="book-btn visible" style="width:100%;position:static;" onclick="saveProfile()">Ändern</button>
+      <button class="book-btn visible" id="pfSaveBtn" style="width:100%;position:static;" onclick="saveProfile()">Änderungen speichern</button>
       <div class="profile-save-ok" id="pfSaveMsg"></div>
     </div>
   </div>`;
@@ -5426,36 +5440,52 @@ function pageCard(dir) {
 // Persönliche Daten speichern (users-Tabelle + ggf. Login-E-Mail via Auth)
 async function saveProfile() {
   const msg = document.getElementById('pfSaveMsg');
+  const btn = document.getElementById('pfSaveBtn');
   const name  = document.getElementById('pfName').value.trim();
-  const email = document.getElementById('pfEmail').value.trim();
+  const email = document.getElementById('pfEmail').value.trim().toLowerCase();
   const phone = document.getElementById('pfPhone').value.trim();
   if (!name)  { msg.style.color = '#d64545'; msg.textContent = 'Bitte einen Namen angeben.'; return; }
   if (!email) { msg.style.color = '#d64545'; msg.textContent = 'Bitte eine E-Mail angeben.'; return; }
   msg.style.color = ''; msg.textContent = 'Wird gespeichert …';
+  btn.disabled = true; btn.textContent = 'Wird gespeichert …';
   try {
-    const headers = await authHeaders();
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?auth_id=eq.${currentUser.id}`, {
-      method: 'PATCH',
-      headers: { ...headers, 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ full_name: name, phone: phone || null, email }),
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!currentUser?.id) throw new Error('Keine aktive Anmeldung. Bitte erneut anmelden.');
 
-    // E-Mail ist zugleich der Login → Supabase Auth aktualisieren (mit Bestätigungsmail)
-    const oldEmail = currentProfile?.email || currentUser?.email;
+    const oldEmail = (currentProfile?.email || currentUser?.email || '').trim().toLowerCase();
+    const emailChanged = email !== oldEmail;
     let emailNote = '';
-    if (email && email !== oldEmail) {
+
+    // E-Mail ist zugleich der Login. Erst wenn Supabase Auth die Änderung
+    // akzeptiert, wird dieselbe Adresse in der Profiltabelle gespeichert.
+    if (emailChanged) {
       const { error: authErr } = await sb.auth.updateUser({ email });
-      if (authErr) emailNote = ' (E-Mail-Login-Änderung fehlgeschlagen)';
-      else emailNote = ' – E-Mail bitte über den Bestätigungslink bestätigen';
+      if (authErr) throw new Error('E-Mail-Login konnte nicht geändert werden: ' + translateAuthError(authErr.message));
+      emailNote = ' – neue E-Mail bitte über den Bestätigungslink bestätigen';
     }
 
-    if (currentProfile) { currentProfile.full_name = name; currentProfile.phone = phone; currentProfile.email = email; }
+    // .select().maybeSingle() ist absichtlich wichtig: Ein durch RLS blockiertes
+    // Update liefert sonst unter Umständen keinen HTTP-Fehler, aber 0 Zeilen.
+    const { data: saved, error: profileErr } = await sb
+      .from('users')
+      .update({ full_name: name, phone: phone || null, email })
+      .eq('auth_id', currentUser.id)
+      .select('auth_id,full_name,email,phone')
+      .maybeSingle();
+
+    if (profileErr) throw new Error('Profildaten konnten nicht gespeichert werden: ' + profileErr.message);
+    if (!saved || saved.auth_id !== currentUser.id) {
+      throw new Error('Keine Profildaten geändert. Bitte die Supabase-Update-Policy prüfen.');
+    }
+
+    // Nur den nachweislich von der Datenbank zurückgegebenen Stand übernehmen.
+    currentProfile = { ...(currentProfile || {}), ...saved };
     const nb = document.getElementById('userBarName'); if (nb) nb.textContent = name;
 
-    msg.style.color = ''; msg.textContent = '✓ Gespeichert' + emailNote;
+    msg.style.color = '#2f7d45'; msg.textContent = '✓ Dauerhaft gespeichert' + emailNote;
   } catch(e) {
     msg.style.color = '#d64545'; msg.textContent = 'Fehler beim Speichern: ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Änderungen speichern';
   }
 }
 
