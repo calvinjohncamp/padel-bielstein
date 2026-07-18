@@ -424,6 +424,15 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .card-pager button svg { width: 18px; height: 18px; }
 .card-pager button:hover:not(:disabled) { background: #F16B24; color: #fff; }
 .card-pager button:disabled { visibility: hidden; }
+#accountPageHost { touch-action: pan-y; }
+#accountPageHost.account-page-from-right { animation: accountPageFromRight 180ms ease-out; }
+#accountPageHost.account-page-from-left  { animation: accountPageFromLeft 180ms ease-out; }
+@keyframes accountPageFromRight { from { opacity: .45; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes accountPageFromLeft  { from { opacity: .45; transform: translateX(-18px); } to { opacity: 1; transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) {
+  #accountPageHost.account-page-from-right,
+  #accountPageHost.account-page-from-left { animation: none; }
+}
 
 /* ■■ ACCOUNT-MODAL: Persönliche Daten bearbeiten ■■ */
 .profile-form { text-align: left; margin-top: 4px; }
@@ -5410,6 +5419,49 @@ document.getElementById('loyaltyModal').addEventListener('click', function(e) {
   if (e.target === this) closeLoyaltyModal();
 });
 
+// Touch-Navigation für iPhone/iPad. Vertikales Scrollen bleibt erhalten;
+// erst eine klar überwiegend horizontale Bewegung wird als Swipe gewertet.
+(() => {
+  const host = document.getElementById('accountPageHost');
+  let startX = 0, startY = 0, startTime = 0, tracking = false;
+
+  host.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1 || e.target.closest('input, textarea, select, button, a')) {
+      tracking = false;
+      return;
+    }
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    startTime = Date.now();
+    tracking = true;
+  }, { passive: true });
+
+  host.addEventListener('touchmove', (e) => {
+    if (!tracking || e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.25 && e.cancelable) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  host.addEventListener('touchend', (e) => {
+    if (!tracking || e.changedTouches.length !== 1) return;
+    tracking = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+    const elapsed = Date.now() - startTime;
+    if (elapsed <= 800 && Math.abs(dx) >= 48 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+      pageCard(dx < 0 ? 1 : -1);
+    }
+  }, { passive: true });
+
+  host.addEventListener('touchcancel', () => { tracking = false; }, { passive: true });
+})();
+
 async function buildAccountPages() {
   let hoursPlayed = 0;
   try {
@@ -5428,7 +5480,7 @@ async function buildAccountPages() {
   accountPages.push({ type: 'profile' });
 }
 
-function renderAccountPage() {
+function renderAccountPage(direction = 0) {
   const host = document.getElementById('accountPageHost');
   const p = accountPages[accountPageIndex];
   if (!p) { host.innerHTML = ''; return; }
@@ -5440,6 +5492,13 @@ function renderAccountPage() {
 
   // Beim Blättern beginnt jede Karte wieder oben; der Pager bleibt fest sichtbar.
   host.scrollTop = 0;
+
+  // Kurzer, ruhiger Übergang – auch bei Bedienung über die sichtbaren Pfeile.
+  host.classList.remove('account-page-from-right', 'account-page-from-left');
+  if (direction) {
+    void host.offsetWidth;
+    host.classList.add(direction > 0 ? 'account-page-from-right' : 'account-page-from-left');
+  }
 
   // Rewards-Seite: Modal in den warmen Creme-Look versetzen
   document.querySelector('#loyaltyModal .modal').classList.toggle('rewards-mode', p.type === 'rewards');
@@ -5457,8 +5516,10 @@ function renderAccountPage() {
 }
 
 function pageCard(dir) {
-  accountPageIndex = Math.max(0, Math.min(accountPages.length - 1, accountPageIndex + dir));
-  renderAccountPage();
+  const nextIndex = Math.max(0, Math.min(accountPages.length - 1, accountPageIndex + dir));
+  if (nextIndex === accountPageIndex) return;
+  accountPageIndex = nextIndex;
+  renderAccountPage(dir);
 }
 
 // Persönliche Daten speichern (users-Tabelle + ggf. Login-E-Mail via Auth)
