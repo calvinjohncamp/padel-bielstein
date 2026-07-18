@@ -354,9 +354,26 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .rw-legend strong { color: #F16B24; }
 /* Modal = exakt gleiche Creme-Farbe wie die Karte (nahtlos, Rahmen "schwebt").
    !important schlägt den Cararra-Override, der Modals sonst auf Weiß zwingt. */
-#loyaltyModal .modal { background: #FAF8F4 !important; border-color: #EDE7DD !important; max-width: 470px; padding: 18px 16px; }
+#loyaltyModal .modal {
+  background: #FAF8F4 !important;
+  border-color: #EDE7DD !important;
+  max-width: 470px;
+  max-height: calc(100dvh - 32px);
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#accountPageHost {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 8px 4px 2px;
+}
 /* X mit mehr Luft in der Ecke */
-#loyaltyModal .modal-close { top: 20px; right: 20px; }
+#loyaltyModal .modal-close { top: 20px; right: 20px; z-index: 3; }
 
 /* ■■ PUNCH-KARTE – feste Fläche für ALLE Karten (wie 20er), Punkte skalieren je Kartengröße ■■ */
 /* Würfel-Muster: 2 = Diagonale, 5 = 3+2, 10 = 5+5, 20 = 5×4. */
@@ -422,7 +439,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .gift-sender-email { margin-top: 2px; color: #8C8B84; font-size: 0.8rem; }
 
 /* ■■ ACCOUNT-MODAL: Blätter-Steuerung ■■ */
-.card-pager { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 0 6px; }
+.card-pager { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 8px 6px 0; border-top: 1px solid #E7E0D5; background: #FAF8F4; }
 .card-pager-label { font-family: "Arial","Helvetica",sans-serif; font-size: 0.78rem; font-weight: 700; color: #8C8B84; text-transform: uppercase; letter-spacing: 0.14em; margin-right: auto; }
 .card-pager button { width: 44px; height: 44px; border-radius: 50%; border: 1.6px solid #F16B24; background: transparent; color: #F16B24; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; padding: 0; }
 .card-pager button svg { width: 18px; height: 18px; }
@@ -5454,6 +5471,9 @@ function renderAccountPage() {
   if (p.type === 'rewards')      { host.innerHTML = rewardsCardHTML(p.hours); label = 'Rewards'; }
   else if (p.type === 'card')    { host.innerHTML = anyCardHTML(p.card);     label = p.card.card_size ? cardLabel(p.card.card_size) : 'Wertkarte'; }
   else if (p.type === 'profile') { host.innerHTML = profileCardHTML();       label = 'Meine Daten'; }
+
+  // Beim Blättern beginnt jede Karte wieder oben; der Pager bleibt fest sichtbar.
+  host.scrollTop = 0;
 
   // Rewards-Seite: Modal in den warmen Creme-Look versetzen
   document.querySelector('#loyaltyModal .modal').classList.toggle('rewards-mode', p.type === 'rewards');
