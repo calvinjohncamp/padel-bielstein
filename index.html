@@ -115,10 +115,6 @@ body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color
     letter-spacing: 0.095em;
   }
 }
-@media (max-width: 560px) and (orientation: portrait) {
-  .hero { margin-bottom: 7px; }
-  main { padding-top: 0; }
-}
 @media (max-width: 390px) {
   .hero-launch {
     top: 70%;
@@ -722,6 +718,13 @@ main {
   .dur-row {
     flex-direction: column;
   }
+}
+
+/* iPhone-Hochformat: Header und Benutzerleiste als kompakte Einheit.
+   Muss am Ende stehen, da frühere Mobile-Regeln 16px + 18px setzen. */
+@media (max-width: 560px) and (orientation: portrait) {
+  .hero { margin-bottom: 4px !important; }
+  main { padding-top: 4px !important; }
 }
 </style>
 </head>
