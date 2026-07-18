@@ -833,6 +833,20 @@ main {
       <button class="modal-btn" style="background:#1a1a1a;border:1.5px solid var(--border);color:#aaa;" onclick="switchAuthTab('login')">← Zurück zum Login</button>
     </div>
 
+    <!-- NEW PASSWORD FORM – wird nach Klick auf den Supabase-Recovery-Link angezeigt -->
+    <div id="formRecovery" style="display:none;">
+      <div class="modal-sub" style="margin-bottom:16px;">Lege jetzt ein neues Passwort für deinen Account fest.</div>
+      <div class="form-group">
+        <label class="form-label">Neues Passwort</label>
+        <input class="form-input" type="password" id="recoveryPw" placeholder="Min. 8 Zeichen" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Passwort wiederholen</label>
+        <input class="form-input" type="password" id="recoveryPwConfirm" placeholder="Passwort erneut eingeben" autocomplete="new-password">
+      </div>
+      <button class="modal-btn gold" id="recoveryBtn" onclick="completePasswordRecovery()">Passwort speichern →</button>
+    </div>
+
     <!-- kein Gast-Zugang: Registrierung erforderlich -->
   </div>
 </div>
@@ -2794,6 +2808,7 @@ function updateSummary() {
 let currentUser = null;      // Supabase Auth User
 let currentProfile = null;   // users-Tabelle Eintrag
 let pendingAction = null;    // 'book' | 'abo' — was nach Login passieren soll
+let passwordRecoveryActive = false;
 
 // Auth-State beim Laden prüfen — init() läuft unabhängig davon
 sb.auth.getSession().then(({ data: { session } }) => {
@@ -2813,6 +2828,11 @@ sb.auth.onAuthStateChange(async (event, session) => {
     currentProfile = null;
     member = null;
     updateUserBar();
+  }
+  if (event === 'PASSWORD_RECOVERY') {
+    passwordRecoveryActive = true;
+    // Erst nach Abschluss des Auth-Callbacks die Passwortmaske öffnen.
+    setTimeout(openPasswordRecovery, 0);
   }
 });
 
@@ -2923,6 +2943,10 @@ async function openPortal() {
 function openModal(action) {
   pendingAction = (action === 'book' || action === 'abo' || action === 'card' || action === 'loyalty') ? action : null;
   const startTab = (action === 'register') ? 'register' : 'login';
+  document.getElementById('modalTitle').textContent = startTab === 'register' ? 'Registrieren' : 'Anmelden';
+  document.getElementById('modalSub').textContent = startTab === 'register'
+    ? 'Erstelle deinen persönlichen Account'
+    : 'Melde dich an um fortzufahren';
   switchAuthTab(startTab);
   clearAuthMessages();
   document.getElementById('authModal').classList.add('open');
@@ -2949,7 +2973,8 @@ function switchAuthTab(tab) {
   document.getElementById('formLogin').style.display    = tab==='login'    ? 'block' : 'none';
   document.getElementById('formRegister').style.display = tab==='register' ? 'block' : 'none';
   document.getElementById('formReset').style.display    = tab==='reset'    ? 'block' : 'none';
-  document.getElementById('authTabs').style.display     = tab==='reset'    ? 'none' : 'grid';
+  document.getElementById('formRecovery').style.display = tab==='recovery' ? 'block' : 'none';
+  document.getElementById('authTabs').style.display     = (tab==='reset' || tab==='recovery') ? 'none' : 'grid';
   document.getElementById('tabLogin').classList.toggle('active', tab==='login');
   document.getElementById('tabRegister').classList.toggle('active', tab==='register');
 }
@@ -3141,6 +3166,46 @@ async function doReset() {
   if (error) { showAuthErr(translateAuthError(error.message)); return; }
   showAuthOk('Link gesendet! Bitte prüfe dein Postfach.');
 }
+
+function openPasswordRecovery() {
+  switchAuthTab('recovery');
+  document.getElementById('modalTitle').textContent = 'Neues Passwort';
+  document.getElementById('modalSub').textContent = 'Passwort sicher zurücksetzen';
+  document.getElementById('authModal').classList.add('open');
+  setTimeout(() => document.getElementById('recoveryPw')?.focus(), 100);
+}
+
+async function completePasswordRecovery() {
+  const pw = document.getElementById('recoveryPw').value;
+  const confirmation = document.getElementById('recoveryPwConfirm').value;
+  if (pw.length < 8) { showAuthErr('Passwort mindestens 8 Zeichen.'); return; }
+  if (pw !== confirmation) { showAuthErr('Die beiden Passwörter stimmen nicht überein.'); return; }
+  if (!passwordRecoveryActive) { showAuthErr('Der Reset-Link ist abgelaufen. Bitte fordere einen neuen Link an.'); return; }
+
+  const btn = document.getElementById('recoveryBtn');
+  btn.disabled = true; btn.textContent = '…';
+  clearAuthMessages();
+  try {
+    const { error } = await sb.auth.updateUser({ password: pw });
+    if (error) { showAuthErr(translateAuthError(error.message)); return; }
+    passwordRecoveryActive = false;
+    // Zugangsdaten aus dem Recovery-Link aus der Adresszeile entfernen.
+    history.replaceState(null, document.title, location.pathname + location.search);
+    showAuthOk('Passwort geändert. Du bist jetzt angemeldet.');
+    setTimeout(() => {
+      closeModal();
+      showToast('Passwort erfolgreich geändert. 🎾');
+    }, 900);
+  } catch(e) {
+    showAuthErr('Netzwerkfehler – bitte versuche es erneut.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Passwort speichern →';
+  }
+}
+
+document.getElementById('recoveryPwConfirm').addEventListener('keydown', e => {
+  if (e.key === 'Enter') completePasswordRecovery();
+});
 
 // ============================================================
 //  JETZT SPIELEN – Türzugang
