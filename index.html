@@ -351,8 +351,25 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   scrollbar-gutter: stable;
   padding: 8px 4px 2px;
 }
-/* X mit mehr Luft in der Ecke */
-#loyaltyModal .modal-close { top: 20px; right: 20px; z-index: 3; }
+/* Klarer, sauber eingerückter Schließen-Button mit eigener Touchfläche. */
+#loyaltyModal .modal-close {
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(241,107,36,.38);
+  border-radius: 50%;
+  background: rgba(250,248,244,.94);
+  color: #121411;
+  font-size: 1.08rem;
+  box-shadow: 0 4px 14px rgba(18,20,17,.08);
+  -webkit-tap-highlight-color: transparent;
+}
+#loyaltyModal .modal-close:hover { color: #F16B24; background: #fff; }
 
 /* ■■ PUNCH-KARTE – feste Fläche für ALLE Karten (wie 20er), Punkte skalieren je Kartengröße ■■ */
 /* Würfel-Muster: 2 = Diagonale, 5 = 3+2, 10 = 5+5, 20 = 5×4. */
@@ -425,11 +442,17 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .card-pager button:hover:not(:disabled) { background: #F16B24; color: #fff; }
 .card-pager button:disabled { visibility: hidden; }
 #accountPageHost { touch-action: pan-y; }
-#accountPageHost.account-page-from-right { animation: accountPageFromRight 180ms ease-out; }
-#accountPageHost.account-page-from-left  { animation: accountPageFromLeft 180ms ease-out; }
-@keyframes accountPageFromRight { from { opacity: .45; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes accountPageFromLeft  { from { opacity: .45; transform: translateX(-18px); } to { opacity: 1; transform: translateX(0); } }
+#accountPageHost.account-page-exit-left  { animation: accountPageExitLeft 110ms ease-in forwards; }
+#accountPageHost.account-page-exit-right { animation: accountPageExitRight 110ms ease-in forwards; }
+#accountPageHost.account-page-from-right { animation: accountPageFromRight 280ms cubic-bezier(.22,.72,.28,1); }
+#accountPageHost.account-page-from-left  { animation: accountPageFromLeft 280ms cubic-bezier(.22,.72,.28,1); }
+@keyframes accountPageExitLeft  { to { opacity: .18; transform: translateX(-12px) scale(.995); } }
+@keyframes accountPageExitRight { to { opacity: .18; transform: translateX(12px) scale(.995); } }
+@keyframes accountPageFromRight { from { opacity: .12; transform: translateX(26px) scale(.995); } to { opacity: 1; transform: translateX(0) scale(1); } }
+@keyframes accountPageFromLeft  { from { opacity: .12; transform: translateX(-26px) scale(.995); } to { opacity: 1; transform: translateX(0) scale(1); } }
 @media (prefers-reduced-motion: reduce) {
+  #accountPageHost.account-page-exit-left,
+  #accountPageHost.account-page-exit-right,
   #accountPageHost.account-page-from-right,
   #accountPageHost.account-page-from-left { animation: none; }
 }
@@ -5397,6 +5420,7 @@ const LOYALTY_MILESTONES = { 5: 5, 10: 10, 25: 25, 50: 50, 100: 100 };
 // Account-Modal-Seiten: [Rewards] → [Wertkarte(n)] → [Meine Daten]
 let accountPages = [];
 let accountPageIndex = 0;
+let accountPageAnimating = false;
 
 // index (optional): direkt zur Karte mit diesem myCardsData-Index blättern
 async function openLoyaltyCard(index) {
@@ -5499,7 +5523,7 @@ function renderAccountPage(direction = 0) {
   host.scrollTop = 0;
 
   // Kurzer, ruhiger Übergang – auch bei Bedienung über die sichtbaren Pfeile.
-  host.classList.remove('account-page-from-right', 'account-page-from-left');
+  host.classList.remove('account-page-exit-left', 'account-page-exit-right', 'account-page-from-right', 'account-page-from-left');
   if (direction) {
     void host.offsetWidth;
     host.classList.add(direction > 0 ? 'account-page-from-right' : 'account-page-from-left');
@@ -5521,10 +5545,27 @@ function renderAccountPage(direction = 0) {
 }
 
 function pageCard(dir) {
+  if (accountPageAnimating) return;
   const nextIndex = Math.max(0, Math.min(accountPages.length - 1, accountPageIndex + dir));
   if (nextIndex === accountPageIndex) return;
-  accountPageIndex = nextIndex;
-  renderAccountPage(dir);
+  const host = document.getElementById('accountPageHost');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (reduceMotion) {
+    accountPageIndex = nextIndex;
+    renderAccountPage(0);
+    return;
+  }
+
+  accountPageAnimating = true;
+  host.classList.remove('account-page-from-right', 'account-page-from-left');
+  host.classList.add(dir > 0 ? 'account-page-exit-left' : 'account-page-exit-right');
+
+  setTimeout(() => {
+    accountPageIndex = nextIndex;
+    renderAccountPage(dir);
+    setTimeout(() => { accountPageAnimating = false; }, 290);
+  }, 105);
 }
 
 // Persönliche Daten speichern (users-Tabelle + ggf. Login-E-Mail via Auth)
