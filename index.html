@@ -81,44 +81,13 @@
   .easter-egg-zone:not(.ball-wobble):hover { animation-duration: 1ms; }
 }
 
-/* Easter-Egg Toast */
-.ee-toast {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: #FFD700;
-  color: #001F5B;
-  font-family: "Arial Narrow","Impact",sans-serif;
-  font-weight: 900;
-  font-size: 0.85rem;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  padding: 10px 22px;
-  border-radius: 30px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.35s ease;
-  z-index: 9999;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-}
-.ee-toast.orange {
-  background: #F44A22;
-  color: #ffffff;
-}
-.ee-toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
 
 /* ■■ HEADER ■■ */
 .hero { margin-bottom: 18px; border-bottom: 1px solid var(--border); background: #000; overflow: hidden; }
 .hero-frame { width: 100%; aspect-ratio: 3415 / 912; background: #000; position: relative; }
-body:not(.bielstein-theme) .hero-frame { aspect-ratio: 3903 / 1563; }
+.hero-frame picture { display: block; width: 100%; height: 100%; }
 .hero-img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
 .hero-launch {
   position: absolute;
@@ -139,6 +108,7 @@ body:not(.bielstein-theme) .hero-frame { aspect-ratio: 3903 / 1563; }
 .hero-launch .launch-gold { color: var(--gold); }
 .hero-launch .launch-blue { color: var(--blue); }
 @media (max-width: 560px) {
+  body.bielstein-theme .hero-frame { aspect-ratio: 7 / 2; }
   .hero-launch {
     top: 69%;
     font-size: clamp(0.50rem, 2.65vw, 0.78rem);
@@ -894,12 +864,13 @@ main {
 
 <div class="hero" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');" style="cursor:default;">
   <div class="hero-frame">
-    <img class="hero-img" src="Padel Bielstein Header NEU.jpg?v=20260717-1655" alt="Padel Bielstein">
+    <picture>
+      <source id="mobileHeroSource" media="(max-width: 560px)" srcset="Padel Bielstein Header iPhone.png?v=20260718-2155">
+      <img class="hero-img" src="Padel Bielstein Header NEU.jpg?v=20260717-1655" alt="Padel Bielstein">
+    </picture>
     <button class="easter-egg-zone" type="button" onclick="event.stopPropagation(); onEasterEggClick();" aria-label="Rewards öffnen"></button>
 </div>
 </div>
-<div class="ee-toast" id="eeToast"></div>
-
 <main>
   <!-- USER BAR -->
   <div class="user-bar" id="userBar">
@@ -907,7 +878,6 @@ main {
     <div id="userBarLoggedIn" style="display:none;width:100%;align-items:center;justify-content:space-between;">
       <span class="user-bar-name">Angemeldet als <strong id="userBarName">—</strong></span>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button class="user-bar-out dark-mode-btn" style="margin-right:12px;" onclick="toggleBielsteinTheme()">Dark Mode</button>
         <button class="account-icon-btn" style="margin-right:12px;" onclick="openLoyaltyCard()" aria-label="Rewards" title="Rewards">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
@@ -919,7 +889,6 @@ main {
     <div id="userBarLoggedOut" style="width:100%;display:flex;align-items:center;justify-content:space-between;">
       <span style="font-size:0.82rem;color:#666;">Zum Buchen bitte anmelden</span>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button class="user-bar-out dark-mode-btn" style="margin-right:12px;" onclick="toggleBielsteinTheme()">Dark Mode</button>
         <button class="account-icon-btn" style="margin-right:12px;" onclick="openLoyaltyCard()" aria-label="Rewards" title="Rewards">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
@@ -3702,29 +3671,9 @@ function translateAuthError(msg) {
 // ============================================================
 //  EMAIL-THEME FÜR BUCHUNGSBESTÄTIGUNG
 //  Wird an Supabase Edge Function create-checkout übergeben.
-//  Original = Orange/Anthrazit, Bielstein = Gelb/Blau.
+//  Aktuell ausschließlich der normale Orange/Anthrazit-Modus.
 // ============================================================
 function getCheckoutEmailTheme() {
-  const isBielstein = document.body.classList.contains('bielstein-theme');
-
-  if (isBielstein) {
-    return {
-      key: 'bielstein',
-      name: 'Padel Bielstein Gelb-Blau',
-      bg: '#000814',
-      card: '#0B0B0B',
-      panel: '#111111',
-      accent: '#FFC300',
-      accent_dark: '#E6AF00',
-      blue: '#06203A',
-      border: '#06203A',
-      text: '#FFFFFF',
-      muted: '#A8AAAC',
-      amount: '#FFC300',
-      link: '#FFC300'
-    };
-  }
-
   return {
     key: 'original',
     name: 'Padel Bielstein Original',
@@ -4938,13 +4887,8 @@ function formatDateDE(dateStr) {
 }
 
 // ============================================================
-//  EASTER EGG – Bielstein Theme (gelb/blau)
+//  HEADER-EASTER-EGG: öffnet die Rewards-Karte
 // ============================================================
-let eeToastTimer = null;
-
-// Klick auf den schwarzen Punkt im Header-Branding: öffnet ab sofort die
-// Rewards-Karte (früher: Theme-Umschaltung – die liegt jetzt auf dem
-// "Dark Mode"-Button in der User-Leiste).
 function onEasterEggClick() {
   const ballButton = document.querySelector('.easter-egg-zone');
   if (ballButton) {
@@ -4954,38 +4898,6 @@ function onEasterEggClick() {
     window.setTimeout(() => ballButton.classList.remove('ball-wobble'), 560);
   }
   openLoyaltyCard();
-}
-
-// Voreingestellt ist der Cararra-Look (body.bielstein-theme). Der Button
-// schaltet in den dunklen Schwarz/Rot-"Dark Mode" (Basis-Theme) und zurück.
-function toggleBielsteinTheme() {
-  const isOn = document.body.classList.toggle('bielstein-theme');
-  const img = document.querySelector('.hero-img');
-  if (img) {
-    img.src = isOn
-      ? 'Padel Bielstein Header NEU.jpg?v=20260717-1655'
-      : 'Header Padel Original.png?v=20260715-1620';
-  }
-  // isOn === true  → Cararra aktiv, Button bietet Wechsel zu Dark Mode an
-  // isOn === false → Dark Mode aktiv, Button bietet Rückweg zum Original an
-  document.querySelectorAll('.dark-mode-btn').forEach(b => {
-    b.textContent = isOn ? 'Dark Mode' : 'Original';
-  });
-  const msg = isOn
-    ? '🎾 Zurück zum Cararra-Look'
-    : '🌙 Dark Mode – Schwarz & Rot';
-  showEeToast(msg, isOn);
-}
-
-function showEeToast(msg, bielsteinOn) {
-  const t = document.getElementById('eeToast');
-  if (!t) return;
-  t.textContent = msg;
-  t.classList.remove('orange');
-  if (!bielsteinOn) t.classList.add('orange');
-  t.classList.add('show');
-  clearTimeout(eeToastTimer);
-  eeToastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
 // ============================================================
