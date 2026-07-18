@@ -115,6 +115,10 @@ body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color
     letter-spacing: 0.095em;
   }
 }
+@media (max-width: 560px) and (orientation: portrait) {
+  .hero { margin-bottom: 7px; }
+  main { padding-top: 0; }
+}
 @media (max-width: 390px) {
   .hero-launch {
     top: 70%;
@@ -865,7 +869,7 @@ main {
 <div class="hero" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');" style="cursor:default;">
   <div class="hero-frame">
     <picture>
-      <source id="mobileHeroSource" media="(max-width: 560px)" srcset="Padel Bielstein Header iPhone.png?v=20260718-2155">
+      <source id="mobileHeroSource" media="(max-width: 560px)" srcset="Padel%20Bielstein%20Header%20iPhone.png?v=20260718-2220">
       <img class="hero-img" src="Padel Bielstein Header NEU.jpg?v=20260717-1655" alt="Padel Bielstein">
     </picture>
     <button class="easter-egg-zone" type="button" onclick="event.stopPropagation(); onEasterEggClick();" aria-label="Rewards öffnen"></button>
