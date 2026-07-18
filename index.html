@@ -2159,6 +2159,21 @@ async function authHeaders() {
   return { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 }
 
+// Fachliche Tabellen (Buchungen, Abos, Zahlungen, Wertkarten) referenzieren
+// public.users.id. Supabase Auth verwendet dagegen auth.users.id. Diese IDs
+// dürfen nicht verwechselt werden.
+async function dataUserId() {
+  if (!currentUser) return null;
+  if (!currentProfile || currentProfile.auth_id !== currentUser.id) {
+    await loadProfile(currentUser.id);
+  }
+  return currentProfile?.id || null;
+}
+
+async function checkoutHeaders() {
+  return authHeaders();
+}
+
 // ============================================================
 //  PREISE – aus Supabase geladen, Fallback auf hardcoded
 // ============================================================
@@ -2381,12 +2396,13 @@ function showLoader(on) { document.getElementById('loadingBar').classList.toggle
 //  TEST-ABOS: Sandbox-Blocking + Supabase-Speicherung
 //  Live später idealerweise direkt per Stripe-Webhook.
 // ============================================================
-const LOCAL_ABOS_KEY = 'pb_test_active_abos_v3';
+const LOCAL_ABOS_KEY = 'pb_test_active_abos_v3'; // nur zur Bereinigung alter Testdaten
 const LOCAL_PENDING_ABO_KEY = 'pb_pending_abo_checkout_v3';
 
 function getLocalTestAbos() {
-  try { return JSON.parse(localStorage.getItem(LOCAL_ABOS_KEY) || '[]'); }
-  catch(e) { return []; }
+  // Lokale Test-Abos dürfen im Livebetrieb keine Plätze blockieren.
+  localStorage.removeItem(LOCAL_ABOS_KEY);
+  return [];
 }
 
 function saveLocalTestAbos(list) {
@@ -2473,11 +2489,11 @@ async function finalizePendingAboCheckout() {
   const pending = readPendingAboCheckout();
   if (!pending) return null;
 
-  // Im Testmodus wird das Abo bereits vor Stripe in Supabase reserviert.
-  addLocalAboFallback(pending);
+  // Die Aktivierung erfolgt ausschließlich serverseitig nach bestätigter
+  // Stripe-Zahlung. Der Browser darf kein bezahltes Abo simulieren.
   clearPendingAboCheckout();
 
-  return { ...pending, savedRemote: true };
+  return pending;
 }
 
 function localAboAppliesToDate(abo, dateStr) {
@@ -2585,7 +2601,7 @@ async function init() {
     window.history.replaceState({}, '', '/');
 
     if (finalizedAbo) {
-      showToast(finalizedAbo.savedRemote ? '🎾 Jahresabo erfolgreich gespeichert.' : '🎾 Jahresabo lokal reserviert. Supabase prüfen.');
+      showToast('🎾 Zahlung erfolgreich. Das Jahresabo wird bestätigt.');
       await loadBookings(selDate);
       renderSlots();
       setMode('abo');
@@ -2597,6 +2613,7 @@ async function init() {
       renderSlots();
     }
   } else if (params.get('booking') === 'cancelled') {
+    clearPendingAboCheckout();
     window.history.replaceState({}, '', '/');
     showToast('Buchung abgebrochen.');
     loadBookings(selDate).then(() => renderSlots());
@@ -3131,6 +3148,9 @@ async function doRegister() {
         'Prefer': 'return=minimal,resolution=merge-duplicates',
       },
       body: JSON.stringify({
+        // Fachliche Benutzer-ID und Auth-ID bleiben absichtlich identisch.
+        // So können Webhooks user_id ohne fehleranfällige Übersetzung nutzen.
+        id:            authData.user.id,
         auth_id:       authData.user.id,
         email,
         full_name:     name,
@@ -3307,11 +3327,13 @@ function getFreibadHours(dateStr) {
 
 async function loadTodayBookings() {
   if (!currentUser) return [];
+  const userId = await dataUserId();
+  if (!userId) return [];
   const today = todayStr();
   const { data, error } = await sb
     .from('bookings')
     .select('court,date,hour_start,duration,status')
-    .eq('user_id', currentUser.id)
+    .eq('user_id', userId)
     .eq('date', today)
     .in('status', ['paid', 'active']);
   if (error) throw error;
@@ -3320,13 +3342,15 @@ async function loadTodayBookings() {
 
 async function loadTodayAboSlot() {
   if (!currentUser) return null;
+  const userId = await dataUserId();
+  if (!userId) return null;
   const today = new Date();
   const weekday = today.getDay();
   try {
     const { data, error } = await sb
       .from('subscriptions')
       .select('court,weekday,hour_start,duration')
-      .eq('user_id', currentUser.id)
+      .eq('user_id', userId)
       .eq('weekday', weekday)
       .eq('status', 'active')
       .limit(1);
@@ -3343,11 +3367,13 @@ async function loadTodayAboSlot() {
 // ============================================================
 async function loadUpcomingBookings() {
   if (!currentUser) return [];
+  const userId = await dataUserId();
+  if (!userId) return [];
   const today = todayStr();
   const { data, error } = await sb
     .from('bookings')
     .select('id,court,date,hour_start,duration,price_paid_cents,status,stripe_session_id')
-    .eq('user_id', currentUser.id)
+    .eq('user_id', userId)
     .gte('date', today)
     .in('status', ['pending', 'paid', 'active'])
     .order('date', { ascending: true })
@@ -3359,10 +3385,12 @@ async function loadUpcomingBookings() {
 
 async function loadActiveAbos() {
   if (!currentUser) return [];
+  const userId = await dataUserId();
+  if (!userId) return [];
   const { data, error } = await sb
     .from('subscriptions')
     .select('id,court,weekday,hour_start,duration,starts_on,ends_on,status')
-    .eq('user_id', currentUser.id)
+    .eq('user_id', userId)
     .in('status', ['pending', 'active'])
     .order('weekday', { ascending: true });
   if (error) throw error;
@@ -3746,6 +3774,13 @@ async function confirmBooking(skipAuthCheck) {
   const birthYear = currentProfile?.birth_year || null;
   const custType = currentProfile?.customer_type || 'account';
   const emailTheme = getCheckoutEmailTheme();
+  const userId = await dataUserId();
+  const headers = await checkoutHeaders();
+
+  if (!userId) {
+    showToast('Dein Benutzerprofil konnte nicht geladen werden. Bitte neu anmelden.');
+    return;
+  }
 
   showToast('Weiter zu Stripe …');
 
@@ -3754,18 +3789,15 @@ async function confirmBooking(skipAuthCheck) {
       'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout',
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7`,
-          'apikey': 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7'
-        },
+        headers,
         body: JSON.stringify({
           court,
           date: selDate,
           hour_start: hour,
           duration: selDur,
           price_cents,
-          user_id: currentUser?.id || null,
+          user_id: userId,
+          auth_user_id: currentUser.id,
           customer_type: custType,
           email,
           full_name: fullName,
@@ -3818,6 +3850,13 @@ async function submitAbo(skipAuthCheck) {
   const birthYear = currentProfile?.birth_year || null;
   const custType = currentProfile?.customer_type || 'account';
   const emailTheme = getCheckoutEmailTheme();
+  const userId = await dataUserId();
+  const headers = await checkoutHeaders();
+
+  if (!userId) {
+    showToast('Dein Benutzerprofil konnte nicht geladen werden. Bitte neu anmelden.');
+    return;
+  }
 
   const pendingAbo = {
     booking_type: 'abo',
@@ -3832,7 +3871,8 @@ async function submitAbo(skipAuthCheck) {
     weeks_reserved: 52,
     starts_on: new Date().toISOString().slice(0,10),
     ends_on: (() => { const d = new Date(); d.setFullYear(d.getFullYear() + 1); return d.toISOString().slice(0,10); })(),
-    user_id: currentUser?.id || null,
+    user_id: userId,
+    auth_user_id: currentUser.id,
     customer_type: custType,
     email,
     full_name: fullName,
@@ -3842,26 +3882,9 @@ async function submitAbo(skipAuthCheck) {
     email_theme_key: emailTheme.key
   };
 
+  // Erst Stripe, dann Aktivierung durch den signierten Webhook. Ein
+  // abgebrochener Checkout darf keinen Jahresplatz dauerhaft blockieren.
   storePendingAboCheckout(pendingAbo);
-  addLocalAboFallback(pendingAbo);
-
-  // TESTMODUS: Vor Stripe in Supabase speichern, damit der Slot sofort auf allen Geräten blockt.
-  // Vor Live-Schaltung wird diese Logik sauber in den Stripe-Webhook verlagert.
-  showToast('Abo wird in Supabase reserviert …');
-  const remote = await saveTestAboToSupabase(pendingAbo);
-
-  if (!remote.ok) {
-    showToast('Supabase speichert Abo nicht: ' + remote.error);
-    console.error('Abo Supabase Insert fehlgeschlagen:', remote.error);
-    return;
-  }
-
-  await loadAboBookings(aboWd);
-  renderAboSlots();
-  if (selDate) {
-    await loadBookings(selDate);
-    renderSlots();
-  }
 
   showToast('Weiter zu Stripe …');
 
@@ -3870,11 +3893,7 @@ async function submitAbo(skipAuthCheck) {
       'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout',
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7`,
-          'apikey': 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7'
-        },
+        headers,
         body: JSON.stringify({
           booking_type: 'abo',
           abo: true,
@@ -3888,7 +3907,8 @@ async function submitAbo(skipAuthCheck) {
           price_per_week_cents: Math.round(pricePerWeek * 100),
           weeks_billed: 30,
           weeks_reserved: 52,
-          user_id: currentUser?.id || null,
+          user_id: userId,
+          auth_user_id: currentUser.id,
           customer_type: custType,
           email,
           full_name: fullName,
@@ -5305,6 +5325,13 @@ async function confirmCardPurchase(skipAuthCheck) {
 
   const purchaserEmail = currentProfile?.email || currentUser?.email;
   const fullName = currentProfile?.full_name || '';
+  const userId = await dataUserId();
+  const headers = await checkoutHeaders();
+
+  if (!userId) {
+    showCardErr('Dein Benutzerprofil konnte nicht geladen werden. Bitte neu anmelden.');
+    return;
+  }
 
   showToast('Weiter zu Stripe …');
 
@@ -5313,11 +5340,7 @@ async function confirmCardPurchase(skipAuthCheck) {
       'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout',
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7`,
-          'apikey': 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7'
-        },
+        headers,
         body: JSON.stringify({
           booking_type: 'card',
           // Entweder alte Stunden-Karte (card_size) ODER neue Wertkarte (balance_eur)
@@ -5330,7 +5353,8 @@ async function confirmCardPurchase(skipAuthCheck) {
           gift_message: giftMessage,
           sender_name: fullName,
           sender_email: purchaserEmail,
-          user_id: currentUser?.id || null,
+          user_id: userId,
+          auth_user_id: currentUser.id,
           purchaser_email: purchaserEmail,
           full_name: fullName,
         }),
