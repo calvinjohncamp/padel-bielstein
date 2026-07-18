@@ -3733,19 +3733,20 @@ function translateAuthError(msg) {
 // ============================================================
 function getCheckoutEmailTheme() {
   return {
-    key: 'original',
-    name: 'Padel Bielstein Original',
-    bg: '#161616',
-    card: '#1E1E1E',
-    panel: '#111111',
-    accent: '#F44A22',
-    accent_dark: '#D93F1C',
-    blue: '#F44A22',
-    border: '#F44A22',
-    text: '#F6F6F6',
-    muted: '#A8AAAC',
-    amount: '#F44A22',
-    link: '#F44A22'
+    key: 'cararra',
+    name: 'Padel Bielstein Carrara',
+    bg: '#E8E7E3',
+    card: '#FAF8F4',
+    panel: '#FFFFFF',
+    accent: '#F16B24',
+    accent_dark: '#D95718',
+    blue: '#F16B24',
+    border: '#F16B24',
+    text: '#121411',
+    muted: '#6F706B',
+    amount: '#F16B24',
+    link: '#D95718',
+    header_image: 'https://padel-bielstein.de/Padel%20Bielstein%20Header%20iPhone.png'
   };
 }
 
@@ -5334,6 +5335,7 @@ async function confirmCardPurchase(skipAuthCheck) {
 
   const purchaserEmail = currentProfile?.email || currentUser?.email;
   const fullName = currentProfile?.full_name || '';
+  const emailTheme = getCheckoutEmailTheme();
   const userId = await dataUserId();
   const headers = await checkoutHeaders();
 
@@ -5366,6 +5368,9 @@ async function confirmCardPurchase(skipAuthCheck) {
           auth_user_id: currentUser.id,
           purchaser_email: purchaserEmail,
           full_name: fullName,
+          ui_theme: emailTheme.key,
+          email_theme: emailTheme,
+          email_theme_key: emailTheme.key,
         }),
       }
     );
