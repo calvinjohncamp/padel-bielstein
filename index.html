@@ -3,6 +3,13 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<script>
+/* Ganz bewusst das Allererste auf der Seite: festhalten, ob der Nutzer
+   gerade von Stripe zurueckkommt. Die Initialisierung raeumt die Adresszeile
+   spaeter auf ("/"), danach ist die Information unwiederbringlich weg -
+   und die Startseite erschiene faelschlich direkt nach einer Zahlung. */
+window.__pbFromStripe = /[?&]booking=(success|cancelled)/.test(location.search);
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -2671,7 +2678,22 @@ async function init() {
     const finalizedAbo = await finalizePendingAboCheckout();
     window.history.replaceState({}, '', '/');
 
-    if (finalizedAbo) {
+    // Wertkarten-Kauf: zurueck auf die Wertkarten-Seite, damit das neue
+    // Guthaben und der Verlauf direkt sichtbar sind.
+    let boughtCard = false;
+    try {
+      boughtCard = localStorage.getItem('pb_pending_card') === '1';
+      localStorage.removeItem('pb_pending_card');
+    } catch(e) {}
+
+    if (boughtCard) {
+      showToast('🎾 Guthaben aufgeladen! Bestätigung kommt per E-Mail.');
+      setMode('gutscheine');
+      try {
+        await loadMyCards();   // laedt UND zeichnet die Kartenliste
+        if (typeof renderCreditOverview === 'function') await renderCreditOverview();
+      } catch(e) { console.warn('Guthaben nach Kauf laden fehlgeschlagen', e); }
+    } else if (finalizedAbo) {
       showToast('🎾 Zahlung erfolgreich. Das Jahresabo wird bestätigt.');
       await loadBookings(selDate);
       renderSlots();
@@ -2835,7 +2857,9 @@ function renderSlots() {
       const isBlocked = !!blockedSlots[ct][k];
       const blockReason = blockedSlots[ct][k] || '';
       const isAboBlock = blockReason === 'Abo vergeben' || isLocalAboBlockedOnDate(selDate, ct, h);
-      sl.className = "slot " + (expired ? "booked" : bk ? (isAboBlock ? "abo-booked" : "booked") : spillover ? "free" : isSel ? "selected" : isSec ? "selected-second" : "free");
+      // Abgelaufen bekommt eine eigene Klasse: "vorbei" ist etwas anderes als
+      // "von jemandem belegt" und muss auf einen Blick unterscheidbar sein.
+      sl.className = "slot " + (expired ? "expired" : bk ? (isAboBlock ? "abo-booked" : "booked") : spillover ? "free" : isSel ? "selected" : isSec ? "selected-second" : "free");
       if (expired) {
         sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Abgelaufen</span></span><span class="slot-price">${p} €</span>`;
       } else if (bk) {
@@ -5013,7 +5037,9 @@ const CARD_BALANCES = [25, 50, 100, 200, 250]; // Wertkarten-Betraege (in EUR)
 const CARD_PRICE_PER_HOUR = 24;
 const VALUE_DOT_EUR = 25;
 let selectedCardSize = null;
-let selectedBalance = 100;   // gewaehlter Wertkarten-Betrag (EUR), Alternative zu selectedCardSize
+let selectedBalance = 25;    // gewaehlter Wertkarten-Betrag (EUR), Alternative zu selectedCardSize
+                             // Bewusst der kleinste Betrag: Die Voreinstellung soll
+                             // niemanden zu einem groesseren Kauf draengen.
 let cardIsGift = false;
 let myCardsData = [];
 
@@ -5376,7 +5402,8 @@ function renderCardSizeGrid() {
       grid.appendChild(el);
     });
   }
-  // Wertkarten: 1 Credit = 25 EUR Startguthaben.
+  // Wertkarten: reine Euro-Betraege. "Credits" war eine alte Zwischenwaehrung
+  // und ist entfallen - das Guthaben wird direkt in Euro verrechnet.
   const balGrid = document.getElementById('cardBalanceGrid');
   if (balGrid) {
     balGrid.innerHTML = '';
@@ -5384,11 +5411,7 @@ function renderCardSizeGrid() {
       const el = document.createElement('div');
       el.className = 'buy-mini' + (selectedBalance === eur ? ' selected' : '');
       el.onclick = () => selectBalance(eur);
-      // Vorlage: Betrag gross, darunter klein die Credits
-      const credits = eur / VALUE_DOT_EUR;
-      el.innerHTML =
-        `<div class="buy-mini-amount">${eur} €</div>` +
-        `<div class="buy-mini-price">${credits} Credit${credits === 1 ? '' : 's'}</div>`;
+      el.innerHTML = `<div class="buy-mini-amount">${eur} €</div>`;
       balGrid.appendChild(el);
     });
   }
@@ -5512,6 +5535,11 @@ async function confirmCardPurchase(skipAuthCheck) {
     );
     const data = await res.json();
     if (data.url) {
+      // Merken, dass gerade eine Wertkarte gekauft wird. Stripe schickt alle
+      // Zahlungen an dieselbe Rueckkehr-Adresse; ohne diesen Vermerk koennten
+      // wir nachher nicht unterscheiden, ob eine Buchung oder eine Wertkarte
+      // bezahlt wurde - und wuerden auf der falschen Seite landen.
+      try { localStorage.setItem('pb_pending_card', '1'); } catch(e) {}
       window.location.href = data.url;
     } else {
       showCardErr('Fehler: ' + (data.error || 'Unbekannter Fehler'));
@@ -6281,6 +6309,24 @@ body.bielstein-theme .slot.abo-booked {
   cursor: not-allowed;
 }
 body.bielstein-theme .slot.abo-booked .slot-time { color: #F6F1E7 !important; }
+/* Abgelaufen: kennt die Vorlage nicht (dort gibt es keine Vergangenheit).
+   Bewusst als "leere Hülle" gestaltet - gestrichelter Rand, kein Füllton -
+   damit sofort klar ist: nicht vergeben, sondern schlicht vorbei.
+   Belegt (gefülltes Beige) und Abo (dunkel) bleiben die kräftigen Zustände. */
+body.bielstein-theme .slot.expired {
+  background: transparent !important;
+  border: 1.5px dashed #E2DACB !important;
+  color: #B8B0A2 !important;
+  cursor: not-allowed;
+}
+body.bielstein-theme .slot.expired .slot-time,
+body.bielstein-theme .slot.expired .slot-price {
+  color: #B8B0A2 !important; text-decoration: none !important;
+}
+body.bielstein-theme .slot.expired .slot-chip {
+  background: transparent !important; color: #B8B0A2 !important;
+  box-shadow: inset 0 0 0 1px #E2DACB !important;
+}
 body.bielstein-theme .slot-time {
   font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
   font-weight: 600 !important; font-size: 14px !important; letter-spacing: 0 !important;
@@ -6817,6 +6863,8 @@ body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
 /* Splash bei jedem Laden; danach Login-Seite, falls noch nicht angemeldet. */
 (function(){
   var MAIL_KEY = 'pb_last_email';
+  // Gesetzt vom Skript ganz oben im <head> - siehe Begruendung dort.
+  var FROM_STRIPE = !!window.__pbFromStripe;
   function leave(splash){
     splash.setAttribute('hidden','');
     document.documentElement.style.removeProperty('overflow');
@@ -6834,6 +6882,9 @@ body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
   function start(){
     var splash = document.getElementById('pbSplash');
     if(!splash) return;
+    // Rueckkehr von Stripe: Wer gerade bezahlt hat, will das Ergebnis sehen
+    // und nicht wieder auf der Startseite anfangen.
+    if(FROM_STRIPE) return;
     splash.removeAttribute('hidden');
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
