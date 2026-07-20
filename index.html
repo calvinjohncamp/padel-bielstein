@@ -5448,8 +5448,41 @@ async function fetchMyCards() {
       }
       return c;
     }).filter(c => c.balance_remaining_eur != null || c.balance_original_eur != null);
+
+    await applyLedgerToCards();
   } catch(e) { console.warn('Karten laden fehlgeschlagen', e); myCardsData = []; }
   return myCardsData;
+}
+
+// Restwert der einzelnen Karten aus dem Kontobuch ableiten.
+//
+// Warum nicht einfach balance_remaining_eur fortschreiben? Weil derselbe
+// Geldbetrag dann an zwei Stellen stuende - im Kontobuch und auf der Karte -
+// und beide unweigerlich auseinanderlaufen. Genau das war zu sehen:
+// Guthaben 168 EUR, Karte unveraendert 200 EUR.
+//
+// Massgeblich ist das Kontobuch. Der Verbrauch wird auf die Karten verteilt,
+// aelteste zuerst - so wie man auch im Portemonnaie den aeltesten Gutschein
+// zuerst einloest. Die Summe der Kartenrestwerte ergibt damit immer exakt
+// das angezeigte Spielguthaben.
+async function applyLedgerToCards() {
+  if (!myCardsData.length) return;
+  const balanceCents = await fetchCreditBalanceCents();
+  if (balanceCents === null) return;   // Kein Kontobuch lesbar -> Werte unveraendert lassen
+
+  const byAge = [...myCardsData].sort(
+    (a, b) => String(a.created_at || '').localeCompare(String(b.created_at || ''))
+  );
+
+  const totalOriginal = byAge.reduce((s, c) => s + (Number(c.balance_original_eur) || 0), 0);
+  let consumed = Math.max(0, totalOriginal - balanceCents / 100);
+
+  for (const c of byAge) {
+    const orig = Number(c.balance_original_eur) || 0;
+    const used = Math.min(consumed, orig);
+    c.balance_remaining_eur = Math.round((orig - used) * 100) / 100;
+    consumed -= used;
+  }
 }
 
 async function claimReceivedValueCards() {
