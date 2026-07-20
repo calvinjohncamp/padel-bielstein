@@ -907,6 +907,23 @@ main {
 
 <!-- ══ SPLASH / EINSTIEGSSEITE · 1:1 nach v2-Vorlage ══
      Erscheint nur beim ersten Besuch, ist wegklickbar (kein Login-Wall). -->
+<!-- Zustimmung vor jeder Abbuchung vom Guthaben.
+     Guthaben ist bezahltes Geld - es darf nie ohne ausdrueckliche
+     Bestaetigung des Nutzers belastet werden. -->
+<div class="modal-overlay" id="creditConfirmModal">
+  <div class="modal">
+    <div class="modal-title">Mit Guthaben bezahlen?</div>
+    <div class="modal-sub" id="ccSub">—</div>
+    <div class="cc-lines">
+      <div class="cc-line"><span>Buchung</span><span id="ccPrice">—</span></div>
+      <div class="cc-line"><span>Aktuelles Guthaben</span><span id="ccBalance">—</span></div>
+      <div class="cc-line cc-line-total"><span>Guthaben danach</span><span id="ccAfter">—</span></div>
+    </div>
+    <button class="modal-btn" id="ccOk">Guthaben abbuchen und buchen →</button>
+    <button class="modal-btn cc-cancel" id="ccCancel">Abbrechen</button>
+  </div>
+</div>
+
 <div class="pb-splash" id="pbSplash" hidden>
   <div class="pb-splash-inner">
     <div class="pb-splash-top">
@@ -3831,6 +3848,58 @@ function getCheckoutEmailTheme() {
 // ============================================================
 //  BUCHUNG BESTÄTIGEN — Stripe Checkout
 // ============================================================
+// Aktuellen Guthabenstand aus dem Kontobuch holen (maßgebliche Quelle).
+// Liefert null, wenn der Stand nicht ermittelbar ist - dann wird NICHT
+// stillschweigend mit 0 weitergerechnet, sondern nachgefragt.
+async function fetchCreditBalanceCents() {
+  if (typeof sb === 'undefined' || !currentProfile || !currentProfile.id) return null;
+  const { data, error } = await sb
+    .from('credit_ledger')
+    .select('amount_cents')
+    .eq('user_id', currentProfile.id);
+  if (error) { console.warn('Guthabenstand nicht abrufbar', error); return null; }
+  return (data || []).reduce((s, e) => s + (Number(e.amount_cents) || 0), 0);
+}
+
+// Zustimmung zur Abbuchung einholen. Gibt true zurueck, wenn der Nutzer
+// zustimmt. Guthaben ist bezahltes Geld und wird nie ungefragt belastet.
+function askCreditConfirm(priceCents, balanceCents) {
+  // Eigene Formatierung: eur() liegt in einem anderen Skriptblock und ist hier
+  // nicht sichtbar.
+  const fmt = (cents) =>
+    (cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  return new Promise(resolve => {
+    const modal  = document.getElementById('creditConfirmModal');
+    const okBtn  = document.getElementById('ccOk');
+    const cancel = document.getElementById('ccCancel');
+    if (!modal || !okBtn || !cancel) { resolve(true); return; }
+
+    const used  = Math.min(priceCents, balanceCents);
+    const after = balanceCents - used;
+    const rest  = priceCents - used;
+
+    document.getElementById('ccSub').textContent = rest > 0
+      ? 'Dein Guthaben deckt einen Teil. Der Rest wird über Stripe bezahlt.'
+      : 'Diese Buchung wird vollständig von deinem Guthaben bezahlt.';
+    document.getElementById('ccPrice').textContent   = fmt(priceCents);
+    document.getElementById('ccBalance').textContent = fmt(balanceCents);
+    document.getElementById('ccAfter').textContent   = fmt(after);
+    okBtn.textContent = rest > 0
+      ? `${fmt(used)} abbuchen, ${fmt(rest)} per Karte →`
+      : 'Guthaben abbuchen und buchen →';
+
+    const close = (answer) => {
+      modal.classList.remove('open');
+      okBtn.onclick = null; cancel.onclick = null;
+      resolve(answer);
+    };
+    okBtn.onclick  = () => close(true);
+    cancel.onclick = () => close(false);
+
+    modal.classList.add('open');
+  });
+}
+
 async function confirmBooking(skipAuthCheck) {
   if (!selSlot) return;
   if (!skipAuthCheck && !currentUser) {
@@ -3870,7 +3939,21 @@ async function confirmBooking(skipAuthCheck) {
     return;
   }
 
-  showToast('Weiter zu Stripe …');
+  // Vor dem Absenden klaeren, ob Guthaben im Spiel ist. Frueher stand hier
+  // ungeprueft "Weiter zu Stripe" - auch dann, wenn Stripe nie aufgerufen wurde,
+  // weil das Guthaben die Buchung komplett deckte.
+  const balanceCents = await fetchCreditBalanceCents();
+  if (balanceCents === null) {
+    showToast('Guthabenstand konnte nicht geprüft werden. Bitte erneut versuchen.');
+    return;
+  }
+  if (balanceCents > 0) {
+    const ok = await askCreditConfirm(price_cents, balanceCents);
+    if (!ok) { showToast('Buchung abgebrochen.'); return; }
+  }
+
+  const fullyByCredit = balanceCents >= price_cents;
+  showToast(fullyByCredit ? 'Buchung wird abgeschlossen …' : 'Weiter zu Stripe …');
 
   try {
     const res = await fetch(
@@ -3899,6 +3982,20 @@ async function confirmBooking(skipAuthCheck) {
     const data = await res.json();
     if (data.url) {
       window.location.href = data.url;
+    } else if (data.paid_with_credit) {
+      // Vollstaendig vom Guthaben bezahlt - es gibt bewusst keine Stripe-Seite.
+      // Genau dieser Fall wurde frueher als "Unbekannter Fehler" gemeldet,
+      // obwohl die Buchung erfolgreich war.
+      const rest = (Number(data.balance_after_cents) || 0) / 100;
+      const restTxt = rest.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      showToast(`🎾 Gebucht und vom Guthaben bezahlt. Restguthaben: ${restTxt} €`);
+      selSlot = null;
+      await loadBookings(selDate);
+      renderSlots();
+      try {
+        if (typeof renderCreditOverview === 'function') await renderCreditOverview();
+        if (typeof loadMyBookings === 'function') await loadMyBookings();
+      } catch(e) { console.warn('Ansicht nach Guthabenbuchung aktualisieren', e); }
     } else {
       showToast('Fehler: ' + (data.error || 'Unbekannter Fehler'));
     }
@@ -6362,6 +6459,26 @@ body.bielstein-theme .slot.abo-booked .slot-price { color: #F6F1E7 !important; }
 /* Datums-Kacheln: gleiche Höhe, auch wenn kein Monat angezeigt wird */
 body.bielstein-theme .date-chip .dmon:empty::after { content: "\00A0"; }
 
+/* ── GUTHABEN-BESTÄTIGUNG ── */
+body.bielstein-theme #creditConfirmModal .cc-lines {
+  margin: 18px 0 22px; border-top: 1px solid #E2DACB;
+}
+body.bielstein-theme #creditConfirmModal .cc-line {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 11px 0; border-bottom: 1px solid #E2DACB;
+  font-size: 14px; color: #7A7368;
+}
+body.bielstein-theme #creditConfirmModal .cc-line span:last-child {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 700; color: #1C1A17;
+}
+body.bielstein-theme #creditConfirmModal .cc-line-total span { color: #1C1A17; font-weight: 700; }
+body.bielstein-theme #creditConfirmModal .cc-line-total span:last-child { color: #FF5A36; }
+body.bielstein-theme #creditConfirmModal .cc-cancel {
+  background: transparent !important; color: #7A7368 !important;
+  border: 1.5px solid #E2DACB !important; margin-top: 10px;
+}
+
 /* ── LEGENDE ── */
 body.bielstein-theme .legend-item { font-size: 12px !important; color: #7A7368 !important; gap: 6px; }
 body.bielstein-theme .ldot { width: 10px !important; height: 10px !important; border-radius: 50% !important; }
@@ -6723,34 +6840,54 @@ body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
       return;
     }
 
-    var cards = (typeof myCardsData !== 'undefined' && myCardsData) ? myCardsData : [];
-    var balance = cards.reduce(function(s,c){ return s + (Number(c.balance_remaining_eur) || 0); }, 0);
+    // Guthaben und Verlauf kommen aus dem Kontobuch (credit_ledger) - der
+    // einzigen maßgeblichen Quelle. Frueher wurde aus den Restwerten der Karten
+    // gerechnet; das ergab zwei Zahlen fuer denselben Betrag, die auseinander-
+    // laufen, sobald eine Buchung Guthaben abzieht. Das Kontobuch enthaelt
+    // Aufladungen UND Abzuege, also genau den Verlauf, der angezeigt werden soll.
+    //
+    // Zusaetzlich war hier ein Zeitfehler: setMode() stoesst das Laden nur an
+    // und wartet nicht - gerechnet wurde auf einer noch leeren Liste, das
+    // Guthaben blieb auf 0 stehen. Deshalb wird jetzt hier selbst geladen.
+    var ledger = [];
+    var ledgerOk = false;
+    try {
+      if(typeof sb !== 'undefined' && currentProfile && currentProfile.id){
+        var lres = await sb.from('credit_ledger')
+          .select('created_at, kind, amount_cents, note')
+          .eq('user_id', currentProfile.id)
+          .order('created_at', { ascending: false });
+        if(!lres.error){ ledger = lres.data || []; ledgerOk = true; }
+        else console.warn('Kontobuch laden fehlgeschlagen', lres.error);
+      }
+    } catch(e){ console.warn('Kontobuch laden fehlgeschlagen', e); }
+
+    if(!ledgerOk){
+      // Kein stiller Nullwert: eine 0 waere hier eine Falschaussage ueber Geld.
+      amtEl.textContent = '—';
+      if(nameEl) nameEl.textContent = (currentProfile && currentProfile.full_name) || '';
+      histEl.innerHTML = '<div class="wk-empty">Guthaben konnte gerade nicht geladen werden. Bitte Seite neu laden.</div>';
+      return;
+    }
+
+    var balance = ledger.reduce(function(s,e){ return s + (Number(e.amount_cents) || 0); }, 0) / 100;
     amtEl.textContent = eur(balance);
     if(nameEl) nameEl.textContent = (currentProfile && currentProfile.full_name) || '';
 
-    var rows = [];
-    cards.forEach(function(c){
-      var v = Number(c.balance_original_eur) || 0;
-      if(v > 0) rows.push({ ts: c.created_at, label: 'Aufladung', amount: v });
+    var KIND_LABEL = {
+      topup:      'Aufladung',
+      booking:    'Buchung',
+      refund:     'Erstattung',
+      expiry:     'Verfall',
+      correction: 'Korrektur'
+    };
+    var rows = ledger.map(function(e){
+      return {
+        ts:     e.created_at,
+        label:  e.note || KIND_LABEL[e.kind] || 'Bewegung',
+        amount: (Number(e.amount_cents) || 0) / 100
+      };
     });
-
-    // Per Guthaben bezahlte Buchungen (sobald die serverseitige Verrechnung aktiv ist)
-    try {
-      if(typeof sb !== 'undefined' && currentProfile && currentProfile.id){
-        var res = await sb.from('bookings').select('*').eq('user_id', currentProfile.id);
-        (res && res.data ? res.data : []).forEach(function(b){
-          if(b.card_purchase_id){
-            rows.push({
-              ts: b.created_at || b.date,
-              label: 'Buchung' + (b.court != null ? ' Court ' + b.court : ''),
-              amount: -(Number(b.price) || 0)
-            });
-          }
-        });
-      }
-    } catch(e){ /* Verlauf zeigt dann nur Aufladungen */ }
-
-    rows.sort(function(a,b){ return new Date(b.ts||0) - new Date(a.ts||0); });
 
     histEl.innerHTML = rows.length
       ? rows.map(function(r){
