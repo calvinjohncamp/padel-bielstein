@@ -3621,62 +3621,46 @@ function getBookingStatus(b) {
   return 'now';
 }
 
-// Demo-Status: 'soon' → 'now' (beim Türöffnen) → 'done' (nach Schließen)
-let demoPlayStatus = 'soon';
-
-function getDemoBookings() {
-  const now = new Date();
-  const h = now.getHours();
-  return [
-    { court: 1, date: todayStr(), hour_start: h, duration: 1, isDemo: true },
-  ];
-}
+// Die frühere Demo-Ansicht ist entfallen. Sie zeigte eine erfundene Buchung,
+// wenn keine echte vorlag, und schaltete dabei die Tueroeffner frei - erkennbar
+// nur an einem Tooltip. Wer ohne Buchung vor der Tuer steht, darf keine
+// scharfen Tueroeffner sehen. Jetzt steht dort ehrlich, dass nichts gebucht ist.
 
 async function renderPlaySection() {
   const notLoggedIn = document.getElementById('playNotLoggedIn');
   const loggedIn    = document.getElementById('playLoggedIn');
 
-  // Auch ohne Login: Demo-Modus zeigen
+  // Ohne Anmeldung gibt es nichts anzuzeigen - dann die Anmelde-Aufforderung.
+  if (!currentUser) {
+    notLoggedIn.style.display = 'block';
+    loggedIn.style.display    = 'none';
+    return;
+  }
   notLoggedIn.style.display = 'none';
   loggedIn.style.display    = 'block';
 
-  // Buchungen laden (echte haben Vorrang)
-  let allBookings = [];
-  let isDemo = false;
-
-  if (currentUser) {
-    const [regularBookings, aboSlot] = await Promise.all([loadTodayBookings(), loadTodayAboSlot()]);
-    allBookings = [...regularBookings];
-    if (aboSlot) {
-      const exists = allBookings.some(b => b.hour_start === aboSlot.hour_start && b.court === aboSlot.court);
-      if (!exists) allBookings.push(aboSlot);
-    }
-  }
-
-  // Keine echten Buchungen → Demo-Daten
-  if (allBookings.length === 0) {
-    allBookings = getDemoBookings();
-    isDemo = true;
+  const [regularBookings, aboSlot] = await Promise.all([loadTodayBookings(), loadTodayAboSlot()]);
+  let allBookings = [...regularBookings];
+  if (aboSlot) {
+    const exists = allBookings.some(b => b.hour_start === aboSlot.hour_start && b.court === aboSlot.court);
+    if (!exists) allBookings.push(aboSlot);
   }
 
   allBookings.sort((a,b) => a.hour_start - b.hour_start);
 
   const listEl = document.getElementById('playBookingsList');
 
-  // Demo-Badge über der Liste
-  const demoBanner = isDemo
-    ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:7px 12px;background:rgba(246,246,246,0.07);border:1px solid rgba(246,246,246,0.25);border-radius:8px;">
-        <span style="font-size:0.7rem;color:var(--gold);font-family:'Arial Narrow','Impact',sans-serif;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;">◉ Demo-Ansicht</span>
-        <span style="font-size:0.72rem;color:#666;">Echte Buchungen erscheinen hier automatisch</span>
-       </div>`
-    : '';
-
-  listEl.innerHTML = demoBanner + allBookings.map(b => {
-    const status = isDemo ? demoPlayStatus : getBookingStatus(b);
+  if (!allBookings.length) {
+    listEl.innerHTML =
+      `<div class="play-empty" style="padding:20px 0;">
+         <div style="font-size:0.85rem;color:#7A7368;">Heute hast du keine Buchung.</div>
+       </div>`;
+  } else {
+  listEl.innerHTML = allBookings.map(b => {
+    const status = getBookingStatus(b);
     const h1 = `${String(b.hour_start).padStart(2,'0')}:00`;
     const h2 = `${String(b.hour_start + b.duration).padStart(2,'0')}:00`;
     const aboTag  = b.isAbo  ? ' <span style="font-size:0.65rem;color:#888;font-weight:400;">(Abo)</span>'  : '';
-    const demoTag = b.isDemo ? ' <span style="font-size:0.65rem;color:#555;font-weight:400;">(Demo)</span>' : '';
     const badgeCls = status === 'now'  ? 'play-badge-now'  :
                      status === 'done' ? 'play-badge-past' :
                      status === 'soon' ? 'play-badge-soon' : 'play-badge-past';
@@ -3686,12 +3670,13 @@ async function renderPlaySection() {
     return `
       <div class="play-booking-item">
         <div class="play-booking-info">
-          <div class="play-booking-court">Court #${b.court}${aboTag}${demoTag}</div>
+          <div class="play-booking-court">Court #${b.court}${aboTag}</div>
           <div class="play-booking-time">${h1} – ${h2} Uhr</div>
         </div>
         <span class="${badgeCls}">${badgeTxt}</span>
       </div>`;
   }).join('');
+  }
 
   // Aktive Buchung für Türbuttons
   const active = getActiveBooking(allBookings);
@@ -3715,15 +3700,12 @@ async function renderPlaySection() {
 
     accessLbl.textContent = zugangTuer + ' öffnen';
     courtLbl.textContent  = courtTueren + ' öffnen';
-    // Im Demo-Modus: Buttons sichtbar aber visuell als Demo markiert
     accessBtn.disabled = false;
     courtBtn.disabled  = false;
     accessBtn.dataset.court = active.court;
     courtBtn.dataset.court  = active.court;
-    if (isDemo) {
-      accessBtn.title = 'Demo – kein echtes Signal';
-      courtBtn.title  = 'Demo – kein echtes Signal';
-    }
+    accessBtn.title = '';
+    courtBtn.title  = '';
     doorBtns.style.display = 'block';
   } else {
     const next = allBookings.find(b => getBookingStatus(b) === 'soon');
@@ -3785,11 +3767,9 @@ async function openAccessDoor() {
     logDoorEvent('🚪', `${doorName} geöffnet`);
     showToast(`✅ ${doorName} ist offen – bitte schließen nach Eintritt!`);
     btn.disabled = false;
-    // Demo-Status auf "Läuft jetzt" switchen
-    if (demoPlayStatus === 'soon') {
-      demoPlayStatus = 'now';
-      await renderPlaySection();
-    }
+    // Ansicht auffrischen: Der Status ergibt sich jetzt allein aus der
+    // echten Buchung und der Uhrzeit, nicht mehr aus einem Demo-Zustand.
+    await renderPlaySection();
   }, 800);
 }
 
@@ -3807,13 +3787,7 @@ async function openCourtDoors() {
     logDoorEvent('🎾', `${doorNames} geöffnet`);
     showToast(`✅ ${doorNames} sind offen – viel Spaß beim Spielen!`);
     btn.disabled = false;
-    // Demo: wenn Zugang schon geöffnet wurde (status=now) → nach Court-Türen = Spielzeit beendet simulieren
-    if (demoPlayStatus === 'now') {
-      setTimeout(async () => {
-        demoPlayStatus = 'done';
-        await renderPlaySection();
-      }, 4000); // 4 Sek. Verzögerung für Demo-Zwecke
-    }
+    await renderPlaySection();
   }, 800);
 }
 
