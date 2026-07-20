@@ -2903,12 +2903,29 @@ let currentProfile = null;   // users-Tabelle Eintrag
 let pendingAction = null;    // 'book' | 'abo' — was nach Login passieren soll
 let passwordRecoveryActive = false;
 
-// Auth-State beim Laden prüfen — init() läuft unabhängig davon
-sb.auth.getSession().then(({ data: { session } }) => {
-  if (session?.user) {
-    currentUser = session.user;
-    loadProfile(session.user.id).then(() => updateUserBar());
+// Auth-State beim Laden prüfen — init() läuft unabhängig davon.
+//
+// WICHTIG: getSession() liest ausschließlich den lokalen Browserspeicher.
+// Ist das Konto serverseitig gelöscht oder gesperrt, würde die alte Anmeldung
+// hier weiter als gültig gelten. Deshalb zusätzlich getUser() – das prüft den
+// Token beim Server und schlägt fehl, wenn es das Konto nicht mehr gibt.
+sb.auth.getSession().then(async ({ data: { session } }) => {
+  if (!session?.user) return;
+
+  const { data: { user }, error } = await sb.auth.getUser();
+
+  if (error || !user) {
+    console.warn('Anmeldung ungültig – lokale Sitzung wird verworfen.', error?.message || '');
+    try { await sb.auth.signOut(); } catch(e) {}
+    currentUser = null; currentProfile = null; member = null;
+    myMemberSources = [];
+    updateUserBar();
+    return;
   }
+
+  currentUser = user;
+  await loadProfile(user.id);
+  updateUserBar();
 });
 
 sb.auth.onAuthStateChange(async (event, session) => {
@@ -3191,38 +3208,26 @@ async function doRegister() {
   clearAuthMessages();
 
   try {
-    // 1. Supabase Auth Account anlegen
-    const { data: authData, error: authErr } = await sb.auth.signUp({ email, password: pw });
-    if (authErr) { showAuthErr(translateAuthError(authErr.message)); return; }
-
-    // 2. users-Tabelle befüllen via upsert
-    const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal,resolution=merge-duplicates',
+    // Konto anlegen. Die Stammdaten reisen als Metadaten mit – die Datenbank
+    // legt das Profil daraus selbst an (Trigger on_auth_user_created).
+    // Früher tat das ein zweiter Aufruf von hier aus; scheiterte der, entstand
+    // ein Konto ohne Profil, ohne dass es jemand bemerkte.
+    //
+    // customer_type / membership_source werden bewusst NICHT mitgeschickt –
+    // die Mitgliedschaft erkennt der Server über die bestätigte E-Mail.
+    const { error: authErr } = await sb.auth.signUp({
+      email,
+      password: pw,
+      options: {
+        data: {
+          full_name:  name,
+          phone:      phone || '',
+          gender:     gender || '',
+          birth_year: String(year),
+        },
       },
-      body: JSON.stringify({
-        // Fachliche Benutzer-ID und Auth-ID bleiben absichtlich identisch.
-        // So können Webhooks user_id ohne fehleranfällige Übersetzung nutzen.
-        id:            authData.user.id,
-        auth_id:       authData.user.id,
-        email,
-        full_name:     name,
-        phone,
-        gender,
-        // customer_type / membership_source / member_number werden bewusst
-        // NICHT gesendet – die Datenbank setzt sie beim Anlegen zwangsweise
-        // zurück und erkennt die Mitgliedschaft über die bestätigte E-Mail.
-        birth_year:    year,
-      }),
     });
-    if (!insertRes.ok) {
-      const err = await insertRes.text();
-      console.warn('Users insert Fehler:', err);
-    }
+    if (authErr) { showAuthErr(translateAuthError(authErr.message)); return; }
 
     showAuthOk('Fast fertig! Bitte bestätige deine E-Mail-Adresse – dann kannst du dich anmelden.');
   } catch(e) {
@@ -6720,11 +6725,29 @@ body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
     var user = document.getElementById('appbarUser');
     var auth = document.getElementById('appbarAuth');
     if(!user) return;
+
+    // Immer den echten Namen aus dem Profil bevorzugen – nicht den Text der
+    // (ausgeblendeten) User-Bar, der bei fehlendem Profil auf die E-Mail
+    // zurückfällt. Der Avatar zeigt dann die Initialen des Namens.
+    var profileName = '';
+    try {
+      if (typeof currentProfile !== 'undefined' && currentProfile && currentProfile.full_name) {
+        profileName = String(currentProfile.full_name).trim();
+      }
+    } catch(e) {}
+
+    var fallback = '';
     var nameEl = document.getElementById('userBarName');
-    var name = nameEl ? (nameEl.textContent||'').trim() : '';
-    if(isLoggedIn() && name && name !== '—'){
-      document.getElementById('appbarName').textContent = name;
-      document.getElementById('appbarAvatar').textContent = initials(name);
+    if (nameEl) fallback = (nameEl.textContent || '').trim();
+
+    var display = profileName || fallback;
+
+    if(isLoggedIn() && display && display !== '—'){
+      document.getElementById('appbarName').textContent = display;
+      // Initialen nur aus einem echten Namen bilden. Bei einer E-Mail als
+      // Rückfall wäre "C" für "calvin@…" irreführend – dann lieber neutral.
+      document.getElementById('appbarAvatar').textContent =
+        profileName ? initials(profileName) : '·';
       user.style.display = 'flex';
       if(auth) auth.style.display = 'none';
     } else {
