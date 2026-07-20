@@ -1,7 +1,7 @@
 # Padel Bielstein – Buchungssoftware
 
 Buchungssystem für die 2 Padel-Courts der Tennisfreunde Bielstein e.V.
-Live: **https://padel-bielstein.de**
+Live: **https://padel-bielstein.de** · Anlage geht Anfang 2027 in Betrieb.
 
 ## Stack
 
@@ -9,36 +9,41 @@ Live: **https://padel-bielstein.de**
 |---|---|
 | Frontend | Eine einzige `index.html` – Vanilla HTML/CSS/JS, kein Build-Schritt |
 | Hosting | GitHub Pages (dieses Repo), Custom Domain über `CNAME` |
-| Datenbank | Supabase Postgres – Projekt `padel-bielstein-prod`, Organisation "Padel Bielstein" |
+| Datenbank | Supabase Postgres – Projekt `padel-bielstein-prod` |
 | Zahlung | Stripe Checkout |
-| Bilder | `Header Padel Bielstein.png` / `Header Padel Original.png`, direkt aus diesem Repo geladen |
+| E-Mail | Resend über Supabase Edge Function |
 
 ## Deployment
 
-Jeder Push auf `main` aktualisiert automatisch die Live-Seite (GitHub Pages baut direkt aus diesem Branch).
-Kein separater Build- oder Deploy-Schritt nötig.
+Jeder Push auf `main` aktualisiert automatisch die Live-Seite.
+Kein separater Build- oder Deploy-Schritt.
 
-## Datenmodell (Supabase, Schema `public`)
+> **`CNAME` niemals löschen.** Die Datei bindet die Domain padel-bielstein.de
+> an GitHub Pages. Ohne sie ist die Seite nur noch unter der github.io-Adresse
+> erreichbar.
 
-- `bookings` – Buchungen (Court, Datum, Uhrzeit, Status, Kunde)
-- `payments`, `subscriptions` – Stripe-Zahlungen bzw. Abos
-- `prices` – Preistabelle nach Wochentag/Uhrzeit
-- `app_config` – Konfigurationswerte (u. a. `member_discount`)
-- `admins` – Admin-Rollen (Zutritt zum Admin-Bereich)
-- `users` – registrierte Bucher-Accounts
-- `door_events` – Zutrittssteuerung
-- `freibad_closures`, `freibad_config`, `freibad_exceptions` – Öffnungszeiten/Ausnahmen im Rahmen der Kooperation mit dem benachbarten Freibad Bielstein (Dauerkarteninhaber erhalten ebenfalls Mitgliedskonditionen)
+## Sicherheitsgrundsätze
 
-Zugangsdaten (DB-Passwort, API-Keys) liegen ausschließlich in Supabase/im Passwort-Manager der Verantwortlichen – nicht in diesem Repo.
+Diese Regeln sind in Datenbank und Edge Functions durchgesetzt – nicht nur
+im Frontend:
 
-## Bekannte offene Punkte
+- **Preise und Rabatte werden ausschließlich serverseitig berechnet.**
+  Werte aus dem Browser (`price_cents`, `customer_type`) werden ignoriert.
+- **Mitgliedschaft wird nicht behauptet, sondern hergeleitet.** Der Server
+  vergleicht die *bestätigte* E-Mail-Adresse mit der offiziellen Vereinsliste.
+  Es gibt kein Eingabefeld und kein speicherbares Häkchen.
+- **Guthaben ist ein Kontobuch** (`credit_ledger`). Der Saldo ist die Summe
+  aller Bewegungen, nicht ein änderbares Feld. Schreiben nur serverseitig.
+- **Buchungen und Abos entstehen nur über Edge Functions.** Das Frontend hat
+  keine Schreibrechte auf `bookings` und `subscriptions`.
+- **Doppelbuchungen** verhindert ein EXCLUDE-Constraint in der Datenbank,
+  nicht eine Prüfung im Browser.
 
-- Stripe-Webhooks / Pending→Active-Buchungsflow
-- Row-Level-Security-Policies vervollständigen
-- Admin-Rollenmodell (aktuell nur `admins`-Tabelle angelegt, Flow noch nicht fertig)
-- Schutz gegen Doppelbuchungen auf DB-Ebene
-- Mitgliederverwaltung: Login/Accounts für TFB-Mitglieder und externe Bucher (in Arbeit)
-- Vollständiger Testplan vor nächstem Feature-Push
+## Nicht in diesem Repo
+
+Datenbank-Skripte, Edge-Function-Quellcode, Design-Referenzen und die
+Projektdokumentation liegen bewusst außerhalb – sie gehören nicht auf eine
+öffentliche Website.
 
 ## Verantwortlich
 

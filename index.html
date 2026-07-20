@@ -8,14 +8,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Padel Bielstein">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#161616">
+<meta name="theme-color" content="#1C1A17">
 <meta name="description" content="Courts buchen, Spielguthaben verwalten und Rewards ansehen – Padel Bielstein.">
-<link rel="manifest" href="manifest.webmanifest?v=20260718-2138">
-<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png?v=20260718-2125">
-<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png">
-<link rel="shortcut icon" href="assets/icons/favicon.ico">
-<title>Padel Bielstein – Courts buchen v0.42</title>
+<link rel="manifest" href="manifest.webmanifest?v=20260720">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png?v=20260720">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png?v=20260720">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png?v=20260720">
+<link rel="shortcut icon" href="assets/icons/favicon.ico?v=20260720">
+<title>Padel Bielstein – Courts buchen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
 :root {
   --bg: #161616;
@@ -82,7 +85,7 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
+body { font-family: "Manrope","Arial","Helvetica",sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
 
 /* ■■ HEADER ■■ */
 .hero { margin-bottom: 18px; border-bottom: 1px solid var(--border); background: #000; overflow: hidden; }
@@ -95,7 +98,7 @@ body { font-family: "Arial","Helvetica",sans-serif; background: var(--bg); color
   top: 68%;
   transform: translateX(-50%);
   z-index: 2;
-  font-family: "Arial Narrow","Impact",sans-serif;
+  font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif;
   font-weight: 900;
   font-size: clamp(0.78rem, 2.15vw, 1.78rem);
   line-height: 1;
@@ -139,7 +142,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   height: 60px; padding: 0 20px; border-radius: 12px; cursor: pointer; transition: all 0.2s;
   border: 1.5px solid var(--border); background: var(--card);
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem;
+  font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem;
   letter-spacing: 0.08em; text-transform: uppercase; color: var(--white);
 }
 #tabAbo:not(.active) { color: var(--blue); border-color: var(--blue); }
@@ -149,8 +152,8 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 /* ■■ STEPS ■■ */
 .step-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: #0a0a0a; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.82rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.step-lbl { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.84rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-lt); }
+.step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: #0a0a0a; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.82rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-lbl { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.84rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-lt); }
 .gap { margin-bottom: 28px; }
 
 /* ■■ DATE SCROLL ■■ */
@@ -163,13 +166,13 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .date-chip { flex-shrink: 0; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 13px; cursor: pointer; transition: all 0.16s; text-align: center; min-width: 62px; }
 .date-chip:hover { border-color: var(--gold); }
 .date-chip.selected { background: var(--blue); border-color: var(--blue); color: #fff; }
-.date-chip .dname { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
-.date-chip .dnum { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.5rem; line-height: 1.1; }
+.date-chip .dname { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
+.date-chip .dnum { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.5rem; line-height: 1.1; }
 .date-chip .dmon { font-size: 0.65rem; opacity: 0.5; margin-top: 1px; }
 
 /* ■■ DURATION ■■ */
 .dur-row { display: flex; gap: 10px; }
-.dur-btn { flex: 1; height: 60px; padding: 0 16px; background: var(--card); border: 1.5px solid var(--border); color: var(--white); font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 10px; cursor: pointer; transition: all 0.16s; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.dur-btn { flex: 1; height: 60px; padding: 0 16px; background: var(--card); border: 1.5px solid var(--border); color: var(--white); font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 10px; cursor: pointer; transition: all 0.16s; display: flex; align-items: center; justify-content: center; gap: 12px; }
 .dur-btn:hover { border-color: var(--white); }
 .dur-btn.selected { background: var(--gold); border-color: var(--gold-dk); color: #0a0a0a; }
 .dur-btn .dprice { font-size: 0.78rem; font-weight: 600; opacity: 0.75; }
@@ -186,7 +189,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .courts-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .court-col { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--blue); }
 .court-hdr { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; background: #000; border-bottom: 1px solid var(--blue); }
-.court-name { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
+.court-name { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
 .slots-grid { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
 .slot { border-radius: 8px; padding: 10px 13px; cursor: pointer; transition: all 0.13s; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid transparent; }
 .slot.free { background: #272727; border-color: #333; }
@@ -195,11 +198,11 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .slot.abo-booked { background: #1a0a0a; border-color: #3a1a1a; cursor: not-allowed; }
 .slot.selected { background: var(--blue); border-color: var(--blue-dk); }
 .slot.selected-second { background: var(--blue); border-color: var(--blue-dk); }
-.slot-time { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: 0.03em; }
+.slot-time { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: 0.03em; }
 .slot.free .slot-time, .slot.selected .slot-time { color: #fff; }
 .slot.booked .slot-time { text-decoration: line-through; color: #888; }
 .slot.abo-booked .slot-time { color: #664444; }
-.slot-price { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.92rem; }
+.slot-price { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.92rem; }
 .slot.free .slot-price { color: var(--blue); }
 .slot.selected .slot-price { color: #fff; }
 .bkd-lbl { font-size: 0.62rem; color: #999; text-transform: uppercase; letter-spacing: 0.08em; }
@@ -209,43 +212,43 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .summary-card { background: var(--card); border: 1.5px solid var(--blue); border-radius: 12px; padding: 16px 20px; margin-bottom: 14px; display: none; animation: fadeUp 0.25s ease; }
 .summary-card.visible { display: block; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-.sum-hdr { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--white); margin-bottom: 12px; }
+.sum-hdr { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--white); margin-bottom: 12px; }
 .sum-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .sum-row:last-child { border-bottom: none; }
 .sum-row .sl { font-size: 0.83rem; color: #b8b8b8; }
-.sum-row .sv { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 1rem; }
+.sum-row .sv { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 1rem; }
 .sum-row.total .sl { color: var(--white); font-weight: 600; }
 .sum-row.total .sv { font-size: 1.5rem; color: var(--blue); }
 .disc-badge { background: rgba(244,74,34,0.18); border: 1px solid rgba(244,74,34,0.55); color: var(--blue); font-size: 0.65rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; margin-left: 6px; }
 
 /* ■■ BOOK BTN ■■ */
-.book-btn { width: 100%; height: 60px; background: var(--blue); color: #fff; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.12em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: none; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 24px rgba(244,74,34,0.3); }
+.book-btn { width: 100%; height: 60px; background: var(--blue); color: #fff; border: none; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.12em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: none; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 24px rgba(244,74,34,0.3); }
 .book-btn.visible { display: flex; }
 .book-btn:hover { background: var(--blue-dk); transform: translateY(-2px); }
 
 /* ■■ ABO ■■ */
 .weekday-row { display: flex; gap: 7px; flex-wrap: wrap; }
-.wd-btn { flex: 1; min-width: 50px; background: var(--card); border: 1.5px solid var(--border); color: var(--gray-lt); font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 11px 6px; border-radius: 10px; cursor: pointer; transition: all 0.16s; text-align: center; }
+.wd-btn { flex: 1; min-width: 50px; background: var(--card); border: 1.5px solid var(--border); color: var(--gray-lt); font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 11px 6px; border-radius: 10px; cursor: pointer; transition: all 0.16s; text-align: center; }
 .wd-btn:hover { border-color: #555; color: var(--white); }
 .wd-btn.selected { background: var(--gold); border-color: var(--gold-dk); color: #0a0a0a; }
 .abo-summary { background: var(--card); border: 1.5px solid var(--gold); border-radius: 14px; padding: 20px 22px; margin-top: 20px; display: none; animation: fadeUp 0.25s ease; }
 .abo-summary.visible { display: block; }
 .abo-sum-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-.abo-sum-title { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); }
+.abo-sum-title { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); }
 .abo-details { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 .abo-detail-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .abo-detail-row .dl { font-size: 0.83rem; color: #b8b8b8; }
-.abo-detail-row .dv { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--white); }
+.abo-detail-row .dv { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--white); }
 .abo-52 { font-size: 0.75rem; color: #888; text-align: center; margin-bottom: 16px; letter-spacing: 0.05em; }
 .abo-pricing { margin-bottom: 16px; }
 .abo-price-reg { font-size: 0.82rem; color: #888; margin-bottom: 4px; }
-.abo-price-total { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.8rem; color: var(--gold); line-height: 1; margin-bottom: 4px; }
+.abo-price-total { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.8rem; color: var(--gold); line-height: 1; margin-bottom: 4px; }
 .abo-price-save { font-size: 0.85rem; color: #4ade80; font-weight: 600; }
 .abo-benefits { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
 .abo-benefit { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #c0c0c0; }
 .abo-benefit-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
 .abo-weather { font-size: 0.82rem; color: #999; line-height: 1.5; margin-bottom: 18px; font-style: italic; }
-.abo-cta { width: 100%; height: 60px; background: var(--gold); color: #0a0a0a; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 28px rgba(246,246,246,0.2); }
+.abo-cta { width: 100%; height: 60px; background: var(--gold); color: #0a0a0a; border: none; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 28px rgba(246,246,246,0.2); }
 .abo-cta:hover { background: var(--gold-dk); transform: translateY(-2px); }
 
 /* ■■ AUTH MODAL ■■ */
@@ -254,10 +257,10 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .modal { background: var(--card); border: 1.5px solid var(--blue); border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 420px; animation: fadeUp 0.25s ease; position: relative; }
 .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #666; font-size: 1.4rem; cursor: pointer; line-height: 1; }
 .modal-close:hover { color: #fff; }
-.modal-title { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+.modal-title { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
 .modal-sub { font-size: 0.78rem; color: #888; margin-bottom: 22px; line-height: 1.5; }
 .modal-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 22px; }
-.modal-tab { padding: 10px; background: #1a1a1a; border: 1.5px solid var(--border); border-radius: 8px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: #888; cursor: pointer; text-align: center; transition: all 0.15s; }
+.modal-tab { padding: 10px; background: #1a1a1a; border: 1.5px solid var(--border); border-radius: 8px; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: #888; cursor: pointer; text-align: center; transition: all 0.15s; }
 .modal-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
 .form-group { margin-bottom: 14px; }
 .form-label { display: block; font-size: 0.72rem; color: #888; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 5px; }
@@ -265,7 +268,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .form-input:focus { outline: none; border-color: var(--blue); }
 .form-input::placeholder { color: #444; }
 .form-hint { font-size: 0.68rem; color: #666; margin-top: 4px; }
-.modal-btn { width: 100%; height: 52px; background: var(--blue); color: #fff; border: none; border-radius: 10px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; margin-top: 6px; }
+.modal-btn { width: 100%; height: 52px; background: var(--blue); color: #fff; border: none; border-radius: 10px; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; margin-top: 6px; }
 .modal-btn:hover { background: var(--blue-dk); }
 .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .modal-btn.gold { background: var(--gold); color: #0a0a0a; }
@@ -280,13 +283,13 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .user-bar { display: flex; align-items: center; justify-content: space-between; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; margin-top: 0; margin-bottom: 20px; }
 .user-bar-name { font-size: 0.82rem; color: #c0c0c0; }
 .user-bar-name strong { color: var(--gold); }
-.user-bar-out { background: none; border: 1px solid #444; color: #888; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; }
+.user-bar-out { background: none; border: 1px solid #444; color: #888; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; }
 .user-bar-out:hover { border-color: #888; color: #fff; }
-.user-bar-portal { background: none; border: 1px solid var(--gold); color: var(--gold); font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; margin-right: 6px; }
+.user-bar-portal { background: none; border: 1px solid var(--gold); color: var(--gold); font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; margin-right: 6px; }
 .user-bar-portal:hover { background: var(--gold); color: #000; }
-.user-bar-login { background: var(--blue); border: none; color: #fff; font-size: 0.72rem; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; }
+.user-bar-login { background: var(--blue); border: none; color: #fff; font-size: 0.72rem; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; }
 .user-bar-login:hover { background: var(--blue-dk); }
-.user-bar-register { background: none; border: 1px solid var(--gold); color: var(--gold); font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; margin-right: 6px; }
+.user-bar-register { background: none; border: 1px solid var(--gold); color: var(--gold); font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; margin-right: 6px; }
 .user-bar-register:hover { background: var(--gold); color: #000; }
 
 /* ■■ ACCOUNT-ICON / TREUEKARTE ■■ */
@@ -294,43 +297,43 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .account-icon-btn:hover { border-color: var(--gold); color: var(--gold); }
 
 /* Elegante Karten-Basis: warmes Creme, oranger Rahmen, Navy-Text, CI-Schrift Arial */
-.loyalty-card { background: #FAF8F4; border: 1.5px solid #F16B24; border-radius: 22px; padding: 24px 22px; text-align: center; color: #16212C; font-family: "Arial","Helvetica",sans-serif; }
-.loyalty-card-tag { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #F16B24; margin-bottom: 12px; }
+.loyalty-card { background: #FAF8F4; border: 1.5px solid #FF5A36; border-radius: 22px; padding: 24px 22px; text-align: center; color: #1C1A17; font-family: "Manrope","Arial","Helvetica",sans-serif; }
+.loyalty-card-tag { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #FF5A36; margin-bottom: 12px; }
 /* Zahl: breite Arial-Bold (CI), nicht schmal – wie im Entwurf */
-.loyalty-card-number { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4rem; line-height: 0.9; letter-spacing: -0.02em; color: #16212C; margin-bottom: 4px; }
+.loyalty-card-number { font-family: "Manrope","Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4rem; line-height: 0.9; letter-spacing: -0.02em; color: #1C1A17; margin-bottom: 4px; }
 .loyalty-card-sub { font-size: 0.66rem; color: #8C8B84; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 16px; }
-.loyalty-card-name { font-size: 1.02rem; font-weight: 700; color: #16212C; margin-bottom: 2px; }
+.loyalty-card-name { font-size: 1.02rem; font-weight: 700; color: #1C1A17; margin-bottom: 2px; }
 .loyalty-card-email { font-size: 0.8rem; color: #8C8B84; margin-bottom: 18px; }
 /* Rewards-Raster: gleiche Breite wie die Punch-Canvas (288px), damit die Karte
    genauso groß ist wie die Guthaben-/Zwanzigerkarten. */
 .loyalty-grid { display: grid; grid-template-columns: repeat(10, 1fr); column-gap: 8px; row-gap: 11px; width: 100%; max-width: 360px; margin: 0 auto; }
-.loyalty-dot { aspect-ratio: 1; border-radius: 50%; background: #16212C; position: relative; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-.loyalty-dot.filled { background: #F16B24; }
+.loyalty-dot { aspect-ratio: 1; border-radius: 50%; background: #1C1A17; position: relative; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.loyalty-dot.filled { background: #FF5A36; }
 /* Rabattstufen-Punkte: neutrales Grau; erreicht = orange. */
 .loyalty-dot.milestone { background: #9A9A93; }
-.loyalty-dot.milestone.filled { background: #F16B24; }
+.loyalty-dot.milestone.filled { background: #FF5A36; }
 /* gut lesbares "%" (bzw. ★ für die Gratis-Stunde) in Weiß */
 /* deutlich größere, gut lesbare "%"/★ in den Meilenstein-Punkten */
-.loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: "Arial","Helvetica",sans-serif; font-size: 0.86rem; font-weight: 700; color: #fff; line-height: 1; pointer-events: none; }
+.loyalty-dot-milestone { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: "Manrope","Arial","Helvetica",sans-serif; font-size: 0.86rem; font-weight: 700; color: #fff; line-height: 1; pointer-events: none; }
 .loyalty-legend { margin-top: 18px; font-size: 0.72rem; color: #8C8B84; line-height: 1.6; }
 
 /* ■■ REWARDS-KARTE – 1:1 nach Entwurf; Stern-Emblem in den Rahmen eingelassen ■■ */
 .loyalty-card.rewards { position: relative; margin-top: 26px; padding: 40px 26px 28px; border-radius: 24px; }
 /* Kleiner, edler Kreis mittig auf der oberen Rahmenlinie. Der Creme-"Halo"
    (box-shadow) maskiert die Linie rundum → sie berührt den Kreis nicht (Luft). */
-.rw-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; box-shadow: 0 0 0 8px #FAF8F4; }
+.rw-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #FF5A36; color: #FF5A36; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; box-shadow: 0 0 0 8px #FAF8F4; }
 /* Kopf großzügig gesetzt, elegantere Abstände */
 .rw-tagline { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: #3E4A55; margin-bottom: 14px; }
-.rw-number { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4.4rem; line-height: 0.9; letter-spacing: -0.02em; color: #16212C; }
-.rw-headline { font-size: 1.18rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #F16B24; line-height: 1.1; margin-top: 8px; }
+.rw-number { font-family: "Manrope","Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4.4rem; line-height: 0.9; letter-spacing: -0.02em; color: #1C1A17; }
+.rw-headline { font-size: 1.18rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #FF5A36; line-height: 1.1; margin-top: 8px; }
 .rw-subtitle { font-size: 0.82rem; color: #8C8B84; margin-top: 6px; }
 /* feine, kurze Trennlinien; oberhalb/unterhalb von Name & E-Mail */
 .rw-divider { height: 2px; background: #D6CBBB; margin: 16px auto; max-width: 240px; }
-.rw-name { font-size: 1.08rem; font-weight: 700; color: #16212C; margin-bottom: 8px; }
+.rw-name { font-size: 1.08rem; font-weight: 700; color: #1C1A17; margin-bottom: 8px; }
 .rw-email { font-size: 0.82rem; color: #8C8B84; }
 /* Legende: klar in 3 Zeilen, größer, mehr Zeilenabstand → gut lesbar */
 .rw-legend { margin-top: 20px; font-size: 0.86rem; color: #3F464E; line-height: 1.8; max-width: 420px; margin-left: auto; margin-right: auto; }
-.rw-legend strong { color: #F16B24; }
+.rw-legend strong { color: #FF5A36; }
 /* Modal = exakt gleiche Creme-Farbe wie die Karte (nahtlos, Rahmen "schwebt").
    !important schlägt den Cararra-Override, der Modals sonst auf Weiß zwingt. */
 #loyaltyModal .modal {
@@ -364,23 +367,23 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   border: 1px solid rgba(241,107,36,.38);
   border-radius: 50%;
   background: rgba(250,248,244,.94);
-  color: #121411;
+  color: #1C1A17;
   font-size: 1.08rem;
   box-shadow: 0 4px 14px rgba(18,20,17,.08);
   -webkit-tap-highlight-color: transparent;
 }
-#loyaltyModal .modal-close:hover { color: #F16B24; background: #fff; }
+#loyaltyModal .modal-close:hover { color: #FF5A36; background: #fff; }
 
 /* ■■ PUNCH-KARTE – feste Fläche für ALLE Karten (wie 20er), Punkte skalieren je Kartengröße ■■ */
 /* Würfel-Muster: 2 = Diagonale, 5 = 3+2, 10 = 5+5, 20 = 5×4. */
 .punch-canvas { box-sizing: border-box; display: flex; flex-direction: column; align-items: center; margin: 0 auto; max-width: 100%; padding: 6px; }
 .punch-canvas .prow { display: flex; align-items: center; width: 100%; }
-.punch-canvas .pdot { border-radius: 50%; background: #16212C; flex: 0 0 auto; transition: background 0.2s; }
-.punch-canvas .pdot.filled { background: #F16B24; }
+.punch-canvas .pdot { border-radius: 50%; background: #1C1A17; flex: 0 0 auto; transition: background 0.2s; }
+.punch-canvas .pdot.filled { background: #FF5A36; }
 .punch-value { margin-top: 18px; padding-top: 14px; border-top: 1px solid #E7E0D5; text-align: center; }
 .punch-value .pv-worth { font-size: 0.72rem; color: #8C8B84; }
 /* Restwert so groß & fett wie der Name oben */
-.punch-value .pv-restwert { margin-top: 8px; font-size: 1.35rem; font-weight: 800; color: #16212C; }
+.punch-value .pv-restwert { margin-top: 8px; font-size: 1.35rem; font-weight: 800; color: #1C1A17; }
 .punch-value .pv-games { margin-top: 4px; font-size: 0.72rem; color: #8C8B84; }
 
 /* ■■ WERTKARTEN-TAB: zwei Spalten – links kaufen, rechts meine Karte(n) ■■ */
@@ -393,18 +396,18 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 /* ■■ KAUFEN links: Wertkarten als kompakte Card-Auswahl ■■ */
 .buy-cards-row { display: grid; grid-template-columns: repeat(5, minmax(116px, 1fr)); gap: 12px; margin-bottom: 18px; }
-.buy-mini { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 204px; border: 1.5px solid #F16B24; border-radius: 22px; padding: 30px 10px 14px; background: #FAF8F4; color: #16212C; font-family: "Arial","Helvetica",sans-serif; cursor: pointer; text-align: center; transition: all 0.15s; }
-.buy-mini::before { content: "€"; position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; box-shadow: 0 0 0 7px #FAF8F4; }
-.buy-mini:hover { border-color: #F16B24; transform: translateY(-2px); box-shadow: 0 10px 24px rgba(18,20,17,.08); }
-.buy-mini.selected { border-color: #F16B24; box-shadow: 0 0 0 1.5px #F16B24 inset, 0 12px 28px rgba(241,107,36,.16); }
-.buy-mini-title { font-weight: 800; font-size: 0.64rem; line-height: 1.1; letter-spacing: 0.18em; text-transform: uppercase; color: #F16B24; }
+.buy-mini { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 204px; border: 1.5px solid #FF5A36; border-radius: 22px; padding: 30px 10px 14px; background: #FAF8F4; color: #1C1A17; font-family: "Manrope","Arial","Helvetica",sans-serif; cursor: pointer; text-align: center; transition: all 0.15s; }
+.buy-mini::before { content: "€"; position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #FF5A36; color: #FF5A36; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; box-shadow: 0 0 0 7px #FAF8F4; }
+.buy-mini:hover { border-color: #FF5A36; transform: translateY(-2px); box-shadow: 0 10px 24px rgba(18,20,17,.08); }
+.buy-mini.selected { border-color: #FF5A36; box-shadow: 0 0 0 1.5px #FF5A36 inset, 0 12px 28px rgba(241,107,36,.16); }
+.buy-mini-title { font-weight: 800; font-size: 0.64rem; line-height: 1.1; letter-spacing: 0.18em; text-transform: uppercase; color: #FF5A36; }
 .buy-mini-price { font-size: 0.72rem; color: #8C8B84; padding-top: 10px; border-top: 1px solid #E7E0D5; width: min(100%, 112px); }
-.buy-mini.selected .buy-mini-price { color: #F16B24; font-weight: 700; }
-.buy-mini-amount { font-family: "Arial","Helvetica",sans-serif; font-weight: 800; font-size: 2.25rem; line-height: 1; color: #16212C; margin-top: 5px; }
+.buy-mini.selected .buy-mini-price { color: #FF5A36; font-weight: 700; }
+.buy-mini-amount { font-family: "Manrope","Arial","Helvetica",sans-serif; font-weight: 800; font-size: 2.25rem; line-height: 1; color: #1C1A17; margin-top: 5px; }
 .buy-mini-dots { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 42px; margin: 8px auto; }
 .buy-mini-dot-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
-.buy-mini-dot { width: 15px; height: 15px; border-radius: 50%; background: #16212C; }
-.buy-mini-dot.on { background: #16212C; }
+.buy-mini-dot { width: 15px; height: 15px; border-radius: 50%; background: #1C1A17; }
+.buy-mini-dot.on { background: #1C1A17; }
 @media (max-width: 900px) {
   .buy-cards-row { grid-template-columns: repeat(3, minmax(104px, 1fr)); }
 }
@@ -413,33 +416,33 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   .buy-mini { min-height: 154px; }
 }
 .value-card { position: relative; margin-top: 26px; padding: 40px 26px 28px; border-radius: 24px; }
-.value-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #F16B24; color: #F16B24; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 800; box-shadow: 0 0 0 8px #FAF8F4; }
+.value-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #FF5A36; color: #FF5A36; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 800; box-shadow: 0 0 0 8px #FAF8F4; }
 .value-card .rw-number { font-size: 4.05rem; }
 .value-card-grid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; width: 100%; max-width: 360px; margin: 22px auto 0; }
 .value-dot-row { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; }
-.value-dot { aspect-ratio: 1; border-radius: 50%; background: #16212C; box-shadow: inset 0 0 0 1px rgba(18,20,17,.06); }
+.value-dot { aspect-ratio: 1; border-radius: 50%; background: #1C1A17; box-shadow: inset 0 0 0 1px rgba(18,20,17,.06); }
 .value-card .value-dot { width: 44px; }
-.value-dot.available { background: #16212C; }
-.value-dot.spent { background: #F16B24; }
-.value-dot.partial { background: conic-gradient(#F16B24 0 var(--spent), #16212C var(--spent) 100%); }
+.value-dot.available { background: #1C1A17; }
+.value-dot.spent { background: #FF5A36; }
+.value-dot.partial { background: conic-gradient(#FF5A36 0 var(--spent), #1C1A17 var(--spent) 100%); }
 .value-card-note { margin-top: 20px; font-size: 0.78rem; color: #3F464E; line-height: 1.55; max-width: 390px; margin-left: auto; margin-right: auto; text-align: center; }
 .value-card-note div + div { margin-top: 5px; }
-.value-card-note strong, .value-card .rw-subtitle strong { font-weight: 800; color: #16212C; }
-.value-card-code { display: inline-flex; margin-top: 8px; padding: 5px 9px; border: 1px solid #F16B24; border-radius: 999px; color: #F16B24; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.value-card-note strong, .value-card .rw-subtitle strong { font-weight: 800; color: #1C1A17; }
+.value-card-code { display: inline-flex; margin-top: 8px; padding: 5px 9px; border: 1px solid #FF5A36; border-radius: 999px; color: #FF5A36; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .gift-message-preview { margin: 12px auto 0; max-width: 260px; color: #3F464E; font-size: 0.78rem; line-height: 1.45; font-style: italic; }
-.gift-message-preview::before { content: "“"; color: #F16B24; font-size: 1rem; }
-.gift-message-preview::after { content: "”"; color: #F16B24; font-size: 1rem; }
-.gift-sender-box { margin: 10px 0 12px; padding: 12px 14px; border: 1px solid #E7E0D5; border-radius: 10px; background: #FAF8F4; color: #16212C; }
+.gift-message-preview::before { content: "“"; color: #FF5A36; font-size: 1rem; }
+.gift-message-preview::after { content: "”"; color: #FF5A36; font-size: 1rem; }
+.gift-sender-box { margin: 10px 0 12px; padding: 12px 14px; border: 1px solid #E7E0D5; border-radius: 10px; background: #FAF8F4; color: #1C1A17; }
 .gift-sender-label { margin-bottom: 5px; color: #8C8B84; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
 .gift-sender-name { font-size: 0.9rem; font-weight: 800; }
 .gift-sender-email { margin-top: 2px; color: #8C8B84; font-size: 0.8rem; }
 
 /* ■■ ACCOUNT-MODAL: Blätter-Steuerung ■■ */
 .card-pager { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 8px 6px 0; border-top: 1px solid #E7E0D5; background: #FAF8F4; }
-.card-pager-label { font-family: "Arial","Helvetica",sans-serif; font-size: 0.78rem; font-weight: 700; color: #8C8B84; text-transform: uppercase; letter-spacing: 0.14em; margin-right: auto; }
-.card-pager button { width: 44px; height: 44px; border-radius: 50%; border: 1.6px solid #F16B24; background: transparent; color: #F16B24; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; padding: 0; }
+.card-pager-label { font-family: "Manrope","Arial","Helvetica",sans-serif; font-size: 0.78rem; font-weight: 700; color: #8C8B84; text-transform: uppercase; letter-spacing: 0.14em; margin-right: auto; }
+.card-pager button { width: 44px; height: 44px; border-radius: 50%; border: 1.6px solid #FF5A36; background: transparent; color: #FF5A36; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; padding: 0; }
 .card-pager button svg { width: 18px; height: 18px; }
-.card-pager button:hover:not(:disabled) { background: #F16B24; color: #fff; }
+.card-pager button:hover:not(:disabled) { background: #FF5A36; color: #fff; }
 .card-pager button:disabled { visibility: hidden; }
 #accountPageHost { touch-action: pan-y; }
 #accountPageHost.account-page-exit-left  { animation: accountPageExitLeft 110ms ease-in forwards; }
@@ -461,35 +464,35 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .profile-form { text-align: left; margin-top: 4px; }
 .profile-form .form-group { margin-bottom: 14px; }
 .profile-form .form-label { color: #8C8B84; }
-.profile-form .form-input { background: #fff; border: 1.5px solid #E7E0D5; color: #16212C; }
-.profile-form .form-input:focus { border-color: #F16B24; }
-.profile-save-ok { font-size: 0.78rem; color: #F16B24; margin-top: 10px; text-align: center; min-height: 1em; }
+.profile-form .form-input { background: #fff; border: 1.5px solid #E7E0D5; color: #1C1A17; }
+.profile-form .form-input:focus { border-color: #FF5A36; }
+.profile-save-ok { font-size: 0.78rem; color: #FF5A36; margin-top: 10px; text-align: center; min-height: 1em; }
 
 /* ■■ WERTKARTEN ■■ */
 .card-size-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
 .card-size-btn { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
 .card-size-btn:hover { border-color: var(--gold); }
 .card-size-btn.selected { background: var(--gold); border-color: var(--gold-dk); color: #000; }
-.card-size-btn .cs-hours { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.3rem; display: block; }
+.card-size-btn .cs-hours { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.3rem; display: block; }
 .card-size-btn .cs-price { font-size: 0.75rem; opacity: 0.8; }
 .gift-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
-.gift-toggle-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--card); color: var(--gray); text-align: center; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; transition: all 0.15s; }
+.gift-toggle-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--card); color: var(--gray); text-align: center; cursor: pointer; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; transition: all 0.15s; }
 .gift-toggle-btn.selected { background: var(--gold); border-color: var(--gold-dk); color: #000; }
 
 /* ■■ JETZT SPIELEN ■■ */
 .play-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
-.play-card-title { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray); margin-bottom: 14px; }
+.play-card-title { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray); margin-bottom: 14px; }
 .play-booking-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .play-booking-item:last-child { border-bottom: none; }
 .play-booking-info { display: flex; flex-direction: column; gap: 3px; }
-.play-booking-court { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; color: var(--gold); }
+.play-booking-court { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; color: var(--gold); }
 .play-booking-time { font-size: 0.82rem; color: #b0b0b0; }
-.play-badge-now  { border: 1.5px solid #4ade80; background: rgba(74,222,128,0.08); color: #4ade80; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
-.play-badge-soon { border: 1.5px solid var(--gold); background: rgba(246,246,246,0.08); color: var(--gold); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
-.play-badge-past { border: 1.5px solid #444; color: #555; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.play-badge-now  { border: 1.5px solid #4ade80; background: rgba(74,222,128,0.08); color: #4ade80; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.play-badge-soon { border: 1.5px solid var(--gold); background: rgba(246,246,246,0.08); color: var(--gold); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.play-badge-past { border: 1.5px solid #444; color: #555; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
 
 .door-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-.door-btn { height: 86px; border-radius: 14px; border: none; cursor: pointer; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
+.door-btn { height: 86px; border-radius: 14px; border: none; cursor: pointer; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
 .door-btn-icon { font-size: 1.7rem; line-height: 1; }
 .door-btn.access { background: var(--blue); color: #fff; box-shadow: 0 4px 20px rgba(244,74,34,0.35); }
 .door-btn.access:hover:not(:disabled) { background: var(--blue-dk); transform: translateY(-2px); }
@@ -504,7 +507,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
 .door-log-icon { font-size: 1rem; }
 .door-log-text { font-size: 0.78rem; color: #b0b0b0; flex: 1; }
-.door-log-time { font-size: 0.68rem; color: #555; font-family: "Arial Narrow","Impact",sans-serif; }
+.door-log-time { font-size: 0.68rem; color: #555; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; }
 .play-empty { text-align: center; padding: 56px 16px; color: #555; }
 .play-empty-icon { font-size: 2.8rem; margin-bottom: 14px; }
 .play-empty-text { font-size: 0.88rem; line-height: 1.6; }
@@ -512,21 +515,21 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 /* ■■ ADMIN ■■ */
 .admin-section { margin-bottom: 28px; }
-.admin-section-title { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gray); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.admin-section-title { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gray); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 .admin-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; }
 .admin-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
 .admin-row:last-child { margin-bottom: 0; }
 .admin-label { font-size: 0.78rem; color: #999; min-width: 160px; }
 .admin-input { background: #111; border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--white); font-size: 0.88rem; font-family: inherit; flex: 1; min-width: 120px; transition: border-color 0.15s; }
 .admin-input:focus { outline: none; border-color: var(--blue); }
-.admin-save-btn { height: 38px; padding: 0 18px; background: var(--blue); color: #fff; border: none; border-radius: 8px; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.admin-save-btn { height: 38px; padding: 0 18px; background: var(--blue); color: #fff; border: none; border-radius: 8px; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
 .admin-save-btn:hover { background: var(--blue-dk); }
 .admin-save-btn.gold { background: var(--gold); color: #0a0a0a; }
 .admin-save-btn.gold:hover { background: var(--gold-dk); }
 .admin-save-btn.danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
 .admin-save-btn.danger:hover { background: #991b1b; }
 .admin-toggle { display: flex; align-items: center; gap: 10px; }
-.admin-toggle-btn { height: 32px; padding: 0 14px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--card); color: #666; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
+.admin-toggle-btn { height: 32px; padding: 0 14px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--card); color: #666; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
 .admin-toggle-btn.active { background: #14532d; border-color: #166534; color: #4ade80; }
 .closure-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
 .closure-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #111; border: 1px solid var(--border); border-radius: 8px; font-size: 0.82rem; }
@@ -535,11 +538,11 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .closure-remove { background: none; border: none; color: #555; cursor: pointer; font-size: 1rem; padding: 0 4px; transition: color 0.15s; }
 .closure-remove:hover { color: #ef4444; }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-.admin-table th { text-align: left; padding: 8px 10px; color: #666; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.68rem; border-bottom: 1px solid var(--border); }
+.admin-table th { text-align: left; padding: 8px 10px; color: #666; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.68rem; border-bottom: 1px solid var(--border); }
 .admin-table td { padding: 9px 10px; border-bottom: 1px solid #111; color: #c0c0c0; vertical-align: middle; }
 .admin-table tr:last-child td { border-bottom: none; }
 .admin-table tr:hover td { background: #1E1E1E; }
-.admin-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.admin-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .admin-badge.paid    { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid #166534; }
 .admin-badge.active  { background: rgba(246,246,246,0.10); color: var(--gold); border: 1px solid #713f12; }
 .admin-badge.member  { background: rgba(244,74,34,0.15); color: var(--blue); border: 1px solid var(--blue-dk); }
@@ -547,10 +550,10 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .admin-badge.guest   { background: #1a1a1a; color: #555; border: 1px solid #333; }
 .admin-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
 .admin-stat { background: #1E1E1E; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center; }
-.admin-stat-val { font-family: "Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.6rem; color: var(--gold); line-height: 1; margin-bottom: 4px; }
+.admin-stat-val { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.6rem; color: var(--gold); line-height: 1; margin-bottom: 4px; }
 .admin-stat-lbl { font-size: 0.68rem; color: #666; text-transform: uppercase; letter-spacing: 0.08em; }
 .admin-tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
-.admin-tab { padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--card); color: #666; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
+.admin-tab { padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--card); color: #666; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
 .admin-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
 .admin-ok  { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.35); border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; color: #4ade80; margin-top: 10px; display: none; }
 .admin-ok.show { display: block; }
@@ -566,11 +569,11 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 /* ■■ FOOTER ■■ */
 .site-footer { margin-top: 56px; padding: 20px 0 28px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
-.site-footer-left a { font-family: "Arial Narrow","Impact",sans-serif; font-size: 0.75rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: color 0.2s; }
+.site-footer-left a { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-size: 0.75rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: color 0.2s; }
 .site-footer-left a:hover { color: #999; }
 .site-footer-center { text-align: center; }
 .site-footer-right { text-align: right; font-size: 0.72rem; color: #444; line-height: 1.6; letter-spacing: 0.04em; }
-.admin-footer-link { background: none; border: none; font-family: "Arial Narrow","Impact",sans-serif; font-size: 0.72rem; color: #333; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; padding: 0; transition: color 0.2s; display: none; }
+.admin-footer-link { background: none; border: none; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-size: 0.72rem; color: #333; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; padding: 0; transition: color 0.2s; display: none; }
 .admin-footer-link:hover { color: #fca5a5; }
 @media (max-width: 560px) {
   .site-footer { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
@@ -579,7 +582,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 }
 
 /* ■■ TOAST ■■ */
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #000; font-family: "Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.92rem; letter-spacing: 0.06em; padding: 11px 22px; border-radius: 10px; box-shadow: 0 4px 24px rgba(246,246,246,0.25); transition: transform 0.3s ease; z-index: 999; white-space: nowrap; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #000; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.92rem; letter-spacing: 0.06em; padding: 11px 22px; border-radius: 10px; box-shadow: 0 4px 24px rgba(246,246,246,0.25); transition: transform 0.3s ease; z-index: 999; white-space: nowrap; }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
 /* ■■ SCROLLBAR ■■ */
@@ -800,7 +803,7 @@ main {
       </div>
       <button class="modal-btn" id="loginBtn" onclick="doLogin()">Anmelden →</button>
       <div class="modal-divider"><span>oder</span></div>
-      <button class="modal-btn" style="background:#1a1a1a;border:1.5px solid var(--border);color:#aaa;" onclick="switchAuthTab('reset')">Passwort vergessen?</button>
+      <button class="modal-btn" style="background:transparent !important;border:1.5px solid #E2DACB !important;color:#7A7368 !important;box-shadow:none !important;font-weight:600;" onclick="switchAuthTab('reset')">Passwort vergessen?</button>
     </div>
 
     <!-- REGISTER FORM -->
@@ -840,18 +843,12 @@ main {
           <option value="divers">divers</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">Mitgliedschaft (optional)</label>
-        <select class="form-input" id="regMemberSource" onchange="onMemberSourceChange()">
-          <option value="">Keine – externer Bucher</option>
-          <option value="tfb">TFB-Mitglied</option>
-          <option value="freibad">Freibad-Dauerkarte</option>
-        </select>
-      </div>
-      <div class="form-group" id="regMemberNumberGroup" style="display:none;">
-        <label class="form-label">Mitgliedsnummer</label>
-        <input class="form-input" type="text" id="regMember" placeholder="z.B. 3000" onblur="lookupMemberNumber()">
-        <div class="form-hint" id="regMemberHint">Wird geprüft und füllt Name/E-Mail/Telefon automatisch aus</div>
+      <div class="form-hint" style="margin-bottom:14px;line-height:1.5;">
+        <strong>Mitglied der Tennisfreunde oder Freibad-Dauerkarte?</strong><br>
+        Du musst nichts angeben. Sobald du deine E-Mail-Adresse bestätigt hast,
+        erkennen wir die Mitgliedschaft automatisch – dein Rabatt gilt dann
+        bei jeder Buchung. Wichtig: dieselbe Adresse verwenden, die dem Verein
+        bzw. dem Freibad vorliegt.
       </div>
       <button class="modal-btn gold" id="regBtn" onclick="doRegister()">Konto erstellen →</button>
     </div>
@@ -865,7 +862,7 @@ main {
       </div>
       <button class="modal-btn" onclick="doReset()">Link senden →</button>
       <div class="modal-divider"><span>oder</span></div>
-      <button class="modal-btn" style="background:#1a1a1a;border:1.5px solid var(--border);color:#aaa;" onclick="switchAuthTab('login')">← Zurück zum Login</button>
+      <button class="modal-btn" style="background:transparent !important;border:1.5px solid #E2DACB !important;color:#7A7368 !important;box-shadow:none !important;font-weight:600;" onclick="switchAuthTab('login')">← Zurück zum Login</button>
     </div>
 
     <!-- NEW PASSWORD FORM – wird nach Klick auf den Supabase-Recovery-Link angezeigt -->
@@ -901,15 +898,41 @@ main {
 
 <div class="loading-bar" id="loadingBar"><div class="loading-bar-inner"></div></div>
 
-<div class="hero" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');" style="cursor:default;">
-  <div class="hero-frame">
-    <picture>
-      <source id="mobileHeroSource" media="(max-width: 560px)" srcset="Padel%20Bielstein%20Header%20iPhone.png?v=20260718-2220">
-      <img class="hero-img" src="Padel Bielstein Header NEU.jpg?v=20260717-1655" alt="Padel Bielstein">
-    </picture>
-    <button class="easter-egg-zone" type="button" onclick="event.stopPropagation(); onEasterEggClick();" aria-label="Rewards öffnen"></button>
+<!-- ══ SPLASH / EINSTIEGSSEITE · 1:1 nach v2-Vorlage ══
+     Erscheint nur beim ersten Besuch, ist wegklickbar (kein Login-Wall). -->
+<div class="pb-splash" id="pbSplash" hidden>
+  <div class="pb-splash-inner">
+    <div class="pb-splash-top">
+      <div class="pb-splash-logobox">
+        <img src="assets/icons/logo-mark.png?v=20260720" alt="Padel Bielstein">
+      </div>
+      <div class="pb-splash-tfb"><span class="pb-splash-dot"></span><span>TFB</span></div>
+    </div>
+    <div>
+      <h1 class="pb-splash-h1">PADEL<br><span>BIELSTEIN</span></h1>
+      <p class="pb-splash-claim">Zwei Courts, ein Klick. Buche deinen Slot, sichere dir dein Jahresabo und behalte dein Guthaben im Blick — alles an einem Ort.</p>
+    </div>
+    <div>
+      <button type="button" class="pb-splash-cta" id="pbSplashCta">Jetzt loslegen →</button>
+      <p class="pb-splash-foot">Ab Frühjahr 2027 in Bielstein</p>
+    </div>
+  </div>
 </div>
-</div>
+
+<header class="appbar" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');">
+  <button class="appbar-brand" type="button" onclick="event.stopPropagation(); goHome();" aria-label="Zur Startseite">
+    <span class="appbar-wordmark"><span class="wm-a">PADEL</span> <span class="wm-b">BIELSTEIN</span></span>
+  </button>
+  <div class="appbar-auth" id="appbarAuth">
+    <button type="button" class="appbar-btn ghost" onclick="event.stopPropagation(); openModal('register');">Registrieren</button>
+    <button type="button" class="appbar-btn" onclick="event.stopPropagation(); openModal('login');">Anmelden</button>
+  </div>
+  <button class="appbar-user" id="appbarUser" type="button" style="display:none;"
+          onclick="event.stopPropagation(); openLoyaltyCard();" aria-label="Account öffnen">
+    <span class="appbar-username" id="appbarName"></span>
+    <span class="appbar-avatar" id="appbarAvatar"></span>
+  </button>
+</header>
 <main>
   <!-- USER BAR -->
   <div class="user-bar" id="userBar">
@@ -926,7 +949,7 @@ main {
     </div>
     <!-- Ausgeloggt -->
     <div id="userBarLoggedOut" style="width:100%;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:0.82rem;color:#666;">Zum Buchen bitte anmelden</span>
+      <span style="font-size:0.82rem;color:#7A7368;">Zwei Courts, ein Klick — melde dich an und buche deinen Slot.</span>
       <div style="display:flex;gap:6px;align-items:center;">
         <button class="account-icon-btn" style="margin-right:12px;" onclick="openLoyaltyCard()" aria-label="Rewards" title="Rewards">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -965,9 +988,10 @@ main {
     <div class="step-row" style="margin-bottom:8px;"><div class="step-num">3</div><div class="step-lbl">Platz & Zeit wählen</div></div>
     <div style="margin-bottom:14px;"><div class="price-tag">■ <span id="priceTxt">Wochentag-Preise (Mo–Fr)</span></div></div>
     <div class="legend">
-      <div class="legend-item"><div class="ldot" style="background:#272727;border:1px solid var(--blue)"></div> Verfügbar</div>
-      <div class="legend-item"><div class="ldot" style="background:var(--blue)"></div> Ausgewählt</div>
-      <div class="legend-item"><div class="ldot" style="background:#1a1a1a;border:1px solid #333"></div> Belegt</div>
+      <div class="legend-item"><div class="ldot" style="background:#FFFFFF;border:1.5px solid #1C1A17"></div> Verfügbar</div>
+      <div class="legend-item"><div class="ldot" style="background:#FF5A36"></div> Ausgewählt</div>
+      <div class="legend-item"><div class="ldot" style="background:#E2DACB"></div> Belegt</div>
+      <div class="legend-item"><div class="ldot" style="background:#1C1A17"></div> Abo vergeben</div>
     </div>
 
     <div class="courts-wrap gap">
@@ -1007,10 +1031,10 @@ main {
     <div class="dur-sub gap">Jede Woche zur gleichen Zeit</div>
     <div class="step-row" style="margin-bottom:8px;"><div class="step-num">3</div><div class="step-lbl">Platz & Uhrzeit wählen</div></div>
     <div class="legend" style="margin-bottom:14px;">
-      <div class="legend-item"><div class="ldot" style="background:#272727;border:1px solid var(--blue)"></div> Verfügbar</div>
-      <div class="legend-item"><div class="ldot" style="background:var(--blue)"></div> Ausgewählt</div>
-      <div class="legend-item"><div class="ldot" style="background:#1a1a1a;border:1px solid #333"></div> Belegt</div>
-      <div class="legend-item"><div class="ldot" style="background:#1a0a0a;border:1px solid #3a1a1a"></div> Abo vergeben</div>
+      <div class="legend-item"><div class="ldot" style="background:#FFFFFF;border:1.5px solid #1C1A17"></div> Verfügbar</div>
+      <div class="legend-item"><div class="ldot" style="background:#FF5A36"></div> Ausgewählt</div>
+      <div class="legend-item"><div class="ldot" style="background:#E2DACB"></div> Belegt</div>
+      <div class="legend-item"><div class="ldot" style="background:#1C1A17"></div> Abo vergeben</div>
     </div>
     <div class="courts-wrap gap">
       <div class="court-col"><div class="court-hdr"><div class="court-name">Court #1</div></div><div class="slots-grid" id="aboSlots1"></div></div>
@@ -1130,6 +1154,14 @@ main {
 
   <!-- WERTKARTEN MODE -->
   <div id="modeGutscheine" style="display:none;">
+
+    <!-- Guthaben-Karte (Vorlage: Ink, r20, p26) -->
+    <div class="wk-balance">
+      <div class="wk-balance-label">Spielguthaben</div>
+      <div class="wk-balance-amount" id="wkBalanceAmount">—</div>
+      <div class="wk-balance-name" id="wkBalanceName"></div>
+    </div>
+
     <div class="gutschein-layout">
 
       <!-- LINKS: Kaufen -->
@@ -1191,6 +1223,13 @@ main {
       </div>
 
     </div>
+
+    <!-- Verlauf (Vorlage) – echte Bewegungen aus Supabase -->
+    <div class="wk-history-wrap">
+      <div class="wk-section-title">Verlauf</div>
+      <div id="wkHistory"><div class="wk-empty">Wird geladen …</div></div>
+    </div>
+
   </div>
 
   <!-- ADMIN MODE -->
@@ -2273,7 +2312,7 @@ async function loadBookings(date) {
     const timer = setTimeout(() => controller.abort(), 8000);
     // Belegungs-Uebersicht ohne Namen (oeffentlich, keine Kundendaten preisgeben)
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/bookings?select=court,date,hour_start,duration,status,customer_type&date=eq.${date}&status=in.(paid,blocked)`,
+      `${SUPABASE_URL}/rest/v1/slot_availability?select=court,date,hour_start,duration,status,customer_type&date=eq.${date}&status=in.(paid,blocked)`,
       { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }, signal: controller.signal }
     );
     clearTimeout(timer);
@@ -2292,7 +2331,7 @@ async function loadBookings(date) {
     // damit echte Kundennamen (status=paid) nie mit abgefragt werden koennen.
     try {
       const resReason = await fetch(
-        `${SUPABASE_URL}/rest/v1/bookings?select=court,hour_start,duration,full_name&date=eq.${date}&status=eq.blocked&customer_type=eq.internal`,
+        `${SUPABASE_URL}/rest/v1/slot_availability?select=court,hour_start,duration,block_reason&date=eq.${date}&status=eq.blocked&customer_type=eq.internal`,
         { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
       );
       if (resReason.ok) {
@@ -2300,7 +2339,7 @@ async function loadBookings(date) {
         for (const b of (reasons || [])) {
           for (let i = 0; i < b.duration; i++) {
             const key = `${date}-${b.hour_start + i}`;
-            blockedSlots[b.court][key] = b.full_name || 'Gesperrt';
+            blockedSlots[b.court][key] = b.block_reason || 'Gesperrt';
           }
         }
       }
@@ -2329,7 +2368,7 @@ setInterval(() => {
 async function loadAboBookings(weekday) {
   try {
     const { data, error } = await sb
-      .from('subscriptions')
+      .from('abo_availability')
       .select('court, weekday, hour_start, duration')
       .eq('weekday', weekday)
       .eq('status', 'active');
@@ -2351,7 +2390,7 @@ async function loadAboBookings(weekday) {
   try {
     const today = todayStr();
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/bookings?select=court,hour_start,duration,date&customer_type=eq.internal&status=eq.blocked&recurring=eq.true&date=gte.${today}&limit=500`,
+      `${SUPABASE_URL}/rest/v1/slot_availability?select=court,hour_start,duration,date&customer_type=eq.internal&status=eq.blocked&recurring=eq.true&date=gte.${today}&limit=500`,
       { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
     );
     const blocked = res.ok ? await res.json() : [];
@@ -2583,7 +2622,7 @@ async function addSupabaseAboBlocksForDate(dateStr) {
   try {
     const wd = new Date(dateStr + 'T12:00:00').getDay();
     const { data, error } = await sb
-      .from('subscriptions')
+      .from('abo_availability')
       .select('court, weekday, hour_start, duration, status')
       .eq('weekday', wd)
       .eq('status', 'active');
@@ -2707,7 +2746,10 @@ function buildDates() {
     const c = document.createElement("div");
     c.className = "date-chip";
     c.dataset.date = str;
-    c.innerHTML = `<div class="dname">${DAYS[d.getDay()]}</div><div class="dnum">${d.getDate()}</div><div class="dmon">${MONTHS[d.getMonth()]}</div>`;
+    // Vorlage zeigt nur Wochentag + Zahl. Monat nur am Monatswechsel einblenden,
+    // damit der Sprung z. B. Juli -> August eindeutig bleibt.
+    const monLbl = d.getDate() === 1 ? MONTHS[d.getMonth()] : '';
+    c.innerHTML = `<div class="dname">${DAYS[d.getDay()]}</div><div class="dnum">${d.getDate()}</div><div class="dmon">${monLbl}</div>`;
     c.onclick = () => selectDate(str);
     sc.appendChild(c);
   }
@@ -2795,14 +2837,14 @@ function renderSlots() {
       const isAboBlock = blockReason === 'Abo vergeben' || isLocalAboBlockedOnDate(selDate, ct, h);
       sl.className = "slot " + (expired ? "booked" : bk ? (isAboBlock ? "abo-booked" : "booked") : spillover ? "free" : isSel ? "selected" : isSec ? "selected-second" : "free");
       if (expired) {
-        sl.innerHTML = `<span class="slot-time">${h1}</span><span class="bkd-lbl">Abgelaufen</span>`;
+        sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Abgelaufen</span></span><span class="slot-price">${p} €</span>`;
       } else if (bk) {
         if (isAboBlock) {
-          sl.innerHTML = `<span class="slot-time">${h1}</span><span class="abo-lbl">Abo vergeben</span>`;
+          sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Abo</span></span><span class="slot-price">${p} €</span>`;
         } else if (isBlocked) {
-          sl.innerHTML = `<span class="slot-time">${h1}</span><span class="bkd-lbl" style="color:#c97316;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${blockReason}">${blockReason}</span>`;
+          sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip" title="${blockReason}">${blockReason}</span></span><span class="slot-price">${p} €</span>`;
         } else {
-          sl.innerHTML = `<span class="slot-time">${h1}</span><span class="bkd-lbl">Belegt</span>`;
+          sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Belegt</span></span><span class="slot-price">${p} €</span>`;
         }
       } else if (spillover) {
         // Diese Einzelstunde ist frei (deshalb weiß/frei angezeigt), taugt aber
@@ -2904,21 +2946,38 @@ async function loadProfile(authId) {
 }
 
 // Laedt den aktuell gueltigen Rabattsatz aus discount_rules (ersetzt frueheres app_config.member_discount)
+// Mitgliedschaft kommt vom Server: my_membership() vergleicht die BESTÄTIGTE
+// E-Mail-Adresse mit der offiziellen Vereinsliste. Das Ergebnis dient hier nur
+// der Anzeige – abgerechnet wird ausschließlich der serverseitig berechnete Preis.
+let myMemberSources = [];
+
 async function loadMemberDiscount() {
   member = null;
-  if (!currentProfile || currentProfile.customer_type !== 'member' || !currentProfile.membership_source) return;
+  myMemberSources = [];
+  if (!currentUser) return;
   try {
-    const ruleType = currentProfile.membership_source === 'tfb' ? 'member_tfb' : 'member_freibad';
-    const today = new Date().toISOString().slice(0,10);
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/discount_rules?rule_type=eq.${ruleType}&applies_to=eq.single&active=eq.true&select=discount_pct,valid_from,valid_until`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
-    );
-    if (!res.ok) return;
-    const rows = await res.json();
-    const rule = (rows || []).find(r => (!r.valid_from || r.valid_from <= today) && (!r.valid_until || r.valid_until >= today));
-    if (rule) member = { discount: parseFloat(rule.discount_pct) / 100 };
-  } catch(e) { console.warn('Rabatt laden fehlgeschlagen', e.message); }
+    const { data: sources, error } = await sb.rpc('my_membership');
+    if (error) throw error;
+    myMemberSources = Array.isArray(sources) ? sources : [];
+    if (!myMemberSources.length) return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: rules, error: rErr } = await sb
+      .from('discount_rules')
+      .select('rule_type,discount_pct,valid_from,valid_until')
+      .eq('applies_to', 'single')
+      .eq('active', true);
+    if (rErr) throw rErr;
+
+    const wanted = myMemberSources.map(s => 'member_' + s);
+    const pcts = (rules || [])
+      .filter(r => wanted.includes(r.rule_type))
+      .filter(r => (!r.valid_from || r.valid_from <= today) && (!r.valid_until || r.valid_until >= today))
+      .map(r => parseFloat(r.discount_pct) || 0);
+
+    // Mehrfache Mitgliedschaft ergibt den HÖCHSTEN Rabatt, nicht die Summe.
+    if (pcts.length) member = { discount: Math.max(...pcts) / 100 };
+  } catch(e) { console.warn('Mitgliedsrabatt laden fehlgeschlagen', e.message || e); }
 }
 
 function updateUserBar() {
@@ -2948,13 +3007,18 @@ function updateUserBar() {
 
 async function checkHasAbo() {
   if (!currentUser) return;
-  const email = currentProfile?.email || currentUser.email;
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/subscriptions?email=eq.${encodeURIComponent(email)}&status=eq.active&limit=1`,
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
-    );
-    const data = await res.json();
+    // Eigene Abos über den angemeldeten Nutzer abfragen, nicht über eine
+    // frei übermittelte E-Mail. Die RLS-Policy gibt nur eigene Zeilen frei.
+    const uid = currentProfile?.id;
+    if (!uid) { document.getElementById('portalBtn').style.display = 'none'; return; }
+    const { data, error } = await sb
+      .from('subscriptions')
+      .select('id')
+      .eq('user_id', uid)
+      .eq('status', 'active')
+      .limit(1);
+    if (error) throw error;
     document.getElementById('portalBtn').style.display = (data && data.length > 0) ? 'inline-block' : 'none';
   } catch(e) {
     console.warn('Abo-Check fehlgeschlagen', e);
@@ -2963,18 +3027,27 @@ async function checkHasAbo() {
 
 async function openPortal() {
   showToast('Weiter zum Abo-Portal …');
-  const email = currentProfile?.email || currentUser?.email;
   try {
+    // Echten Login-Token mitschicken. Die Edge Function bestimmt den Nutzer
+    // ausschliesslich daraus - eine E-Mail im Body wird bewusst nicht mehr
+    // gesendet und serverseitig auch nicht mehr akzeptiert.
+    const { data: { session: authSession } } = await sb.auth.getSession();
+    const accessToken = authSession?.access_token;
+    if (!accessToken) {
+      showToast('Bitte melde dich erneut an.');
+      return;
+    }
+
     const res = await fetch(
       'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-portal-session',
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON}`,
+          'Authorization': `Bearer ${accessToken}`,
           'apikey': SUPABASE_ANON,
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({}),
       }
     );
     const data = await res.json();
@@ -3089,51 +3162,9 @@ document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==
 // ============================================================
 //  MITGLIEDSNUMMER-PRUEFUNG (TFB / Freibad)
 // ============================================================
-let matchedClubMember = null; // { source, member_number, full_name, email, phone } oder null
-
-function onMemberSourceChange() {
-  const source = document.getElementById('regMemberSource').value;
-  const group  = document.getElementById('regMemberNumberGroup');
-  group.style.display = source ? 'block' : 'none';
-  document.getElementById('regMember').value = '';
-  matchedClubMember = null;
-  document.getElementById('regMemberHint').textContent = 'Wird geprüft und füllt Name/E-Mail/Telefon automatisch aus';
-  document.getElementById('regMemberHint').style.color = '';
-}
-
-async function lookupMemberNumber() {
-  const source = document.getElementById('regMemberSource').value;
-  const number = document.getElementById('regMember').value.trim();
-  const hint   = document.getElementById('regMemberHint');
-  matchedClubMember = null;
-  if (!source || !number) return;
-
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/rpc/lookup_club_member`,
-      {
-        method: 'POST',
-        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_source: source, p_member_number: number }),
-      }
-    );
-    const rows = await res.json();
-    if (Array.isArray(rows) && rows.length) {
-      matchedClubMember = { source, member_number: number, ...rows[0] };
-      if (matchedClubMember.full_name) document.getElementById('regName').value  = matchedClubMember.full_name;
-      if (matchedClubMember.email)     document.getElementById('regEmail').value = matchedClubMember.email;
-      if (matchedClubMember.phone)     document.getElementById('regPhone').value = matchedClubMember.phone;
-      hint.textContent = '✓ Mitgliedschaft gefunden – Daten wurden ausgefüllt, bitte prüfen.';
-      hint.style.color = '#4caf50';
-    } else {
-      hint.textContent = 'Mitgliedsnummer nicht gefunden – bitte prüfen oder beim Vorstand melden. Ohne gültige Nummer kein Mitgliederrabatt.';
-      hint.style.color = '#e05a5a';
-    }
-  } catch(e) {
-    hint.textContent = 'Prüfung fehlgeschlagen – bitte später erneut versuchen.';
-    hint.style.color = '#e05a5a';
-  }
-}
+// Mitgliedschaft wird serverseitig über die bestätigte E-Mail-Adresse erkannt
+// (siehe my_membership() / member_discount_pct()). Es gibt bewusst kein
+// Eingabefeld mehr – der Nutzer kann und muss nichts behaupten.
 
 // ============================================================
 //  REGISTRIERUNG
@@ -3145,20 +3176,15 @@ async function doRegister() {
   const phone  = document.getElementById('regPhone').value.trim() || null;
   const year   = parseInt(document.getElementById('regYear').value);
   const gender = document.getElementById('regGender').value || null;
-  const memberSource = document.getElementById('regMemberSource').value || null;
-  const memberNumberInput = document.getElementById('regMember').value.trim() || null;
-
   if (!name)            { showAuthErr('Bitte Name eingeben.'); return; }
   if (!email)           { showAuthErr('Bitte E-Mail eingeben.'); return; }
   if (pw.length < 8)    { showAuthErr('Passwort mindestens 8 Zeichen.'); return; }
   if (!year || year < 1920 || year > 2015) { showAuthErr('Bitte gültiges Geburtsjahr eingeben.'); return; }
   if (!gender)           { showAuthErr('Bitte Geschlecht auswählen.'); return; }
 
-  // Nur als Mitglied werten, wenn die zuletzt geprüfte Nummer tatsächlich noch zum eingegebenen Wert passt
-  const isVerifiedMember = memberSource && memberNumberInput
-    && matchedClubMember
-    && matchedClubMember.source === memberSource
-    && matchedClubMember.member_number === memberNumberInput;
+  // Mitgliedschaft wird NICHT hier gesetzt. Der Server erkennt sie über die
+  // bestätigte E-Mail-Adresse. Die Datenbank setzt diese Felder beim Anlegen
+  // ohnehin zwangsweise zurück (trg_protect_user_fields_insert).
 
   const btn = document.getElementById('regBtn');
   btn.disabled = true; btn.textContent = '…';
@@ -3170,7 +3196,6 @@ async function doRegister() {
     if (authErr) { showAuthErr(translateAuthError(authErr.message)); return; }
 
     // 2. users-Tabelle befüllen via upsert
-    const customer_type = isVerifiedMember ? 'member' : 'account';
     const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
       method: 'POST',
       headers: {
@@ -3188,9 +3213,9 @@ async function doRegister() {
         full_name:     name,
         phone,
         gender,
-        customer_type,
-        membership_source: isVerifiedMember ? memberSource : null,
-        member_number: isVerifiedMember ? memberNumberInput : null,
+        // customer_type / membership_source / member_number werden bewusst
+        // NICHT gesendet – die Datenbank setzt sie beim Anlegen zwangsweise
+        // zurück und erkennt die Mitgliedschaft über die bestätigte E-Mail.
         birth_year:    year,
       }),
     });
@@ -3758,18 +3783,19 @@ function getCheckoutEmailTheme() {
   return {
     key: 'cararra',
     name: 'Padel Bielstein Carrara',
-    bg: '#E8E7E3',
+    bg: '#F6F1E7',
     card: '#FAF8F4',
     panel: '#FFFFFF',
-    accent: '#F16B24',
+    accent: '#FF5A36',
     accent_dark: '#D95718',
-    blue: '#F16B24',
-    border: '#F16B24',
-    text: '#121411',
+    blue: '#FF5A36',
+    border: '#FF5A36',
+    text: '#1C1A17',
     muted: '#6F706B',
-    amount: '#F16B24',
-    link: '#D95718',
-    header_image: 'https://padel-bielstein.de/Padel%20Bielstein%20Header%20iPhone.png'
+    amount: '#FF5A36',
+    link: '#D95718'
+    // header_image entfernt: Die Bestätigungsmails rendern eine Text-Wortmarke,
+    // kein Bild. Damit können die alten Header-Dateien aus dem Repo verschwinden.
   };
 }
 
@@ -4032,7 +4058,7 @@ function renderAboSlots() {
 
       if (isOccupiedHour) {
         sl.className = "slot abo-booked";
-        sl.innerHTML = `<span class="slot-time">${h1}</span><span class="abo-lbl">Abo vergeben</span>`;
+        sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Abo</span></span><span class="slot-price">${p} €/Wo</span>`;
       } else if (conflictsWithNextHour) {
         // Diese Stunde ist als Einzelstunde frei (deshalb weiß/frei angezeigt),
         // taugt aber nicht als Start eines 2-Stunden-Abos, weil die Folgestunde
@@ -5008,12 +5034,24 @@ function esc(s) {
 }
 
 // --- Punktraster als HTML-Strings ---
+// Vorlage: Der Meilenstein-Punkt zeigt den echten Rabatt (5%/10%/25%/50%) bzw. ★.
+const REWARD_TIER_LABELS = { 5: '5%', 10: '10%', 25: '25%', 50: '50%', 100: '★' };
+
+// Vorlage: "Noch X Std. bis zu 25% Rabatt" / "… zur kostenlosen Stunde"
+function nextRewardTeaser(hoursPlayed) {
+  const next = [5, 10, 25, 50, 100].find(t => t > hoursPlayed);
+  if (!next) return 'Alle Stufen erreicht!';
+  const lbl = REWARD_TIER_LABELS[next];
+  return 'Noch ' + (next - hoursPlayed) + ' Std. bis ' +
+         (lbl === '★' ? 'zur kostenlosen Stunde' : 'zu ' + lbl + ' Rabatt');
+}
+
 function loyaltyDotsHTML(hoursPlayed) {
   let h = '';
   for (let i = 1; i <= 100; i++) {
-    const m = LOYALTY_MILESTONES[i];
-    const lbl = m ? `<span class="loyalty-dot-milestone">${m === 100 ? '★' : '%'}</span>` : '';
-    h += `<div class="loyalty-dot${m ? ' milestone' : ''}${i <= hoursPlayed ? ' filled' : ''}">${lbl}</div>`;
+    const lbl = REWARD_TIER_LABELS[i] || '';
+    const filled = i <= hoursPlayed;
+    h += `<div class="loyalty-dot${lbl ? ' milestone' : ''}${filled ? ' filled' : ''}">${lbl}</div>`;
   }
   return h;
 }
@@ -5054,12 +5092,12 @@ function rewardsCardHTML(hoursPlayed) {
     <div class="rw-number">${hoursPlayed}</div>
     <div class="rw-headline">Stunden gebucht</div>
     <div class="rw-subtitle">bzw. verschenkt</div>
+    <div class="rw-teaser">${nextRewardTeaser(hoursPlayed)}</div>
     <div class="rw-divider"></div>
     <div class="rw-name">${esc(currentProfile?.full_name) || '—'}</div>
     <div class="rw-email">${esc(currentProfile?.email || currentUser?.email) || '—'}</div>
-    <div class="rw-divider"></div>
     <div class="loyalty-grid">${loyaltyDotsHTML(hoursPlayed)}</div>
-    <div class="rw-legend">Die grauen Felder (%) sind Rabattstufen:<br>5 %, 10 %, 25 %, 50 % auf die jeweils nächste Stunde –<br>und die <strong>100. Stunde ist umsonst (★)</strong>.</div>
+    <div class="rw-legend">Graue Felder markieren deine nächsten Rabattstufen — <strong>5%,&nbsp;10%,&nbsp;25%,&nbsp;50%</strong> auf die jeweils nächste Buchung. Die <strong>100. Stunde</strong> ist komplett kostenlos (★).</div>
   </div>`;
 }
 // Karten-Inhaber/Empfänger für Name/E-Mail-Zeile
@@ -5126,6 +5164,15 @@ function valueDotRowsHTML(dotHtml, count, rowClass) {
 
 // Wertkarte (reiner Euro-Betrag): oben die RESTSUMME gross, darunter klein
 // "von urspruenglich X EUR". Erwartet card.balance_remaining_eur & card.balance_original_eur.
+// Vorlage: conic-gradient(#FF5A36 0 <verbraucht>%, #1C1A17 <verbraucht>% 100%)
+// Orange = bereits verwendet, dunkel = noch verfügbar.
+function balanceRingStyle(original, remaining) {
+  const base = Number(original) || 0;
+  const rest = Number(remaining) || 0;
+  const usedPct = base > 0 ? Math.max(0, Math.min(100, Math.round((1 - rest / base) * 100))) : 0;
+  return `conic-gradient(#FF5A36 0 ${usedPct}%, #1C1A17 ${usedPct}% 100%)`;
+}
+
 function balanceCardHTML(card) {
   const remaining = card.balance_remaining_eur != null ? card.balance_remaining_eur : (card.balance_original_eur || 0);
   const original = card.balance_original_eur || remaining;
@@ -5143,14 +5190,10 @@ function balanceCardHTML(card) {
     <div class="rw-divider"></div>
     <div class="rw-name">${name}</div>
     <div class="rw-email">${email}</div>
-    <div class="rw-divider"></div>
     ${code ? `<div class="value-card-code">${esc(code)}</div>` : ''}
     ${giftMessage ? `<div class="gift-message-preview">${giftMessage}</div>` : ''}
-    <div class="value-card-grid">${valueDotsHTML(original, remaining)}</div>
-    <div class="value-card-note">
-      <div>Verfügbares Guthaben wird automatisch mit den nächsten Buchungen verrechnet.</div>
-      <div><strong>Dunkel:</strong> noch verfügbar. <strong>Orange:</strong> bereits verwendet.</div>
-    </div>
+    <div class="value-ring" style="background:${balanceRingStyle(original, remaining)};"></div>
+    <div class="rw-legend">Dein Guthaben wird automatisch mit der nächsten Buchung verrechnet — <strong>dunkel</strong> ist noch verfügbar, <strong>orange</strong> bereits verwendet.</div>
   </div>`;
 }
 // Wählt je nach Kartentyp die passende Darstellung
@@ -5161,16 +5204,81 @@ function profileCardHTML() {
   const name = esc(currentProfile?.full_name);
   const email = esc(currentProfile?.email || currentUser?.email);
   const phone = esc(currentProfile?.phone);
-  return `<div class="loyalty-card" style="text-align:left;">
-    <div style="font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1.15rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:20px;">Meine Daten</div>
+  const gender = currentProfile?.gender || '';
+  const year = currentProfile?.birth_year || '';
+  const inits = (currentProfile?.full_name || '').trim().split(/\s+/).filter(Boolean)
+    .slice(0, 2).map(w => w[0].toUpperCase()).join('') || '·';
+  // Mitgliedschaft wird serverseitig über die BESTÄTIGTE E-Mail-Adresse erkannt
+  // (my_membership()). Reine Anzeige – der Nutzer kann hier nichts setzen.
+  const srcs = Array.isArray(myMemberSources) ? myMemberSources : [];
+  const memberRow = (on, title, link) => `
+    <div class="acct-member">
+      <div class="acct-member-head">
+        <span class="acct-check${on ? ' on' : ''}" aria-hidden="true">${on ? '✓' : ''}</span>
+        <span class="acct-member-title">${title}</span>
+      </div>
+      <div class="acct-member-sub">${on
+        ? '<strong>10 % Rabatt</strong> – erkannt über deine E-Mail-Adresse.'
+        : '<strong>10 % Rabatt</strong> auf alle Buchungen inkl. Abos.'}</div>
+      ${on ? '' : `<a class="acct-member-link" href="${link}" target="_blank" rel="noopener">Mitglied werden →</a>`}
+    </div>`;
+  return `<div class="loyalty-card acct-card">
+    <div class="rw-badge">${esc(inits)}</div>
+    <div class="rw-tagline">Dein Account</div>
+    <div class="rw-name acct-name">${name || '—'}</div>
+    <div class="rw-divider"></div>
     <div class="profile-form">
       <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
       <div class="form-group"><label class="form-label">E-Mail</label><input class="form-input" id="pfEmail" type="email" value="${email}"></div>
       <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
+      <div class="form-group">
+        <label class="form-label">Geschlecht</label>
+        <div class="acct-radios">
+          <label><input type="radio" name="pfGender" value="maennlich"${gender === 'maennlich' ? ' checked' : ''}> Männlich</label>
+          <label><input type="radio" name="pfGender" value="weiblich"${gender === 'weiblich' ? ' checked' : ''}> Weiblich</label>
+          <label><input type="radio" name="pfGender" value="divers"${gender === 'divers' ? ' checked' : ''}> Divers</label>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Geburtsjahr</label><input class="form-input" id="pfYear" type="number" min="1920" max="2015" placeholder="z.B. 1985" value="${year}"></div>
       <button class="book-btn visible" id="pfSaveBtn" style="width:100%;position:static;" onclick="saveProfile()">Änderungen speichern</button>
       <div class="profile-save-ok" id="pfSaveMsg"></div>
     </div>
+    <div class="rw-divider" style="margin-top:20px;"></div>
+    ${memberRow(srcs.includes('tfb'), 'Mitgliedschaft Tennisfreunde Bielstein', 'https://tfbielstein.de')}
+    ${memberRow(srcs.includes('freibad'), 'Dauerkarte Freibad Bielstein', 'https://www.wiehl.de')}
+    <div class="acct-hint">
+      Wird automatisch über deine bestätigte E-Mail-Adresse erkannt – du musst nichts eintragen.
+      ${srcs.length ? '' : '<br><button type="button" class="acct-report-btn" onclick="reportMissingMembership()">Ich bin Mitglied, werde aber nicht erkannt →</button>'}
+    </div>
+    <div class="profile-save-ok" id="membershipReportMsg"></div>
   </div>`;
+}
+
+// Meldeweg bei fehlender Zuordnung. Ändert den Status NICHT – die Anfrage
+// landet zur Prüfung beim Vorstand.
+async function reportMissingMembership() {
+  const msg = document.getElementById('membershipReportMsg');
+  if (!currentUser) return;
+  if (msg) { msg.style.color = ''; msg.textContent = 'Wird gesendet …'; }
+  try {
+    const { error } = await sb.from('membership_requests').insert({
+      auth_id:   currentUser.id,
+      email:     currentProfile?.email || currentUser.email,
+      full_name: currentProfile?.full_name || null,
+      note:      'Über die Account-Karte gemeldet',
+    });
+    if (error) throw error;
+    if (msg) {
+      msg.style.color = '#1F8A5F';
+      msg.textContent = 'Danke – wir prüfen deine Mitgliedschaft und melden uns.';
+    }
+  } catch(e) {
+    if (msg) {
+      msg.style.color = '#B8402C';
+      msg.textContent = 'Konnte nicht gesendet werden – bitte später erneut versuchen.';
+    }
+    console.warn('Mitgliedschafts-Meldung fehlgeschlagen', e.message || e);
+  }
 }
 
 // Lädt die gekauften Karten des eingeloggten Nutzers in myCardsData.
@@ -5271,11 +5379,11 @@ function renderCardSizeGrid() {
       const el = document.createElement('div');
       el.className = 'buy-mini' + (selectedBalance === eur ? ' selected' : '');
       el.onclick = () => selectBalance(eur);
+      // Vorlage: Betrag gross, darunter klein die Credits
+      const credits = eur / VALUE_DOT_EUR;
       el.innerHTML =
-        `<div class="buy-mini-title">Wertkarte</div>` +
         `<div class="buy-mini-amount">${eur} €</div>` +
-        `<div class="buy-mini-dots">${previewValueDotsHTML(eur)}</div>` +
-        `<div class="buy-mini-price">${eur / VALUE_DOT_EUR} Credit${eur === VALUE_DOT_EUR ? '' : 's'} à ${VALUE_DOT_EUR} €</div>`;
+        `<div class="buy-mini-price">${credits} Credit${credits === 1 ? '' : 's'}</div>`;
       balGrid.appendChild(el);
     });
   }
@@ -5575,6 +5683,10 @@ async function saveProfile() {
   const name  = document.getElementById('pfName').value.trim();
   const email = document.getElementById('pfEmail').value.trim().toLowerCase();
   const phone = document.getElementById('pfPhone').value.trim();
+  const genderEl = document.querySelector('input[name="pfGender"]:checked');
+  const gender = genderEl ? genderEl.value : null;
+  const yearEl = document.getElementById('pfYear');
+  const birthYear = yearEl && yearEl.value ? parseInt(yearEl.value, 10) : null;
   if (!name)  { msg.style.color = '#d64545'; msg.textContent = 'Bitte einen Namen angeben.'; return; }
   if (!email) { msg.style.color = '#d64545'; msg.textContent = 'Bitte eine E-Mail angeben.'; return; }
   msg.style.color = ''; msg.textContent = 'Wird gespeichert …';
@@ -5598,9 +5710,9 @@ async function saveProfile() {
     // Update liefert sonst unter Umständen keinen HTTP-Fehler, aber 0 Zeilen.
     const { data: saved, error: profileErr } = await sb
       .from('users')
-      .update({ full_name: name, phone: phone || null, email })
+      .update({ full_name: name, phone: phone || null, email, gender, birth_year: birthYear })
       .eq('auth_id', currentUser.id)
-      .select('auth_id,full_name,email,phone')
+      .select('auth_id,full_name,email,phone,gender,birth_year')
       .maybeSingle();
 
     if (profileErr) throw new Error('Profildaten konnten nicht gespeichert werden: ' + profileErr.message);
@@ -5670,30 +5782,30 @@ init();
 <style id="bielsteinOverrideCararra">
 /*
   Easter-Egg-Farbwelt "Cararra" – nur aktiv bei body.bielstein-theme
-  Cararra: #E8E7E3 · Heavy Metal: #121411 · Tango: #F16B24
-  Natural Grey: #91908C · Delta: #ACABA7
+  Cararra: #F6F1E7 · Heavy Metal: #1C1A17 · Tango: #FF5A36
+  Natural Grey: #7A7368 · Delta: #E2DACB
   Inspiriert von einem minimalistischen Kalender-Design (Dieter-Rams-Stil,
   15.07.2026 auf Wunsch von Jörn als Ersatz für die vorherige Navy/Gold-Welt).
 */
 body.bielstein-theme {
-  --bg: #E8E7E3 !important;
+  --bg: #F6F1E7 !important;
   --card: #FFFFFF !important;
-  --border: #ACABA7 !important;
-  --blue: #F16B24 !important;
-  --blue-dk: #D4591A !important;
-  --gold: #F16B24 !important;
-  --gold-dk: #D4591A !important;
-  --gray: #91908C !important;
+  --border: #E2DACB !important;
+  --blue: #FF5A36 !important;
+  --blue-dk: #E8431E !important;
+  --gold: #FF5A36 !important;
+  --gold-dk: #E8431E !important;
+  --gray: #7A7368 !important;
   --gray-lt: #D6D5D1 !important;
-  --white: #121411 !important;
-  background: #E8E7E3 !important;
-  color: #121411 !important;
+  --white: #1C1A17 !important;
+  background: #F6F1E7 !important;
+  color: #1C1A17 !important;
 }
 
 body.bielstein-theme .hero,
 body.bielstein-theme .hero-frame {
-  background: #E8E7E3 !important;
-  border-color: #ACABA7 !important;
+  background: #F6F1E7 !important;
+  border-color: #E2DACB !important;
 }
 
 /* Ruhige, helle Flächen für Karten/Kacheln */
@@ -5712,12 +5824,12 @@ body.bielstein-theme .door-log-entry,
 body.bielstein-theme .price-tag {
   background-color: #FFFFFF !important;
   background-image: none !important;
-  border-color: #ACABA7 !important;
+  border-color: #E2DACB !important;
 }
 
 body.bielstein-theme .court-hdr {
-  background: #E8E7E3 !important;
-  border-color: #ACABA7 !important;
+  background: #F6F1E7 !important;
+  border-color: #E2DACB !important;
 }
 
 /* Tango-Orange nur für Fokus und primäre Aktionen - dunkler Text für Kontrast */
@@ -5735,10 +5847,10 @@ body.bielstein-theme .admin-tab.active,
 body.bielstein-theme .slot.selected,
 body.bielstein-theme .slot.selected-second,
 body.bielstein-theme .door-btn.access {
-  background-color: #F16B24 !important;
+  background-color: #FF5A36 !important;
   background-image: none !important;
-  border-color: #D4591A !important;
-  color: #121411 !important;
+  border-color: #E8431E !important;
+  color: #1C1A17 !important;
   box-shadow: 0 5px 22px rgba(241,107,36,.25) !important;
 }
 
@@ -5751,9 +5863,9 @@ body.bielstein-theme .user-bar-login:hover,
 body.bielstein-theme .modal-btn:hover,
 body.bielstein-theme .admin-save-btn:hover,
 body.bielstein-theme .door-btn.access:hover:not(:disabled) {
-  background-color: #F4854B !important;
-  border-color: #F16B24 !important;
-  color: #121411 !important;
+  background-color: #FF7454 !important;
+  border-color: #FF5A36 !important;
+  color: #1C1A17 !important;
 }
 
 /* Sekundäre Navigation: weiß mit Tango-Rand */
@@ -5767,7 +5879,7 @@ body.bielstein-theme .modal-tab:not(.active),
 body.bielstein-theme .admin-tab:not(.active) {
   background-color: #FFFFFF !important;
   border-color: rgba(241,107,36,.55) !important;
-  color: #F16B24 !important;
+  color: #FF5A36 !important;
   box-shadow: none !important;
 }
 
@@ -5775,50 +5887,50 @@ body.bielstein-theme .mode-tab:not(.active):hover,
 body.bielstein-theme .user-bar-register:hover,
 body.bielstein-theme .user-bar-portal:hover,
 body.bielstein-theme .door-btn.court:hover:not(:disabled) {
-  background-color: #F2E4D8 !important;
-  border-color: #F16B24 !important;
-  color: #D4591A !important;
+  background-color: #FCE9E2 !important;
+  border-color: #FF5A36 !important;
+  color: #E8431E !important;
 }
 
 /* Datum: volle Tango-Füllung wie bei der Wochentagsauswahl im Abo */
 body.bielstein-theme .date-chip.selected .dname,
 body.bielstein-theme .date-chip.selected .dnum,
 body.bielstein-theme .date-chip.selected .dmon {
-  color: #121411 !important;
+  color: #1C1A17 !important;
   opacity: 1 !important;
 }
 body.bielstein-theme .date-chip:not(.selected):hover,
 body.bielstein-theme .dur-btn:not(.selected):hover,
 body.bielstein-theme .wd-btn:not(.selected):hover {
-  background-color: #F2E4D8 !important;
-  border-color: #F16B24 !important;
+  background-color: #FCE9E2 !important;
+  border-color: #FF5A36 !important;
 }
 
 /* Slots: helle Kacheln, Tango als Fokusfarbe */
 body.bielstein-theme .slot.free {
   background-color: #FFFFFF !important;
-  border-color: #ACABA7 !important;
+  border-color: #E2DACB !important;
 }
 body.bielstein-theme .slot.free:hover {
   background-color: #F7F6F3 !important;
-  border-color: #F16B24 !important;
+  border-color: #FF5A36 !important;
 }
 body.bielstein-theme .slot.free .slot-price,
 body.bielstein-theme .court-name,
 body.bielstein-theme .abo-sum-title,
 body.bielstein-theme .abo-price-total,
 body.bielstein-theme .user-bar-name strong {
-  color: #F16B24 !important;
+  color: #FF5A36 !important;
 }
 /* Uhrzeit-Text auf Slots ist in der Basis fest auf weiß gesetzt (fürs dunkle
    Theme gedacht) - auf hellen Kacheln sonst unsichtbar */
 body.bielstein-theme .slot.free .slot-time,
 body.bielstein-theme .slot.selected .slot-time,
 body.bielstein-theme .slot.selected-second .slot-time {
-  color: #121411 !important;
+  color: #1C1A17 !important;
 }
 body.bielstein-theme .slot.selected .slot-price {
-  color: #121411 !important;
+  color: #1C1A17 !important;
 }
 /* Abgelaufen/Belegt/Abo-vergeben-Kacheln nutzen feste dunkle Farben aus der
    Basis - fürs helle Theme durch dezente Cararra-Töne ersetzen */
@@ -5826,10 +5938,10 @@ body.bielstein-theme .slot.booked {
   background: #F0EFEC !important;
 }
 body.bielstein-theme .slot.booked .slot-time {
-  color: #91908C !important;
+  color: #7A7368 !important;
 }
 body.bielstein-theme .slot.abo-booked {
-  background: #FBE9DD !important;
+  background: #FDEAE3 !important;
   border-color: #F0C4A0 !important;
 }
 body.bielstein-theme .slot.abo-booked .slot-time {
@@ -5845,7 +5957,7 @@ body.bielstein-theme .abo-detail-row .dl,
 body.bielstein-theme .abo-benefit,
 body.bielstein-theme .legend-item,
 body.bielstein-theme .price-tag {
-  color: #121411 !important;
+  color: #1C1A17 !important;
 }
 body.bielstein-theme .dur-sub,
 body.bielstein-theme .form-hint,
@@ -5868,30 +5980,30 @@ body.bielstein-theme .closure-remove,
 body.bielstein-theme .admin-stat-lbl,
 body.bielstein-theme .admin-footer-link,
 body.bielstein-theme .closure-item-date {
-  color: #91908C !important;
+  color: #7A7368 !important;
 }
 /* Randfarben, die in der Basis ebenfalls fest auf dunkel gesetzt sind */
 body.bielstein-theme .user-bar-out,
 body.bielstein-theme .play-badge-past {
-  border-color: #ACABA7 !important;
+  border-color: #E2DACB !important;
 }
 body.bielstein-theme .admin-toggle-btn {
   background: #FFFFFF !important;
-  border-color: #ACABA7 !important;
+  border-color: #E2DACB !important;
 }
 body.bielstein-theme .scroll-btn {
   background: #FFFFFF !important;
-  border: 1px solid #ACABA7 !important;
-  color: #F16B24 !important;
+  border: 1px solid #E2DACB !important;
+  color: #FF5A36 !important;
 }
 body.bielstein-theme .scroll-btn:hover {
-  background: #F2E4D8 !important;
-  border-color: #F16B24 !important;
+  background: #FCE9E2 !important;
+  border-color: #FF5A36 !important;
 }
 body.bielstein-theme .disc-badge {
   background: rgba(241,107,36,.12) !important;
   border-color: rgba(241,107,36,.45) !important;
-  color: #D4591A !important;
+  color: #E8431E !important;
 }
 
 /* Formulare & Admin-Bereich: hardcodierte dunkle Flächen der Basis-Styles
@@ -5902,34 +6014,823 @@ body.bielstein-theme .closure-item,
 body.bielstein-theme .admin-stat,
 body.bielstein-theme .play-no-active {
   background: #FFFFFF !important;
-  color: #121411 !important;
-  border-color: #ACABA7 !important;
+  color: #1C1A17 !important;
+  border-color: #E2DACB !important;
 }
 body.bielstein-theme .form-input:focus,
 body.bielstein-theme .admin-input:focus {
-  border-color: #F16B24 !important;
+  border-color: #FF5A36 !important;
 }
 body.bielstein-theme .admin-table td {
-  border-bottom-color: #ACABA7 !important;
-  color: #121411 !important;
+  border-bottom-color: #E2DACB !important;
+  color: #1C1A17 !important;
 }
 body.bielstein-theme .admin-table tr:hover td {
-  background: #F2E4D8 !important;
+  background: #FCE9E2 !important;
 }
 body.bielstein-theme .admin-badge.account,
 body.bielstein-theme .admin-badge.guest {
-  background: #E8E7E3 !important;
-  color: #91908C !important;
-  border-color: #ACABA7 !important;
+  background: #F6F1E7 !important;
+  color: #7A7368 !important;
+  border-color: #E2DACB !important;
 }
-body.bielstein-theme ::-webkit-scrollbar-track { background: #E8E7E3 !important; }
-body.bielstein-theme ::-webkit-scrollbar-thumb { background: #ACABA7 !important; }
+body.bielstein-theme ::-webkit-scrollbar-track { background: #F6F1E7 !important; }
+body.bielstein-theme ::-webkit-scrollbar-thumb { background: #E2DACB !important; }
 
 /* Toast passend zur neuen Marke */
 body.bielstein-theme + .ee-toast,
 .ee-toast:not(.orange) {
-  background: #F16B24 !important;
-  color: #121411 !important;
+  background: #FF5A36 !important;
+  color: #1C1A17 !important;
+}
+
+/* ══ Redesign 2027 · Header/Appbar ══ */
+body.bielstein-theme .appbar {
+  position: sticky; top: 0; z-index: 30;
+  background: #1C1A17 !important;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 18px clamp(24px,4vw,48px); margin-bottom: 22px;
+}
+body.bielstein-theme .appbar-brand {
+  display: flex; align-items: center; gap: 12px;
+  background: none !important; border: 0; padding: 0; cursor: pointer;
+}
+body.bielstein-theme .appbar-logo {
+  width: 40px; height: 40px; border-radius: 10px; display: block; flex-shrink: 0;
+}
+body.bielstein-theme .appbar-wordmark {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 700; font-size: 28px; letter-spacing: 0.02em; line-height: 1; white-space: nowrap;
+}
+body.bielstein-theme .appbar-wordmark .wm-a { color: #F6F1E7; }
+body.bielstein-theme .appbar-wordmark .wm-b { color: #FF5A36; }
+body.bielstein-theme .appbar-tag {
+  font-family: "Manrope","Arial",sans-serif; font-size: 0.82rem; color: #B8B0A2; white-space: nowrap;
+}
+/* Vorlage kennt keine "Angemeldet als"-Zeile – alles läuft über den Account oben rechts */
+body.bielstein-theme .user-bar { display: none !important; }
+
+/* Header rechts (ausgeloggt): Anmelden / Registrieren */
+body.bielstein-theme .appbar-auth { display: flex; align-items: center; gap: 8px; }
+body.bielstein-theme .appbar-btn {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif; font-weight: 700; font-size: 12.5px;
+  padding: 9px 16px; border-radius: 10px; cursor: pointer; white-space: nowrap;
+  background: #FF5A36; color: #1C1A17; border: 1.5px solid #FF5A36;
+}
+body.bielstein-theme .appbar-btn.ghost {
+  background: transparent; color: #F6F1E7; border: 1.5px solid #7A7368;
+}
+body.bielstein-theme .appbar-btn.ghost:hover { border-color: #F6F1E7; }
+body.bielstein-theme .appbar-brand { cursor: pointer; }
+
+/* Abmelden/Abo-Portal im Account-Modal (aus der User-Bar hierher verlagert) */
+body.bielstein-theme .acct-actions {
+  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid #E2DACB;
+}
+body.bielstein-theme .acct-actions button {
+  font-family: "Manrope","Arial",sans-serif; font-size: 13px; cursor: pointer;
+  padding: 9px 16px; border-radius: 10px;
+  background: transparent; border: 1px solid #E2DACB; color: #7A7368;
+}
+body.bielstein-theme .acct-actions button:hover { border-color: #1C1A17; color: #1C1A17; }
+
+/* Header rechts: Name + Avatar (wie Vorlage) */
+body.bielstein-theme .appbar-user {
+  display: flex; align-items: center; gap: 10px;
+  background: none !important; border: 0; padding: 0; cursor: pointer;
+}
+body.bielstein-theme .appbar-username {
+  font-family: "Manrope","Arial",sans-serif; font-size: 0.86rem; color: #B8B0A2; white-space: nowrap;
+}
+body.bielstein-theme .appbar-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  background: #FF5A36; color: #1C1A17;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif; font-weight: 700; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+@media (max-width: 560px) {
+  body.bielstein-theme .appbar { padding: 14px 18px; }
+  body.bielstein-theme .appbar-wordmark { font-size: 21px; }
+  body.bielstein-theme .appbar-tag { display: none; }
+  body.bielstein-theme .appbar-username { display: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REDESIGN 2027 · 1:1-PORT DER v2-VORLAGE
+   Werte 1:1 aus Design-Referenz/v2-ORIGINAL-LOGIK.js übernommen:
+   INK #1C1A17 · CREAM #F6F1E7 · CORAL #FF5A36 · LINE #E2DACB
+   MUTE #B8B0A2 · Text2 #7A7368 · Nav-Container #EFE9DC
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── NAV: Segmented Control (navStyle) ── */
+body.bielstein-theme #mainTabs {
+  display: flex !important;
+  grid-template-columns: none !important;
+  gap: 2px !important;
+  background: #EFE9DC !important;
+  border-radius: 14px !important;
+  padding: 3px !important;
+  margin-bottom: 26px !important;
+  overflow-x: auto; scrollbar-width: none;
+}
+body.bielstein-theme #mainTabs::-webkit-scrollbar { display: none; }
+body.bielstein-theme #mainTabs .mode-tab {
+  flex: 1 1 auto; min-width: max-content;
+  display: flex; align-items: center; justify-content: center;
+  height: auto; min-height: 0; padding: 11px 10px;
+  border-radius: 10px !important;
+  border: none !important;
+  background: transparent !important;
+  color: #7A7368 !important;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 12.5px !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  white-space: nowrap; text-align: center;
+  box-shadow: none !important;
+  transition: background 0.15s, color 0.15s;
+}
+body.bielstein-theme #mainTabs .mode-tab.active {
+  background: #1C1A17 !important;
+  color: #F6F1E7 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+body.bielstein-theme #mainTabs .mode-tab:not(.active):hover {
+  background: rgba(28,26,23,0.05) !important;
+  color: #1C1A17 !important;
+}
+/* CSS-gezeichnete Symbole statt Emoji (wie in der Vorlage) */
+body.bielstein-theme #mainTabs .tab-icon {
+  font-size: 0 !important; line-height: 0;
+  width: 11px; height: 11px; flex-shrink: 0;
+  margin-right: 7px; display: inline-block;
+  border: 1.5px solid currentColor; border-radius: 3px;
+}
+body.bielstein-theme #tabAbo .tab-icon { border-radius: 50%; }
+body.bielstein-theme #tabPlay .tab-icon {
+  border: none; width: 0; height: 0; border-radius: 0;
+  border-top: 5.5px solid transparent; border-bottom: 5.5px solid transparent;
+  border-left: 9px solid currentColor;
+}
+body.bielstein-theme #tabMy .tab-icon {
+  border: none; border-radius: 0; height: 9px;
+  background:
+    linear-gradient(currentColor,currentColor) 0 0/11px 1.5px no-repeat,
+    linear-gradient(currentColor,currentColor) 0 3.75px/11px 1.5px no-repeat,
+    linear-gradient(currentColor,currentColor) 0 7.5px/7px 1.5px no-repeat;
+}
+body.bielstein-theme #tabGutscheine .tab-icon {
+  width: 13px; height: 9px; border-radius: 2px; border: 1.5px solid currentColor;
+}
+
+/* ── SCHRITT-BADGES (Ink statt Coral, wie Vorlage) ── */
+body.bielstein-theme .step-num {
+  background: #1C1A17 !important; color: #F6F1E7 !important;
+  width: 22px; height: 22px; font-size: 0.75rem;
+}
+body.bielstein-theme .step-lbl {
+  font-size: 0.78rem; letter-spacing: 0.1em; color: #1C1A17 !important;
+}
+
+/* ── DATUMS-CHIPS (chipStyle) ── */
+body.bielstein-theme .date-chip {
+  min-width: 56px; padding: 10px 8px;
+  border-radius: 12px !important; border: 1.5px solid #E2DACB !important;
+  background: #FFFFFF !important; color: #1C1A17 !important;
+}
+body.bielstein-theme .date-chip.selected {
+  border-color: #FF5A36 !important; background: #FF5A36 !important; color: #FFFFFF !important;
+}
+body.bielstein-theme .date-chip.selected .dname,
+body.bielstein-theme .date-chip.selected .dnum,
+body.bielstein-theme .date-chip.selected .dmon { color: #FFFFFF !important; opacity: 1 !important; }
+
+/* ── SPIELDAUER (toggleStyle) ── */
+body.bielstein-theme .dur-btn {
+  flex: 1; display: flex; flex-direction: column; gap: 2px;
+  padding: 16px 18px; border-radius: 14px !important;
+  border: 1.5px solid #E2DACB !important;
+  background: #FFFFFF !important; color: #1C1A17 !important;
+  text-align: left; align-items: flex-start;
+  font-size: 15px; font-weight: 700; letter-spacing: 0; text-transform: none;
+  box-shadow: none !important; height: auto;
+}
+body.bielstein-theme .dur-btn.selected {
+  border-color: #FF5A36 !important; background: #FF5A36 !important; color: #FFFFFF !important;
+}
+body.bielstein-theme .dur-btn .dprice {
+  font-size: 12.5px; font-weight: 500; opacity: 0.85; letter-spacing: 0; text-transform: none;
+}
+
+/* ── COURTS: zwei Spalten nebeneinander ── */
+body.bielstein-theme .courts-wrap {
+  display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 14px !important;
+}
+body.bielstein-theme .court-col {
+  background: transparent !important; border: none !important; border-radius: 0 !important; overflow: visible;
+}
+body.bielstein-theme .court-hdr {
+  background: transparent !important; border: none !important; padding: 0 0 8px 0 !important;
+}
+body.bielstein-theme .court-name {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 700 !important; font-size: 14px !important;
+  letter-spacing: 0 !important; color: #FF5A36 !important;
+}
+@media (max-width: 620px) {
+  body.bielstein-theme .courts-wrap { grid-template-columns: 1fr !important; }
+}
+
+/* ── SLOTS (slotStyle) ── */
+body.bielstein-theme .slot {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 16px !important; border-radius: 12px !important;
+  font-size: 14px; font-weight: 600; transition: background 0.15s;
+  margin: 0 0 8px 0 !important;
+}
+body.bielstein-theme .slot.free {
+  background: #FFFFFF !important; border: 1.5px solid #1C1A17 !important; color: #1C1A17 !important;
+}
+body.bielstein-theme .slot.free:hover {
+  background: #FBF8F1 !important; transform: none !important;
+}
+body.bielstein-theme .slot.selected,
+body.bielstein-theme .slot.selected-second {
+  background: #FF5A36 !important; border: 1.5px solid #FF5A36 !important; color: #FFFFFF !important;
+  box-shadow: none !important;
+}
+body.bielstein-theme .slot.selected .slot-time,
+body.bielstein-theme .slot.selected .slot-price,
+body.bielstein-theme .slot.selected-second .slot-time,
+body.bielstein-theme .slot.selected-second .slot-price { color: #FFFFFF !important; }
+body.bielstein-theme .slot.booked {
+  background: #E2DACB !important; border: 1.5px solid #E2DACB !important; color: #1C1A17 !important;
+  cursor: not-allowed;
+}
+body.bielstein-theme .slot.booked .slot-time { color: #1C1A17 !important; }
+body.bielstein-theme .slot.abo-booked {
+  background: #1C1A17 !important; border: 1.5px solid #1C1A17 !important; color: #F6F1E7 !important;
+  cursor: not-allowed;
+}
+body.bielstein-theme .slot.abo-booked .slot-time { color: #F6F1E7 !important; }
+body.bielstein-theme .slot-time {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 600 !important; font-size: 14px !important; letter-spacing: 0 !important;
+}
+body.bielstein-theme .slot-price { font-weight: 700 !important; font-size: 14px !important; }
+body.bielstein-theme .slot.free .slot-price { color: #1C1A17 !important; }
+/* Zeit + Status-Badge gruppiert links, Preis rechts (wie Vorlage) */
+body.bielstein-theme .slot-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+body.bielstein-theme .slot-chip,
+body.bielstein-theme .slot .bkd-lbl,
+body.bielstein-theme .slot .abo-lbl {
+  font-size: 9px !important; font-weight: 700 !important;
+  letter-spacing: 0.04em !important; text-transform: uppercase !important;
+  padding: 2px 8px !important; border-radius: 4px !important;
+  white-space: nowrap; flex-shrink: 0;
+  max-width: 140px; overflow: hidden; text-overflow: ellipsis;
+}
+/* Belegt/Abgelaufen: dunkler Chip auf hellem Grund */
+body.bielstein-theme .slot.booked .slot-chip,
+body.bielstein-theme .slot.booked .bkd-lbl {
+  background: rgba(28,26,23,0.10) !important; color: #1C1A17 !important;
+}
+/* Abo: heller Chip auf Ink */
+body.bielstein-theme .slot.abo-booked .slot-chip,
+body.bielstein-theme .slot.abo-booked .abo-lbl {
+  background: rgba(255,255,255,0.20) !important; color: #FFFFFF !important;
+}
+body.bielstein-theme .slot.booked .slot-price { color: #1C1A17 !important; }
+/* Vorlage streicht belegte Zeiten nicht durch */
+body.bielstein-theme .slot.booked .slot-time,
+body.bielstein-theme .slot.abo-booked .slot-time { text-decoration: none !important; }
+body.bielstein-theme .slot.abo-booked .slot-price { color: #F6F1E7 !important; }
+/* Datums-Kacheln: gleiche Höhe, auch wenn kein Monat angezeigt wird */
+body.bielstein-theme .date-chip .dmon:empty::after { content: "\00A0"; }
+
+/* ── LEGENDE ── */
+body.bielstein-theme .legend-item { font-size: 12px !important; color: #7A7368 !important; gap: 6px; }
+body.bielstein-theme .ldot { width: 10px !important; height: 10px !important; border-radius: 50% !important; }
+
+/* ══ ÜBRIGE TABS · 1:1 nach Vorlage ══ */
+
+/* Abschnitts-Überschriften (Vorlage: SG 600/13, ls .08em, uppercase) */
+body.bielstein-theme .play-card-title,
+body.bielstein-theme .abo-sum-title {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 600 !important; font-size: 13px !important;
+  letter-spacing: 0.08em !important; text-transform: uppercase !important;
+  color: #1C1A17 !important; margin-bottom: 12px !important;
+}
+
+/* Weiße Karten (Vorlage: r16, p18/20, shadow 0 1px 3px rgba(28,26,23,.08)) */
+body.bielstein-theme .play-card,
+body.bielstein-theme .summary-card,
+body.bielstein-theme .abo-summary {
+  background: #FFFFFF !important;
+  border: none !important;
+  border-radius: 16px !important;
+  padding: 18px 20px !important;
+  box-shadow: 0 1px 3px rgba(28,26,23,0.08) !important;
+}
+body.bielstein-theme .play-empty { color: #B8B0A2 !important; font-size: 14px !important; text-align: center; padding: 40px 20px !important; }
+body.bielstein-theme .play-empty-icon { display: none !important; }
+
+/* Abo-Preisblock */
+body.bielstein-theme .abo-price-total {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 700 !important; font-size: 32px !important; color: #FF5A36 !important;
+}
+body.bielstein-theme .abo-price-reg, body.bielstein-theme .abo-52,
+body.bielstein-theme .abo-weather, body.bielstein-theme .dl { color: #7A7368 !important; font-size: 13px !important; }
+body.bielstein-theme .dv { color: #1C1A17 !important; font-weight: 700 !important; }
+body.bielstein-theme .abo-cta {
+  width: 100%; height: auto; padding: 18px !important;
+  border: none !important; border-radius: 14px !important;
+  background: #FF5A36 !important; color: #1C1A17 !important;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 700 !important; font-size: 15px !important;
+  letter-spacing: 0 !important; text-transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Wochentags-Chips wie Datums-Chips (chipStyle) */
+body.bielstein-theme .wd-btn {
+  border-radius: 12px !important; border: 1.5px solid #E2DACB !important;
+  background: #FFFFFF !important; color: #1C1A17 !important;
+  padding: 10px 8px !important; min-width: 56px;
+  box-shadow: none !important;
+}
+body.bielstein-theme .wd-btn.selected {
+  border-color: #FF5A36 !important; background: #FF5A36 !important; color: #FFFFFF !important;
+}
+
+/* Wertkarten-Tarife (tierStyle) – ohne €-Badge der Altversion */
+body.bielstein-theme .buy-mini {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-height: 0 !important; padding: 16px 10px !important;
+  border-radius: 14px !important; border: none !important;
+  background: #FFFFFF !important; color: #1C1A17 !important;
+  box-shadow: 0 1px 3px rgba(28,26,23,0.08) !important;
+  transition: none !important;
+}
+body.bielstein-theme .buy-mini::before { display: none !important; }
+body.bielstein-theme .buy-mini:hover { transform: none !important; }
+body.bielstein-theme .buy-mini.selected {
+  border: 1.5px solid #FF5A36 !important; background: #FF5A36 !important;
+  color: #FFFFFF !important; box-shadow: none !important;
+}
+body.bielstein-theme .buy-mini-title {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 700 !important; font-size: 20px !important;
+  letter-spacing: 0 !important; text-transform: none !important; color: inherit !important;
+}
+body.bielstein-theme .buy-mini-price { font-size: 11px !important; opacity: 0.7; color: inherit !important; font-weight: 500 !important; }
+body.bielstein-theme .buy-mini.selected .buy-mini-price { color: #FFFFFF !important; }
+
+/* ── REWARDS-/PROFIL-MODAL (Spielkarten-Rahmen) ── */
+body.bielstein-theme .modal-overlay { background: rgba(28,26,23,0.55) !important; }
+body.bielstein-theme #loyaltyModal .modal {
+  max-width: 420px !important; background: #F6F1E7 !important;
+  border-radius: 24px !important; padding: 40px 28px 24px !important;
+  box-shadow: 0 12px 32px rgba(28,26,23,0.22) !important; border: none !important;
+}
+body.bielstein-theme #loyaltyModal .modal-close {
+  top: 18px !important; right: 18px !important;
+  width: 32px !important; height: 32px !important; border-radius: 50% !important;
+  border: 1.5px solid #E2DACB !important; background: #FFFFFF !important;
+  color: #1C1A17 !important; font-size: 16px !important;
+}
+body.bielstein-theme .loyalty-card {
+  background: transparent !important;
+  border: 1.5px solid #FF5A36 !important; border-radius: 20px !important;
+  padding: 26px 20px 20px !important; color: #1C1A17 !important;
+}
+body.bielstein-theme .rw-badge,
+body.bielstein-theme .value-badge {
+  width: 44px !important; height: 44px !important;
+  background: #F6F1E7 !important; border: 1.5px solid #FF5A36 !important;
+  color: #FF5A36 !important; box-shadow: 0 0 0 8px #F6F1E7 !important;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 700 !important; font-size: 18px !important;
+}
+body.bielstein-theme .loyalty-card-tag {
+  font-size: 12px !important; letter-spacing: 0.1em !important; text-transform: uppercase !important;
+  color: #7A7368 !important; font-weight: 700 !important;
+}
+body.bielstein-theme .rw-headline {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 700 !important; font-size: 15px !important;
+  letter-spacing: 0.04em !important; text-transform: uppercase !important; color: #FF5A36 !important;
+}
+body.bielstein-theme .rw-legend { font-size: 12.5px !important; color: #7A7368 !important; line-height: 1.6 !important; }
+body.bielstein-theme .rw-legend strong { color: #1C1A17 !important; }
+/* Rewards-Punkte · Zustände exakt nach Vorlage
+   offen = INK · erreicht = CORAL · Meilenstein offen = #B8B0A2/INK · Meilenstein erreicht = CORAL/weiß */
+body.bielstein-theme .loyalty-grid {
+  display: grid !important; grid-template-columns: repeat(10, 1fr) !important;
+  gap: 4px !important; width: 100%; margin-bottom: 14px;
+}
+body.bielstein-theme .loyalty-dot {
+  aspect-ratio: 1 !important; width: auto !important; height: auto !important;
+  border-radius: 50% !important; border: none !important;
+  display: flex !important; align-items: center; justify-content: center;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-size: 8.5px !important; font-weight: 800 !important; line-height: 1 !important;
+  background: #1C1A17 !important; color: #1C1A17 !important;
+}
+body.bielstein-theme .loyalty-dot.filled { background: #FF5A36 !important; color: #FF5A36 !important; }
+body.bielstein-theme .loyalty-dot.milestone { background: #B8B0A2 !important; color: #1C1A17 !important; }
+body.bielstein-theme .loyalty-dot.milestone.filled { background: #FF5A36 !important; color: #FFFFFF !important; }
+body.bielstein-theme .loyalty-dot-milestone { all: unset; }
+
+/* Teaser unter "bzw. verschenkt" */
+body.bielstein-theme .rw-teaser { font-size: 13px !important; color: #1C1A17 !important; margin-bottom: 14px; }
+body.bielstein-theme .rw-subtitle { font-size: 12px !important; color: #B8B0A2 !important; }
+body.bielstein-theme .rw-number {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 700 !important; font-size: 48px !important; color: #1C1A17 !important; line-height: 1;
+}
+body.bielstein-theme .value-card .rw-number { font-size: 40px !important; }
+body.bielstein-theme .rw-name { font-family: "Space Grotesk","Arial Narrow",sans-serif !important; font-weight: 700 !important; font-size: 15px !important; color: #1C1A17 !important; }
+body.bielstein-theme .rw-email { font-size: 13px !important; color: #7A7368 !important; margin-bottom: 16px; }
+body.bielstein-theme .rw-divider { width: 100%; height: 1px; background: #E2DACB !important; margin-bottom: 14px; }
+
+/* Wertkarten-Ring (Pie) */
+body.bielstein-theme .value-ring {
+  width: 76px; height: 76px; border-radius: 50%;
+  margin: 0 auto 16px; display: block;
+}
+
+/* ── WERTKARTEN: Guthaben-Karte + Verlauf (Vorlagenwerte) ── */
+body.bielstein-theme .wk-balance {
+  background: #1C1A17; border-radius: 20px; padding: 26px; color: #F6F1E7;
+  box-shadow: 0 4px 14px rgba(28,26,23,0.18); margin-bottom: 20px;
+}
+body.bielstein-theme .wk-balance-label {
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #B8B0A2;
+}
+body.bielstein-theme .wk-balance-amount {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 700; font-size: 44px; color: #FF5A36; margin-top: 6px; line-height: 1;
+}
+body.bielstein-theme .wk-balance-name { font-size: 13px; color: #C9C2B6; margin-top: 8px; }
+body.bielstein-theme .wk-section-title {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 600; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #1C1A17; margin-bottom: 12px;
+}
+body.bielstein-theme .wk-history-wrap { margin-top: 22px; }
+body.bielstein-theme .wk-hist-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  background: #FFFFFF; border-radius: 12px; padding: 14px 16px;
+  font-size: 14px; color: #1C1A17; box-shadow: 0 1px 2px rgba(28,26,23,0.06); margin-bottom: 8px;
+}
+body.bielstein-theme .wk-hist-amt { font-weight: 700; white-space: nowrap; }
+body.bielstein-theme .wk-hist-amt.pos { color: #1F8A5F; }
+body.bielstein-theme .wk-hist-amt.neg { color: #B8402C; }
+body.bielstein-theme .wk-empty {
+  font-size: 14px; color: #B8B0A2; padding: 20px; text-align: center;
+}
+
+/* Account-Seite (3/3) nach Vorlage */
+body.bielstein-theme .acct-card { text-align: center; }
+body.bielstein-theme .acct-card .profile-form { text-align: left; }
+body.bielstein-theme .acct-name {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 700 !important; font-size: 22px !important; color: #1C1A17 !important; margin-bottom: 14px;
+}
+body.bielstein-theme .acct-card .form-label {
+  font-size: 11px !important; letter-spacing: 0.1em !important; text-transform: uppercase !important;
+  color: #7A7368 !important; font-weight: 700 !important;
+}
+body.bielstein-theme .acct-card .form-input {
+  border-radius: 12px !important; border: 1.5px solid #E2DACB !important;
+  background: #FFFFFF !important; color: #1C1A17 !important; padding: 13px 14px !important;
+}
+body.bielstein-theme .acct-radios { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+body.bielstein-theme .acct-radios label {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: "Manrope","Arial",sans-serif; font-size: 14px; color: #1C1A17; cursor: pointer;
+}
+body.bielstein-theme .acct-radios input[type="radio"] { accent-color: #FF5A36; width: 16px; height: 16px; }
+body.bielstein-theme .acct-card #pfSaveBtn {
+  background: #FF5A36 !important; color: #1C1A17 !important; border: none !important;
+  border-radius: 14px !important; padding: 16px !important;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 700 !important; font-size: 15px !important;
+  letter-spacing: 0 !important; text-transform: none !important; box-shadow: none !important;
+}
+/* Mitgliedschaften: reine Statusanzeige (serverseitig erkannt, nicht selbst setzbar) */
+body.bielstein-theme .acct-member { text-align: left; margin-bottom: 16px; }
+body.bielstein-theme .acct-member-head { display: flex; align-items: center; gap: 10px; }
+body.bielstein-theme .acct-check {
+  width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0;
+  border: 1.5px solid #E2DACB; background: #FFFFFF; color: #FFFFFF;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;
+}
+body.bielstein-theme .acct-check.on { background: #B8B0A2; border-color: #B8B0A2; }
+body.bielstein-theme .acct-member-title {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif; font-weight: 700; font-size: 15px; color: #1C1A17;
+}
+body.bielstein-theme .acct-member-sub {
+  font-size: 13px; color: #FF5A36; margin: 4px 0 0 28px;
+}
+body.bielstein-theme .acct-member-sub strong { color: #FF5A36; font-weight: 800; }
+body.bielstein-theme .acct-member-link {
+  display: inline-block; margin: 4px 0 0 28px;
+  font-size: 13px; color: #FF5A36; font-weight: 700; text-decoration: none;
+}
+body.bielstein-theme .acct-hint {
+  text-align: left; font-size: 12.5px; color: #7A7368; line-height: 1.6; margin-top: 4px;
+}
+body.bielstein-theme .acct-report-btn {
+  display: inline-block; margin-top: 8px; padding: 0;
+  background: none; border: none; cursor: pointer;
+  font-family: "Manrope","Arial",sans-serif; font-size: 12.5px;
+  font-weight: 700; color: #FF5A36; text-align: left;
+}
+body.bielstein-theme .acct-report-btn:hover { text-decoration: underline; }
+
+/* Pager wie Vorlage: Label links, runde Coral-Pfeile rechts */
+body.bielstein-theme .card-pager {
+  display: flex !important; align-items: center; justify-content: space-between;
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid #E2DACB;
+}
+body.bielstein-theme .card-pager-label {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 600 !important; font-size: 12px !important;
+  letter-spacing: 0.1em !important; text-transform: uppercase !important; color: #7A7368 !important;
+}
+body.bielstein-theme .card-pager button {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1.5px solid #FF5A36 !important; background: transparent !important;
+  color: #FF5A36 !important; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; margin-left: 8px;
+}
+body.bielstein-theme .card-pager button svg { width: 15px; height: 15px; }
+
+/* ── FUSSZEILE (Vorlage) ── */
+body.bielstein-theme .site-footer {
+  border-top: 1.5px solid #E2DACB !important;
+  padding: 24px 0 28px !important; margin-top: 48px !important;
+}
+body.bielstein-theme .site-footer-right,
+body.bielstein-theme .site-footer-center {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 600 !important; font-size: 13px !important;
+  letter-spacing: 0.06em !important; color: #7A7368 !important;
+}
+body.bielstein-theme .site-footer-left a { color: #7A7368 !important; font-size: 0.75rem !important; }
+body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
+
+/* ── SPLASH / EINSTIEGSSEITE (Werte 1:1 aus der Vorlage) ── */
+.pb-splash {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #1C1A17; color: #F6F1E7;
+  display: flex; justify-content: center; overflow-y: auto;
+}
+.pb-splash[hidden] { display: none !important; }
+.pb-splash-inner {
+  width: 100%; max-width: 720px; min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 48px 32px; box-sizing: border-box;
+}
+.pb-splash-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.pb-splash-logobox {
+  width: 88px; height: 88px; padding: 14px; box-sizing: border-box;
+  border: 1px solid #F6F1E7; border-radius: 10px; flex-shrink: 0;
+}
+.pb-splash-logobox img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.pb-splash-tfb { display: flex; align-items: center; gap: 8px; }
+.pb-splash-dot { width: 10px; height: 10px; border-radius: 50%; background: #FF5A36; }
+.pb-splash-tfb span:last-child {
+  font-family: "Space Grotesk",sans-serif; font-weight: 600; font-size: 14px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: #B8B0A2;
+}
+.pb-splash-h1 {
+  font-family: "Space Grotesk",sans-serif; font-weight: 700;
+  font-size: clamp(48px,11vw,88px); line-height: 0.92; margin: 0; color: #F6F1E7;
+}
+.pb-splash-h1 span { color: #FF5A36; }
+.pb-splash-claim {
+  font-family: "Manrope",sans-serif; font-size: 18px; line-height: 1.5;
+  color: #C9C2B6; max-width: 420px; margin: 24px 0 0;
+}
+.pb-splash-cta {
+  width: 100%; padding: 20px; border: none; border-radius: 16px;
+  background: #FF5A36; color: #1C1A17;
+  font-family: "Space Grotesk",sans-serif; font-weight: 700; font-size: 18px; cursor: pointer;
+}
+.pb-splash-foot {
+  font-family: "Manrope",sans-serif; text-align: center; font-size: 13px; color: #7A7368; margin: 16px 0 0;
 }
 </style>
+
+<!-- Redesign 2027 · Navigation, Account-Steuerung und Splash-Ablauf.
+     Additiv: liest nur den vorhandenen Login-Status aus, ändert keine App-Logik. -->
+<script>
+(function(){
+  /* Branding oben links führt immer zurück zur Buchungsseite */
+  window.goHome = function(){
+    try { if (typeof setMode === 'function') setMode('book'); } catch(e){}
+    try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ window.scrollTo(0,0); }
+  };
+
+  function initials(name){
+    return (name||'').trim().split(/\s+/).filter(Boolean).slice(0,2)
+      .map(function(w){ return w[0].toUpperCase(); }).join('') || '·';
+  }
+
+  function eur(n){
+    return (Math.round(Number(n)*100)/100).toLocaleString('de-DE',
+      {minimumFractionDigits:0, maximumFractionDigits:2}) + ' €';
+  }
+  function dstr(ts){
+    if(!ts) return '';
+    var d = new Date(ts);
+    if(isNaN(d)) return '';
+    return String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0') + '.';
+  }
+
+  /* Guthaben + Verlauf – ausschließlich aus echten Supabase-Daten.
+     Guthaben = Summe der Restwerte aller Wertkarten.
+     Verlauf  = Aufladungen (card_purchases) + per Karte bezahlte Buchungen. */
+  window.renderCreditOverview = async function(){
+    var amtEl  = document.getElementById('wkBalanceAmount');
+    var nameEl = document.getElementById('wkBalanceName');
+    var histEl = document.getElementById('wkHistory');
+    if(!amtEl || !histEl) return;
+
+    if(typeof currentUser === 'undefined' || !currentUser){
+      amtEl.textContent = '—';
+      if(nameEl) nameEl.textContent = '';
+      histEl.innerHTML = '<div class="wk-empty">Melde dich an, um dein Guthaben und den Verlauf zu sehen.</div>';
+      return;
+    }
+
+    var cards = (typeof myCardsData !== 'undefined' && myCardsData) ? myCardsData : [];
+    var balance = cards.reduce(function(s,c){ return s + (Number(c.balance_remaining_eur) || 0); }, 0);
+    amtEl.textContent = eur(balance);
+    if(nameEl) nameEl.textContent = (currentProfile && currentProfile.full_name) || '';
+
+    var rows = [];
+    cards.forEach(function(c){
+      var v = Number(c.balance_original_eur) || 0;
+      if(v > 0) rows.push({ ts: c.created_at, label: 'Aufladung', amount: v });
+    });
+
+    // Per Guthaben bezahlte Buchungen (sobald die serverseitige Verrechnung aktiv ist)
+    try {
+      if(typeof sb !== 'undefined' && currentProfile && currentProfile.id){
+        var res = await sb.from('bookings').select('*').eq('user_id', currentProfile.id);
+        (res && res.data ? res.data : []).forEach(function(b){
+          if(b.card_purchase_id){
+            rows.push({
+              ts: b.created_at || b.date,
+              label: 'Buchung' + (b.court != null ? ' Court ' + b.court : ''),
+              amount: -(Number(b.price) || 0)
+            });
+          }
+        });
+      }
+    } catch(e){ /* Verlauf zeigt dann nur Aufladungen */ }
+
+    rows.sort(function(a,b){ return new Date(b.ts||0) - new Date(a.ts||0); });
+
+    histEl.innerHTML = rows.length
+      ? rows.map(function(r){
+          var pos = r.amount >= 0;
+          return '<div class="wk-hist-row"><span>' + dstr(r.ts) + ' ' + r.label +
+                 '</span><span class="wk-hist-amt ' + (pos?'pos':'neg') + '">' +
+                 (pos ? '+' : '−') + eur(Math.abs(r.amount)) + '</span></div>';
+        }).join('')
+      : '<div class="wk-empty">Noch keine Bewegungen. Lade Guthaben auf, um zu starten.</div>';
+  };
+  function isLoggedIn(){
+    var inEl = document.getElementById('userBarLoggedIn');
+    return !!(inEl && inEl.style.display !== 'none');
+  }
+
+  /* Header rechts: eingeloggt = Name + Avatar, ausgeloggt = Anmelden/Registrieren */
+  function syncHeaderUser(){
+    var user = document.getElementById('appbarUser');
+    var auth = document.getElementById('appbarAuth');
+    if(!user) return;
+    var nameEl = document.getElementById('userBarName');
+    var name = nameEl ? (nameEl.textContent||'').trim() : '';
+    if(isLoggedIn() && name && name !== '—'){
+      document.getElementById('appbarName').textContent = name;
+      document.getElementById('appbarAvatar').textContent = initials(name);
+      user.style.display = 'flex';
+      if(auth) auth.style.display = 'none';
+    } else {
+      user.style.display = 'none';
+      if(auth) auth.style.display = 'flex';
+    }
+  }
+
+  /* "Abmelden"/"Abo verwalten" wandern aus der entfernten User-Bar ins Account-Modal */
+  function ensureAccountActions(){
+    var modal = document.querySelector('#loyaltyModal .modal');
+    if(!modal || !isLoggedIn()) return;
+    var old = modal.querySelector('.acct-actions');
+    if(old) old.remove();
+    var box = document.createElement('div');
+    box.className = 'acct-actions';
+    var portal = document.getElementById('portalBtn');
+    if(portal && portal.style.display !== 'none'){
+      var b1 = document.createElement('button');
+      b1.type='button'; b1.textContent='Abo verwalten';
+      b1.onclick = function(){ try{ openPortal(); }catch(e){} };
+      box.appendChild(b1);
+    }
+    var b2 = document.createElement('button');
+    b2.type='button'; b2.textContent='Abmelden';
+    b2.onclick = function(){ try{ doLogout(); }catch(e){} };
+    box.appendChild(b2);
+    modal.appendChild(box);
+  }
+
+  function start(){
+    syncHeaderUser();
+    var bar = document.getElementById('userBar');
+    if(bar && window.MutationObserver){
+      new MutationObserver(syncHeaderUser).observe(bar,
+        {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:['style']});
+    }
+    // WICHTIG: Hier bewusst KEIN MutationObserver auf dem Account-Modal.
+    // ensureAccountActions() verändert das Modal selbst – ein Observer darauf
+    // würde sich endlos selbst auslösen und die Seite einfrieren.
+    // Stattdessen sauber an die vorhandene Render-Funktion andocken.
+    if (typeof window.renderAccountPage === 'function' && !window.__pbAcctPatched) {
+      window.__pbAcctPatched = true;
+      var origRender = window.renderAccountPage;
+      window.renderAccountPage = function(){
+        var r = origRender.apply(this, arguments);
+        try { ensureAccountActions(); } catch(e){}
+        return r;
+      };
+    }
+    // Wertkarten-Übersicht bei Tab-Wechsel aktualisieren
+    if (typeof window.setMode === 'function' && !window.__pbModePatched) {
+      window.__pbModePatched = true;
+      var origSetMode = window.setMode;
+      window.setMode = function(m){
+        var r = origSetMode.apply(this, arguments);
+        if (m === 'gutscheine') { try { renderCreditOverview(); } catch(e){} }
+        return r;
+      };
+    }
+    setInterval(syncHeaderUser, 1500);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+
+/* Splash bei jedem Laden; danach Login-Seite, falls noch nicht angemeldet. */
+(function(){
+  var MAIL_KEY = 'pb_last_email';
+  function leave(splash){
+    splash.setAttribute('hidden','');
+    document.documentElement.style.removeProperty('overflow');
+    document.body.style.removeProperty('overflow');
+    var inEl = document.getElementById('userBarLoggedIn');
+    var loggedIn = !!(inEl && inEl.style.display !== 'none');
+    if(loggedIn) return;                       // schon angemeldet -> direkt in die App
+    try {
+      openModal('login');
+      var last = localStorage.getItem(MAIL_KEY) || '';
+      var f = document.getElementById('loginEmail');
+      if(f && last){ f.value = last; var pw = document.getElementById('loginPw'); if(pw) pw.focus(); }
+    } catch(e){}
+  }
+  function start(){
+    var splash = document.getElementById('pbSplash');
+    if(!splash) return;
+    splash.removeAttribute('hidden');
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    var cta = document.getElementById('pbSplashCta');
+    if(cta) cta.addEventListener('click', function(){ leave(splash); });
+    document.addEventListener('keydown', function esc(e){
+      if(e.key === 'Escape'){ leave(splash); document.removeEventListener('keydown', esc); }
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+
+  /* E-Mail für die Vorausfüllung merken */
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(t && (t.id === 'loginBtn' || (t.closest && t.closest('#loginBtn')))){
+      var f = document.getElementById('loginEmail');
+      if(f && f.value){ try{ localStorage.setItem(MAIL_KEY, f.value.trim()); }catch(err){} }
+    }
+  }, true);
+})();
+</script>
 <!-- v0.41: Header-Cache-Buster + email_theme Payload für Original/Bielstein-Mailfarben -->
