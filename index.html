@@ -1266,6 +1266,7 @@ main {
       <div class="admin-tab"        id="atab-bookings"  onclick="setAdminTab('bookings')">📅 Buchungsübersicht</div>
       <div class="admin-tab"        id="atab-mis"       onclick="setAdminTab('mis')">📊 MIS</div>
       <div class="admin-tab"        id="atab-users"     onclick="setAdminTab('users')">👤 Nutzer</div>
+      <div class="admin-tab"        id="atab-wipe"      onclick="setAdminTab('wipe')" style="display:none;">🧹 Platte putzen</div>
     </div>
 
     <!-- ── FREIBAD & ANLAGE ── -->
@@ -2216,6 +2217,43 @@ body.bielstein-theme #tabPlay:not(.active) {
       </div>
 
     </div><!-- /adminUsers -->
+
+    <!-- Nur während der Testphase sichtbar. Steuert app_settings.test_mode;
+         steht der auf false, blendet die App den Bereich aus UND die
+         Datenbank verweigert die Ausführung. -->
+    <div id="adminWipe" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-title">🧹 Platte putzen (nur Testphase)</div>
+        <div class="admin-card">
+          <div class="wipe-warn">
+            Löscht Testdaten unwiderruflich. Es gibt kein Zurück und keine Sicherung.
+            Preise, Rabattregeln, Mitgliederliste und Öffnungszeiten bleiben unberührt.
+          </div>
+
+          <label class="wipe-opt">
+            <input type="checkbox" id="wipeBookings">
+            <span><strong>Sämtliche Buchungen</strong><br>
+              <small>Buchungen, Abos, Guthaben-Kontobuch, Wertkarten, Zahlungen,
+              Treuestunden, Türprotokoll</small></span>
+          </label>
+
+          <label class="wipe-opt">
+            <input type="checkbox" id="wipeAccounts">
+            <span><strong>Sämtliche Nutzerkonten</strong><br>
+              <small>Alle Konten außer Admin-Konten. Schließt die Buchungsdaten
+              zwingend mit ein.</small></span>
+          </label>
+
+          <div class="wipe-confirm">
+            <label for="wipeWord">Zum Bestätigen <strong>PUTZEN</strong> eintippen:</label>
+            <input type="text" id="wipeWord" autocomplete="off" spellcheck="false" placeholder="PUTZEN">
+          </div>
+
+          <button class="admin-btn wipe-btn" id="wipeBtn" onclick="doAdminWipe()">Jetzt löschen</button>
+          <div class="wipe-result" id="wipeResult"></div>
+        </div>
+      </div>
+    </div>
 
   </div><!-- /modeAdmin -->
 
@@ -4245,6 +4283,89 @@ function showToast(msg) {
 // ============================================================
 let adminTabLoaded = { freibad: false, prices: false, internal: false, bookings: false, mis: false, users: false };
 
+// ============================================================
+//  PLATTE PUTZEN (nur Testphase)
+//
+//  Der Reiter erscheint nur, solange app_settings.test_mode = true ist.
+//  Das ist reine Anzeige-Logik - die eigentliche Sperre sitzt in der
+//  Datenbank (admin_wipe prueft Rolle UND Testmodus selbst). Wer den
+//  Aufruf von Hand absetzt, kommt damit trotzdem nicht durch.
+// ============================================================
+async function initWipeTab() {
+  const tabEl = document.getElementById('atab-wipe');
+  if (!tabEl || !isAdmin()) return;
+  try {
+    const { data, error } = await sb.from('app_settings').select('test_mode').maybeSingle();
+    if (error || !data) return;                 // Tabelle fehlt -> Reiter bleibt verborgen
+    if (data.test_mode === true) tabEl.style.display = '';
+  } catch(e) { /* im Zweifel nicht anzeigen */ }
+}
+
+async function doAdminWipe() {
+  const wantBookings = document.getElementById('wipeBookings').checked;
+  const wantAccounts = document.getElementById('wipeAccounts').checked;
+  const word   = (document.getElementById('wipeWord').value || '').trim();
+  const outEl  = document.getElementById('wipeResult');
+  const btn    = document.getElementById('wipeBtn');
+
+  const show = (msg, kind) => {
+    outEl.className = 'wipe-result ' + (kind || '');
+    outEl.textContent = msg;
+  };
+
+  if (!wantBookings && !wantAccounts) { show('Bitte mindestens eine Auswahl treffen.', 'warn'); return; }
+  if (word !== 'PUTZEN')              { show('Bitte PUTZEN eintippen, um zu bestätigen.', 'warn'); return; }
+
+  // Konten ohne Buchungsdaten zu loeschen hinterliesse verwaiste Buchungen.
+  if (wantAccounts && !wantBookings) {
+    document.getElementById('wipeBookings').checked = true;
+    show('Hinweis: Beim Löschen der Konten werden die Buchungsdaten zwingend mitgelöscht.', 'warn');
+  }
+
+  const was = [wantBookings ? 'alle Buchungsdaten' : null,
+               wantAccounts ? 'alle Nutzerkonten (außer Admins)' : null]
+              .filter(Boolean).join(' und ');
+  if (!confirm(`Wirklich ${was} unwiderruflich löschen?\n\nEs gibt kein Zurück.`)) {
+    show('Abgebrochen. Es wurde nichts gelöscht.');
+    return;
+  }
+
+  btn.disabled = true;
+  show('Wird gelöscht …');
+  try {
+    const { data, error } = await sb.rpc('admin_wipe', {
+      p_bookings: wantBookings || wantAccounts,
+      p_accounts: wantAccounts,
+    });
+    if (error) { show('Fehler: ' + error.message, 'warn'); return; }
+
+    const labels = {
+      buchungen: 'Buchungen', abos: 'Abos', kontobuch: 'Guthaben-Bewegungen',
+      wertkarten: 'Wertkarten', zahlungen: 'Zahlungen', treuestunden: 'Treuestunden',
+      tuerprotokoll: 'Türprotokoll', mitgliedsmeldungen: 'Mitgliedsmeldungen',
+      konten: 'Nutzerkonten',
+    };
+    const zeilen = Object.entries(data || {})
+      .map(([k, v]) => `${labels[k] || k}: ${v}`)
+      .join('   ·   ');
+    show('Gelöscht — ' + (zeilen || 'nichts vorhanden'), 'ok');
+
+    document.getElementById('wipeWord').value = '';
+    document.getElementById('wipeBookings').checked = false;
+    document.getElementById('wipeAccounts').checked = false;
+
+    // Angezeigte Daten sofort auffrischen, damit nichts Gelöschtes stehen bleibt.
+    try {
+      await loadBookings(selDate); renderSlots();
+      if (typeof renderCreditOverview === 'function') await renderCreditOverview();
+    } catch(e) {}
+  } catch(e) {
+    show('Fehler: ' + (e.message || e), 'warn');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 function setAdminTab(tab) {
   document.getElementById('adminFreibad').style.display   = tab==='freibad'  ? 'block' : 'none';
   document.getElementById('adminPrices').style.display    = tab==='prices'   ? 'block' : 'none';
@@ -4252,7 +4373,8 @@ function setAdminTab(tab) {
   document.getElementById('adminBookings').style.display  = tab==='bookings' ? 'block' : 'none';
   document.getElementById('adminMis').style.display       = tab==='mis'      ? 'block' : 'none';
   document.getElementById('adminUsers').style.display     = tab==='users'    ? 'block' : 'none';
-  ['freibad','prices','internal','bookings','mis','users'].forEach(t =>
+  document.getElementById('adminWipe').style.display      = tab==='wipe'     ? 'block' : 'none';
+  ['freibad','prices','internal','bookings','mis','users','wipe'].forEach(t =>
     document.getElementById('atab-'+t).classList.toggle('active', t===tab)
   );
   if (tab==='freibad'  && !adminTabLoaded.freibad)  { loadAdminFreibad();  adminTabLoaded.freibad=true; }
@@ -4268,6 +4390,19 @@ function setAdminTab(tab) {
     setTimeout(doMisInit, 100);
   }
   if (tab==='users'    && !adminTabLoaded.users)    { loadAdminUsers();   adminTabLoaded.users=true; }
+}
+
+// Reiter beim Öffnen des Admin-Bereichs freischalten, sofern Testphase läuft.
+if (typeof window !== 'undefined') {
+  const _origSetMode = window.setMode;
+  if (typeof _origSetMode === 'function' && !window.__pbWipeHooked) {
+    window.__pbWipeHooked = true;
+    window.setMode = function(m) {
+      const r = _origSetMode.apply(this, arguments);
+      if (m === 'admin') { try { initWipeTab(); } catch(e) {} }
+      return r;
+    };
+  }
 }
 
 // Korrekte Anzeige beim ersten Öffnen
@@ -6491,6 +6626,34 @@ body.bielstein-theme .slot.abo-booked .slot-time { text-decoration: none !import
 body.bielstein-theme .slot.abo-booked .slot-price { color: #F6F1E7 !important; }
 /* Datums-Kacheln: gleiche Höhe, auch wenn kein Monat angezeigt wird */
 body.bielstein-theme .date-chip .dmon:empty::after { content: "\00A0"; }
+
+/* ── PLATTE PUTZEN ── */
+body.bielstein-theme #adminWipe .wipe-warn {
+  background: #FCE9E2; border: 1.5px solid #B8402C; color: #B8402C;
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.45;
+  margin-bottom: 16px;
+}
+body.bielstein-theme #adminWipe .wipe-opt {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 0; border-bottom: 1px solid #E2DACB; cursor: pointer;
+  font-size: 14px; color: #1C1A17;
+}
+body.bielstein-theme #adminWipe .wipe-opt input { margin-top: 3px; flex-shrink: 0; }
+body.bielstein-theme #adminWipe .wipe-opt small { color: #7A7368; line-height: 1.4; }
+body.bielstein-theme #adminWipe .wipe-confirm { margin: 16px 0 12px; font-size: 13px; color: #7A7368; }
+body.bielstein-theme #adminWipe .wipe-confirm input {
+  display: block; margin-top: 6px; padding: 10px 12px; width: 100%; max-width: 220px;
+  border: 1.5px solid #E2DACB; border-radius: 10px;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+}
+body.bielstein-theme #adminWipe .wipe-btn {
+  background: #B8402C !important; color: #fff !important; border: none !important;
+}
+body.bielstein-theme #adminWipe .wipe-btn:disabled { opacity: 0.55; }
+body.bielstein-theme #adminWipe .wipe-result { margin-top: 12px; font-size: 13px; color: #7A7368; }
+body.bielstein-theme #adminWipe .wipe-result.ok   { color: #1F8A5F; font-weight: 600; }
+body.bielstein-theme #adminWipe .wipe-result.warn { color: #B8402C; font-weight: 600; }
 
 /* ── GUTHABEN-BESTÄTIGUNG ── */
 body.bielstein-theme #creditConfirmModal .cc-lines {
