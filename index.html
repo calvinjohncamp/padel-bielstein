@@ -2246,7 +2246,9 @@ body.bielstein-theme #tabPlay:not(.active) {
 
           <div class="wipe-confirm">
             <label for="wipeWord">Zum Bestätigen <strong>PUTZEN</strong> eintippen:</label>
-            <input type="text" id="wipeWord" autocomplete="off" spellcheck="false" placeholder="PUTZEN">
+            <!-- Kein Platzhalter "PUTZEN": Der graue Text saehe aus, als stuende
+                 bereits etwas im Feld. Genau das hat zur Verwirrung gefuehrt. -->
+            <input type="text" id="wipeWord" autocomplete="off" spellcheck="false">
           </div>
 
           <button class="admin-btn wipe-btn" id="wipeBtn" onclick="doAdminWipe()">Jetzt löschen</button>
@@ -4314,7 +4316,10 @@ async function doAdminWipe() {
   };
 
   if (!wantBookings && !wantAccounts) { show('Bitte mindestens eine Auswahl treffen.', 'warn'); return; }
-  if (word !== 'PUTZEN')              { show('Bitte PUTZEN eintippen, um zu bestätigen.', 'warn'); return; }
+  // Gross-/Kleinschreibung egal: Das Feld stellt den Text ohnehin in
+  // Grossbuchstaben dar. Wer "putzen" tippt, sieht "PUTZEN" - eine
+  // Ablehnung waere fuer den Nutzer nicht nachvollziehbar.
+  if (word.toUpperCase() !== 'PUTZEN') { show('Bitte das Wort PUTZEN eintippen, um zu bestätigen.', 'warn'); return; }
 
   // Konten ohne Buchungsdaten zu loeschen hinterliesse verwaiste Buchungen.
   if (wantAccounts && !wantBookings) {
