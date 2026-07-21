@@ -1003,7 +1003,7 @@ main {
     <div class="mode-tab" id="tabAbo" onclick="setMode('abo')"><span class="tab-icon">■</span> Jahresabo sichern</div>
     <div class="mode-tab" id="tabPlay" onclick="setMode('play')"><span class="tab-icon">▶</span> Jetzt spielen</div>
     <div class="mode-tab" id="tabMy" onclick="setMode('my')"><span class="tab-icon">📋</span> Meine Buchungen</div>
-    <div class="mode-tab" id="tabGutscheine" onclick="setMode('gutscheine')"><span class="tab-icon">◆</span> Wertkarten</div>
+    <div class="mode-tab" id="tabGutscheine" onclick="setMode('gutscheine')"><span class="tab-icon"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><defs><mask id="pbCardStack" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20"><rect width="20" height="20" fill="#fff"/><rect x="7.2" y="3.7" width="10.1" height="14.6" rx="2.8" fill="#000"/></mask></defs><g stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><g mask="url(#pbCardStack)"><rect x="5.5" y="5" width="7.5" height="12" rx="1.5" transform="rotate(-12 13 17)"/></g><rect x="8.5" y="5" width="7.5" height="12" rx="1.5"/></g></svg></span> Wertkarten</div>
   </div>
   <!-- Admin Tab entfernt – Admin-Zugang über Fußzeile -->
 
@@ -1252,6 +1252,10 @@ main {
         </div>
 
         <button class="book-btn visible" style="width:100%;position:static;" onclick="confirmCardPurchase()">Wertkarte kaufen &amp; bezahlen →</button>
+
+        <!-- Abo-Karte(n) im Querformat, exakt so breit wie der Kaufbereich.
+             Wird nur befuellt, wenn ein aktives Jahresabo vorliegt. -->
+        <div id="aboCardHost"></div>
       </div>
 
       <!-- RECHTS: Meine Karten (Hochformat) -->
@@ -2815,7 +2819,7 @@ function setMode(m) {
   if (m==='abo')  { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
   if (m==='play') { renderPlaySection(); }
   if (m==='my')   { renderMySection(); }
-  if (m==='gutscheine') { renderCardSizeGrid(); loadMyCards(); }
+  if (m==='gutscheine') { renderCardSizeGrid(); loadMyCards(); renderAboCard(); }
   if (m==='admin') {
     document.getElementById('mainTabs').style.display = 'none';
     document.getElementById('heroHeader').style.cursor = 'pointer';
@@ -3034,6 +3038,31 @@ sb.auth.getSession().then(async ({ data: { session } }) => {
   updateUserBar();
 });
 
+// Baut die GERADE SICHTBARE Seite neu auf. Wird nach jedem Wechsel des
+// Anmeldestatus gerufen. Vorher musste man den Tab verlassen und zurueckkommen,
+// damit die eigenen Wertkarten, Buchungen oder der Mitglieder-Rabatt auftauchten -
+// denn die Daten werden ausschliesslich beim Tab-Wechsel geladen.
+//
+// Fuer 'book' reicht setMode nicht: dort passiert beim Moduswechsel nichts:
+// die Preise haengen aber am Mitglieder-Rabatt und muessen neu gerechnet werden.
+async function refreshCurrentMode() {
+  if (!curMode) return;
+  try {
+    if (curMode === 'book') {
+      if (selDate && typeof loadBookings === 'function') await loadBookings(selDate);
+      if (typeof updDurPrices === 'function') updDurPrices();
+      if (typeof renderSlots === 'function') renderSlots();
+      if (typeof updateSummary === 'function') updateSummary();
+    } else if (typeof window.setMode === 'function') {
+      // setMode laedt die Daten des jeweiligen Tabs neu - inklusive der
+      // Wertkarten-Uebersicht, die per Wrapper daran haengt.
+      window.setMode(curMode);
+    }
+  } catch (e) {
+    console.warn('Seite nach Anmeldewechsel nicht aktualisiert', e);
+  }
+}
+
 sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
     currentUser = session.user;
@@ -3044,6 +3073,17 @@ sb.auth.onAuthStateChange(async (event, session) => {
     currentProfile = null;
     member = null;
     updateUserBar();
+  }
+  // Nur bei echten Statuswechseln neu aufbauen. TOKEN_REFRESHED und
+  // INITIAL_SESSION feuern auch im laufenden Betrieb bzw. beim Seitenaufbau -
+  // da wuerde ein Neuaufbau nur doppelt laden.
+  //
+  // Bewusst per setTimeout ausserhalb dieses Callbacks: Supabase haelt hier eine
+  // interne Sperre, und die Ladefunktionen sprechen ihrerseits Supabase an -
+  // direkt aufgerufen koennen sie haengen bleiben. Gleiche Begruendung wie bei
+  // openPasswordRecovery weiter unten.
+  if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+    setTimeout(refreshCurrentMode, 0);
   }
   if (event === 'PASSWORD_RECOVERY') {
     passwordRecoveryActive = true;
@@ -5684,6 +5724,45 @@ async function loadMyCards() {
   updateBalanceMeter();
 }
 
+// Abo-Karte(n) im Querformat unter dem Kaufbereich. Dokumentiert das laufende
+// Jahresabo als eigenes, wertiges Objekt - nicht als Textzeile.
+// Der Verlaengern-Knopf ist bewusst noch ohne Funktion (folgt spaeter).
+async function renderAboCard() {
+  const host = document.getElementById('aboCardHost');
+  if (!host) return;
+  if (!currentUser) { host.innerHTML = ''; return; }
+  let abos = [];
+  try {
+    abos = await loadActiveAbos();
+  } catch (e) {
+    console.warn('Abo laden fehlgeschlagen', e);
+    host.innerHTML = '';
+    return;
+  }
+  if (!abos.length) { host.innerHTML = ''; return; }
+
+  host.innerHTML = abos.map(a => {
+    const from = `${String(a.hour_start).padStart(2,'0')}:00`;
+    const to   = `${String(a.hour_start + a.duration).padStart(2,'0')}:00`;
+    return `<div class="abo-card">
+      <div class="abo-badge">ABO</div>
+      <div class="abo-headline">Dein exklusives Jahresabo</div>
+      <div class="abo-cols">
+        <div class="abo-col">
+          <div class="abo-col-label">Eingeloggt bis zum</div>
+          <div class="abo-col-value">${formatDateDE(a.ends_on)}</div>
+        </div>
+        <div class="abo-col abo-col-right">
+          <div class="abo-col-label">Dein fester Termin</div>
+          <div class="abo-col-value">Immer wieder ${WDNAMES[a.weekday]}s<br>
+            von ${from} – ${to} Uhr auf Court ${a.court}</div>
+        </div>
+      </div>
+    </div>
+    <button class="abo-renew-btn" type="button" onclick="showToast('Abo-Verlängerung folgt in Kürze.')">Abo verlängern →</button>`;
+  }).join('');
+}
+
 // Verbrauchsbalken im schwarzen Guthaben-Feld oben: Summe ueber alle Karten.
 function updateBalanceMeter() {
   const box = document.getElementById('wkBalanceMeter');
@@ -5958,7 +6037,14 @@ async function buildAccountPages() {
   await fetchMyCards();
 
   accountPages = [{ type: 'rewards', hours: hoursPlayed }];
-  myCardsData.forEach((c, i) => accountPages.push({ type: 'card', card: c, cardIndex: i }));
+  // Gleiche Reihenfolge wie in der Seitenansicht: die Karte, von der gerade
+  // abgebucht wird (die aelteste mit Restwert), kommt zuerst - danach die noch
+  // unangetastete. Aufgebrauchte Karten tauchen gar nicht mehr auf.
+  myCardsData
+    .map((c, i) => ({ card: c, cardIndex: i }))
+    .filter(e => (Number(e.card.balance_remaining_eur) || 0) > 0)
+    .sort((a, b) => String(a.card.created_at || '').localeCompare(String(b.card.created_at || '')))
+    .forEach(e => accountPages.push({ type: 'card', card: e.card, cardIndex: e.cardIndex }));
   accountPages.push({ type: 'profile' });
 }
 
@@ -6527,15 +6613,71 @@ body.bielstein-theme #tabMy .tab-icon {
     linear-gradient(currentColor,currentColor) 0 3.75px/11px 1.5px no-repeat,
     linear-gradient(currentColor,currentColor) 0 7.5px/7px 1.5px no-repeat;
 }
-/* Wertkarten-Symbol 1:1 aus der Design-Vorlage: Kartenrechteck mit
-   Magnetstreifen. Der Streifen unterscheidet es vom Quadrat bei "Jetzt buchen". */
+/* Wertkarten: zwei Karten im Hochformat, die hintere leicht gekippt dahinter.
+   Als SVG statt CSS-Kaesten, weil die hintere Karte hinter der vorderen
+   verschwinden muss. Eine Fuellung ginge nicht - der Tab hat je nach Zustand
+   hellen, dunklen oder Hover-Grund. Stattdessen stanzt eine Maske die vordere
+   Karte samt Abstand aus der hinteren aus; das funktioniert auf jedem Grund. */
 body.bielstein-theme #tabGutscheine .tab-icon {
-  width: 13px; height: 9px; border-radius: 2px; border: 1.5px solid currentColor;
-  position: relative;
+  width: 15.4px; height: 15.4px;          /* 10 % groesser als die uebrigen */
+  border: none !important; border-radius: 0 !important;
+  display: inline-flex; align-items: center;
 }
-body.bielstein-theme #tabGutscheine .tab-icon::before {
-  content: ""; position: absolute; top: 2px; left: 0; right: 0;
-  height: 1.5px; background: currentColor;
+body.bielstein-theme #tabGutscheine .tab-icon svg {
+  width: 100%; height: 100%; display: block;
+  transform: rotate(7deg);                /* leichte Rechtsneigung */
+}
+
+/* ── ABO-KARTE (Querformat, unter dem Kaufbereich) ──────────────────
+   Gleiche Formensprache wie die Wertkarten: Creme-Flaeche, oranger Rahmen,
+   Plakette in die Oberkante eingelassen. Nur eben liegend statt hochkant. */
+body.bielstein-theme .abo-card {
+  position: relative;
+  margin-top: 34px;                 /* Platz fuer die ueberstehende Plakette */
+  background: #FAF8F4; border: 1.5px solid #FF5A36; border-radius: 22px;
+  padding: 30px 24px 24px;
+  font-family: "Manrope","Arial",sans-serif; color: #1C1A17;
+}
+body.bielstein-theme .abo-badge {
+  position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%);
+  padding: 0 14px; height: 30px; border-radius: 15px;
+  background: #F6F1E7; border: 1.5px solid #FF5A36; color: #FF5A36;
+  box-shadow: 0 0 0 8px #F6F1E7;    /* stanzt die Plakette in den Rahmen */
+  display: flex; align-items: center; justify-content: center;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 800; font-size: 13px; letter-spacing: 0.14em;
+}
+body.bielstein-theme .abo-headline {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 700; font-size: 20px; text-align: center; margin-bottom: 20px;
+}
+body.bielstein-theme .abo-cols {
+  display: flex; gap: 20px; align-items: flex-start;
+  border-top: 1px solid #E2DACB; padding-top: 18px;
+}
+body.bielstein-theme .abo-col { flex: 1 1 0; min-width: 0; }
+body.bielstein-theme .abo-col-right { text-align: right; }
+body.bielstein-theme .abo-col-label {
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #7A7368; margin-bottom: 5px;
+}
+body.bielstein-theme .abo-col-value {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 700; font-size: 15px; line-height: 1.45;
+}
+body.bielstein-theme .abo-renew-btn {
+  width: 100%; margin-top: 12px; padding: 15px;
+  border: 1.5px solid #1C1A17; border-radius: 14px;
+  background: transparent; color: #1C1A17; cursor: pointer;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 700; font-size: 14px; letter-spacing: 0.04em;
+  transition: background 0.15s, color 0.15s;
+}
+body.bielstein-theme .abo-renew-btn:hover { background: #1C1A17; color: #F6F1E7; }
+/* Auf schmalen Screens untereinander statt nebeneinander */
+@media (max-width: 560px) {
+  body.bielstein-theme .abo-cols { flex-direction: column; gap: 14px; }
+  body.bielstein-theme .abo-col-right { text-align: left; }
 }
 
 /* ── SCHRITT-BADGES (Ink statt Coral, wie Vorlage) ── */
