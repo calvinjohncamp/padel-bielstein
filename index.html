@@ -18,10 +18,11 @@ window.__pbFromStripe = /[?&]booking=(success|cancelled)/.test(location.search);
 <meta name="theme-color" content="#1C1A17">
 <meta name="description" content="Courts buchen, Spielguthaben verwalten und Rewards ansehen – Padel Bielstein.">
 <link rel="manifest" href="manifest.webmanifest?v=20260720">
-<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png?v=20260720">
-<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png?v=20260720">
-<link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png?v=20260720">
-<link rel="shortcut icon" href="assets/icons/favicon.ico?v=20260720">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png?v=20260721">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/icons/favicon-48.png?v=20260721c">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png?v=20260721c">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png?v=20260721c">
+<link rel="shortcut icon" href="assets/icons/favicon.ico?v=20260721c">
 <title>Padel Bielstein – Courts buchen</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -928,13 +929,13 @@ main {
   <div class="pb-splash-inner">
     <div class="pb-splash-top">
       <div class="pb-splash-logobox">
-        <img src="assets/icons/logo-mark.png?v=20260720" alt="Padel Bielstein">
+        <img src="assets/icons/logo-mark-2027-dark.png?v=20260721b" alt="Padel Bielstein">
       </div>
       <div class="pb-splash-tfb"><span class="pb-splash-dot"></span><span>TFB</span></div>
     </div>
     <div>
       <h1 class="pb-splash-h1">PADEL<br><span>BIELSTEIN</span></h1>
-      <p class="pb-splash-claim">Zwei Courts, ein Klick. Buche deinen Slot, sichere dir dein Jahresabo und behalte dein Guthaben im Blick — alles an einem Ort.</p>
+      <p class="pb-splash-claim">Zwei Courts, eine App. Buche deinen Slot, sichere dir dein Jahresabo und behalte dein Guthaben im Blick.</p>
     </div>
     <div>
       <button type="button" class="pb-splash-cta" id="pbSplashCta">Jetzt loslegen →</button>
@@ -973,7 +974,7 @@ main {
     </div>
     <!-- Ausgeloggt -->
     <div id="userBarLoggedOut" style="width:100%;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:0.82rem;color:#7A7368;">Zwei Courts, ein Klick — melde dich an und buche deinen Slot.</span>
+      <span style="font-size:0.82rem;color:#7A7368;">Zwei Courts, eine App — melde dich an und buche deinen Slot.</span>
       <div style="display:flex;gap:6px;align-items:center;">
         <button class="account-icon-btn" style="margin-right:12px;" onclick="openLoyaltyCard()" aria-label="Rewards" title="Rewards">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -6944,10 +6945,12 @@ body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
 }
 .pb-splash-top { display: flex; align-items: flex-start; justify-content: space-between; }
 .pb-splash-logobox {
-  width: 88px; height: 88px; padding: 14px; box-sizing: border-box;
-  border: 1px solid #F6F1E7; border-radius: 10px; flex-shrink: 0;
+  /* Dunkle Logo-Kachel mit duennem Rand im Beige der Glaswand (#F6F3EC). */
+  width: 88px; height: 88px; box-sizing: border-box;
+  border: 1px solid #F6F1E7; border-radius: 10px;
+  overflow: hidden; flex-shrink: 0;
 }
-.pb-splash-logobox img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.pb-splash-logobox img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .pb-splash-tfb { display: flex; align-items: center; gap: 8px; }
 .pb-splash-dot { width: 10px; height: 10px; border-radius: 50%; background: #FF5A36; }
 .pb-splash-tfb span:last-child {
