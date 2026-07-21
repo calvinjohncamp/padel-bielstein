@@ -177,6 +177,8 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .date-chip .dname { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
 .date-chip .dnum { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.5rem; line-height: 1.1; }
 .date-chip .dmon { font-size: 0.65rem; opacity: 0.5; margin-top: 1px; }
+/* Monatswechsel: fett und voll deckend, damit der Sprung auffaellt. */
+.date-chip .dmon.dmon-switch { font-weight: 800; opacity: 1; letter-spacing: 0.04em; }
 
 /* ■■ DURATION ■■ */
 .dur-row { display: flex; gap: 10px; }
@@ -1185,6 +1187,11 @@ main {
       <div class="wk-balance-label">Spielguthaben</div>
       <div class="wk-balance-amount" id="wkBalanceAmount">—</div>
       <div class="wk-balance-name" id="wkBalanceName"></div>
+      <!-- Verbrauchsbalken: links orange = bereits verbraucht, rechts = noch da -->
+      <div class="wk-meter" id="wkBalanceMeter" hidden>
+        <div class="wk-meter-track"><div class="wk-meter-fill" id="wkBalanceMeterFill"></div></div>
+        <div class="wk-meter-legend"><span id="wkMeterUsed"></span><span id="wkMeterLeft"></span></div>
+      </div>
     </div>
 
     <div class="gutschein-layout">
@@ -2826,10 +2833,12 @@ function buildDates() {
     const c = document.createElement("div");
     c.className = "date-chip";
     c.dataset.date = str;
-    // Vorlage zeigt nur Wochentag + Zahl. Monat nur am Monatswechsel einblenden,
-    // damit der Sprung z. B. Juli -> August eindeutig bleibt.
-    const monLbl = d.getDate() === 1 ? MONTHS[d.getMonth()] : '';
-    c.innerHTML = `<div class="dname">${DAYS[d.getDay()]}</div><div class="dnum">${d.getDate()}</div><div class="dmon">${monLbl}</div>`;
+    // Monat dezent unter jedem Tag, damit beim Scrollen immer klar ist, in
+    // welchem Monat man sich befindet. Am Monatsersten zusaetzlich fett
+    // hervorgehoben, damit der Wechsel Juli -> August ins Auge springt.
+    const isMonthStart = d.getDate() === 1;
+    const monCls = isMonthStart ? 'dmon dmon-switch' : 'dmon';
+    c.innerHTML = `<div class="dname">${DAYS[d.getDay()]}</div><div class="dnum">${d.getDate()}</div><div class="${monCls}">${MONTHS[d.getMonth()]}</div>`;
     c.onclick = () => selectDate(str);
     sc.appendChild(c);
   }
@@ -5407,13 +5416,16 @@ function valueDotRowsHTML(dotHtml, count, rowClass) {
 
 // Wertkarte (reiner Euro-Betrag): oben die RESTSUMME gross, darunter klein
 // "von urspruenglich X EUR". Erwartet card.balance_remaining_eur & card.balance_original_eur.
-// Vorlage: conic-gradient(#FF5A36 0 <verbraucht>%, #1C1A17 <verbraucht>% 100%)
-// Orange = bereits verwendet, dunkel = noch verfügbar.
-function balanceRingStyle(original, remaining) {
+//
+// Verbrauch wird als waagerechter Balken von links nach rechts gezeigt:
+// links orange = bereits verbraucht, rechts dunkel = noch verfuegbar.
+// Frueher war das ein Kreis (conic-gradient) - ein Ring hat keine Leserichtung,
+// ein Balken schon, und "wie viel ist weg" liest man daran sofort ab.
+function usedPercent(original, remaining) {
   const base = Number(original) || 0;
   const rest = Number(remaining) || 0;
-  const usedPct = base > 0 ? Math.max(0, Math.min(100, Math.round((1 - rest / base) * 100))) : 0;
-  return `conic-gradient(#FF5A36 0 ${usedPct}%, #1C1A17 ${usedPct}% 100%)`;
+  if (base <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((1 - rest / base) * 100)));
 }
 
 function balanceCardHTML(card) {
@@ -5435,8 +5447,14 @@ function balanceCardHTML(card) {
     <div class="rw-email">${email}</div>
     ${code ? `<div class="value-card-code">${esc(code)}</div>` : ''}
     ${giftMessage ? `<div class="gift-message-preview">${giftMessage}</div>` : ''}
-    <div class="value-ring" style="background:${balanceRingStyle(original, remaining)};"></div>
-    <div class="rw-legend">Dein Guthaben wird automatisch mit der nächsten Buchung verrechnet — <strong>dunkel</strong> ist noch verfügbar, <strong>orange</strong> bereits verwendet.</div>
+    <div class="value-meter">
+      <div class="value-meter-track"><div class="value-meter-fill" style="width:${usedPercent(original, remaining)}%;"></div></div>
+      <div class="value-meter-legend">
+        <span>${Math.round((original - remaining) * 100) / 100} € verbraucht</span>
+        <span>${remaining} € übrig</span>
+      </div>
+    </div>
+    <div class="rw-legend">Dein Guthaben wird automatisch mit der nächsten Buchung verrechnet — <strong>orange</strong> zeigt, wie viel du bereits verbraucht hast.</div>
   </div>`;
 }
 // Wählt je nach Kartentyp die passende Darstellung
@@ -5626,9 +5644,43 @@ async function loadMyCards() {
     list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Noch keine Karte vorhanden.</div></div>`;
     return;
   }
-  list.innerHTML = `<div class="mycards-stack">` + myCardsData.map((c, i) =>
-    `<div onclick="openLoyaltyCard(${i})" style="cursor:pointer;">${anyCardHTML(c)}</div>`
+  // Reihenfolge: die Karte, von der GERADE abgebucht wird, gehoert nach oben.
+  // Verbraucht wird aelteste zuerst (applyLedgerToCards), also aufsteigend nach
+  // created_at sortieren - vorher war es absteigend, dadurch stand die aktive
+  // Karte ganz unten.
+  //
+  // Aufgebrauchte Karten (Rest 0) werden ausgeblendet: sie sind erledigt und
+  // wuerden die Liste sonst mit Nullwerten zustellen. Der Kaufbeleg bleibt im
+  // Verlauf darunter erhalten.
+  const visible = myCardsData
+    .map((c, i) => ({ card: c, idx: i }))
+    .filter(e => (Number(e.card.balance_remaining_eur) || 0) > 0)
+    .sort((a, b) => String(a.card.created_at || '').localeCompare(String(b.card.created_at || '')));
+
+  if (!visible.length) {
+    list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Alle Wertkarten sind aufgebraucht. Neue Karte oben kaufen.</div></div>`;
+    updateBalanceMeter();
+    return;
+  }
+
+  list.innerHTML = `<div class="mycards-stack">` + visible.map(e =>
+    `<div onclick="openLoyaltyCard(${e.idx})" style="cursor:pointer;">${anyCardHTML(e.card)}</div>`
   ).join('') + `</div>`;
+  updateBalanceMeter();
+}
+
+// Verbrauchsbalken im schwarzen Guthaben-Feld oben: Summe ueber alle Karten.
+function updateBalanceMeter() {
+  const box = document.getElementById('wkBalanceMeter');
+  if (!box) return;
+  const orig = myCardsData.reduce((s, c) => s + (Number(c.balance_original_eur) || 0), 0);
+  const rest = myCardsData.reduce((s, c) => s + (Number(c.balance_remaining_eur) || 0), 0);
+  if (orig <= 0) { box.hidden = true; return; }
+  box.hidden = false;
+  const used = Math.round((orig - rest) * 100) / 100;
+  document.getElementById('wkBalanceMeterFill').style.width = usedPercent(orig, rest) + '%';
+  document.getElementById('wkMeterUsed').textContent = `${used} € verbraucht`;
+  document.getElementById('wkMeterLeft').textContent = `${Math.round(rest * 100) / 100} € übrig`;
 }
 
 function renderCardSizeGrid() {
@@ -6804,10 +6856,44 @@ body.bielstein-theme .rw-email { font-size: 13px !important; color: #7A7368 !imp
 body.bielstein-theme .rw-divider { width: 100%; height: 1px; background: #E2DACB !important; margin-bottom: 14px; }
 
 /* Wertkarten-Ring (Pie) */
-body.bielstein-theme .value-ring {
-  width: 76px; height: 76px; border-radius: 50%;
-  margin: 0 auto 16px; display: block;
+/* Verbrauchsbalken auf der Wertkarte (ersetzt den fruehereren Kreis).
+   Leicht waagerechter Balken, Fuellung von links: orange = verbraucht. */
+body.bielstein-theme .value-meter { margin: 4px auto 16px; max-width: 260px; }
+body.bielstein-theme .value-meter-track {
+  height: 14px; border-radius: 7px; overflow: hidden;
+  /* Helle Restspur: eine schwarze Spur wuerde auf einer unberuehrten Karte
+     als massiver Riegel wirken und die Karte erschlagen. */
+  background: rgba(28,26,23,0.13);
 }
+body.bielstein-theme .value-meter-fill {
+  height: 100%; background: #FF5A36; border-radius: 7px 0 0 7px;
+  transition: width 0.3s ease;
+}
+body.bielstein-theme .value-meter-legend {
+  display: flex; justify-content: space-between; margin-top: 7px;
+  font-size: 11.5px; letter-spacing: 0.03em; color: #7A7368;
+}
+body.bielstein-theme .value-meter-legend span:first-child { color: #FF5A36; font-weight: 700; }
+body.bielstein-theme .value-meter-legend span:last-child  { color: #1C1A17; font-weight: 700; }
+
+/* Verbrauchsbalken im schwarzen Guthaben-Feld. Dort ist der Grund dunkel,
+   die Restspur muss also hell sein - orange bleibt in beiden Faellen
+   "bereits verbraucht", das ist die Konstante. */
+body.bielstein-theme .wk-meter { margin-top: 18px; }
+body.bielstein-theme .wk-meter-track {
+  height: 14px; border-radius: 7px; overflow: hidden;
+  background: rgba(246,241,231,0.16);
+}
+body.bielstein-theme .wk-meter-fill {
+  height: 100%; background: #FF5A36; border-radius: 7px 0 0 7px;
+  transition: width 0.3s ease;
+}
+body.bielstein-theme .wk-meter-legend {
+  display: flex; justify-content: space-between; margin-top: 7px; font-size: 12px;
+}
+body.bielstein-theme .wk-meter-legend span:first-child { color: #FF5A36; font-weight: 700; }
+body.bielstein-theme .wk-meter-legend span:last-child  { color: #F6F1E7; font-weight: 700; }
+body.bielstein-theme .wk-meter[hidden] { display: none; }
 
 /* ── WERTKARTEN: Guthaben-Karte + Verlauf (Vorlagenwerte) ── */
 body.bielstein-theme .wk-balance {
