@@ -6512,8 +6512,15 @@ body.bielstein-theme #tabMy .tab-icon {
     linear-gradient(currentColor,currentColor) 0 3.75px/11px 1.5px no-repeat,
     linear-gradient(currentColor,currentColor) 0 7.5px/7px 1.5px no-repeat;
 }
+/* Wertkarten-Symbol 1:1 aus der Design-Vorlage: Kartenrechteck mit
+   Magnetstreifen. Der Streifen unterscheidet es vom Quadrat bei "Jetzt buchen". */
 body.bielstein-theme #tabGutscheine .tab-icon {
   width: 13px; height: 9px; border-radius: 2px; border: 1.5px solid currentColor;
+  position: relative;
+}
+body.bielstein-theme #tabGutscheine .tab-icon::before {
+  content: ""; position: absolute; top: 2px; left: 0; right: 0;
+  height: 1.5px; background: currentColor;
 }
 
 /* ── SCHRITT-BADGES (Ink statt Coral, wie Vorlage) ── */
@@ -6860,13 +6867,11 @@ body.bielstein-theme .rw-divider { width: 100%; height: 1px; background: #E2DACB
    Leicht waagerechter Balken, Fuellung von links: orange = verbraucht. */
 body.bielstein-theme .value-meter { margin: 4px auto 16px; max-width: 260px; }
 body.bielstein-theme .value-meter-track {
-  height: 14px; border-radius: 7px; overflow: hidden;
-  /* Helle Restspur: eine schwarze Spur wuerde auf einer unberuehrten Karte
-     als massiver Riegel wirken und die Karte erschlagen. */
-  background: rgba(28,26,23,0.13);
+  height: 28px; border-radius: 14px; overflow: hidden;
+  background: #1C1A17;                     /* Ink wie der Header */
 }
 body.bielstein-theme .value-meter-fill {
-  height: 100%; background: #FF5A36; border-radius: 7px 0 0 7px;
+  height: 100%; background: #FF5A36; border-radius: 14px 0 0 14px;
   transition: width 0.3s ease;
 }
 body.bielstein-theme .value-meter-legend {
@@ -6881,11 +6886,11 @@ body.bielstein-theme .value-meter-legend span:last-child  { color: #1C1A17; font
    "bereits verbraucht", das ist die Konstante. */
 body.bielstein-theme .wk-meter { margin-top: 18px; }
 body.bielstein-theme .wk-meter-track {
-  height: 14px; border-radius: 7px; overflow: hidden;
+  height: 28px; border-radius: 14px; overflow: hidden;
   background: rgba(246,241,231,0.16);
 }
 body.bielstein-theme .wk-meter-fill {
-  height: 100%; background: #FF5A36; border-radius: 7px 0 0 7px;
+  height: 100%; background: #FF5A36; border-radius: 14px 0 0 14px;
   transition: width 0.3s ease;
 }
 body.bielstein-theme .wk-meter-legend {
