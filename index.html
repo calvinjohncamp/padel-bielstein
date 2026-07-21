@@ -177,8 +177,18 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .date-chip .dname { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
 .date-chip .dnum { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.5rem; line-height: 1.1; }
 .date-chip .dmon { font-size: 0.65rem; opacity: 0.5; margin-top: 1px; }
-/* Monatswechsel: fett und voll deckend, damit der Sprung auffaellt. */
-.date-chip .dmon.dmon-switch { font-weight: 800; opacity: 1; letter-spacing: 0.04em; }
+/* Monatsmarke: eine Zeile unter dem Streifen, linksbuendig zur ersten Kachel
+   des Monats. Absolut positioniert, damit sie die Kachel nicht verbreitert
+   und nach rechts ueber die Nachbarkacheln laufen darf. */
+.date-chip { position: relative; }
+.date-chip .dmon-flag {
+  position: absolute; left: 0; top: 100%; margin-top: 7px;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 800; font-size: 0.82rem; letter-spacing: 0.06em;
+  text-transform: uppercase; white-space: nowrap; pointer-events: none;
+}
+/* Platz fuer die Marke schaffen - sonst schneidet der Scroll-Container sie ab. */
+.date-scroll { padding-bottom: 30px; }
 
 /* ■■ DURATION ■■ */
 .dur-row { display: flex; gap: 10px; }
@@ -2487,6 +2497,9 @@ async function loadAboBookings(weekday) {
 // ============================================================
 const WDNAMES = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
 const MONTHS  = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+// Ausgeschriebene Namen fuer die fette Monatsmarke unter dem Datumsstreifen.
+const MONTHS_FULL = ["Januar","Februar","März","April","Mai","Juni",
+                     "Juli","August","September","Oktober","November","Dezember"];
 const DAYS    = ["So","Mo","Di","Mi","Do","Fr","Sa"];
 
 let selDate = null, selDur = 1, selSlot = null, member = null;
@@ -2833,12 +2846,14 @@ function buildDates() {
     const c = document.createElement("div");
     c.className = "date-chip";
     c.dataset.date = str;
-    // Monat dezent unter jedem Tag, damit beim Scrollen immer klar ist, in
-    // welchem Monat man sich befindet. Am Monatsersten zusaetzlich fett
-    // hervorgehoben, damit der Wechsel Juli -> August ins Auge springt.
-    const isMonthStart = d.getDate() === 1;
-    const monCls = isMonthStart ? 'dmon dmon-switch' : 'dmon';
-    c.innerHTML = `<div class="dname">${DAYS[d.getDay()]}</div><div class="dnum">${d.getDate()}</div><div class="${monCls}">${MONTHS[d.getMonth()]}</div>`;
+    // Monat dezent unter jedem Tag - immer gleich zurueckhaltend, auch am
+    // Monatsersten. Der Wechsel wird stattdessen eine Zeile tiefer markiert:
+    // am 1. steht dort der ausgeschriebene Monat fett, linksbuendig mit dieser
+    // Kachel. Die Marke ist absolut positioniert, damit sie die Kachelbreite
+    // nicht aufblaeht und ueber die Nachbarn hinausragen darf.
+    const monthFlag = d.getDate() === 1
+      ? `<div class="dmon-flag">${MONTHS_FULL[d.getMonth()]}</div>` : '';
+    c.innerHTML = `<div class="dname">${DAYS[d.getDay()]}</div><div class="dnum">${d.getDate()}</div><div class="dmon">${MONTHS[d.getMonth()]}</div>${monthFlag}`;
     c.onclick = () => selectDate(str);
     sc.appendChild(c);
   }
@@ -6544,6 +6559,9 @@ body.bielstein-theme .date-chip.selected {
 body.bielstein-theme .date-chip.selected .dname,
 body.bielstein-theme .date-chip.selected .dnum,
 body.bielstein-theme .date-chip.selected .dmon { color: #FFFFFF !important; opacity: 1 !important; }
+/* Die Monatsmarke steht ausserhalb der Kachel und darf deren Farbe nicht erben -
+   sonst wird sie weiss, sobald der 1. ausgewaehlt ist. */
+body.bielstein-theme .date-chip .dmon-flag { color: #1C1A17 !important; opacity: 1 !important; }
 
 /* ── SPIELDAUER (toggleStyle) ── */
 body.bielstein-theme .dur-btn {
