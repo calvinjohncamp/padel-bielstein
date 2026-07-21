@@ -1208,7 +1208,7 @@ main {
 
       <!-- LINKS: Kaufen -->
       <div class="play-card gutschein-buy">
-        <div class="play-card-title">◆ Wertkarte kaufen</div>
+        <div class="play-card-title">◆ Spielguthaben kaufen</div>
         <div class="form-hint" style="margin-bottom:16px;">Spielguthaben für dich selbst oder als Geschenkkarte. Der Betrag wird später flexibel mit echten Buchungspreisen verrechnet.</div>
 
         <div id="cardSizeGrid" style="display:none;"></div>
@@ -5741,12 +5741,20 @@ async function renderAboCard() {
   }
   if (!abos.length) { host.innerHTML = ''; return; }
 
+  // Inhaber wie auf den Wertkarten - macht die Karte persoenlicher.
+  const holderName  = esc(currentProfile?.full_name) || '—';
+  const holderMail  = esc(currentProfile?.email || currentUser?.email) || '—';
+
   host.innerHTML = abos.map(a => {
     const from = `${String(a.hour_start).padStart(2,'0')}:00`;
     const to   = `${String(a.hour_start + a.duration).padStart(2,'0')}:00`;
     return `<div class="abo-card">
       <div class="abo-badge">ABO</div>
       <div class="abo-headline">Dein exklusives Jahresabo</div>
+      <div class="abo-holder">
+        <div class="rw-name">${holderName}</div>
+        <div class="rw-email">${holderMail}</div>
+      </div>
       <div class="abo-cols">
         <div class="abo-col">
           <div class="abo-col-label">Eingeloggt bis zum</div>
@@ -6619,7 +6627,7 @@ body.bielstein-theme #tabMy .tab-icon {
    hellen, dunklen oder Hover-Grund. Stattdessen stanzt eine Maske die vordere
    Karte samt Abstand aus der hinteren aus; das funktioniert auf jedem Grund. */
 body.bielstein-theme #tabGutscheine .tab-icon {
-  width: 15.4px; height: 15.4px;          /* 10 % groesser als die uebrigen */
+  width: 16.9px; height: 16.9px;          /* zweimal 10 % groesser als die uebrigen */
   border: none !important; border-radius: 0 !important;
   display: inline-flex; align-items: center;
 }
@@ -6649,8 +6657,11 @@ body.bielstein-theme .abo-badge {
 }
 body.bielstein-theme .abo-headline {
   font-family: "Space Grotesk","Arial Narrow",sans-serif;
-  font-weight: 700; font-size: 20px; text-align: center; margin-bottom: 20px;
+  font-weight: 700; font-size: 20px; text-align: center; margin-bottom: 12px;
 }
+/* Inhaber mittig, gleiche Typo wie auf den Wertkarten. Der Abstand nach unten
+   kommt aus .rw-email (16px) und trennt zur Linie darunter. */
+body.bielstein-theme .abo-holder { text-align: center; }
 body.bielstein-theme .abo-cols {
   display: flex; gap: 20px; align-items: flex-start;
   border-top: 1px solid #E2DACB; padding-top: 18px;
@@ -7092,7 +7103,17 @@ body.bielstein-theme .wk-empty {
 }
 
 /* Account-Seite (3/3) nach Vorlage */
-body.bielstein-theme .acct-card { text-align: center; }
+/* Die Profilkarte braucht denselben Positionsrahmen wie .value-card und
+   .loyalty-card.rewards. Ohne position:relative bezieht sich die absolut
+   gesetzte Plakette (.rw-badge) auf das Modal statt auf die Karte - sie landete
+   an der Fensterkante und wurde dort abgeschnitten. margin-top schafft den
+   Platz, in den die Plakette hineinragt. */
+body.bielstein-theme .acct-card {
+  text-align: center;
+  position: relative;
+  margin-top: 26px;
+  padding-top: 40px;
+}
 body.bielstein-theme .acct-card .profile-form { text-align: left; }
 body.bielstein-theme .acct-name {
   font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
