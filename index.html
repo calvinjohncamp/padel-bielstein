@@ -493,6 +493,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .gift-sender-label { margin-bottom: 5px; color: #8C8B84; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
 .gift-sender-name { font-size: 0.9rem; font-weight: 800; }
 .gift-sender-email { margin-top: 2px; color: #8C8B84; font-size: 0.8rem; }
+.gift-delivery-note { margin: 16px 2px 20px; line-height: 1.6; }
 
 /* ■■ ACCOUNT-TITELSEITE (erste Karte im Stapel) ■■
    Dunkler App-Look wie Header/Splash. Füllt – wie jede Karte – die feste
@@ -1311,10 +1312,12 @@ main {
       <div class="gutschein-left">
       <div class="play-card gutschein-buy">
         <div class="play-card-title">◆ Wertkarte erwerben</div>
-        <div class="form-hint" style="margin-bottom:16px;">Spielguthaben für dich selbst oder als Geschenkkarte. Der Betrag wird später flexibel mit echten Buchungspreisen verrechnet.</div>
+        <div class="form-hint" style="margin-bottom:16px;">Spielguthaben für dich selbst erwerben oder als Geschenkkarte/Gutschein. Der jeweilige Betrag wird später automatisch mit echten Buchungen verrechnet.</div>
 
         <div id="cardSizeGrid" style="display:none;"></div>
-        <div class="buy-cards-row" id="cardBalanceGrid"></div>
+        <div class="value-choice-group">
+          <div class="buy-cards-row" id="cardBalanceGrid"></div>
+        </div>
 
         <div class="gift-toggle">
           <div class="gift-toggle-btn selected" id="giftToggleSelf" onclick="setCardGiftMode(false)">Spielguthaben</div>
@@ -1343,7 +1346,7 @@ main {
             <div class="gift-sender-name" id="giftSenderName">—</div>
             <div class="gift-sender-email" id="giftSenderEmail">—</div>
           </div>
-          <div class="form-hint">Die beschenkte Person sieht Absender, E-Mail-Adresse und deine Nachricht zusammen mit der Geschenkkarte.</div>
+          <div class="form-hint gift-delivery-note">Die beschenkte Person sieht Absender, E-Mail-Adresse und deine Nachricht zusammen mit der Geschenkkarte. Du bekommst eine Kopie der Mail.</div>
         </div>
 
         <div class="modal-err" id="cardErr"></div>
@@ -6038,7 +6041,7 @@ function renderCardSizeGrid() {
       `<div class="buy-mini-title">Wunschbetrag</div>` +
       `<div class="bm-custom-box">` +
         `<input type="number" id="customBalanceInput" inputmode="numeric" min="${CARD_BALANCE_MIN}" max="${CARD_BALANCE_MAX}" step="1" ` +
-        `placeholder="z.B. 30" value="${customBalance}" ` +
+        `placeholder="30" aria-label="Wunschbetrag in Euro" value="${customBalance}" ` +
         `oninput="onCustomBalanceInput(this)" onclick="event.stopPropagation()">` +
         `<span class="bm-custom-eur">€</span>` +
       `</div>`;
@@ -7310,6 +7313,132 @@ body.bielstein-theme .buy-mini-custom.selected {
   box-shadow: 0 0 0 2px #FF5A36 inset !important; border-color: #FF5A36 !important;
 }
 body.bielstein-theme .buy-mini-custom.selected .buy-mini-title { color: #FF5A36 !important; }
+
+/* Edler, klar abgegrenzter Erwerbsbereich – optisch verwandt mit den Wertkarten. */
+body.bielstein-theme .gutschein-buy {
+  position: relative;
+  overflow: hidden;
+  background: #DED3C1 !important;
+  border: none !important;
+  border-radius: 20px !important;
+  padding: 22px !important;
+  box-shadow: none !important;
+}
+body.bielstein-theme .gutschein-buy .play-card-title {
+  margin-bottom: 7px !important;
+}
+body.bielstein-theme .gutschein-buy > .form-hint {
+  max-width: 620px;
+  color: #7A7368 !important;
+  font-size: 12.5px !important;
+  line-height: 1.6 !important;
+}
+.value-choice-group {
+  margin: 18px 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+body.bielstein-theme .value-choice-group .buy-cards-row {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 9px !important;
+  margin: 0 !important;
+}
+body.bielstein-theme .value-choice-group .buy-mini {
+  position: relative;
+  min-width: 0;
+  min-height: 104px !important;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 8px 12px !important;
+  border: 1px solid rgba(255,90,54,0.45) !important;
+  border-radius: 15px !important;
+  background: #FDFBF7 !important;
+  box-shadow: 0 2px 8px rgba(28,26,23,0.05) !important;
+}
+body.bielstein-theme .value-choice-group .buy-mini:hover {
+  border-color: #FF5A36 !important;
+  background: #FFFFFF !important;
+}
+body.bielstein-theme .value-choice-group .buy-mini.selected {
+  border-color: #FF5A36 !important;
+  background: #FF5A36 !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+}
+body.bielstein-theme .value-choice-group .buy-mini-amount {
+  margin: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-size: clamp(23px, 2.6vw, 30px);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+body.bielstein-theme .value-choice-group .buy-mini-custom {
+  gap: 5px;
+  cursor: default;
+}
+body.bielstein-theme .value-choice-group .buy-mini-custom.selected {
+  border-color: #FF5A36 !important;
+  background: #FDFBF7 !important;
+  color: #1C1A17 !important;
+  box-shadow: 0 0 0 1px #FF5A36 inset !important;
+}
+body.bielstein-theme .value-choice-group .buy-mini-title {
+  font-size: 14.3px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  text-transform: none !important;
+  color: #1C1A17 !important;
+}
+body.bielstein-theme .value-choice-group .bm-custom-box {
+  width: 92px;
+  min-height: 40px;
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1.5px solid #B8AA94;
+  border-radius: 10px;
+}
+body.bielstein-theme .value-choice-group .bm-custom-box input {
+  width: 52px;
+  font-size: 18px;
+  font-weight: 700;
+}
+body.bielstein-theme .value-choice-group .bm-custom-eur {
+  font-size: 18px;
+  font-weight: 700;
+}
+@media (max-width: 560px) {
+  body.bielstein-theme .gutschein-buy {
+    padding: 18px 16px !important;
+    border-radius: 18px !important;
+  }
+  .value-choice-group { margin: 16px 0; padding: 0; }
+  body.bielstein-theme .value-choice-group .buy-cards-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  body.bielstein-theme .value-choice-group .buy-mini {
+    min-height: 94px !important;
+    padding: 11px 5px 10px !important;
+    border-radius: 13px !important;
+  }
+  body.bielstein-theme .value-choice-group .buy-mini-amount {
+    font-size: 24px;
+  }
+  body.bielstein-theme .value-choice-group .bm-custom-box {
+    width: 84px;
+    min-height: 38px;
+    padding: 7px 8px;
+  }
+  body.bielstein-theme .value-choice-group .bm-custom-box input { width: 47px; font-size: 17px; }
+  body.bielstein-theme .value-choice-group .bm-custom-eur { font-size: 17px; }
+}
 /* Wertkarten-CTA: kompakt, ruhig und auch auf kleinen Displays einzeilig. */
 body.bielstein-theme .card-purchase-btn {
   width: 100% !important; height: auto !important; min-height: 56px;
