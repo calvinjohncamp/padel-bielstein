@@ -367,12 +367,20 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   overflow: hidden;
 }
 #accountPageHost {
+  /* Feste Bühne: jede Karte bekommt exakt dieselbe Höhe, damit beim Blättern
+     nichts springt. Zu hohe Karten scrollen innerhalb; kürzere sitzen mittig.
+     Auf kleinen Screens darf die Bühne schrumpfen (min-height:0), damit der
+     Pager sichtbar bleibt. */
   flex: 1 1 auto;
+  height: clamp(452px, 66vh, 640px);
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
   padding: 8px 4px 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
 }
 /* Klarer, sauber eingerückter Schließen-Button mit eigener Touchfläche. */
 #loyaltyModal .modal-close {
@@ -428,6 +436,22 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .buy-mini-dot-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
 .buy-mini-dot { width: 15px; height: 15px; border-radius: 50%; background: #1C1A17; }
 .buy-mini-dot.on { background: #1C1A17; }
+/* Wunschbetrag-Kachel (5. Feld) – gleiche Optik wie die Presets, mit Eingabe. */
+.buy-mini-custom { cursor: default; }
+.bm-custom-wrap { display: flex; align-items: baseline; justify-content: center; gap: 3px; width: 100%; }
+.bm-custom-wrap input {
+  width: 84px; text-align: right; -moz-appearance: textfield; outline: none;
+  font-family: "Manrope","Arial","Helvetica",sans-serif; font-weight: 800; font-size: 1.85rem;
+  line-height: 1; color: #1C1A17; background: transparent; border: none;
+  border-bottom: 2px solid #E2DACB; padding: 2px 2px 4px;
+}
+.bm-custom-wrap input::-webkit-outer-spin-button,
+.bm-custom-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.bm-custom-wrap input::placeholder { color: #C0B7A6; font-weight: 700; font-size: 1.15rem; }
+.bm-custom-wrap input:focus { border-bottom-color: #FF5A36; }
+.buy-mini-custom.selected .bm-custom-wrap input { border-bottom-color: #FF5A36; }
+.bm-custom-eur { font-family: "Manrope","Arial","Helvetica",sans-serif; font-weight: 800; font-size: 1.5rem; color: #1C1A17; }
+.buy-mini-hint { font-size: 0.62rem; letter-spacing: 0.06em; color: #8C8B84; text-transform: uppercase; }
 @media (max-width: 900px) {
   .buy-cards-row { grid-template-columns: repeat(3, minmax(104px, 1fr)); }
 }
@@ -457,13 +481,63 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .gift-sender-name { font-size: 0.9rem; font-weight: 800; }
 .gift-sender-email { margin-top: 2px; color: #8C8B84; font-size: 0.8rem; }
 
-/* ■■ ACCOUNT-MODAL: Blätter-Steuerung ■■ */
-.card-pager { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 8px 6px 0; border-top: 1px solid #E7E0D5; background: #FAF8F4; }
-.card-pager-label { font-family: "Manrope","Arial","Helvetica",sans-serif; font-size: 0.78rem; font-weight: 700; color: #8C8B84; text-transform: uppercase; letter-spacing: 0.14em; margin-right: auto; }
-.card-pager button { width: 44px; height: 44px; border-radius: 50%; border: 1.6px solid #FF5A36; background: transparent; color: #FF5A36; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; padding: 0; }
-.card-pager button svg { width: 18px; height: 18px; }
-.card-pager button:hover:not(:disabled) { background: #FF5A36; color: #fff; }
-.card-pager button:disabled { visibility: hidden; }
+/* ■■ ACCOUNT-TITELSEITE (erste Karte im Stapel) ■■
+   Dunkler App-Look wie Header/Splash. Füllt – wie jede Karte – die feste
+   Karten-Bühne, damit beim Blättern nichts springt. Im Titelseiten-Modus
+   wird das ganze Modal dunkel (siehe .cover-mode weiter unten), sodass die
+   Karte nicht in einem hellen Rahmen „schwimmt". */
+.cover-card {
+  position: relative;
+  flex: 1 1 auto;
+  box-sizing: border-box;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 34px 30px;
+  background: #F6F1E7;                 /* wie alle anderen Karten */
+  border: 1.5px solid #FF5A36;         /* gleicher Rahmen wie die übrigen Karten */
+  border-radius: 20px;
+  color: #1C1A17;
+  font-family: "Manrope","Arial","Helvetica",sans-serif;
+  text-align: left;
+  overflow: hidden;
+}
+.cover-top { display: flex; align-items: center; gap: 16px; }
+.cover-logobox {
+  width: 66px; height: 66px; flex-shrink: 0; box-sizing: border-box;
+  border-radius: 13px; overflow: hidden;
+}
+.cover-logobox img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Markanter: größer, enger, kräftiger. */
+.cover-wordmark {
+  font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif;
+  font-weight: 700; margin: 0; color: #1C1A17;
+  font-size: clamp(34px, 9.5vw, 46px); line-height: 0.86; letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+.cover-wordmark span { color: #FF5A36; }
+.cover-greet { margin: 4px 0; }
+.cover-greet-line { display: block; font-size: 1.02rem; font-weight: 400; letter-spacing: .005em; color: #1C1A17; }
+.cover-greet-name {
+  display: block; margin-top: 6px;
+  font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif;
+  font-weight: 700; font-size: 1.7rem; letter-spacing: 0.01em; color: #FF5A36;
+}
+.cover-caption {
+  font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif;
+  font-weight: 500; font-size: 0.68rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: #7A7368;
+}
+
+/* ■■ ACCOUNT-MODAL: Blätter-Steuerung – dezente Punkte statt lauter Kreise ■■ */
+.card-pager { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; padding: 14px 6px 2px; border-top: 1px solid #E7E0D5; background: transparent; }
+.card-pager-label { display: none; }
+.pager-dots { display: flex; align-items: center; gap: 7px; }
+.pager-dot { width: 7px; height: 7px; padding: 0; border: none; border-radius: 999px; background: #D8CFBF; cursor: pointer; transition: width .22s ease, background .22s ease; }
+.pager-dot.active { width: 20px; background: #FF5A36; cursor: default; }
+.pager-arrow { width: 30px; height: 30px; padding: 0; border: none; background: transparent; color: #B8B0A2; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color .15s; }
+.pager-arrow svg { width: 18px; height: 18px; }
+.pager-arrow:hover:not(:disabled) { color: #1C1A17; }
+.pager-arrow:disabled { opacity: .22; cursor: default; }
+
 #accountPageHost { touch-action: pan-y; }
 #accountPageHost.account-page-exit-left  { animation: accountPageExitLeft 110ms ease-in forwards; }
 #accountPageHost.account-page-exit-right { animation: accountPageExitRight 110ms ease-in forwards; }
@@ -909,9 +983,9 @@ main {
     <button class="modal-close" onclick="closeLoyaltyModal()">✕</button>
     <div id="accountPageHost"></div>
     <div class="card-pager" id="cardPager" style="display:none;">
-      <span class="card-pager-label" id="cardPagerLabel"></span>
-      <button type="button" id="cardPagerPrev" onclick="pageCard(-1)" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-      <button type="button" id="cardPagerNext" onclick="pageCard(1)" aria-label="Weiter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+      <button type="button" class="pager-arrow" id="cardPagerPrev" onclick="pageCard(-1)" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+      <div class="pager-dots" id="cardPagerDots"></div>
+      <button type="button" class="pager-arrow" id="cardPagerNext" onclick="pageCard(1)" aria-label="Weiter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
     </div>
   </div>
 </div>
@@ -5309,7 +5383,9 @@ function onEasterEggClick() {
 //  WERTKARTEN
 // ============================================================
 const CARD_SIZES = [1, 2, 5, 10, 20];
-const CARD_BALANCES = [25, 50, 100, 200, 250]; // Wertkarten-Betraege (in EUR)
+const CARD_BALANCES = [25, 50, 100, 200]; // feste Wertkarten-Presets (EUR); 5. Feld = Wunschbetrag
+const CARD_BALANCE_MIN = 5;               // muss zur Edge-Function create-checkout passen
+const CARD_BALANCE_MAX = 1000;
 const CARD_PRICE_PER_HOUR = 24;
 const VALUE_DOT_EUR = 25;
 let selectedCardSize = null;
@@ -5317,6 +5393,7 @@ let selectedBalance = 25;    // gewaehlter Wertkarten-Betrag (EUR), Alternative 
                              // Bewusst der kleinste Betrag: Die Voreinstellung soll
                              // niemanden zu einem groesseren Kauf draengen.
 let cardIsGift = false;
+let customBalance = '';   // Rohtext des Wunschbetrag-Feldes (bleibt beim Re-Render erhalten)
 let myCardsData = [];
 
 // Einheitliche Benennung – egal ob selbst gekauft oder Gutschein
@@ -5745,12 +5822,21 @@ async function renderAboCard() {
   const holderName  = esc(currentProfile?.full_name) || '—';
   const holderMail  = esc(currentProfile?.email || currentUser?.email) || '—';
 
-  host.innerHTML = abos.map(a => {
-    const from = `${String(a.hour_start).padStart(2,'0')}:00`;
-    const to   = `${String(a.hour_start + a.duration).padStart(2,'0')}:00`;
-    return `<div class="abo-card">
+  host.innerHTML = abos.map(a => aboCardMarkup(a, holderName, holderMail)).join('');
+}
+
+// Abo-Wertkarte im WERTKARTEN-Bereich (Querformat). Header: "Dein exklusives"
+// + "JAHRESABO" (Versalien, orange) + dominant der Wochentag; unten links/rechts
+// wie gehabt. Zwei Buttons: verlängern (folgt) und neu abschließen (Abobuchung).
+function aboCardMarkup(a, holderName, holderMail) {
+  const from = `${String(a.hour_start).padStart(2,'0')}:00`;
+  const to   = `${String(a.hour_start + a.duration).padStart(2,'0')}:00`;
+  const day  = (WDNAMES[a.weekday] || '') + 's';
+  return `<div class="abo-card">
       <div class="abo-badge">ABO</div>
-      <div class="abo-headline">Dein exklusives Jahresabo</div>
+      <div class="abo-eyebrow">Dein exklusives</div>
+      <div class="abo-jahresabo">Jahresabo</div>
+      <div class="abo-day">${day}</div>
       <div class="abo-holder">
         <div class="rw-name">${holderName}</div>
         <div class="rw-email">${holderMail}</div>
@@ -5767,8 +5853,61 @@ async function renderAboCard() {
         </div>
       </div>
     </div>
-    <button class="abo-renew-btn" type="button" onclick="showToast('Abo-Verlängerung folgt in Kürze.')">Abo verlängern →</button>`;
-  }).join('');
+    <div class="abo-btn-row">
+      <button class="abo-renew-btn" type="button" onclick="aboRenew()">Abo verlängern</button>
+      <button class="abo-renew-btn" type="button" onclick="aboNew()">Abo neu abschließen</button>
+    </div>`;
+}
+
+// Aktionen rund um das Abo.
+// verlängern: Inhalt noch nicht programmiert -> Platzhalter.
+// neu abschließen: führt auf die normale Abo-Buchungsseite.
+function aboRenew() { showToast('Abo-Verlängerung folgt in Kürze.'); }
+function aboNew() {
+  try { closeLoyaltyModal(); } catch(e) {}
+  try { setMode('abo'); } catch(e) {}
+}
+
+// Abo-Wertkarte für den Account-Stapel – bewusst im EXAKT selben Hochformat und
+// Zertifikat-Look wie die Reward-/Wertkarten (gleiche Klassen -> gleiche Farbwelt,
+// transparenter Grund = #F6F1E7 wie die übrigen Karten, Kreis-Plakette oben).
+function aboAccountCardHTML(a) {
+  const name = esc(currentProfile?.full_name) || '—';
+  const mail = esc(currentProfile?.email || currentUser?.email) || '—';
+  const from = `${String(a.hour_start).padStart(2,'0')}:00`;
+  const to   = `${String(a.hour_start + a.duration).padStart(2,'0')}:00`;
+  const day  = (WDNAMES[a.weekday] || '') + 's';
+  return `<div class="loyalty-card value-card abo-account-card">
+    <div class="value-badge">ABO</div>
+    <div class="rw-tagline">Dein exklusives Jahresabo</div>
+    <div class="rw-number">${day}</div>
+    <div class="rw-headline">${from} – ${to} Uhr</div>
+    <div class="rw-subtitle">auf Court ${a.court}</div>
+    <div class="rw-divider"></div>
+    <div class="rw-name">${name}</div>
+    <div class="rw-email">${mail}</div>
+    <div class="value-card-note">
+      <div>Dein fester Slot – Woche für Woche für dich reserviert.</div>
+      <div>Gültig bis <strong>${formatDateDE(a.ends_on)}</strong></div>
+    </div>
+  </div>`;
+}
+
+// Titelseite des Account-Stapels: dunkle, quadratische Karte im Splash-Look.
+function coverCardHTML() {
+  const fullName  = (currentProfile?.full_name || '').trim();
+  const firstName = esc(fullName.split(/\s+/)[0] || '');
+  return `<div class="cover-card">
+    <div class="cover-top">
+      <div class="cover-logobox"><img src="assets/icons/logo-mark-2027-dark.png?v=20260721b" alt="Padel Bielstein"></div>
+      <h2 class="cover-wordmark">PADEL<br><span>BIELSTEIN</span></h2>
+    </div>
+    <div class="cover-greet">
+      <span class="cover-greet-line">Schön, dass du da bist,</span>
+      <span class="cover-greet-name">${firstName || 'willkommen'}</span>
+    </div>
+    <div class="cover-caption">Rewards · Wertkarten · Account</div>
+  </div>`;
 }
 
 // Verbrauchsbalken im schwarzen Guthaben-Feld oben: Summe ueber alle Karten.
@@ -5813,7 +5952,38 @@ function renderCardSizeGrid() {
       el.innerHTML = `<div class="buy-mini-amount">${eur} €</div>`;
       balGrid.appendChild(el);
     });
+    // 5. Feld: frei wählbarer Wunschbetrag (gilt für Guthaben UND Geschenkkarten)
+    const custom = document.createElement('div');
+    custom.id = 'customBalanceTile';
+    const customSelected = selectedBalance != null && !CARD_BALANCES.includes(selectedBalance);
+    custom.className = 'buy-mini buy-mini-custom' + (customSelected ? ' selected' : '');
+    custom.innerHTML =
+      `<div class="buy-mini-title">Wunschbetrag</div>` +
+      `<div class="bm-custom-wrap">` +
+        `<input type="number" id="customBalanceInput" inputmode="numeric" min="${CARD_BALANCE_MIN}" max="${CARD_BALANCE_MAX}" step="1" ` +
+        `placeholder="z.B. 30" value="${customBalance}" ` +
+        `oninput="onCustomBalanceInput(this)" onclick="event.stopPropagation()">` +
+        `<span class="bm-custom-eur">€</span>` +
+      `</div>` +
+      `<div class="buy-mini-hint">${CARD_BALANCE_MIN} – ${CARD_BALANCE_MAX} €</div>`;
+    balGrid.appendChild(custom);
   }
+  updateCardSummary();
+}
+
+// Wunschbetrag-Eingabe: ohne Re-Render (Fokus bleibt erhalten), nur Auswahl
+// und Zusammenfassung aktualisieren. Betrag = ganze Euro, 5–1000.
+function onCustomBalanceInput(el) {
+  customBalance = el.value;
+  const eur = Math.floor(Number(el.value));
+  const valid = String(el.value).trim() !== '' && Number.isFinite(eur)
+    && eur >= CARD_BALANCE_MIN && eur <= CARD_BALANCE_MAX;
+  selectedBalance = valid ? eur : null;
+  selectedCardSize = null;
+  clearCardErr();
+  document.querySelectorAll('#cardBalanceGrid .buy-mini').forEach(t => t.classList.remove('selected'));
+  const tile = document.getElementById('customBalanceTile');
+  if (tile) tile.classList.toggle('selected', valid);
   updateCardSummary();
 }
 
@@ -5828,6 +5998,7 @@ function selectCardSize(size) {
 function selectBalance(eur) {
   selectedBalance = eur;
   selectedCardSize = null;
+  customBalance = '';   // Preset gewählt -> Wunschbetrag-Feld leeren
   clearCardErr();
   renderCardSizeGrid();
 }
@@ -5871,6 +6042,11 @@ function clearCardErr() {
 
 async function confirmCardPurchase(skipAuthCheck) {
   clearCardErr();
+  // Wunschbetrag eingegeben, aber ungültig? Klare Rückmeldung statt Standardhinweis.
+  if (!selectedBalance && String(customBalance).trim() !== '') {
+    showCardErr(`Bitte gib einen ganzen Betrag zwischen ${CARD_BALANCE_MIN} und ${CARD_BALANCE_MAX} € ein.`);
+    return;
+  }
   if (!selectedCardSize && !selectedBalance) { showCardErr('Bitte wähle zuerst eine Wertkarte.'); return; }
   if (!skipAuthCheck && !currentUser) { openModal('card'); return; }
 
@@ -6044,7 +6220,13 @@ async function buildAccountPages() {
 
   await fetchMyCards();
 
-  accountPages = [{ type: 'rewards', hours: hoursPlayed }];
+  // Aktive Abos laden – die Abo-Wertkarte kommt nach Rewards, vor die Wertkarten.
+  let activeAbos = [];
+  try { activeAbos = await loadActiveAbos(); } catch(e) { console.warn('Abo laden fehlgeschlagen', e); }
+
+  // Titelseite zuerst, danach Rewards, danach die Abo-Wertkarte(n).
+  accountPages = [{ type: 'cover' }, { type: 'rewards', hours: hoursPlayed }];
+  (activeAbos || []).forEach(a => accountPages.push({ type: 'abo', abo: a }));
   // Gleiche Reihenfolge wie in der Seitenansicht: die Karte, von der gerade
   // abgebucht wird (die aelteste mit Restwert), kommt zuerst - danach die noch
   // unangetastete. Aufgebrauchte Karten tauchen gar nicht mehr auf.
@@ -6062,7 +6244,9 @@ function renderAccountPage(direction = 0) {
   if (!p) { host.innerHTML = ''; return; }
 
   let label = '';
-  if (p.type === 'rewards')      { host.innerHTML = rewardsCardHTML(p.hours); label = 'Rewards'; }
+  if (p.type === 'cover')        { host.innerHTML = coverCardHTML();         label = 'Start'; }
+  else if (p.type === 'rewards') { host.innerHTML = rewardsCardHTML(p.hours); label = 'Rewards'; }
+  else if (p.type === 'abo')     { host.innerHTML = aboAccountCardHTML(p.abo); label = 'Jahresabo'; }
   else if (p.type === 'card')    { host.innerHTML = anyCardHTML(p.card);     label = p.card.card_size ? cardLabel(p.card.card_size) : 'Wertkarte'; }
   else if (p.type === 'profile') { host.innerHTML = profileCardHTML();       label = 'Meine Daten'; }
 
@@ -6078,17 +6262,30 @@ function renderAccountPage(direction = 0) {
 
   // Rewards-Seite: Modal in den warmen Creme-Look versetzen
   document.querySelector('#loyaltyModal .modal').classList.toggle('rewards-mode', p.type === 'rewards');
+  // Seitentyp merken – der Footer (Abmelden / Abo verlängern) richtet sich danach.
+  document.querySelector('#loyaltyModal .modal').dataset.page = p.type;
 
   // Blätter-Steuerung nur, wenn es mehr als eine Seite gibt
   const pager = document.getElementById('cardPager');
   if (accountPages.length > 1) {
     pager.style.display = 'flex';
-    document.getElementById('cardPagerLabel').textContent = `${label} · ${accountPageIndex + 1}/${accountPages.length}`;
+    const dots = document.getElementById('cardPagerDots');
+    dots.innerHTML = accountPages.map((_, i) =>
+      `<button type="button" class="pager-dot${i === accountPageIndex ? ' active' : ''}" aria-label="Seite ${i + 1}" onclick="goToCard(${i})"></button>`
+    ).join('');
     document.getElementById('cardPagerPrev').disabled = accountPageIndex === 0;
     document.getElementById('cardPagerNext').disabled = accountPageIndex === accountPages.length - 1;
   } else {
     pager.style.display = 'none';
   }
+}
+
+// Direkt zu einer Seite springen (Klick auf einen Punkt).
+function goToCard(index) {
+  if (accountPageAnimating) return;
+  const target = Math.max(0, Math.min(accountPages.length - 1, index));
+  if (target === accountPageIndex) return;
+  pageCard(target - accountPageIndex);
 }
 
 function pageCard(dir) {
@@ -6522,17 +6719,26 @@ body.bielstein-theme .appbar-btn.ghost {
 body.bielstein-theme .appbar-btn.ghost:hover { border-color: #F6F1E7; }
 body.bielstein-theme .appbar-brand { cursor: pointer; }
 
-/* Abmelden/Abo-Portal im Account-Modal (aus der User-Bar hierher verlagert) */
+/* Footer im Account-Modal – bewusst zurückhaltend, damit die Karte im
+   Mittelpunkt bleibt. Kein trennender Rahmen, wenig Platz. */
 body.bielstein-theme .acct-actions {
-  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
-  margin-top: 18px; padding-top: 16px; border-top: 1px solid #E2DACB;
+  display: flex; justify-content: center; margin-top: 12px; padding-top: 0; border-top: none;
 }
-body.bielstein-theme .acct-actions button {
-  font-family: "Manrope","Arial",sans-serif; font-size: 13px; cursor: pointer;
-  padding: 9px 16px; border-radius: 10px;
-  background: transparent; border: 1px solid #E2DACB; color: #7A7368;
+/* "Abmelden": sehr dezent, fast wie ein Textlink. */
+body.bielstein-theme .acct-actions .acct-logout {
+  font-family: "Manrope","Arial",sans-serif; font-size: 12.5px; letter-spacing: 0.02em;
+  cursor: pointer; padding: 6px 12px; border: none; background: transparent; color: #9A9384;
+  border-radius: 8px;
 }
-body.bielstein-theme .acct-actions button:hover { border-color: #1C1A17; color: #1C1A17; }
+body.bielstein-theme .acct-actions .acct-logout:hover { color: #1C1A17; text-decoration: underline; }
+/* "Abo verlängern / hinzufügen": dezent, darf etwas breiter sein. */
+body.bielstein-theme .acct-actions .acct-primary {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.02em; cursor: pointer; padding: 11px 28px; border-radius: 999px;
+  background: transparent; border: 1px solid #D9CFBF; color: #7A7368;
+  transition: border-color 0.15s, color 0.15s;
+}
+body.bielstein-theme .acct-actions .acct-primary:hover { border-color: #FF5A36; color: #1C1A17; }
 
 /* Header rechts: Name + Avatar (wie Vorlage) */
 body.bielstein-theme .appbar-user {
@@ -6642,7 +6848,7 @@ body.bielstein-theme #tabGutscheine .tab-icon svg {
 body.bielstein-theme .abo-card {
   position: relative;
   margin-top: 34px;                 /* Platz fuer die ueberstehende Plakette */
-  background: #FAF8F4; border: 1.5px solid #FF5A36; border-radius: 22px;
+  background: #F6F1E7; border: 1.5px solid #FF5A36; border-radius: 22px;  /* gleiche Fläche wie die übrigen Wertkarten */
   padding: 30px 24px 24px;
   font-family: "Manrope","Arial",sans-serif; color: #1C1A17;
 }
@@ -6658,6 +6864,22 @@ body.bielstein-theme .abo-badge {
 body.bielstein-theme .abo-headline {
   font-family: "Space Grotesk","Arial Narrow",sans-serif;
   font-weight: 700; font-size: 20px; text-align: center; margin-bottom: 12px;
+}
+/* Neuer Header: "Dein exklusives" (dezent) + "JAHRESABO" (orange, Versalien)
+   + dominant der Wochentag (orange, Versalien) – analog zu SPIELGUTHABEN. */
+body.bielstein-theme .abo-eyebrow {
+  text-align: center; font-family: "Manrope","Arial",sans-serif;
+  font-size: 13px; color: #7A7368; margin-bottom: 3px;
+}
+body.bielstein-theme .abo-jahresabo {
+  text-align: center; font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 700; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #1C1A17; margin-bottom: 6px;
+}
+body.bielstein-theme .abo-day {
+  text-align: center; font-family: "Space Grotesk","Arial Narrow",sans-serif;
+  font-weight: 700; font-size: 30px; letter-spacing: 0.02em; text-transform: uppercase;
+  color: #FF5A36; line-height: 1; margin-bottom: 16px;
 }
 /* Inhaber mittig, gleiche Typo wie auf den Wertkarten. Der Abstand nach unten
    kommt aus .rw-email (16px) und trennt zur Linie darunter. */
@@ -6676,19 +6898,22 @@ body.bielstein-theme .abo-col-value {
   font-family: "Space Grotesk","Arial Narrow",sans-serif;
   font-weight: 700; font-size: 15px; line-height: 1.45;
 }
+/* Zwei dezente Buttons nebeneinander: verlängern | neu abschließen */
+body.bielstein-theme .abo-btn-row { display: flex; gap: 10px; margin-top: 12px; }
 body.bielstein-theme .abo-renew-btn {
-  width: 100%; margin-top: 12px; padding: 15px;
-  border: 1.5px solid #1C1A17; border-radius: 14px;
+  flex: 1 1 0; margin-top: 0; padding: 14px 12px;
+  border: 1.5px solid #D9CFBF; border-radius: 12px;
   background: transparent; color: #1C1A17; cursor: pointer;
   font-family: "Space Grotesk","Arial Narrow",sans-serif;
-  font-weight: 700; font-size: 14px; letter-spacing: 0.04em;
-  transition: background 0.15s, color 0.15s;
+  font-weight: 700; font-size: 13.5px; letter-spacing: 0.02em;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-body.bielstein-theme .abo-renew-btn:hover { background: #1C1A17; color: #F6F1E7; }
+body.bielstein-theme .abo-renew-btn:hover { border-color: #1C1A17; }
 /* Auf schmalen Screens untereinander statt nebeneinander */
 @media (max-width: 560px) {
   body.bielstein-theme .abo-cols { flex-direction: column; gap: 14px; }
   body.bielstein-theme .abo-col-right { text-align: left; }
+  body.bielstein-theme .abo-btn-row { flex-direction: column; }
 }
 
 /* ── SCHRITT-BADGES (Ink statt Coral, wie Vorlage) ── */
@@ -6957,6 +7182,15 @@ body.bielstein-theme .buy-mini.selected {
   border: 1.5px solid #FF5A36 !important; background: #FF5A36 !important;
   color: #FFFFFF !important; box-shadow: none !important;
 }
+/* Wunschbetrag-Kachel im aktiven Zustand NICHT voll orange – sonst ist die
+   Eingabe schlecht lesbar. Stattdessen weiß mit orangem Ring, Zahl schwarz. */
+body.bielstein-theme .buy-mini-custom.selected {
+  background: #FFFFFF !important; color: #1C1A17 !important;
+  box-shadow: 0 0 0 2px #FF5A36 inset !important; border-color: #FF5A36 !important;
+}
+body.bielstein-theme .buy-mini-custom.selected .buy-mini-title { color: #FF5A36 !important; }
+body.bielstein-theme .buy-mini-custom .bm-custom-wrap input,
+body.bielstein-theme .buy-mini-custom .bm-custom-eur { color: #1C1A17 !important; }
 body.bielstein-theme .buy-mini-title {
   font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
   font-weight: 700 !important; font-size: 20px !important;
@@ -6971,6 +7205,7 @@ body.bielstein-theme #loyaltyModal .modal {
   max-width: 420px !important; background: #F6F1E7 !important;
   border-radius: 24px !important; padding: 40px 28px 24px !important;
   box-shadow: 0 12px 32px rgba(28,26,23,0.22) !important; border: none !important;
+  transition: background-color .32s ease !important;
 }
 body.bielstein-theme #loyaltyModal .modal-close {
   top: 18px !important; right: 18px !important;
@@ -7029,6 +7264,23 @@ body.bielstein-theme .rw-number {
   font-weight: 700 !important; font-size: 48px !important; color: #1C1A17 !important; line-height: 1;
 }
 body.bielstein-theme .value-card .rw-number { font-size: 40px !important; }
+/* Account-Abo-Karte: MITTWOCHS ist der King – Space Grotesk, Versalien, ORANGE;
+   darunter die Uhrzeit SCHWARZ in der Zahlen-Schrift (Manrope). Plakette „ABO". */
+body.bielstein-theme .value-card.abo-account-card .rw-number {
+  font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif !important;
+  font-weight: 700 !important; text-transform: uppercase !important;
+  color: #FF5A36 !important; font-size: 30px !important; letter-spacing: 0.02em !important;
+  line-height: 1.02 !important; margin-top: 2px;
+}
+body.bielstein-theme .value-card.abo-account-card .rw-headline {
+  font-family: "Manrope","Arial","Helvetica",sans-serif !important;
+  font-weight: 800 !important; color: #1C1A17 !important; text-transform: none !important;
+  font-size: 21px !important; letter-spacing: -0.01em !important; margin-top: 8px;
+}
+body.bielstein-theme .abo-account-card .value-badge {
+  font-size: 12px !important; letter-spacing: 0.08em !important; font-weight: 800 !important;
+}
+body.bielstein-theme .abo-account-card .value-card-note { margin-top: 18px; }
 body.bielstein-theme .rw-name { font-family: "Space Grotesk","Arial Narrow",sans-serif !important; font-weight: 700 !important; font-size: 15px !important; color: #1C1A17 !important; }
 body.bielstein-theme .rw-email { font-size: 13px !important; color: #7A7368 !important; margin-bottom: 16px; }
 body.bielstein-theme .rw-divider { width: 100%; height: 1px; background: #E2DACB !important; margin-bottom: 14px; }
@@ -7171,23 +7423,34 @@ body.bielstein-theme .acct-report-btn {
 }
 body.bielstein-theme .acct-report-btn:hover { text-decoration: underline; }
 
-/* Pager wie Vorlage: Label links, runde Coral-Pfeile rechts */
+/* Pager: dezente Punkte + zurückhaltende Pfeile – die Karte steht im Mittelpunkt,
+   nicht die Steuerung. (Ersetzt die früheren großen Coral-Kreise.) */
 body.bielstein-theme .card-pager {
-  display: flex !important; align-items: center; justify-content: space-between;
-  margin-top: 18px; padding-top: 16px; border-top: 1px solid #E2DACB;
+  display: flex !important; align-items: center; justify-content: center !important;
+  gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #E2DACB;
 }
-body.bielstein-theme .card-pager-label {
-  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
-  font-weight: 600 !important; font-size: 12px !important;
-  letter-spacing: 0.1em !important; text-transform: uppercase !important; color: #7A7368 !important;
+body.bielstein-theme .card-pager .pager-dots { display: flex; align-items: center; gap: 7px; }
+body.bielstein-theme .card-pager button.pager-dot {
+  width: 7px !important; height: 7px !important; min-width: 0 !important;
+  padding: 0 !important; margin: 0 !important;
+  border: none !important; border-radius: 999px !important;
+  background: #D3CAB9 !important; color: transparent !important; box-shadow: none !important;
+  cursor: pointer; transition: width .22s ease, background .22s ease;
 }
-body.bielstein-theme .card-pager button {
-  width: 34px; height: 34px; border-radius: 50%;
-  border: 1.5px solid #FF5A36 !important; background: transparent !important;
-  color: #FF5A36 !important; cursor: pointer;
-  display: inline-flex; align-items: center; justify-content: center; margin-left: 8px;
+body.bielstein-theme .card-pager button.pager-dot.active {
+  width: 20px !important; background: #FF5A36 !important; cursor: default;
 }
-body.bielstein-theme .card-pager button svg { width: 15px; height: 15px; }
+body.bielstein-theme .card-pager button.pager-arrow {
+  width: 26px !important; height: 26px !important; min-width: 0 !important;
+  padding: 0 !important; margin: 0 !important;
+  border: none !important; border-radius: 0 !important;
+  background: transparent !important; color: #C0B7A6 !important; box-shadow: none !important;
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: color .15s;
+}
+body.bielstein-theme .card-pager button.pager-arrow:hover:not(:disabled) { color: #1C1A17 !important; }
+body.bielstein-theme .card-pager button.pager-arrow:disabled { opacity: .22; cursor: default; }
+body.bielstein-theme .card-pager button.pager-arrow svg { width: 16px !important; height: 16px !important; }
 
 /* ── FUSSZEILE (Vorlage) ── */
 body.bielstein-theme .site-footer {
@@ -7389,25 +7652,32 @@ body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
     }
   }
 
-  /* "Abmelden"/"Abo verwalten" wandern aus der entfernten User-Bar ins Account-Modal */
+  /* Footer im Account-Modal – bewusst minimal (die Karte ist King):
+     - Titel- & Daten-Karte: nur ein sehr dezentes "Abmelden".
+     - Abo-Karte: nur "Abo verlängern / hinzufügen".
+     - alle übrigen Karten: gar kein Footer.
+     "Abo verwalten" gibt es nicht mehr. */
   function ensureAccountActions(){
     var modal = document.querySelector('#loyaltyModal .modal');
     if(!modal || !isLoggedIn()) return;
     var old = modal.querySelector('.acct-actions');
     if(old) old.remove();
+    var type = modal.dataset.page || '';
     var box = document.createElement('div');
     box.className = 'acct-actions';
-    var portal = document.getElementById('portalBtn');
-    if(portal && portal.style.display !== 'none'){
-      var b1 = document.createElement('button');
-      b1.type='button'; b1.textContent='Abo verwalten';
-      b1.onclick = function(){ try{ openPortal(); }catch(e){} };
-      box.appendChild(b1);
+    if(type === 'abo'){
+      var bp = document.createElement('button');
+      bp.type='button'; bp.className='acct-primary'; bp.textContent='Abo verlängern / hinzufügen';
+      bp.onclick = function(){ try{ aboRenew(); }catch(e){} };
+      box.appendChild(bp);
+    } else if(type === 'cover' || type === 'profile'){
+      var bl = document.createElement('button');
+      bl.type='button'; bl.className='acct-logout'; bl.textContent='Abmelden';
+      bl.onclick = function(){ try{ doLogout(); }catch(e){} };
+      box.appendChild(bl);
+    } else {
+      return; // rewards/wertkarte: kein Footer
     }
-    var b2 = document.createElement('button');
-    b2.type='button'; b2.textContent='Abmelden';
-    b2.onclick = function(){ try{ doLogout(); }catch(e){} };
-    box.appendChild(b2);
     modal.appendChild(box);
   }
 
