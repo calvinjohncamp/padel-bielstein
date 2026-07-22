@@ -1310,7 +1310,7 @@ main {
       <!-- LINKS: Kaufen + (nur breites Layout) Abo im Querformat darunter -->
       <div class="gutschein-left">
       <div class="play-card gutschein-buy">
-        <div class="play-card-title">◆ Spielguthaben kaufen</div>
+        <div class="play-card-title">◆ Wertkarte erwerben</div>
         <div class="form-hint" style="margin-bottom:16px;">Spielguthaben für dich selbst oder als Geschenkkarte. Der Betrag wird später flexibel mit echten Buchungspreisen verrechnet.</div>
 
         <div id="cardSizeGrid" style="display:none;"></div>
@@ -1353,7 +1353,9 @@ main {
           <span id="cardTotalPrice" style="float:right;font-family:'Arial Narrow','Impact',sans-serif;font-weight:900;font-size:1.3rem;color:var(--gold);"></span>
         </div>
 
-        <button class="book-btn visible" style="width:100%;position:static;" onclick="confirmCardPurchase()">Wertkarte kaufen &amp; bezahlen →</button>
+        <button class="book-btn visible card-purchase-btn" onclick="confirmCardPurchase()">
+          <span>Wertkarte erwerben</span><span class="card-purchase-arrow" aria-hidden="true">→</span>
+        </button>
       </div>
 
       <!-- Abo im Querformat: beige, sauber getrennt unterhalb des weißen
@@ -5818,7 +5820,7 @@ async function loadMyCards() {
     .sort((a, b) => String(a.card.created_at || '').localeCompare(String(b.card.created_at || '')));
 
   if (!visible.length) {
-    list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Alle Wertkarten sind aufgebraucht. Neue Karte oben kaufen.</div></div>`;
+    list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Alle Wertkarten sind aufgebraucht. Neue Wertkarte oben erwerben.</div></div>`;
     setHasCards(false);
     updateBalanceMeter();
     return;
@@ -7308,6 +7310,34 @@ body.bielstein-theme .buy-mini-custom.selected {
   box-shadow: 0 0 0 2px #FF5A36 inset !important; border-color: #FF5A36 !important;
 }
 body.bielstein-theme .buy-mini-custom.selected .buy-mini-title { color: #FF5A36 !important; }
+/* Wertkarten-CTA: kompakt, ruhig und auch auf kleinen Displays einzeilig. */
+body.bielstein-theme .card-purchase-btn {
+  width: 100% !important; height: auto !important; min-height: 56px;
+  position: static !important; display: flex !important;
+  align-items: center; justify-content: space-between !important;
+  gap: 14px; padding: 10px 10px 10px 18px !important;
+  border: none !important; border-radius: 14px !important;
+  background: #FF5A36 !important; color: #1C1A17 !important;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 700 !important; font-size: 15px !important;
+  letter-spacing: 0 !important; text-transform: none !important;
+  box-shadow: none !important;
+}
+body.bielstein-theme .card-purchase-btn:hover {
+  transform: none !important; background: #FF7454 !important;
+}
+.card-purchase-arrow {
+  width: 36px; height: 36px; flex: 0 0 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: #1C1A17; color: #F6F1E7;
+  font-size: 20px; line-height: 1;
+}
+@media (max-width: 560px) {
+  body.bielstein-theme .card-purchase-btn {
+    min-height: 54px; padding: 9px 9px 9px 16px !important;
+    font-size: 15px !important; white-space: nowrap;
+  }
+}
 body.bielstein-theme .buy-mini-custom .bm-custom-wrap input,
 body.bielstein-theme .buy-mini-custom .bm-custom-eur { color: #1C1A17 !important; }
 body.bielstein-theme .buy-mini-title {
