@@ -7608,6 +7608,14 @@ body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
   display: flex; flex-direction: column; justify-content: space-between;
   padding: 48px 32px; box-sizing: border-box;
 }
+/* Große Displays (iPad & Desktop): Logo-Zeile weiter nach unten, Button-Block
+   weiter nach oben ziehen – sonst kleben die Blöcke an den Rändern und die
+   Seite wirkt trotz viel Fläche geklemmt. iPhone bleibt unverändert. */
+@media (min-width: 700px) {
+  .pb-splash-inner {
+    padding: clamp(90px, 12vh, 170px) 40px clamp(72px, 9vh, 140px);
+  }
+}
 .pb-splash-top { display: flex; align-items: flex-start; justify-content: space-between; }
 .pb-splash-logobox {
   /* Dunkle Logo-Kachel mit duennem Rand im Beige der Glaswand (#F6F3EC).
