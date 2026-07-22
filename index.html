@@ -863,9 +863,8 @@ main {
     padding: 18px 14px 56px !important;
   }
 
-  /* 5 Kacheln (Buchen/Abo/Spielen/Meine Buchungen/Wertkarten) passen auf
-     schmalen Screens nicht in eine Reihe - zweispaltig umbrechen statt
-     seitlich abzuschneiden. */
+  /* 4 Kacheln (Buchen/Abo/Spielen/Wertkarten) – Fallback fürs Grid-Layout;
+     im aktiven Theme sind die Tabs ohnehin eine scrollbare Flex-Reihe. */
   #mainTabs {
     grid-template-columns: repeat(2, 1fr) !important;
   }
@@ -1104,11 +1103,10 @@ main {
   </div>
 
 
-  <div class="mode-tabs" style="grid-template-columns:1fr 1fr 1fr 1fr 1fr;" id="mainTabs">
+  <div class="mode-tabs" style="grid-template-columns:1fr 1fr 1fr 1fr;" id="mainTabs">
     <div class="mode-tab active" id="tabBook" onclick="setMode('book')"><span class="tab-icon">■</span> Jetzt buchen</div>
     <div class="mode-tab" id="tabAbo" onclick="setMode('abo')"><span class="tab-icon">■</span> Jahresabo sichern</div>
     <div class="mode-tab" id="tabPlay" onclick="setMode('play')"><span class="tab-icon">▶</span> Jetzt spielen</div>
-    <div class="mode-tab" id="tabMy" onclick="setMode('my')"><span class="tab-icon">📋</span> Meine Buchungen</div>
     <div class="mode-tab" id="tabGutscheine" onclick="setMode('gutscheine')"><span class="tab-icon"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><defs><mask id="pbCardStack" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20"><rect width="20" height="20" fill="#fff"/><rect x="7.2" y="3.7" width="10.1" height="14.6" rx="2.8" fill="#000"/></mask></defs><g stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><g mask="url(#pbCardStack)"><rect x="5.5" y="5" width="7.5" height="12" rx="1.5" transform="rotate(-12 13 17)"/></g><rect x="8.5" y="5" width="7.5" height="12" rx="1.5"/></g></svg></span> Wertkarten</div>
   </div>
   <!-- Admin Tab entfernt – Admin-Zugang über Fußzeile -->
@@ -1257,26 +1255,8 @@ main {
         </div>
       </div>
 
-      <!-- Türprotokoll -->
-      <div class="play-card" id="doorLogCard" style="display:none;">
-        <div class="play-card-title">■ Türprotokoll heute</div>
-        <div class="door-log" id="doorLogList"></div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- MEINE BUCHUNGEN -->
-  <div id="modeMy" style="display:none;">
-    <div id="myNotLoggedIn" style="display:none;">
-      <div class="play-empty">
-        <div class="play-empty-icon">🔒</div>
-        <div class="play-empty-text">Bitte <strong style="color:var(--white);">anmelden</strong>, um deine Buchungen zu sehen.</div>
-        <button class="user-bar-login" style="margin-top:18px;padding:10px 28px;font-size:0.82rem;" onclick="openModal('login')">Jetzt anmelden</button>
-      </div>
-    </div>
-    <div id="myLoggedIn" style="display:none;">
-      <div class="play-card">
+      <!-- Meine Buchungen (früher eigener Tab, jetzt hier integriert) -->
+      <div class="play-card" style="margin-top:14px;">
         <div class="play-card-title">■ Demnächst</div>
         <div id="mySingleBookingsList">
           <div class="play-empty" style="padding:24px 0;">
@@ -1292,6 +1272,13 @@ main {
           </div>
         </div>
       </div>
+
+      <!-- Türprotokoll -->
+      <div class="play-card" id="doorLogCard" style="display:none;">
+        <div class="play-card-title">■ Türprotokoll heute</div>
+        <div class="door-log" id="doorLogList"></div>
+      </div>
+
     </div>
   </div>
 
@@ -2912,19 +2899,16 @@ function setMode(m) {
   document.getElementById('modeBook').style.display       = m==='book'       ? 'block' : 'none';
   document.getElementById('modeAbo').style.display        = m==='abo'        ? 'block' : 'none';
   document.getElementById('modePlay').style.display       = m==='play'       ? 'block' : 'none';
-  document.getElementById('modeMy').style.display          = m==='my'         ? 'block' : 'none';
   document.getElementById('modeGutscheine').style.display  = m==='gutscheine' ? 'block' : 'none';
   document.getElementById('modeAdmin').style.display       = m==='admin'      ? 'block' : 'none';
   document.getElementById('tabBook').classList.toggle('active',  m==='book');
   document.getElementById('tabAbo').classList.toggle('active',   m==='abo');
   document.getElementById('tabPlay').classList.toggle('active',  m==='play');
-  document.getElementById('tabMy').classList.toggle('active',    m==='my');
   document.getElementById('tabGutscheine').classList.toggle('active', m==='gutscheine');
   const adminFooter = document.getElementById('adminFooterBtn');
   if (adminFooter) adminFooter.style.fontWeight = m==='admin' ? '900' : '700';
   if (m==='abo')  { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
   if (m==='play') { renderPlaySection(); }
-  if (m==='my')   { renderMySection(); }
   if (m==='gutscheine') { renderCardSizeGrid(); loadMyCards(); renderAboCard(); }
   if (m==='admin') {
     document.getElementById('mainTabs').style.display = 'none';
@@ -3711,19 +3695,12 @@ async function loadActiveAbos() {
   return data || [];
 }
 
-async function renderMySection() {
-  const notLoggedIn = document.getElementById('myNotLoggedIn');
-  const loggedIn     = document.getElementById('myLoggedIn');
-  if (!currentUser) {
-    notLoggedIn.style.display = 'block';
-    loggedIn.style.display    = 'none';
-    return;
-  }
-  notLoggedIn.style.display = 'none';
-  loggedIn.style.display    = 'block';
-
+// Füllt die Listen „Demnächst" (Einzelbuchungen) und „Aktive Jahresabos".
+// Sitzen jetzt im Bereich „Jetzt spielen" (früher eigener Tab „Meine Buchungen").
+async function renderMyBookingsLists() {
   const bookingsEl = document.getElementById('mySingleBookingsList');
   const abosEl = document.getElementById('myAbosList');
+  if (!bookingsEl || !abosEl || !currentUser) return;
   bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Buchungen werden geladen …</div></div>`;
   abosEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Abos werden geladen …</div></div>`;
 
@@ -3880,6 +3857,7 @@ async function renderPlaySection() {
   doorBtns.style.display = 'block';
 
   renderDoorLog();
+  renderMyBookingsLists();   // „Demnächst" + „Aktive Jahresabos" unter den Türen
 }
 
 // Klick-Demo für die Türen: der Button reagiert sichtbar, es passiert aber noch
@@ -6945,13 +6923,6 @@ body.bielstein-theme #tabPlay .tab-icon {
   border: none; width: 0; height: 0; border-radius: 0;
   border-top: 5.5px solid transparent; border-bottom: 5.5px solid transparent;
   border-left: 9px solid currentColor;
-}
-body.bielstein-theme #tabMy .tab-icon {
-  border: none; border-radius: 0; height: 9px;
-  background:
-    linear-gradient(currentColor,currentColor) 0 0/11px 1.5px no-repeat,
-    linear-gradient(currentColor,currentColor) 0 3.75px/11px 1.5px no-repeat,
-    linear-gradient(currentColor,currentColor) 0 7.5px/7px 1.5px no-repeat;
 }
 /* Wertkarten: zwei Karten im Hochformat, die hintere leicht gekippt dahinter.
    Als SVG statt CSS-Kaesten, weil die hintere Karte hinter der vorderen
