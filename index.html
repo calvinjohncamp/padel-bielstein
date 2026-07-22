@@ -436,22 +436,27 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .buy-mini-dot-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
 .buy-mini-dot { width: 15px; height: 15px; border-radius: 50%; background: #1C1A17; }
 .buy-mini-dot.on { background: #1C1A17; }
-/* Wunschbetrag-Kachel (5. Feld) – gleiche Optik wie die Presets, mit Eingabe. */
+/* Kauf-Kacheln: 25% flacher und Inhalt vertikal zentriert (keine tote Fläche). */
+#cardBalanceGrid .buy-mini { min-height: 152px; justify-content: center; gap: 12px; }
+/* Wunschbetrag-Kachel (5. Feld): dezenter Rahmen statt Linie, ohne Hinweis. */
 .buy-mini-custom { cursor: default; }
-.bm-custom-wrap { display: flex; align-items: baseline; justify-content: center; gap: 3px; width: 100%; }
-.bm-custom-wrap input {
-  width: 84px; text-align: right; -moz-appearance: textfield; outline: none;
-  font-family: "Manrope","Arial","Helvetica",sans-serif; font-weight: 800; font-size: 1.85rem;
-  line-height: 1; color: #1C1A17; background: transparent; border: none;
-  border-bottom: 2px solid #E2DACB; padding: 2px 2px 4px;
+.bm-custom-box {
+  display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+  border: 1.5px solid #D9CFBF; border-radius: 11px; padding: 9px 13px;
+  min-width: 118px; box-sizing: border-box; background: #FFFFFF;
+  transition: border-color 0.15s;
 }
-.bm-custom-wrap input::-webkit-outer-spin-button,
-.bm-custom-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.bm-custom-wrap input::placeholder { color: #C0B7A6; font-weight: 700; font-size: 1.15rem; }
-.bm-custom-wrap input:focus { border-bottom-color: #FF5A36; }
-.buy-mini-custom.selected .bm-custom-wrap input { border-bottom-color: #FF5A36; }
-.bm-custom-eur { font-family: "Manrope","Arial","Helvetica",sans-serif; font-weight: 800; font-size: 1.5rem; color: #1C1A17; }
-.buy-mini-hint { font-size: 0.62rem; letter-spacing: 0.06em; color: #8C8B84; text-transform: uppercase; }
+.bm-custom-box:focus-within { border-color: #FF5A36; }
+.buy-mini-custom.selected .bm-custom-box { border-color: #FF5A36; }
+.bm-custom-box input {
+  width: 72px; text-align: right; -moz-appearance: textfield; outline: none;
+  font-family: "Manrope","Arial","Helvetica",sans-serif; font-weight: 800; font-size: 1.3rem;
+  line-height: 1; color: #1C1A17; background: transparent; border: none; padding: 0;
+}
+.bm-custom-box input::-webkit-outer-spin-button,
+.bm-custom-box input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.bm-custom-box input::placeholder { color: #C0B7A6; font-weight: 700; }
+.bm-custom-eur { font-family: "Manrope","Arial","Helvetica",sans-serif; font-weight: 800; font-size: 1.3rem; color: #1C1A17; }
 @media (max-width: 900px) {
   .buy-cards-row { grid-template-columns: repeat(3, minmax(104px, 1fr)); }
 }
@@ -500,17 +505,17 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   text-align: left;
   overflow: hidden;
 }
-.cover-top { display: flex; align-items: center; gap: 16px; }
+.cover-top { display: flex; align-items: center; gap: 18px; }
 .cover-logobox {
-  width: 66px; height: 66px; flex-shrink: 0; box-sizing: border-box;
-  border-radius: 13px; overflow: hidden;
+  width: 84px; height: 84px; flex-shrink: 0; box-sizing: border-box;
+  border-radius: 16px; overflow: hidden;
 }
 .cover-logobox img { width: 100%; height: 100%; object-fit: cover; display: block; }
-/* Markanter: größer, enger, kräftiger. */
+/* Markant, aber harmonisch zum größeren Logo: etwas kleiner als zuvor. */
 .cover-wordmark {
   font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif;
   font-weight: 700; margin: 0; color: #1C1A17;
-  font-size: clamp(34px, 9.5vw, 46px); line-height: 0.86; letter-spacing: -0.03em;
+  font-size: clamp(28px, 7.6vw, 38px); line-height: 0.9; letter-spacing: -0.025em;
   text-transform: uppercase;
 }
 .cover-wordmark span { color: #FF5A36; }
@@ -527,9 +532,18 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   text-transform: uppercase; color: #7A7368;
 }
 
-/* ■■ ACCOUNT-MODAL: Blätter-Steuerung – dezente Punkte statt lauter Kreise ■■ */
-.card-pager { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; padding: 14px 6px 2px; border-top: 1px solid #E7E0D5; background: transparent; }
+/* ■■ ACCOUNT-MODAL: EINE feste Fußzeile – links Punkte+Pfeile, rechts ggf. Button.
+   Konstante Höhe => beim Blättern springt nichts, man klickt an Ort und Stelle. ■■ */
+.card-pager { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 46px; margin-top: 12px; padding: 12px 4px 2px; border-top: 1px solid #E7E0D5; background: transparent; }
 .card-pager-label { display: none; }
+.pager-nav { display: flex; align-items: center; gap: 10px; }
+.pager-action {
+  border: 1px solid #D9CFBF; background: transparent; color: #7A7368;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif; font-weight: 600;
+  font-size: 12.5px; letter-spacing: 0.02em; padding: 7px 16px; border-radius: 999px;
+  cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s;
+}
+.pager-action:hover { border-color: #FF5A36; color: #1C1A17; }
 .pager-dots { display: flex; align-items: center; gap: 7px; }
 .pager-dot { width: 7px; height: 7px; padding: 0; border: none; border-radius: 999px; background: #D8CFBF; cursor: pointer; transition: width .22s ease, background .22s ease; }
 .pager-dot.active { width: 20px; background: #FF5A36; cursor: default; }
@@ -983,9 +997,12 @@ main {
     <button class="modal-close" onclick="closeLoyaltyModal()">✕</button>
     <div id="accountPageHost"></div>
     <div class="card-pager" id="cardPager" style="display:none;">
-      <button type="button" class="pager-arrow" id="cardPagerPrev" onclick="pageCard(-1)" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-      <div class="pager-dots" id="cardPagerDots"></div>
-      <button type="button" class="pager-arrow" id="cardPagerNext" onclick="pageCard(1)" aria-label="Weiter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+      <div class="pager-nav">
+        <button type="button" class="pager-arrow" id="cardPagerPrev" onclick="pageCard(-1)" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+        <div class="pager-dots" id="cardPagerDots"></div>
+        <button type="button" class="pager-arrow" id="cardPagerNext" onclick="pageCard(1)" aria-label="Weiter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+      </div>
+      <button type="button" class="pager-action" id="cardPagerAction" style="display:none;"></button>
     </div>
   </div>
 </div>
@@ -5855,7 +5872,7 @@ function aboCardMarkup(a, holderName, holderMail) {
     </div>
     <div class="abo-btn-row">
       <button class="abo-renew-btn" type="button" onclick="aboRenew()">Abo verlängern</button>
-      <button class="abo-renew-btn" type="button" onclick="aboNew()">Abo neu abschließen</button>
+      <button class="abo-renew-btn" type="button" onclick="aboNew()">Zusätzliches Abo buchen</button>
     </div>`;
 }
 
@@ -5959,13 +5976,12 @@ function renderCardSizeGrid() {
     custom.className = 'buy-mini buy-mini-custom' + (customSelected ? ' selected' : '');
     custom.innerHTML =
       `<div class="buy-mini-title">Wunschbetrag</div>` +
-      `<div class="bm-custom-wrap">` +
+      `<div class="bm-custom-box">` +
         `<input type="number" id="customBalanceInput" inputmode="numeric" min="${CARD_BALANCE_MIN}" max="${CARD_BALANCE_MAX}" step="1" ` +
         `placeholder="z.B. 30" value="${customBalance}" ` +
         `oninput="onCustomBalanceInput(this)" onclick="event.stopPropagation()">` +
         `<span class="bm-custom-eur">€</span>` +
-      `</div>` +
-      `<div class="buy-mini-hint">${CARD_BALANCE_MIN} – ${CARD_BALANCE_MAX} €</div>`;
+      `</div>`;
     balGrid.appendChild(custom);
   }
   updateCardSummary();
@@ -6265,19 +6281,33 @@ function renderAccountPage(direction = 0) {
   // Seitentyp merken – der Footer (Abmelden / Abo verlängern) richtet sich danach.
   document.querySelector('#loyaltyModal .modal').dataset.page = p.type;
 
-  // Blätter-Steuerung nur, wenn es mehr als eine Seite gibt
+  // EINE feste Fußzeile: links Punkte + Pfeile, rechts ggf. ein dezenter Button.
+  // Immer sichtbar und immer gleich hoch -> die Pfeile springen beim Blättern
+  // nicht mehr, man kann an derselben Stelle weiterklicken.
   const pager = document.getElementById('cardPager');
-  if (accountPages.length > 1) {
-    pager.style.display = 'flex';
-    const dots = document.getElementById('cardPagerDots');
-    dots.innerHTML = accountPages.map((_, i) =>
-      `<button type="button" class="pager-dot${i === accountPageIndex ? ' active' : ''}" aria-label="Seite ${i + 1}" onclick="goToCard(${i})"></button>`
-    ).join('');
-    document.getElementById('cardPagerPrev').disabled = accountPageIndex === 0;
-    document.getElementById('cardPagerNext').disabled = accountPageIndex === accountPages.length - 1;
+  pager.style.display = 'flex';
+  const dots = document.getElementById('cardPagerDots');
+  dots.innerHTML = accountPages.map((_, i) =>
+    `<button type="button" class="pager-dot${i === accountPageIndex ? ' active' : ''}" aria-label="Seite ${i + 1}" onclick="goToCard(${i})"></button>`
+  ).join('');
+  document.getElementById('cardPagerPrev').disabled = accountPageIndex === 0;
+  document.getElementById('cardPagerNext').disabled = accountPageIndex === accountPages.length - 1;
+
+  // Rechter Aktionsbutton: nur wo sinnvoll (Abo -> "Zum Abo", Titel/Daten -> "Abmelden").
+  const action = document.getElementById('cardPagerAction');
+  if (p.type === 'abo') {
+    action.textContent = 'Zum Abo'; action.onclick = goToAbo; action.style.display = '';
+  } else if (p.type === 'cover' || p.type === 'profile') {
+    action.textContent = 'Abmelden'; action.onclick = function(){ try{ doLogout(); }catch(e){} }; action.style.display = '';
   } else {
-    pager.style.display = 'none';
+    action.textContent = ''; action.onclick = null; action.style.display = 'none';
   }
+}
+
+// "Zum Abo" -> auf die Wertkartenseite, wo die Abo-Karte samt Aktionen liegt.
+function goToAbo() {
+  try { closeLoyaltyModal(); } catch(e) {}
+  try { setMode('gutscheine'); } catch(e) {}
 }
 
 // Direkt zu einer Seite springen (Klick auf einen Punkt).
@@ -7426,10 +7456,20 @@ body.bielstein-theme .acct-report-btn:hover { text-decoration: underline; }
 /* Pager: dezente Punkte + zurückhaltende Pfeile – die Karte steht im Mittelpunkt,
    nicht die Steuerung. (Ersetzt die früheren großen Coral-Kreise.) */
 body.bielstein-theme .card-pager {
-  display: flex !important; align-items: center; justify-content: center !important;
-  gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #E2DACB;
+  display: flex !important; align-items: center; justify-content: space-between !important;
+  gap: 10px; min-height: 46px; margin-top: 12px; padding: 12px 4px 2px; border-top: 1px solid #E2DACB;
 }
+body.bielstein-theme .card-pager .pager-nav { display: flex; align-items: center; gap: 10px; }
 body.bielstein-theme .card-pager .pager-dots { display: flex; align-items: center; gap: 7px; }
+/* Rechter Aktionsbutton: dezent, klein, in derselben Zeile. */
+body.bielstein-theme .card-pager .pager-action {
+  border: 1px solid #D9CFBF !important; background: transparent !important; color: #7A7368 !important;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important; font-weight: 600 !important;
+  font-size: 12.5px !important; letter-spacing: 0.02em !important; padding: 7px 16px !important;
+  border-radius: 999px !important; cursor: pointer; white-space: nowrap;
+  transition: border-color .15s, color .15s;
+}
+body.bielstein-theme .card-pager .pager-action:hover { border-color: #FF5A36 !important; color: #1C1A17 !important; }
 body.bielstein-theme .card-pager button.pager-dot {
   width: 7px !important; height: 7px !important; min-width: 0 !important;
   padding: 0 !important; margin: 0 !important;
@@ -7652,33 +7692,14 @@ body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
     }
   }
 
-  /* Footer im Account-Modal – bewusst minimal (die Karte ist King):
-     - Titel- & Daten-Karte: nur ein sehr dezentes "Abmelden".
-     - Abo-Karte: nur "Abo verlängern / hinzufügen".
-     - alle übrigen Karten: gar kein Footer.
-     "Abo verwalten" gibt es nicht mehr. */
+  /* Der Footer sitzt jetzt komplett in der festen Pager-Zeile (siehe
+     renderAccountPage). Diese Funktion räumt nur noch einen evtl. alten,
+     separaten Footer weg, damit die Modalhöhe konstant bleibt. */
   function ensureAccountActions(){
     var modal = document.querySelector('#loyaltyModal .modal');
-    if(!modal || !isLoggedIn()) return;
+    if(!modal) return;
     var old = modal.querySelector('.acct-actions');
     if(old) old.remove();
-    var type = modal.dataset.page || '';
-    var box = document.createElement('div');
-    box.className = 'acct-actions';
-    if(type === 'abo'){
-      var bp = document.createElement('button');
-      bp.type='button'; bp.className='acct-primary'; bp.textContent='Abo verlängern / hinzufügen';
-      bp.onclick = function(){ try{ aboRenew(); }catch(e){} };
-      box.appendChild(bp);
-    } else if(type === 'cover' || type === 'profile'){
-      var bl = document.createElement('button');
-      bl.type='button'; bl.className='acct-logout'; bl.textContent='Abmelden';
-      bl.onclick = function(){ try{ doLogout(); }catch(e){} };
-      box.appendChild(bl);
-    } else {
-      return; // rewards/wertkarte: kein Footer
-    }
-    modal.appendChild(box);
   }
 
   function start(){
