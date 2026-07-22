@@ -519,7 +519,14 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   text-transform: uppercase;
 }
 .cover-wordmark span { color: #FF5A36; }
+.cover-mid { display: flex; flex-direction: column; }
 .cover-greet { margin: 4px 0; }
+/* Nächster Termin – mit Abstand unter der Begrüßung, ruhig und gut lesbar. */
+.cover-match {
+  margin-top: 22px; font-family: "Manrope","Arial","Helvetica",sans-serif;
+  font-size: 0.98rem; line-height: 1.55; color: #57534D; max-width: 320px;
+}
+.cover-match strong { color: #1C1A17; font-weight: 700; }
 .cover-greet-line { display: block; font-size: 1.02rem; font-weight: 400; letter-spacing: .005em; color: #1C1A17; }
 .cover-greet-name {
   display: block; margin-top: 6px;
@@ -600,17 +607,25 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .play-badge-past { border: 1.5px solid #444; color: #555; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
 
 .door-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-.door-btn { height: 86px; border-radius: 14px; border: none; cursor: pointer; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
+.door-btn { position: relative; overflow: hidden; height: 112px; border-radius: 16px; border: none; cursor: pointer; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: all 0.18s; }
 .door-btn-icon { font-size: 1.7rem; line-height: 1; }
+.door-btn-label { display: flex; flex-direction: column; align-items: center; gap: 3px; line-height: 1.12; }
+.door-btn-main { font-size: 1rem; font-weight: 900; letter-spacing: 0.06em; }
+.door-btn-sub { font-size: 0.86rem; font-weight: 600; letter-spacing: 0.02em; text-transform: none; opacity: 0.92; }
 .door-btn.access { background: var(--blue); color: #fff; box-shadow: 0 4px 20px rgba(244,74,34,0.35); }
 .door-btn.access:hover:not(:disabled) { background: var(--blue-dk); transform: translateY(-2px); }
 .door-btn.court { background: var(--gold); color: #0a0a0a; box-shadow: 0 4px 20px rgba(246,246,246,0.25); }
 .door-btn.court:hover:not(:disabled) { background: var(--gold-dk); transform: translateY(-2px); }
 .door-btn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
 .door-btn-icon svg { stroke: currentColor; }
+/* Klick-Demo: sichtbares Feedback ohne echte Aktion. */
+.door-btn.is-opening { animation: doorPulse 0.65s ease; }
+@keyframes doorPulse { 0%,100% { transform: scale(1); } 45% { transform: scale(0.965); filter: brightness(1.08); } }
+.door-btn.is-open { transform: translateY(-2px); }
+.door-note { font-size: 0.9rem; color: #57534D; line-height: 1.6; text-align: center; margin: 14px 4px 20px; }
 
-.door-info { background: #0a1a0a; border: 1px solid #1a3a1a; border-radius: 10px; padding: 12px 16px; font-size: 0.78rem; color: #6a9a6a; line-height: 1.6; margin-bottom: 14px; }
-.door-info strong { color: #4ade80; }
+.door-info { background: #1C1A17; border: 1px solid #2A2723; border-radius: 12px; padding: 13px 16px; font-size: 0.82rem; color: #FFFFFF; line-height: 1.6; margin-bottom: 14px; }
+.door-info strong { color: #FFFFFF; }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
 .door-log-icon { font-size: 1rem; }
@@ -1228,17 +1243,17 @@ main {
       <div id="doorButtons" style="display:none;">
         <div class="play-card-title" style="margin-bottom:12px;">■ Türen öffnen</div>
         <div class="door-grid">
-          <button class="door-btn access" id="btnAccessDoor" onclick="openAccessDoor()" disabled>
+          <button class="door-btn access" id="btnAccessDoor" onclick="demoDoor(this)">
             <span class="door-btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="13" height="20" rx="2"/><path d="M16 12h5"/><path d="M19 9l3 3-3 3"/><circle cx="10" cy="12" r="1" fill="currentColor"/></svg></span>
-            <span id="btnAccessLabel">Zugangstür öffnen</span>
+            <span class="door-btn-label"><span class="door-btn-main" id="btnAccessLabel">Tür A</span><span class="door-btn-sub">Parkplatzseite</span></span>
           </button>
-          <button class="door-btn court" id="btnCourtDoor" onclick="openCourtDoors()" disabled>
-            <span class="door-btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="9" height="20" rx="2"/><rect x="13" y="2" width="9" height="20" rx="2"/><circle cx="6.5" cy="12" r="1" fill="currentColor"/><circle cx="17.5" cy="12" r="1" fill="currentColor"/></svg></span>
-            <span id="btnCourtLabel">Court-Türen öffnen</span>
+          <button class="door-btn court" id="btnCourtDoor" onclick="demoDoor(this)">
+            <span class="door-btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="13" height="20" rx="2"/><path d="M16 12h5"/><path d="M19 9l3 3-3 3"/><circle cx="10" cy="12" r="1" fill="currentColor"/></svg></span>
+            <span class="door-btn-label"><span class="door-btn-main" id="btnCourtLabel">Tür B</span><span class="door-btn-sub">Freibadseite</span></span>
           </button>
         </div>
-        <div style="font-size:0.72rem;color:#555;text-align:center;margin-bottom:20px;">
-          Türen öffnen sich ab 15 Min. vor Spielbeginn · Nur zur gebuchten Zeit aktiv
+        <div class="door-note" id="doorNote">
+          Türen öffnen sich ab 5 Minuten vor Spielbeginn. Beide Türen des gebuchten Courts sind bis spätestens 10 Minuten nach Spielende von außen zu schließen.
         </div>
       </div>
 
@@ -1262,7 +1277,7 @@ main {
     </div>
     <div id="myLoggedIn" style="display:none;">
       <div class="play-card">
-        <div class="play-card-title">■ Kommende Einzelbuchungen</div>
+        <div class="play-card-title">■ Demnächst</div>
         <div id="mySingleBookingsList">
           <div class="play-empty" style="padding:24px 0;">
             <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
@@ -3724,14 +3739,14 @@ async function renderMySection() {
   }
 
   if (!bookings.length) {
-    bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Keine kommenden Buchungen</div></div>`;
+    bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Aktuell keine Buchungen</div></div>`;
   } else {
     bookingsEl.innerHTML = bookings.map(b => {
       const dateStr = new Date(b.date+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
       const timeStr = `${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start+b.duration).padStart(2,'0')}:00`;
       const price = b.price_paid_cents ? (b.price_paid_cents/100).toFixed(2)+' €' : '';
       const pending = b.status === 'pending';
-      return `<div class="closure-item">
+      return `<div class="closure-item my-booking">
         <div style="flex:1;">
           <div class="closure-item-date">${dateStr} · ${timeStr} Uhr</div>
           <div class="closure-item-note">Court #${b.court}${price ? ' · '+price : ''}${pending ? ' · Zahlung wird bestätigt …' : ''}</div>
@@ -3745,7 +3760,7 @@ async function renderMySection() {
   } else {
     abosEl.innerHTML = abos.map(a => {
       const timeStr = `${String(a.hour_start).padStart(2,'0')}:00–${String(a.hour_start+a.duration).padStart(2,'0')}:00`;
-      return `<div class="closure-item">
+      return `<div class="closure-item my-booking">
         <div style="flex:1;">
           <div class="closure-item-date">${WDNAMES[a.weekday]}s · ${timeStr} Uhr</div>
           <div class="closure-item-note">Court #${a.court} · gültig bis ${formatDateDE(a.ends_on)}</div>
@@ -3845,48 +3860,50 @@ async function renderPlaySection() {
 
   doorInfoEl.style.display = 'block';
 
+  // Die dunkle Info-Box zeigt Kontext (nächste Buchung / Freibad-Zugang).
   if (active) {
     const freibadOffen = isFreibadOpen();
-    const zugangTuer  = freibadOffen ? 'Tür B (Freibadseite)' : 'Tür A (Parkplatzseite)';
-    const courtTueren = active.court === 1 ? 'Türen 3 + 4 (Court #1)' : 'Türen 1 + 2 (Court #2)';
-
     doorInfoEl.innerHTML = freibadOffen
-      ? `<strong>Freibad geöffnet</strong> — Zugang heute ausschließlich über <strong>Tür B</strong> (Freibad/Liegewiese). Ausgang über Tür A möglich.`
-      : `<strong>Freibad geschlossen</strong> — Zugang und Ausgang ausschließlich über <strong>Tür A</strong> (Parkplatz/Tennis).`;
-
-    accessLbl.textContent = zugangTuer + ' öffnen';
-    courtLbl.textContent  = courtTueren + ' öffnen';
-    accessBtn.disabled = false;
-    courtBtn.disabled  = false;
-    accessBtn.dataset.court = active.court;
-    courtBtn.dataset.court  = active.court;
-    accessBtn.title = '';
-    courtBtn.title  = '';
-    doorBtns.style.display = 'block';
+      ? `<strong>Freibad geöffnet</strong> — Zugang heute über <strong>Tür B</strong> (Freibadseite). Ausgang über Tür A möglich.`
+      : `<strong>Freibad geschlossen</strong> — Zugang und Ausgang über <strong>Tür A</strong> (Parkplatzseite).`;
   } else {
     const next = allBookings.find(b => getBookingStatus(b) === 'soon');
-    if (next) {
-      const h1 = `${String(next.hour_start).padStart(2,'0')}:00`;
-      doorInfoEl.innerHTML = `Deine nächste Buchung startet um <strong>${h1} Uhr</strong>. Die Türen öffnen sich 15 Minuten vorher.`;
-    } else {
-      doorInfoEl.innerHTML = `Keine aktive Buchung. Türöffnung ist nur während der gebuchten Spielzeit (±15 Min.) möglich.`;
-    }
-    accessBtn.disabled = true;
-    courtBtn.disabled  = true;
-    doorBtns.style.display = 'block';
+    doorInfoEl.innerHTML = next
+      ? `Deine nächste Buchung startet um <strong>${String(next.hour_start).padStart(2,'0')}:00 Uhr</strong>.`
+      : `Aktuell hast du keine laufende Buchung.`;
   }
 
-  // Hinweistext
-  let hintEl = document.getElementById('playHint');
-  if (!hintEl) {
-    hintEl = document.createElement('div');
-    hintEl.id = 'playHint';
-    hintEl.style.cssText = 'font-size:0.75rem;color:#555;line-height:1.6;text-align:center;margin-top:4px;margin-bottom:16px;padding:0 4px;';
-    doorBtns.parentNode.insertBefore(hintEl, doorBtns.nextSibling);
-  }
-  hintEl.textContent = 'Beide Türen des gebuchten Courts sind bis spätestens 5 Minuten nach Spielende von außen zu schließen.';
+  // Die Türen sind bewusst schon jetzt sichtbar und anklickbar (Demo – die echte
+  // Öffnung der Schließsysteme wird später hier angebunden).
+  accessBtn.disabled = false;
+  courtBtn.disabled  = false;
+  doorBtns.style.display = 'block';
 
   renderDoorLog();
+}
+
+// Klick-Demo für die Türen: der Button reagiert sichtbar, es passiert aber noch
+// nichts Echtes. Später wird hier das Schließsystem der jeweiligen Tür ausgelöst.
+function demoDoor(btn) {
+  if (btn.dataset.busy === '1') return;
+  btn.dataset.busy = '1';
+  const mainEl = btn.querySelector('.door-btn-main');
+  const subEl  = btn.querySelector('.door-btn-sub');
+  const name   = mainEl ? mainEl.textContent : 'Tür';
+  const origSub = subEl ? subEl.textContent : '';
+  btn.classList.add('is-opening');
+  if (subEl) subEl.textContent = 'wird geöffnet …';
+  setTimeout(() => {
+    btn.classList.remove('is-opening');
+    btn.classList.add('is-open');
+    if (subEl) subEl.textContent = 'geöffnet ✓';
+    try { showToast(`${name} – die Türöffnung folgt, sobald die Anlage steht.`); } catch(e) {}
+    setTimeout(() => {
+      btn.classList.remove('is-open');
+      if (subEl) subEl.textContent = origSub;
+      btn.dataset.busy = '';
+    }, 1800);
+  }, 650);
 }
 
 function logDoorEvent(icon, text) {
@@ -5910,18 +5927,59 @@ function aboAccountCardHTML(a) {
   </div>`;
 }
 
-// Titelseite des Account-Stapels: dunkle, quadratische Karte im Splash-Look.
-function coverCardHTML() {
+// Nächste Abo-Wiederholung ab jetzt (innerhalb der Gültigkeit), oder null.
+function nextAboOccurrence(abo, now) {
+  const startsOn = abo.starts_on ? new Date(abo.starts_on + 'T00:00:00') : null;
+  const endsOn   = abo.ends_on   ? new Date(abo.ends_on   + 'T23:59:59') : null;
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    if (d.getDay() !== abo.weekday) continue;
+    const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), abo.hour_start, 0, 0);
+    if (start.getTime() <= now.getTime()) continue;      // heute schon vorbei
+    if (startsOn && start < startsOn) continue;
+    if (endsOn && start > endsOn) return null;           // Abo endet vorher
+    return { when: start, court: abo.court, hour_start: abo.hour_start, duration: abo.duration, isAbo: true };
+  }
+  return null;
+}
+
+// Frühester bevorstehender Termin aus Einzelbuchungen UND Abo(s), oder null.
+function computeNextMatch(bookings, abos, now) {
+  const cands = [];
+  (bookings || []).forEach(b => {
+    const start = new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`);
+    if (start.getTime() > now.getTime()) {
+      cands.push({ when: start, court: b.court, hour_start: b.hour_start, duration: b.duration });
+    }
+  });
+  (abos || []).forEach(a => { const o = nextAboOccurrence(a, now); if (o) cands.push(o); });
+  if (!cands.length) return null;
+  cands.sort((x, y) => x.when - y.when);
+  return cands[0];
+}
+
+function matchLineHTML(m) {
+  const dateStr = m.when.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+  const timeStr = `${String(m.hour_start).padStart(2, '0')}:00`;
+  return `Dein nächstes Match startet am <strong>${dateStr}</strong> um <strong>${timeStr} Uhr</strong> auf <strong>Court ${m.court}</strong>.`;
+}
+
+// Titelseite des Account-Stapels. nextMatch (optional) = nächster Termin.
+function coverCardHTML(nextMatch) {
   const fullName  = (currentProfile?.full_name || '').trim();
   const firstName = esc(fullName.split(/\s+/)[0] || '');
+  const matchHtml = nextMatch ? `<div class="cover-match">${matchLineHTML(nextMatch)}</div>` : '';
   return `<div class="cover-card">
     <div class="cover-top">
       <div class="cover-logobox"><img src="assets/icons/logo-mark-2027-dark.png?v=20260721b" alt="Padel Bielstein"></div>
       <h2 class="cover-wordmark">PADEL<br><span>BIELSTEIN</span></h2>
     </div>
-    <div class="cover-greet">
-      <span class="cover-greet-line">Schön, dass du da bist,</span>
-      <span class="cover-greet-name">${firstName || 'willkommen'}</span>
+    <div class="cover-mid">
+      <div class="cover-greet">
+        <span class="cover-greet-line">Schön, dass du da bist,</span>
+        <span class="cover-greet-name">${firstName || 'willkommen'}</span>
+      </div>
+      ${matchHtml}
     </div>
     <div class="cover-caption">Rewards · Wertkarten · Account</div>
   </div>`;
@@ -6240,8 +6298,13 @@ async function buildAccountPages() {
   let activeAbos = [];
   try { activeAbos = await loadActiveAbos(); } catch(e) { console.warn('Abo laden fehlgeschlagen', e); }
 
+  // Nächsten Termin für die Titelseite ermitteln (Einzelbuchungen + Abo).
+  let upcoming = [];
+  try { upcoming = await loadUpcomingBookings(); } catch(e) { console.warn('Buchungen laden fehlgeschlagen', e); }
+  const nextMatch = computeNextMatch(upcoming, activeAbos, new Date());
+
   // Titelseite zuerst, danach Rewards, danach die Abo-Wertkarte(n).
-  accountPages = [{ type: 'cover' }, { type: 'rewards', hours: hoursPlayed }];
+  accountPages = [{ type: 'cover', nextMatch }, { type: 'rewards', hours: hoursPlayed }];
   (activeAbos || []).forEach(a => accountPages.push({ type: 'abo', abo: a }));
   // Gleiche Reihenfolge wie in der Seitenansicht: die Karte, von der gerade
   // abgebucht wird (die aelteste mit Restwert), kommt zuerst - danach die noch
@@ -6260,7 +6323,7 @@ function renderAccountPage(direction = 0) {
   if (!p) { host.innerHTML = ''; return; }
 
   let label = '';
-  if (p.type === 'cover')        { host.innerHTML = coverCardHTML();         label = 'Start'; }
+  if (p.type === 'cover')        { host.innerHTML = coverCardHTML(p.nextMatch); label = 'Start'; }
   else if (p.type === 'rewards') { host.innerHTML = rewardsCardHTML(p.hours); label = 'Rewards'; }
   else if (p.type === 'abo')     { host.innerHTML = aboAccountCardHTML(p.abo); label = 'Jahresabo'; }
   else if (p.type === 'card')    { host.innerHTML = anyCardHTML(p.card);     label = p.card.card_size ? cardLabel(p.card.card_size) : 'Wertkarte'; }
@@ -6558,6 +6621,28 @@ body.bielstein-theme .door-btn.court:hover:not(:disabled) {
   color: #E8431E !important;
 }
 
+/* Türen A/B: auffälliges, gleichwertiges Paar – kräftiges Orange, weiße Schrift.
+   (Überschreibt die access/court-Standardregeln oben.) */
+body.bielstein-theme .door-btn.access,
+body.bielstein-theme .door-btn.court {
+  background-color: #FF5A36 !important; background-image: none !important;
+  border: none !important; color: #F6F1E7 !important;   /* Icon + Unterzeile beige */
+  box-shadow: 0 6px 22px rgba(241,107,36,.28) !important;
+}
+body.bielstein-theme .door-btn.access:hover:not(:disabled),
+body.bielstein-theme .door-btn.court:hover:not(:disabled) {
+  background-color: #FF7454 !important; border: none !important; color: #F6F1E7 !important;
+}
+/* Nur „Tür A" / „Tür B" schwarz, der Rest bleibt beige. */
+body.bielstein-theme .door-btn-main { color: #1C1A17 !important; }
+/* Klick-Zustand „geöffnet": Anthrazit. Auch im Hover anthrazit bleiben,
+   sonst überdeckt die Hover-Regel (Maus liegt noch auf dem Button) das Anthrazit. */
+body.bielstein-theme .door-btn.is-open,
+body.bielstein-theme .door-btn.is-open:hover:not(:disabled) {
+  background-color: #6B655C !important; color: #F6F1E7 !important;
+  box-shadow: 0 6px 22px rgba(28,26,23,.22) !important;
+}
+
 /* Datum: volle Tango-Füllung wie bei der Wochentagsauswahl im Abo */
 body.bielstein-theme .date-chip.selected .dname,
 body.bielstein-theme .date-chip.selected .dnum,
@@ -6682,6 +6767,17 @@ body.bielstein-theme .play-no-active {
   background: #FFFFFF !important;
   color: #1C1A17 !important;
   border-color: #E2DACB !important;
+}
+/* „Meine Buchungen": markanter & besser lesbar – analog zum Look von „Jetzt spielen".
+   Nur diese Listen (my-booking), NICHT die Admin-Schließzeiten. */
+body.bielstein-theme .closure-item.my-booking { padding: 14px 16px !important; border-radius: 12px !important; }
+body.bielstein-theme .closure-item.my-booking .closure-item-date {
+  font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
+  font-weight: 800 !important; font-size: 1.02rem !important; letter-spacing: 0.01em !important;
+  color: #1C1A17 !important; margin-bottom: 3px;
+}
+body.bielstein-theme .closure-item.my-booking .closure-item-note {
+  font-size: 0.88rem !important; color: #57534D !important;
 }
 body.bielstein-theme .form-input:focus,
 body.bielstein-theme .admin-input:focus {
