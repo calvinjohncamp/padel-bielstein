@@ -505,7 +505,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   text-align: left;
   overflow: hidden;
 }
-.cover-top { display: flex; align-items: center; gap: 18px; }
+.cover-top { display: flex; align-items: flex-end; gap: 18px; }
 .cover-logobox {
   width: 84px; height: 84px; flex-shrink: 0; box-sizing: border-box;
   border-radius: 16px; overflow: hidden;
@@ -7481,16 +7481,16 @@ body.bielstein-theme .card-pager button.pager-dot.active {
   width: 20px !important; background: #FF5A36 !important; cursor: default;
 }
 body.bielstein-theme .card-pager button.pager-arrow {
-  width: 26px !important; height: 26px !important; min-width: 0 !important;
+  width: 32px !important; height: 32px !important; min-width: 0 !important;
   padding: 0 !important; margin: 0 !important;
   border: none !important; border-radius: 0 !important;
-  background: transparent !important; color: #C0B7A6 !important; box-shadow: none !important;
+  background: transparent !important; color: #1C1A17 !important; box-shadow: none !important;
   display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
-  transition: color .15s;
+  transition: color .15s, opacity .15s;
 }
-body.bielstein-theme .card-pager button.pager-arrow:hover:not(:disabled) { color: #1C1A17 !important; }
-body.bielstein-theme .card-pager button.pager-arrow:disabled { opacity: .22; cursor: default; }
-body.bielstein-theme .card-pager button.pager-arrow svg { width: 16px !important; height: 16px !important; }
+body.bielstein-theme .card-pager button.pager-arrow:hover:not(:disabled) { color: #FF5A36 !important; }
+body.bielstein-theme .card-pager button.pager-arrow:disabled { opacity: .28; cursor: default; }
+body.bielstein-theme .card-pager button.pager-arrow svg { width: 20px !important; height: 20px !important; }
 
 /* ── FUSSZEILE (Vorlage) ── */
 body.bielstein-theme .site-footer {
