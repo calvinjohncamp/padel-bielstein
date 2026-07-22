@@ -416,7 +416,16 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 /* ■■ WERTKARTEN-TAB: zwei Spalten – links kaufen, rechts meine Karte(n) ■■ */
 .gutschein-layout { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
-.gutschein-buy { flex: 1 1 380px; margin-bottom: 0; }
+.gutschein-left { flex: 1 1 380px; min-width: 0; }
+.gutschein-buy { margin-bottom: 0; }
+/* Abo-Platzierung: Querformat unterhalb des Kaufbereichs NUR im breiten
+   Desktop-Layout und nur, wenn Guthabenkarten vorhanden sind (Klasse
+   wk-has-cards wird in loadMyCards gesetzt). Sonst Hochformat rechts. */
+#aboCardHostWide { display: none; }
+@media (min-width: 860px) {
+  #modeGutscheine.wk-has-cards #aboCardHostWide { display: block; }
+  #modeGutscheine.wk-has-cards #aboCardHost { display: none; }
+}
 /* rechte Spalte im Hochformat, wie das Kalender-Vorbild */
 .gutschein-mine { flex: 0 1 320px; min-width: 260px; }
 /* mehrere eigene Karten werden untereinander gestapelt */
@@ -1299,7 +1308,8 @@ main {
 
     <div class="gutschein-layout">
 
-      <!-- LINKS: Kaufen -->
+      <!-- LINKS: Kaufen + (nur breites Layout) Abo im Querformat darunter -->
+      <div class="gutschein-left">
       <div class="play-card gutschein-buy">
         <div class="play-card-title">◆ Spielguthaben kaufen</div>
         <div class="form-hint" style="margin-bottom:16px;">Spielguthaben für dich selbst oder als Geschenkkarte. Der Betrag wird später flexibel mit echten Buchungspreisen verrechnet.</div>
@@ -1345,15 +1355,19 @@ main {
         </div>
 
         <button class="book-btn visible" style="width:100%;position:static;" onclick="confirmCardPurchase()">Wertkarte kaufen &amp; bezahlen →</button>
-
-        <!-- Abo-Karte(n) im Querformat, exakt so breit wie der Kaufbereich.
-             Wird nur befuellt, wenn ein aktives Jahresabo vorliegt. -->
-        <div id="aboCardHost"></div>
       </div>
 
-      <!-- RECHTS: Meine Karten (Hochformat) -->
+      <!-- Abo im Querformat: beige, sauber getrennt unterhalb des weißen
+           Kaufbereichs. Sichtbar nur im breiten Layout UND wenn Guthabenkarten
+           existieren (sonst Hochformat rechts). -->
+      <div id="aboCardHostWide"></div>
+      </div>
+
+      <!-- RECHTS: Meine Karten (Hochformat). Zuerst ggf. das Jahresabo (gleiches
+           Kartensystem wie die Guthabenkarten), darunter die Guthabenkarten. -->
       <div class="gutschein-mine" id="myCardsSection" style="display:none;">
         <div class="play-card-title" style="margin-bottom:12px;">◆ Meine Wertkarten</div>
+        <div id="aboCardHost"></div>
         <div id="myCardsList">
           <div class="play-empty" style="padding:24px 0;">
             <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
@@ -5780,12 +5794,15 @@ async function claimReceivedValueCards() {
 async function loadMyCards() {
   const section = document.getElementById('myCardsSection');
   const list = document.getElementById('myCardsList');
-  if (!currentUser) { section.style.display = 'none'; return; }
+  const mode = document.getElementById('modeGutscheine');
+  const setHasCards = (on) => { if (mode) mode.classList.toggle('wk-has-cards', !!on); };
+  if (!currentUser) { section.style.display = 'none'; setHasCards(false); return; }
   section.style.display = 'block';
   list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Wird geladen …</div></div>`;
   await fetchMyCards();
   if (!myCardsData.length) {
-    list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Noch keine Karte vorhanden.</div></div>`;
+    list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Noch keine Guthabenkarte vorhanden.</div></div>`;
+    setHasCards(false);
     return;
   }
   // Reihenfolge: die Karte, von der GERADE abgebucht wird, gehoert nach oben.
@@ -5803,10 +5820,12 @@ async function loadMyCards() {
 
   if (!visible.length) {
     list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Alle Wertkarten sind aufgebraucht. Neue Karte oben kaufen.</div></div>`;
+    setHasCards(false);
     updateBalanceMeter();
     return;
   }
 
+  setHasCards(true);
   list.innerHTML = `<div class="mycards-stack">` + visible.map(e =>
     `<div onclick="openLoyaltyCard(${e.idx})" style="cursor:pointer;">${anyCardHTML(e.card)}</div>`
   ).join('') + `</div>`;
@@ -5817,30 +5836,38 @@ async function loadMyCards() {
 // Jahresabo als eigenes, wertiges Objekt - nicht als Textzeile.
 // Der Verlaengern-Knopf ist bewusst noch ohne Funktion (folgt spaeter).
 async function renderAboCard() {
-  const host = document.getElementById('aboCardHost');
-  if (!host) return;
-  if (!currentUser) { host.innerHTML = ''; return; }
+  const hostP = document.getElementById('aboCardHost');      // Hochformat (rechte Spalte / mobil)
+  const hostW = document.getElementById('aboCardHostWide');  // Querformat (Desktop, unter dem Kaufbereich)
+  if (!hostP && !hostW) return;
+  const clear = () => { if (hostP) hostP.innerHTML = ''; if (hostW) hostW.innerHTML = ''; };
+  if (!currentUser) { clear(); return; }
   let abos = [];
   try {
     abos = await loadActiveAbos();
   } catch (e) {
     console.warn('Abo laden fehlgeschlagen', e);
-    host.innerHTML = '';
+    clear();
     return;
   }
-  if (!abos.length) { host.innerHTML = ''; return; }
+  if (!abos.length) { clear(); return; }
 
-  // Inhaber wie auf den Wertkarten - macht die Karte persoenlicher.
-  const holderName  = esc(currentProfile?.full_name) || '—';
-  const holderMail  = esc(currentProfile?.email || currentUser?.email) || '—';
+  const btnRow = `<div class="abo-btn-row">
+      <button class="abo-renew-btn" type="button" onclick="aboRenew()">Abo verlängern</button>
+      <button class="abo-renew-btn" type="button" onclick="aboNew()">Zusätzliches Abo buchen</button>
+    </div>`;
 
-  host.innerHTML = abos.map(a => aboCardMarkup(a, holderName, holderMail)).join('');
+  // Hochformat: EXAKT dasselbe Kartensystem wie die Guthabenkarten.
+  if (hostP) hostP.innerHTML = abos.map(a => aboAccountCardHTML(a)).join('') + btnRow;
+
+  // Querformat: beige Karte unter dem weißen Kaufbereich (nur breites Layout).
+  const holderName = esc(currentProfile?.full_name) || '—';
+  const holderMail = esc(currentProfile?.email || currentUser?.email) || '—';
+  if (hostW) hostW.innerHTML = abos.map(a => aboWideCardHTML(a, holderName, holderMail)).join('') + btnRow;
 }
 
-// Abo-Wertkarte im WERTKARTEN-Bereich (Querformat). Header: "Dein exklusives"
-// + "JAHRESABO" (Versalien, orange) + dominant der Wochentag; unten links/rechts
-// wie gehabt. Zwei Buttons: verlängern (folgt) und neu abschließen (Abobuchung).
-function aboCardMarkup(a, holderName, holderMail) {
+// Abo im Querformat (nur Desktop): "Dein exklusives / JAHRESABO / Wochentag",
+// Inhaber, unten links Gültigkeit, rechts der feste Termin.
+function aboWideCardHTML(a, holderName, holderMail) {
   const from = `${String(a.hour_start).padStart(2,'0')}:00`;
   const to   = `${String(a.hour_start + a.duration).padStart(2,'0')}:00`;
   const day  = (WDNAMES[a.weekday] || '') + 's';
@@ -5864,10 +5891,6 @@ function aboCardMarkup(a, holderName, holderMail) {
             von ${from} – ${to} Uhr auf Court ${a.court}</div>
         </div>
       </div>
-    </div>
-    <div class="abo-btn-row">
-      <button class="abo-renew-btn" type="button" onclick="aboRenew()">Abo verlängern</button>
-      <button class="abo-renew-btn" type="button" onclick="aboNew()">Zusätzliches Abo buchen</button>
     </div>`;
 }
 
@@ -6995,17 +7018,17 @@ body.bielstein-theme .abo-col-value {
   font-family: "Space Grotesk","Arial Narrow",sans-serif;
   font-weight: 700; font-size: 15px; line-height: 1.45;
 }
-/* Zwei dezente Buttons nebeneinander: verlängern | neu abschließen */
-body.bielstein-theme .abo-btn-row { display: flex; gap: 10px; margin-top: 12px; }
+/* Zwei dezente Beige/Braun-Buttons nebeneinander: verlängern | zusätzlich buchen */
+body.bielstein-theme .abo-btn-row { display: flex; gap: 10px; margin-top: 12px; margin-bottom: 10px; }
 body.bielstein-theme .abo-renew-btn {
-  flex: 1 1 0; margin-top: 0; padding: 14px 12px;
-  border: 1.5px solid #D9CFBF; border-radius: 12px;
-  background: transparent; color: #1C1A17; cursor: pointer;
+  flex: 1 1 0; margin-top: 0; padding: 13px 12px;
+  border: 1px solid #E2DACB; border-radius: 12px;
+  background: #EFE9DC; color: #57534D; cursor: pointer;
   font-family: "Space Grotesk","Arial Narrow",sans-serif;
-  font-weight: 700; font-size: 13.5px; letter-spacing: 0.02em;
+  font-weight: 700; font-size: 13px; letter-spacing: 0.02em;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-body.bielstein-theme .abo-renew-btn:hover { border-color: #1C1A17; }
+body.bielstein-theme .abo-renew-btn:hover { background: #E2DACB; color: #1C1A17; }
 /* Auf schmalen Screens untereinander statt nebeneinander */
 @media (max-width: 560px) {
   body.bielstein-theme .abo-cols { flex-direction: column; gap: 14px; }
