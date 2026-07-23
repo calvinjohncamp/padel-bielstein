@@ -1438,7 +1438,7 @@ main {
     <div id="playLoggedIn" style="display:none;">
 
       <!-- Meine heutigen Buchungen -->
-      <div class="play-card">
+      <div class="play-card today-bookings-card" id="todayBookingsCard">
         <div class="play-card-title">▶ Heutige Buchungen</div>
         <div id="playBookingsList">
           <div class="play-empty" style="padding:24px 0;">
@@ -1471,16 +1471,9 @@ main {
         </div>
       </div>
 
-      <!-- Letzte Buchung: Einstieg für die Wetterausfall-Meldung.
-           Erscheint nur, wenn eine bezahlte Buchung begonnen hat und ihr
-           Ende weniger als 24 h zurückliegt (= Meldefrist der Regelkarte). -->
-      <div class="play-card" id="weatherReportCard" style="display:none;margin-top:14px;">
-        <div class="play-card-title">◆ Letzte Buchung</div>
-        <div id="weatherReportContent"></div>
-      </div>
-
-      <!-- Meine Buchungen (früher eigener Tab, jetzt hier integriert) -->
-      <div class="play-card" style="margin-top:14px;">
+      <!-- Alle kommenden Termine in einer gemeinsamen chronologischen Liste:
+           Einzelbuchungen und jeweils der nächste Termin eines Jahresabos. -->
+      <div class="play-card upcoming-bookings-card" id="upcomingBookingsCard" style="margin-top:14px;">
         <div class="play-card-title">■ Demnächst</div>
         <div id="mySingleBookingsList">
           <div class="play-empty" style="padding:24px 0;">
@@ -1488,22 +1481,23 @@ main {
           </div>
         </div>
       </div>
-      <div class="play-card" style="margin-top:14px;">
-        <div class="play-card-title">⭐ Aktive Jahresabos</div>
-        <div id="myAbosList">
-          <div class="play-empty" style="padding:24px 0;">
-            <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Historie: abgearbeitete Einzelbuchungen inkl. Wetterausfall-Status.
-           Wird portionsweise geladen (10 Stück), ältere auf Knopfdruck. -->
-      <div class="play-card" id="myHistoryCard" style="display:none;margin-top:14px;">
-        <div class="play-card-title">■ Historie</div>
-        <div id="myHistoryList"></div>
-        <button type="button" class="history-more-btn" id="historyMoreBtn" style="display:none;" onclick="loadMoreHistory()">Ältere anzeigen</button>
-      </div>
+      <section class="play-history-section" aria-labelledby="playHistoryTitle">
+        <div class="play-card-title play-history-title" id="playHistoryTitle">■ Historie</div>
+
+        <!-- Die letzte meldbare Buchung bleibt bis 24 h nach Spielende optisch
+             hervorgehoben und ist zugleich Einstieg in die Wettermeldung. -->
+        <div class="play-card recent-booking-card" id="weatherReportCard" style="display:none;">
+          <div class="play-card-title">◆ Letzte Buchung</div>
+          <div id="weatherReportContent"></div>
+        </div>
+
+        <!-- Ältere, vollständig abgearbeitete Einzelbuchungen. -->
+        <div class="play-card history-archive-card" id="myHistoryCard" style="display:none;">
+          <div id="myHistoryList"></div>
+          <button type="button" class="history-more-btn" id="historyMoreBtn" style="display:none;" onclick="loadMoreHistory()">Ältere anzeigen</button>
+        </div>
+      </section>
 
       <!-- Türprotokoll -->
       <div class="play-card" id="doorLogCard" style="display:none;">
@@ -2639,15 +2633,15 @@ body.bielstein-theme #tabPlay:not(.active) {
   <footer class="site-footer">
     <div class="site-footer-left">
       <a href="https://tfbielstein.de" target="_blank">Tennisfreunde Bielstein e.V. →</a>
-      <a href="#impressum" style="margin-left:14px;" onclick="event.preventDefault(); openCourtRules('impressum');">Impressum</a>
-      <a href="#datenschutz" style="margin-left:14px;" onclick="event.preventDefault(); openCourtRules('privacy');">Datenschutz</a>
-      <a href="#agb" style="margin-left:14px;" onclick="event.preventDefault(); openCourtRules('agb');">AGB</a>
     </div>
     <div class="site-footer-center">
-      <button class="admin-footer-link" id="adminFooterBtn" onclick="curMode==='admin' ? setMode('book') : setMode('admin')">⚙ Admin</button>
+      <a href="#impressum" onclick="event.preventDefault(); openCourtRules('impressum');">Impressum</a>
+      <a href="#datenschutz" onclick="event.preventDefault(); openCourtRules('privacy');">Datenschutz</a>
+      <a href="#agb" onclick="event.preventDefault(); openCourtRules('agb');">AGB</a>
     </div>
     <div class="site-footer-right">
-      Padel Bielstein<br>Jahnstraße 15 · 51674 Wiehl-Bielstein
+      <div>Padel Bielstein<br>Jahnstraße 15 · 51674 Wiehl-Bielstein</div>
+      <button class="admin-footer-link" id="adminFooterBtn" onclick="curMode==='admin' ? setMode('book') : setMode('admin')">⚙ Admin</button>
     </div>
   </footer>
 </main>
@@ -3959,14 +3953,32 @@ async function loadActiveAbos() {
   return data || [];
 }
 
-// Füllt die Listen „Demnächst" (Einzelbuchungen) und „Aktive Jahresabos".
-// Sitzen jetzt im Bereich „Jetzt spielen" (früher eigener Tab „Meine Buchungen").
+function localISODate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// Ermittelt für ein Abo genau den nächsten Kalendereintrag nach heute.
+// Ein heutiger Abo-Termin steht bereits oben bei „Heutige Buchungen" und wird
+// deshalb hier bewusst erst für die folgende Woche berücksichtigt.
+function nextAboDateAfter(abo, afterDate) {
+  const firstPossible = new Date(afterDate + 'T12:00:00');
+  firstPossible.setDate(firstPossible.getDate() + 1);
+  if (abo.starts_on) {
+    const starts = new Date(abo.starts_on + 'T12:00:00');
+    if (starts > firstPossible) firstPossible.setTime(starts.getTime());
+  }
+  const delta = (Number(abo.weekday) - firstPossible.getDay() + 7) % 7;
+  firstPossible.setDate(firstPossible.getDate() + delta);
+  const result = localISODate(firstPossible);
+  return abo.ends_on && result > abo.ends_on ? null : result;
+}
+
+// Füllt „Demnächst" als EINE gemeinsame chronologische Liste. Einzelbuchungen
+// und der jeweils nächste Abo-Termin haben dieselbe visuelle Wichtigkeit.
 async function renderMyBookingsLists() {
   const bookingsEl = document.getElementById('mySingleBookingsList');
-  const abosEl = document.getElementById('myAbosList');
-  if (!bookingsEl || !abosEl || !currentUser) return;
+  if (!bookingsEl || !currentUser) return;
   bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Buchungen werden geladen …</div></div>`;
-  abosEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Abos werden geladen …</div></div>`;
 
   let bookings, abos;
   try {
@@ -3974,41 +3986,45 @@ async function renderMyBookingsLists() {
   } catch(e) {
     const safeMessage = esc(e?.message || 'Unbekannter Datenbankfehler');
     bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;color:#d64545;">Buchungen konnten nicht geladen werden:<br>${safeMessage}</div>`;
-    abosEl.innerHTML = `<div class="play-empty" style="padding:24px 0;color:#d64545;">Abos konnten nicht geladen werden:<br>${safeMessage}</div>`;
     console.error('Meine Buchungen laden fehlgeschlagen:', e);
     return;
   }
 
-  if (!bookings.length) {
-    bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Aktuell keine Buchungen</div></div>`;
-  } else {
-    bookingsEl.innerHTML = bookings.map(b => {
-      const dateStr = new Date(b.date+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
-      const timeStr = `${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start+b.duration).padStart(2,'0')}:00`;
-      const price = b.price_paid_cents ? (b.price_paid_cents/100).toFixed(2)+' €' : '';
-      const pending = b.status === 'pending';
-      return `<div class="closure-item my-booking">
-        <div style="flex:1;">
-          <div class="closure-item-date">${dateStr} · ${timeStr} Uhr</div>
-          <div class="closure-item-note">Court #${b.court}${price ? ' · '+price : ''}${pending ? ' · Zahlung wird bestätigt …' : ''}</div>
-        </div>
-      </div>`;
-    }).join('');
+  const today = todayStr();
+  const upcoming = bookings
+    .filter(b => b.date > today)
+    .map(b => ({ ...b, kind: 'single' }));
+
+  abos.forEach(a => {
+    const nextDate = nextAboDateAfter(a, today);
+    if (nextDate) upcoming.push({
+      id: a.id, court: a.court, date: nextDate, hour_start: a.hour_start,
+      duration: a.duration, ends_on: a.ends_on, status: a.status, kind: 'abo'
+    });
+  });
+
+  upcoming.sort((a,b) => a.date.localeCompare(b.date) || Number(a.hour_start) - Number(b.hour_start));
+
+  if (!upcoming.length) {
+    bookingsEl.innerHTML = `<div class="play-empty upcoming-empty"><div>Aktuell keine kommenden Termine</div></div>`;
+    return;
   }
 
-  if (!abos.length) {
-    abosEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Kein aktives Jahresabo</div></div>`;
-  } else {
-    abosEl.innerHTML = abos.map(a => {
-      const timeStr = `${String(a.hour_start).padStart(2,'0')}:00–${String(a.hour_start+a.duration).padStart(2,'0')}:00`;
-      return `<div class="closure-item my-booking">
-        <div style="flex:1;">
-          <div class="closure-item-date">${WDNAMES[a.weekday]}s · ${timeStr} Uhr</div>
-          <div class="closure-item-note">Court #${a.court} · gültig bis ${formatDateDE(a.ends_on)}</div>
-        </div>
-      </div>`;
-    }).join('');
-  }
+  bookingsEl.innerHTML = upcoming.map(item => {
+    const dateStr = new Date(item.date+'T12:00:00').toLocaleDateString('de-DE',
+      {weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+    const timeStr = `${String(item.hour_start).padStart(2,'0')}:00–${String(Number(item.hour_start)+Number(item.duration)).padStart(2,'0')}:00`;
+    const isAbo = item.kind === 'abo';
+    const price = !isAbo && item.price_paid_cents ? weatherFmtEUR(item.price_paid_cents) : '';
+    const pending = item.status === 'pending';
+    return `<div class="upcoming-item">
+      <div class="upcoming-item-main">
+        <div class="upcoming-item-date">${dateStr} · ${timeStr} Uhr</div>
+        <div class="upcoming-item-note">Court #${item.court}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
+      </div>
+      <span class="upcoming-kind">${isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>
+    </div>`;
+  }).join('');
 }
 
 // ============================================================
@@ -4246,7 +4262,9 @@ async function renderMyHistory(reset) {
   const now = new Date();
   const done = rows.filter(b => {
     const end = new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`).getTime() + b.duration * 3600 * 1000;
-    return end <= now.getTime();
+    // Die ersten 24 Stunden nach Spielende gehören zur farblich
+    // hervorgehobenen Karte „Letzte Buchung", nicht ins graue Archiv.
+    return end + 24 * 3600 * 1000 <= now.getTime();
   });
 
   // Wettermeldungen zu dieser Portion holen (RLS: nur die eigenen)
@@ -4412,7 +4430,7 @@ async function renderPlaySection() {
   doorBtns.style.display = 'block';
 
   renderDoorLog();
-  renderMyBookingsLists();   // „Demnächst" + „Aktive Jahresabos" unter den Türen
+  renderMyBookingsLists();   // gemeinsames chronologisches „Demnächst" unter den Türen
   renderWeatherReportCard(); // „Letzte Buchung" mit Wetterausfall-Meldung
   renderMyHistory(true);     // Historie: abgearbeitete Buchungen inkl. Wetterstatus
 }
@@ -8428,6 +8446,8 @@ body.bielstein-theme .card-pager button.pager-arrow svg { width: 20px !important
 body.bielstein-theme .site-footer {
   border-top: 1.5px solid #E2DACB !important;
   padding: 24px 0 28px !important; margin-top: 48px !important;
+  grid-template-columns: minmax(210px,1fr) auto minmax(250px,1fr) !important;
+  column-gap: clamp(28px,5vw,72px) !important;
 }
 body.bielstein-theme .site-footer-right,
 body.bielstein-theme .site-footer-center {
@@ -8437,6 +8457,36 @@ body.bielstein-theme .site-footer-center {
 }
 body.bielstein-theme .site-footer-left a { color: #7A7368 !important; font-size: 0.75rem !important; }
 body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
+body.bielstein-theme .site-footer-center {
+  display: flex; align-items: center; justify-content: center; gap: 22px;
+  white-space: nowrap;
+}
+body.bielstein-theme .site-footer-center a {
+  color: #7A7368; text-decoration: none; font-size: 12px;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+body.bielstein-theme .site-footer-center a:hover { color: #1C1A17; }
+body.bielstein-theme .site-footer-right {
+  display: flex; align-items: center; justify-content: flex-end; gap: 24px;
+}
+body.bielstein-theme .site-footer-right .admin-footer-link {
+  flex: 0 0 auto; color: #9A9384 !important;
+}
+@media (max-width: 800px) {
+  body.bielstein-theme .site-footer {
+    grid-template-columns: 1fr 1fr !important; row-gap: 22px !important;
+  }
+  body.bielstein-theme .site-footer-center {
+    grid-column: 1 / -1; grid-row: 1; order: initial; gap: 18px;
+  }
+  body.bielstein-theme .site-footer-left { grid-column: 1; grid-row: 2; }
+  body.bielstein-theme .site-footer-right { grid-column: 2; grid-row: 2; gap: 14px; }
+}
+@media (max-width: 520px) {
+  body.bielstein-theme .site-footer-center { gap: 14px; }
+  body.bielstein-theme .site-footer-center a { font-size: 10.5px; }
+  body.bielstein-theme .site-footer-right { align-items: flex-end; flex-direction: column; }
+}
 
 /* ── COURT-REGELN: mittiger Header-Button + Wertkarten-Overlay ── */
 body.bielstein-theme .court-rules-trigger {
@@ -8563,8 +8613,70 @@ body.bielstein-theme .court-rules-glyph::after {
 .history-badge { font: 600 11.5px/1.4 "Manrope",sans-serif; text-align: right; white-space: nowrap; margin-left: 10px; flex-shrink: 0; }
 .history-more-btn { display: block; width: 100%; margin-top: 12px; padding: 11px; border: 1.5px solid #E2DACB; border-radius: 10px; background: transparent; color: #7A7368; font: 700 12.5px "Space Grotesk",sans-serif; letter-spacing: .05em; text-transform: uppercase; cursor: pointer; transition: border-color .15s, color .15s; }
 .history-more-btn:hover, .history-more-btn:focus-visible { border-color: #FF5A36; color: #FF5A36; outline: none; }
+
+/* --- Jetzt spielen: klare zeitliche Gliederung --- */
+body.bielstein-theme #todayBookingsCard {
+  padding: 15px 20px !important;
+}
+body.bielstein-theme #todayBookingsCard .play-empty {
+  padding: 8px 0 7px !important;
+}
+body.bielstein-theme #todayBookingsCard .play-booking-item {
+  padding: 10px 0 !important;
+}
+
+body.bielstein-theme #upcomingBookingsCard {
+  background: #EFE9DC !important;
+  box-shadow: none !important;
+}
+.upcoming-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 15px 16px; margin-top: 9px;
+  border: 1px solid #D9CFBF; border-radius: 12px;
+  background: #F6F1E7; color: #1C1A17;
+}
+.upcoming-item-main { min-width: 0; }
+.upcoming-item-date {
+  font: 700 15px/1.35 "Space Grotesk",sans-serif; color: #1C1A17;
+}
+.upcoming-item-note {
+  margin-top: 4px; font: 500 13px/1.4 "Manrope",sans-serif; color: #7A7368;
+}
+.upcoming-kind {
+  flex: 0 0 auto; padding: 5px 9px; border-radius: 999px;
+  background: #FFFFFF; color: #7A7368;
+  font: 700 10.5px/1 "Space Grotesk",sans-serif; letter-spacing: .04em;
+  text-transform: uppercase;
+}
+body.bielstein-theme #upcomingBookingsCard .upcoming-empty {
+  padding: 14px 0 !important; color: #7A7368 !important;
+}
+
+.play-history-section { margin-top: 28px; }
+body.bielstein-theme .play-history-title {
+  margin: 0 0 12px 2px !important;
+}
+body.bielstein-theme #weatherReportCard {
+  margin: 0 0 12px !important;
+  background: #FDEAE3 !important;
+  border: 1px solid #F1C8B9 !important;
+  box-shadow: none !important;
+}
+body.bielstein-theme #weatherReportCard .closure-item.my-booking {
+  background: rgba(255,255,255,.72) !important;
+  border-color: #F1C8B9 !important;
+}
+body.bielstein-theme #myHistoryCard {
+  margin: 0 !important; background: #E8E4DD !important; box-shadow: none !important;
+}
+body.bielstein-theme #myHistoryCard .closure-item.my-booking {
+  background: rgba(255,255,255,.55) !important;
+  border-color: #D7D1C8 !important;
+}
 @media (max-width: 560px) {
   .history-badge { white-space: normal; max-width: 42%; }
+  .upcoming-item { align-items: flex-start; gap: 10px; padding: 13px; }
+  .upcoming-kind { font-size: 9.5px; }
 }
 
 @media (max-width: 720px) {
