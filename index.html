@@ -1365,6 +1365,14 @@ main {
         </div>
       </div>
 
+      <!-- Historie: abgearbeitete Einzelbuchungen inkl. Wetterausfall-Status.
+           Wird portionsweise geladen (10 Stück), ältere auf Knopfdruck. -->
+      <div class="play-card" id="myHistoryCard" style="display:none;margin-top:14px;">
+        <div class="play-card-title">■ Historie</div>
+        <div id="myHistoryList"></div>
+        <button type="button" class="history-more-btn" id="historyMoreBtn" style="display:none;" onclick="loadMoreHistory()">Ältere anzeigen</button>
+      </div>
+
       <!-- Türprotokoll -->
       <div class="play-card" id="doorLogCard" style="display:none;">
         <div class="play-card-title">■ Türprotokoll heute</div>
@@ -4040,6 +4048,105 @@ async function submitWeatherReport() {
   });
 })();
 
+// ============================================================
+//  HISTORIE – abgearbeitete Einzelbuchungen unter „Jetzt spielen".
+//  Zeigt zu jeder vergangenen Buchung, ob sie stattgefunden hat oder
+//  (teilweise) wetterbedingt gutgeschrieben wurde. Wird portionsweise
+//  geladen: erst 10, ältere nur auf Knopfdruck - so bleibt die Seite
+//  auch bei vielen Nutzern und langer Historie schnell, weil jeder
+//  Nutzer immer nur die eigenen Zeilen aus der Datenbank holt.
+// ============================================================
+const HISTORY_PAGE = 10;
+let historyOffset = 0;
+
+async function renderMyHistory(reset) {
+  const card = document.getElementById('myHistoryCard');
+  const list = document.getElementById('myHistoryList');
+  const more = document.getElementById('historyMoreBtn');
+  if (!card || !list || !currentUser) return;
+  if (reset) { historyOffset = 0; list.innerHTML = ''; card.style.display = 'none'; more.style.display = 'none'; }
+
+  let userId;
+  try { userId = await dataUserId(); } catch(e) { return; }
+  if (!userId) return;
+
+  // Eine Portion vergangener Buchungen laden (jüngste zuerst).
+  // date <= heute; ob die Spielzeit wirklich vorbei ist, filtert das JS,
+  // damit heutige, noch laufende Buchungen nicht in der Historie landen.
+  let rows = [];
+  try {
+    const { data, error } = await sb
+      .from('bookings')
+      .select('id,court,date,hour_start,duration,price_paid_cents,status')
+      .eq('user_id', userId)
+      .lte('date', todayStr())
+      .in('status', ['paid', 'active'])
+      .order('date', { ascending: false })
+      .order('hour_start', { ascending: false })
+      .range(historyOffset, historyOffset + HISTORY_PAGE - 1);
+    if (error) throw error;
+    rows = data || [];
+  } catch(e) { console.error('Historie laden fehlgeschlagen', e); return; }
+
+  const now = new Date();
+  const done = rows.filter(b => {
+    const end = new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`).getTime() + b.duration * 3600 * 1000;
+    return end <= now.getTime();
+  });
+
+  // Wettermeldungen zu dieser Portion holen (RLS: nur die eigenen)
+  let reportsByBooking = {};
+  if (done.length) {
+    try {
+      const { data } = await sb
+        .from('weather_reports')
+        .select('booking_id,percent,status,credit_cents')
+        .in('booking_id', done.map(b => b.id));
+      (data || []).forEach(r => { reportsByBooking[r.booking_id] = r; });
+    } catch(e) { console.error('Historie: Meldungen laden fehlgeschlagen', e); }
+  }
+
+  const html = done.map(b => {
+    const dateStr = new Date(b.date + 'T12:00:00').toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', year:'2-digit'});
+    const timeStr = `${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start + b.duration).padStart(2,'0')}:00`;
+    const price = b.price_paid_cents ? weatherFmtEUR(b.price_paid_cents) : '';
+    const r = reportsByBooking[b.id];
+    let badge;
+    if (!r) {
+      badge = `<span class="history-badge" style="color:#7A7368;">✓ gespielt</span>`;
+    } else if (r.status === 'pending') {
+      badge = `<span class="history-badge" style="color:#B8402C;">⏳ Wettermeldung wird geprüft</span>`;
+    } else if (r.status === 'approved') {
+      badge = r.percent === 100
+        ? `<span class="history-badge" style="color:#1F8A5F;">🌧 wetterbedingt ausgefallen · +${weatherFmtEUR(r.credit_cents || 0)}</span>`
+        : `<span class="history-badge" style="color:#1F8A5F;">🌧 ${r.percent} % gutgeschrieben · +${weatherFmtEUR(r.credit_cents || 0)}</span>`;
+    } else {
+      badge = `<span class="history-badge" style="color:#7A7368;">Wettermeldung nicht bestätigt</span>`;
+    }
+    return `<div class="closure-item my-booking">
+      <div style="flex:1;">
+        <div class="closure-item-date">${dateStr} · ${timeStr} Uhr</div>
+        <div class="closure-item-note">Court #${b.court}${price ? ' · ' + price : ''}</div>
+      </div>
+      ${badge}
+    </div>`;
+  }).join('');
+
+  if (reset && !done.length && rows.length < HISTORY_PAGE) return;   // noch gar keine Vergangenheit -> Karte bleibt unsichtbar
+
+  list.insertAdjacentHTML('beforeend', html);
+  card.style.display = 'block';
+  if (!list.children.length) {
+    list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Noch keine vergangenen Buchungen</div></div>`;
+  }
+
+  historyOffset += rows.length;
+  // Gibt es womöglich weitere? Nur dann den Knopf zeigen.
+  more.style.display = rows.length === HISTORY_PAGE ? 'block' : 'none';
+}
+
+function loadMoreHistory() { renderMyHistory(false); }
+
 // Prüft ob eine Buchung gerade aktiv ist (±15 Min)
 function getActiveBooking(bookings) {
   const now = new Date();
@@ -4152,6 +4259,7 @@ async function renderPlaySection() {
   renderDoorLog();
   renderMyBookingsLists();   // „Demnächst" + „Aktive Jahresabos" unter den Türen
   renderWeatherReportCard(); // „Letzte Buchung" mit Wetterausfall-Meldung
+  renderMyHistory(true);     // Historie: abgearbeitete Buchungen inkl. Wetterstatus
 }
 
 // Klick-Demo für die Türen: der Button reagiert sichtbar, es passiert aber noch
@@ -8134,6 +8242,14 @@ body.bielstein-theme .court-rules-glyph::after {
 .weather-report-btn:hover, .weather-report-btn:focus-visible { background: #E8431E; outline: none; }
 .weather-report-hint { margin-top: 9px; text-align: center; font: 500 12px "Manrope",sans-serif; color: #7A7368; }
 .weather-status-note { margin-top: 10px; font: 500 13px/1.55 "Manrope",sans-serif; }
+
+/* --- Historie unter „Jetzt spielen" --- */
+.history-badge { font: 600 11.5px/1.4 "Manrope",sans-serif; text-align: right; white-space: nowrap; margin-left: 10px; flex-shrink: 0; }
+.history-more-btn { display: block; width: 100%; margin-top: 12px; padding: 11px; border: 1.5px solid #E2DACB; border-radius: 10px; background: transparent; color: #7A7368; font: 700 12.5px "Space Grotesk",sans-serif; letter-spacing: .05em; text-transform: uppercase; cursor: pointer; transition: border-color .15s, color .15s; }
+.history-more-btn:hover, .history-more-btn:focus-visible { border-color: #FF5A36; color: #FF5A36; outline: none; }
+@media (max-width: 560px) {
+  .history-badge { white-space: normal; max-width: 42%; }
+}
 
 @media (max-width: 720px) {
   body.bielstein-theme .court-rules-trigger { width: 40px; height: 40px; }
