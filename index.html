@@ -1041,16 +1041,22 @@ main {
      Guthaben ist bezahltes Geld - es darf nie ohne ausdrueckliche
      Bestaetigung des Nutzers belastet werden. -->
 <div class="modal-overlay" id="creditConfirmModal">
-  <div class="modal">
-    <div class="modal-title">Zahlungsart wählen</div>
+  <div class="modal payment-choice-modal">
+    <div class="modal-title">Wie möchtest du bezahlen?</div>
     <div class="modal-sub" id="ccSub">—</div>
     <div class="cc-lines">
-      <div class="cc-line"><span>Buchung</span><span id="ccPrice">—</span></div>
-      <div class="cc-line"><span>Aktuelles Guthaben</span><span id="ccBalance">—</span></div>
-      <div class="cc-line cc-line-total"><span>Guthaben danach</span><span id="ccAfter">—</span></div>
+      <div class="cc-line"><span>Buchungsbetrag</span><span id="ccPrice">—</span></div>
+      <div class="cc-line"><span>Dein Spielguthaben</span><span id="ccBalance">—</span></div>
     </div>
-    <button class="modal-btn" id="ccOk">Guthaben verwenden →</button>
-    <button class="modal-btn cc-stripe" id="ccStripe">Kein Guthaben verwenden →</button>
+    <div class="cc-choice-label">Zahlungsart</div>
+    <button class="modal-btn cc-option cc-credit" id="ccOk">
+      <span class="cc-option-copy"><strong>Mit Spielguthaben</strong><small id="ccCreditDetail">—</small></span>
+      <span class="cc-option-mark" aria-hidden="true">→</span>
+    </button>
+    <button class="modal-btn cc-option cc-stripe" id="ccStripe">
+      <span class="cc-option-copy"><strong>Mit Karte bezahlen</strong><small id="ccStripeDetail">Sicher weiter zu Stripe</small></span>
+      <span class="cc-option-mark" aria-hidden="true">→</span>
+    </button>
     <button class="modal-btn cc-cancel" id="ccCancel">Abbrechen</button>
   </div>
 </div>
@@ -4622,15 +4628,15 @@ function askPaymentChoice(priceCents, balanceCents) {
     const rest  = priceCents - used;
 
     document.getElementById('ccSub').textContent = rest > 0
-      ? 'Du kannst dein Guthaben zuerst einsetzen und nur den Rest über Stripe bezahlen.'
-      : 'Dein Guthaben deckt die Buchung vollständig. Du kannst stattdessen trotzdem per Karte bezahlen.';
+      ? 'Dein Spielguthaben deckt einen Teil dieser Buchung.'
+      : 'Dein Spielguthaben reicht für die gesamte Buchung.';
     document.getElementById('ccPrice').textContent   = fmt(priceCents);
     document.getElementById('ccBalance').textContent = fmt(balanceCents);
-    document.getElementById('ccAfter').textContent   = fmt(after);
-    okBtn.textContent = rest > 0
-      ? `${fmt(used)} Guthaben verwenden →`
-      : 'Guthaben verwenden →';
-    stripeBtn.textContent = `Kein Guthaben verwenden · ${fmt(priceCents)} per Karte →`;
+    document.getElementById('ccCreditDetail').textContent = rest > 0
+      ? `${fmt(used)} einsetzen · ${fmt(rest)} anschließend per Karte`
+      : `${fmt(used)} einsetzen · ${fmt(after)} verbleiben`;
+    document.getElementById('ccStripeDetail').textContent =
+      `${fmt(priceCents)} sicher über Stripe bezahlen`;
 
     const close = (answer) => {
       modal.classList.remove('open');
@@ -7926,30 +7932,52 @@ body.bielstein-theme #adminWipe .wipe-result.warn { color: #B8402C; font-weight:
 
 /* ── GUTHABEN-BESTÄTIGUNG ── */
 body.bielstein-theme #creditConfirmModal .cc-lines {
-  margin: 18px 0 22px; border-top: 1px solid #E2DACB;
+  margin: 20px 0 22px; padding: 4px 14px;
+  border: 1px solid #E2DACB; border-radius: 12px; background: #FFFFFF;
 }
 body.bielstein-theme #creditConfirmModal .cc-line {
   display: flex; justify-content: space-between; align-items: baseline;
   padding: 11px 0; border-bottom: 1px solid #E2DACB;
   font-size: 14px; color: #7A7368;
 }
+body.bielstein-theme #creditConfirmModal .cc-line:last-child { border-bottom: 0; }
 body.bielstein-theme #creditConfirmModal .cc-line span:last-child {
   font-family: "Space Grotesk","Arial Narrow",sans-serif;
   font-weight: 700; color: #1C1A17;
 }
-body.bielstein-theme #creditConfirmModal .cc-line-total span { color: #1C1A17; font-weight: 700; }
-body.bielstein-theme #creditConfirmModal .cc-line-total span:last-child { color: #FF5A36; }
 body.bielstein-theme #creditConfirmModal .cc-cancel {
+  width: auto !important; display: block; margin: 13px auto 0 !important; padding: 6px 12px !important;
   background: transparent !important; color: #7A7368 !important;
-  border: 1.5px solid #E2DACB !important; margin-top: 10px;
+  border: 0 !important; box-shadow: none !important; font-size: 12.5px !important;
+  text-transform: none !important; letter-spacing: .02em !important;
+}
+body.bielstein-theme #creditConfirmModal .cc-cancel:hover { color: #1C1A17 !important; text-decoration: underline; }
+body.bielstein-theme #creditConfirmModal .cc-choice-label {
+  margin-bottom: 8px; color: #7A7368;
+  font: 700 10.5px/1 "Space Grotesk",sans-serif; letter-spacing: .12em; text-transform: uppercase;
+}
+body.bielstein-theme #creditConfirmModal .cc-option {
+  min-height: 68px; margin: 0 0 9px !important; padding: 13px 16px !important;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  border-radius: 13px !important; box-shadow: none !important; text-align: left;
+  text-transform: none !important; letter-spacing: 0 !important;
+}
+body.bielstein-theme #creditConfirmModal .cc-credit {
+  background: #FF5A36 !important; color: #1C1A17 !important; border: 1.5px solid #FF5A36 !important;
 }
 body.bielstein-theme #creditConfirmModal .cc-stripe {
-  background: #FFFFFF !important; color: #1C1A17 !important;
-  border: 1.5px solid #FF5A36 !important; box-shadow: none !important;
-  margin-top: 10px;
+  background: #FFFFFF !important; color: #1C1A17 !important; border: 1.5px solid #D9CFBF !important;
 }
-body.bielstein-theme #creditConfirmModal .cc-stripe:hover {
-  background: #FCE9E2 !important;
+body.bielstein-theme #creditConfirmModal .cc-stripe:hover { background: #F6F1E7 !important; border-color: #FF5A36 !important; }
+body.bielstein-theme #creditConfirmModal .cc-option-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+body.bielstein-theme #creditConfirmModal .cc-option-copy strong {
+  color: inherit; font: 700 15px/1.2 "Space Grotesk",sans-serif;
+}
+body.bielstein-theme #creditConfirmModal .cc-option-copy small {
+  color: inherit; opacity: .72; font: 600 11.5px/1.35 "Manrope",sans-serif;
+}
+body.bielstein-theme #creditConfirmModal .cc-option-mark {
+  flex: 0 0 auto; color: inherit; font: 600 20px/1 "Space Grotesk",sans-serif;
 }
 
 /* ── LEGENDE ── */
