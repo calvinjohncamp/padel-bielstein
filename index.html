@@ -1079,6 +1079,10 @@ main {
   <button class="appbar-brand" type="button" onclick="event.stopPropagation(); goHome();" aria-label="Zur Startseite">
     <span class="appbar-wordmark"><span class="wm-a">PADEL</span> <span class="wm-b">BIELSTEIN</span></span>
   </button>
+  <button class="court-rules-trigger" id="courtRulesTrigger" type="button"
+          onclick="event.stopPropagation(); openCourtRules();" aria-label="Court-Regeln öffnen" title="Court-Regeln">
+    <span class="court-rules-glyph" aria-hidden="true"></span>
+  </button>
   <div class="appbar-auth" id="appbarAuth">
     <button type="button" class="appbar-btn ghost" onclick="event.stopPropagation(); openModal('register');">Registrieren</button>
     <button type="button" class="appbar-btn" onclick="event.stopPropagation(); openModal('login');">Anmelden</button>
@@ -1089,6 +1093,72 @@ main {
     <span class="appbar-avatar" id="appbarAvatar"></span>
   </button>
 </header>
+
+<div class="court-rules-overlay" id="courtRulesOverlay" aria-hidden="true">
+  <article class="court-rules-card" role="dialog" aria-modal="true" aria-labelledby="courtRulesTitle">
+    <button class="court-rules-close" id="courtRulesClose" type="button" aria-label="Court-Regeln schließen">×</button>
+    <div class="court-rules-kicker" id="courtRulesTitle">Court-Regeln</div>
+
+    <section class="court-rules-section">
+      <h2>Fair Play</h2>
+      <ul>
+        <li>Betritt den Court nur mit sauberen Sportschuhen. Straßen- und Fußballschuhe bleiben draußen.</li>
+        <li>Nutze ausschließlich deine gebuchte Spielzeit und gib den Court pünktlich für die nächste Gruppe frei.</li>
+        <li>Essen, Kaugummi, Gläser und Glasflaschen gehören nicht auf die Anlage. Getränke bitte nur in bruchsicheren Flaschen mitnehmen.</li>
+        <li>Behandle Kunstrasen, Netz, Glas und Gitter mit Sorgfalt – Schläger bitte nicht gegen die Anlage werfen oder schlagen.</li>
+        <li>Nimm Bälle, Flaschen und Müll nach dem Match wieder mit.</li>
+        <li>Schließe beim Verlassen der Anlage die Tür.</li>
+        <li>Melde Schäden oder Gefahrenstellen bitte direkt über <button class="court-rules-link" type="button" id="courtRulesReport">unsere Meldefunktion</button>.</li>
+      </ul>
+    </section>
+
+    <section class="court-rules-section court-rules-weather">
+      <h2>Wind &amp; Wetter</h2>
+      <p>Unsere Outdoor-Courts sind grundsätzlich das ganze Jahr geöffnet – gespielt wird, solange Wetter und Platzverhältnisse ein sicheres Spiel zulassen.</p>
+      <p>Wir behalten die Wetterlage und unsere Courts im Blick. Müssen wir einen Court sperren, informieren wir dich über die App. Der Wert der ausgefallenen Spielzeit wird deinem Account automatisch als Guthaben gutgeschrieben.</p>
+      <p>Ist der Court bei deiner Ankunft wetterbedingt nicht bespielbar oder beginnt es während des Spiels zu regnen, müsst ihr nicht weiterspielen. Beendet das Match, sobald ein sicheres Spiel nicht mehr möglich ist, und meldet uns anschließend den tatsächlich ausgefallenen Anteil über die App:</p>
+      <div class="court-rules-path" aria-label="Meldeweg für einen Wetterausfall">
+        <div><strong>Jetzt spielen</strong></div>
+        <div><strong>Letzte Buchung</strong></div>
+        <div><strong>Wetterausfall melden</strong></div>
+      </div>
+      <p>Dort kannst du auswählen, welcher Anteil deiner gebuchten Spielzeit ausgefallen ist:</p>
+      <ul class="court-rules-percentages">
+        <li>25 % ausgefallen</li>
+        <li>50 % ausgefallen</li>
+        <li>75 % ausgefallen</li>
+        <li>100 % ausgefallen – ihr konntet gar nicht spielen</li>
+      </ul>
+      <p>Die Meldung ist bis 24 Stunden nach Ende der Spielzeit möglich. Wir gleichen sie mit unseren Wetter- und Platzdaten ab. Sollten wir feststellen, dass die Angaben nicht mit der tatsächlichen Spielzeit übereinstimmen, behalten wir uns eine abweichende Buchung vor. Wird der Ausfall bestätigt, schreiben wir dir den entsprechenden Buchungswert als Guthaben gut.</p>
+      <p><strong>Jahresabos:</strong> Abo-Termine sind von dieser Regelung ausgenommen. Das Wetterrisiko ist im Abopreis bereits berücksichtigt – wetterbedingt ausgefallene Abo-Termine werden deshalb nicht gutgeschrieben.</p>
+      <p class="court-rules-warning"><strong>Bei Gewitter gilt ohne Ausnahme:</strong> Spiel sofort beenden, Court verlassen und einen geschützten Ort aufsuchen.</p>
+      <p>Normaler Wind und niedrige Temperaturen allein gelten nicht als Wetterausfall. Bei Sturm, Schnee, Eis, Pfützen oder anderen unsicheren Platzverhältnissen sperren wir die Courts. Betroffene Buchungen werden automatisch gutgeschrieben.</p>
+    </section>
+  </article>
+</div>
+
+<!-- Wetterausfall-Dialog: gleiche Optik wie die Court-Regeln-Karte.
+     Geöffnet über die Karte „Letzte Buchung" im Bereich „Jetzt spielen". -->
+<div class="court-rules-overlay" id="weatherOverlay" aria-hidden="true">
+  <article class="court-rules-card weather-card" role="dialog" aria-modal="true" aria-labelledby="weatherOverlayTitle">
+    <button class="court-rules-close" id="weatherOverlayClose" type="button" aria-label="Meldung schließen" onclick="closeWeatherReport()">×</button>
+    <div class="court-rules-kicker" id="weatherOverlayTitle" style="font-size:29px;">Wetterausfall melden</div>
+    <p class="weather-dialog-booking" id="weatherDialogBooking">–</p>
+    <p style="font:500 14.5px/1.6 'Manrope',sans-serif;margin:0 0 6px;">Wie viel eurer Spielzeit ist ausgefallen?</p>
+    <div class="weather-pct-grid" id="weatherPctGrid">
+      <button type="button" class="weather-pct" data-pct="25" onclick="selectWeatherPercent(this)"><span class="pct-num">25 %</span><span class="pct-sub">ein Viertel ausgefallen</span></button>
+      <button type="button" class="weather-pct" data-pct="50" onclick="selectWeatherPercent(this)"><span class="pct-num">50 %</span><span class="pct-sub">die Hälfte ausgefallen</span></button>
+      <button type="button" class="weather-pct" data-pct="75" onclick="selectWeatherPercent(this)"><span class="pct-num">75 %</span><span class="pct-sub">drei Viertel ausgefallen</span></button>
+      <button type="button" class="weather-pct" data-pct="100" onclick="selectWeatherPercent(this)"><span class="pct-num">100 %</span><span class="pct-sub">ihr konntet gar nicht spielen</span></button>
+    </div>
+    <div class="weather-credit-box" id="weatherCreditBox">
+      <span style="font:500 12.5px 'Manrope',sans-serif;color:#7A7368;">Gutschrift nach Prüfung</span><br>
+      <span class="weather-credit-amount" id="weatherCreditAmount">–</span>
+    </div>
+    <button type="button" class="weather-submit" id="weatherSubmitBtn" disabled onclick="submitWeatherReport()">Meldung absenden</button>
+    <p style="font:500 12.5px/1.6 'Manrope',sans-serif;color:#7A7368;margin:14px 0 0;text-align:center;">Wir gleichen deine Meldung mit unseren Wetter- und Platzdaten ab. Nach Bestätigung wird der Betrag deinem Spielguthaben gutgeschrieben.</p>
+  </article>
+</div>
 <main>
   <!-- USER BAR -->
   <div class="user-bar" id="userBar">
@@ -1267,6 +1337,14 @@ main {
         <div class="door-note" id="doorNote">
           Türen öffnen sich ab 5 Minuten vor Spielbeginn. Beide Türen des gebuchten Courts sind bis spätestens 10 Minuten nach Spielende von außen zu schließen.
         </div>
+      </div>
+
+      <!-- Letzte Buchung: Einstieg für die Wetterausfall-Meldung.
+           Erscheint nur, wenn eine bezahlte Buchung begonnen hat und ihr
+           Ende weniger als 24 h zurückliegt (= Meldefrist der Regelkarte). -->
+      <div class="play-card" id="weatherReportCard" style="display:none;margin-top:14px;">
+        <div class="play-card-title">◆ Letzte Buchung</div>
+        <div id="weatherReportContent"></div>
       </div>
 
       <!-- Meine Buchungen (früher eigener Tab, jetzt hier integriert) -->
@@ -3770,6 +3848,198 @@ async function renderMyBookingsLists() {
   }
 }
 
+// ============================================================
+//  WETTERAUSFALL MELDEN – Meldeweg aus der Regelkarte:
+//  „Jetzt spielen" → „Letzte Buchung" → „Wetterausfall melden"
+//  Abos sind bewusst ausgenommen (Wetterrisiko im Abopreis eingepreist);
+//  hier werden nur Einzelbuchungen aus `bookings` betrachtet.
+//  Verbindlich prüft die Datenbank (report_weather_outage) – die
+//  Zeitrechnung hier steuert nur, wann die Karte sichtbar ist.
+// ============================================================
+let weatherReportBooking = null;   // aktuell meldbare Buchung
+let weatherReportPercent = 0;      // im Dialog gewählter Anteil
+
+function weatherFmtEUR(cents) {
+  return (cents / 100).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+}
+
+function weatherBookingLabel(b) {
+  const dateStr = new Date(b.date + 'T12:00:00').toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit'});
+  return `${dateStr} · ${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start + b.duration).padStart(2,'0')}:00 Uhr · Court #${b.court}`;
+}
+
+async function renderWeatherReportCard() {
+  const card = document.getElementById('weatherReportCard');
+  const box  = document.getElementById('weatherReportContent');
+  if (!card || !box) return;
+  card.style.display = 'none';
+  weatherReportBooking = null;
+  if (!currentUser) return;
+
+  let userId;
+  try { userId = await dataUserId(); } catch(e) { return; }
+  if (!userId) return;
+
+  // Testphase: Solange app_settings.test_mode = true ist, ist die jüngste
+  // Buchung IMMER meldbar - ohne Warten auf Spielbeginn, ohne 24-h-Frist.
+  // Die Datenbankfunktion kennt dieselbe Ausnahme (Skript 22). Zum Livegang
+  // wird test_mode auf false gestellt - dann gilt hier automatisch wieder
+  // die echte Regel, ohne dass am Code etwas zu ändern ist.
+  let weatherTestMode = false;
+  try {
+    const { data: ts } = await sb.from('app_settings').select('test_mode').maybeSingle();
+    weatherTestMode = ts?.test_mode === true;
+  } catch(e) {}
+
+  // Kandidaten: bezahlte Buchungen. Im Normalbetrieb nur vorgestern bis
+  // heute; ob die 24-h-Frist wirklich noch läuft, entscheidet der Filter unten.
+  const now = new Date();
+  const from = new Date(now.getTime() - 48 * 3600 * 1000);
+  const fromStr = `${from.getFullYear()}-${String(from.getMonth()+1).padStart(2,'0')}-${String(from.getDate()).padStart(2,'0')}`;
+
+  let bookings = [];
+  try {
+    let query = sb
+      .from('bookings')
+      .select('id,court,date,hour_start,duration,price_paid_cents,status')
+      .eq('user_id', userId)
+      .in('status', ['paid', 'active'])
+      .order('date', { ascending: false })
+      .order('hour_start', { ascending: false });
+    query = weatherTestMode
+      ? query.limit(5)
+      : query.gte('date', fromStr).lte('date', todayStr());
+    const { data, error } = await query;
+    if (error) throw error;
+    bookings = data || [];
+  } catch(e) { console.error('Wetterausfall: Buchungen laden fehlgeschlagen', e); return; }
+
+  // Meldbar = Spielzeit hat begonnen und endete vor weniger als 24 Stunden
+  // (im Testmodus: jede bezahlte Buchung)
+  const eligible = bookings.filter(b => {
+    if (!b.price_paid_cents) return false;
+    if (weatherTestMode) return true;
+    const start = new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`);
+    const end   = new Date(start.getTime() + b.duration * 3600 * 1000);
+    return now >= start && now <= new Date(end.getTime() + 24 * 3600 * 1000);
+  });
+  if (!eligible.length) return;
+
+  // Liegen schon Meldungen vor? (RLS: man sieht nur die eigenen)
+  let reportsByBooking = {};
+  try {
+    const { data, error } = await sb
+      .from('weather_reports')
+      .select('booking_id,percent,status,credit_cents,admin_note')
+      .in('booking_id', eligible.map(x => x.id));
+    if (error) throw error;
+    (data || []).forEach(r => { reportsByBooking[r.booking_id] = r; });
+  } catch(e) { console.error('Wetterausfall: Meldungen laden fehlgeschlagen', e); }
+
+  // Bevorzugt die jüngste Buchung OHNE Meldung; haben alle schon eine,
+  // wird der Stand der jüngsten Meldung angezeigt.
+  const open = eligible.find(x => !reportsByBooking[x.id]);
+  const b = open || eligible[0];
+  const report = reportsByBooking[b.id] || null;
+
+  const bookingRow = `
+    <div class="closure-item my-booking" style="margin-bottom:4px;">
+      <div style="flex:1;">
+        <div class="closure-item-date">${weatherBookingLabel(b)}</div>
+        <div class="closure-item-note">Buchungswert ${weatherFmtEUR(b.price_paid_cents)}</div>
+      </div>
+    </div>`;
+
+  if (!report) {
+    weatherReportBooking = b;
+    let hint;
+    if (weatherTestMode) {
+      hint = 'Testphase: Meldung jederzeit möglich (ohne 24-h-Fenster).';
+    } else {
+      const end = new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`).getTime() + b.duration * 3600 * 1000;
+      const hoursLeft = Math.max(1, Math.floor((end + 24 * 3600 * 1000 - now.getTime()) / 3600000));
+      hint = `Wetterbedingt ausgefallen? Meldung noch ${hoursLeft} Std. möglich.`;
+    }
+    box.innerHTML = bookingRow + `
+      <button type="button" class="weather-report-btn" onclick="openWeatherReport()">🌧 Wetterausfall melden</button>
+      <div class="weather-report-hint">${hint}</div>`;
+  } else if (report.status === 'pending') {
+    box.innerHTML = bookingRow + `
+      <div class="weather-status-note" style="color:#B8402C;">⏳ Meldung eingegangen (${report.percent} % ausgefallen) – wird geprüft.</div>`;
+  } else if (report.status === 'approved') {
+    box.innerHTML = bookingRow + `
+      <div class="weather-status-note" style="color:#1F8A5F;">✓ Wetterausfall bestätigt – ${weatherFmtEUR(report.credit_cents || 0)} wurden deinem Spielguthaben gutgeschrieben.</div>`;
+  } else {
+    box.innerHTML = bookingRow + `
+      <div class="weather-status-note" style="color:#7A7368;">Deine Meldung (${report.percent} %) wurde nach Abgleich mit den Wetterdaten nicht bestätigt.${report.admin_note ? '<br>Hinweis: ' + esc(report.admin_note) : ''}</div>`;
+  }
+  card.style.display = 'block';
+}
+
+function openWeatherReport() {
+  if (!weatherReportBooking) return;
+  weatherReportPercent = 0;
+  document.getElementById('weatherDialogBooking').textContent =
+    weatherBookingLabel(weatherReportBooking) + ' · ' + weatherFmtEUR(weatherReportBooking.price_paid_cents);
+  document.querySelectorAll('#weatherPctGrid .weather-pct').forEach(el => el.classList.remove('selected'));
+  document.getElementById('weatherCreditBox').classList.remove('visible');
+  const btn = document.getElementById('weatherSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Meldung absenden';
+  const ov = document.getElementById('weatherOverlay');
+  ov.classList.add('open');
+  ov.setAttribute('aria-hidden', 'false');
+  document.documentElement.style.overflow = 'hidden';
+}
+
+function closeWeatherReport() {
+  const ov = document.getElementById('weatherOverlay');
+  if (!ov) return;
+  ov.classList.remove('open');
+  ov.setAttribute('aria-hidden', 'true');
+  document.documentElement.style.removeProperty('overflow');
+}
+
+function selectWeatherPercent(btn) {
+  if (!weatherReportBooking) return;
+  weatherReportPercent = Number(btn.dataset.pct);
+  document.querySelectorAll('#weatherPctGrid .weather-pct').forEach(el => el.classList.toggle('selected', el === btn));
+  const credit = Math.round(weatherReportBooking.price_paid_cents * weatherReportPercent / 100);
+  document.getElementById('weatherCreditAmount').textContent = weatherFmtEUR(credit);
+  document.getElementById('weatherCreditBox').classList.add('visible');
+  document.getElementById('weatherSubmitBtn').disabled = false;
+}
+
+async function submitWeatherReport() {
+  if (!weatherReportBooking || !weatherReportPercent) return;
+  const btn = document.getElementById('weatherSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Wird gesendet …';
+  try {
+    const { error } = await sb.rpc('report_weather_outage', {
+      p_booking_id: weatherReportBooking.id,
+      p_percent: weatherReportPercent
+    });
+    if (error) throw error;
+    closeWeatherReport();
+    showToast('✅ Meldung eingegangen – wir prüfen sie und schreiben dir den Ausfall danach gut.');
+    renderWeatherReportCard();
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Meldung absenden';
+    alert('Meldung nicht möglich: ' + (e?.message || 'Unbekannter Fehler'));
+  }
+}
+
+// Schließen per Klick auf den Hintergrund oder Escape (wie Court-Regeln)
+(function(){
+  const ov = document.getElementById('weatherOverlay');
+  if (ov) ov.addEventListener('click', function(e){ if (e.target === ov) closeWeatherReport(); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && ov && ov.classList.contains('open')) closeWeatherReport();
+  });
+})();
+
 // Prüft ob eine Buchung gerade aktiv ist (±15 Min)
 function getActiveBooking(bookings) {
   const now = new Date();
@@ -3881,6 +4151,7 @@ async function renderPlaySection() {
 
   renderDoorLog();
   renderMyBookingsLists();   // „Demnächst" + „Aktive Jahresabos" unter den Türen
+  renderWeatherReportCard(); // „Letzte Buchung" mit Wetterausfall-Meldung
 }
 
 // Klick-Demo für die Türen: der Button reagiert sichtbar, es passiert aber noch
@@ -7759,6 +8030,130 @@ body.bielstein-theme .site-footer-center {
 body.bielstein-theme .site-footer-left a { color: #7A7368 !important; font-size: 0.75rem !important; }
 body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
 
+/* ── COURT-REGELN: mittiger Header-Button + Wertkarten-Overlay ── */
+body.bielstein-theme .court-rules-trigger {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  width: 40px; height: 40px; padding: 0; border-radius: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #F6F1E7; background: transparent;
+  border: none;
+  transition: color .18s, border-color .18s, transform .18s;
+}
+body.bielstein-theme .court-rules-trigger:hover,
+body.bielstein-theme .court-rules-trigger:focus-visible {
+  color: #FF5A36; background: transparent;
+  transform: translate(-50%,-50%) scale(1.05); outline: none;
+}
+body.bielstein-theme .court-rules-glyph {
+  position: relative; display: block; width: 4.25px; height: 17px;
+}
+body.bielstein-theme .court-rules-glyph::before,
+body.bielstein-theme .court-rules-glyph::after {
+  content: ""; position: absolute; left: 50%; transform: translateX(-50%);
+  background: currentColor;
+}
+body.bielstein-theme .court-rules-glyph::before {
+  top: 0; width: 4.25px; height: 4.25px; border-radius: 50%;
+}
+body.bielstein-theme .court-rules-glyph::after {
+  bottom: 0; width: 3.4px; height: 10.2px; border-radius: 2px;
+}
+
+.court-rules-overlay {
+  position: fixed; inset: 0; z-index: 8000; padding: 24px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(28,26,23,.76); backdrop-filter: blur(7px);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .22s ease, visibility .22s ease;
+}
+.court-rules-overlay.open { opacity: 1; visibility: visible; pointer-events: auto; }
+.court-rules-card {
+  position: relative; width: min(760px,100%); max-height: min(86vh,920px);
+  overflow-y: auto; box-sizing: border-box; padding: 42px 46px 46px;
+  color: #1C1A17; background: #F6F1E7;
+  border: 1.5px solid #E2DACB; border-radius: 22px;
+  box-shadow: 0 28px 80px rgba(0,0,0,.34), 10px 10px 0 rgba(255,90,54,.95);
+  transform: translateY(18px) scale(.985); transition: transform .22s ease;
+  scrollbar-color: #FF5A36 #E2DACB;
+}
+.court-rules-overlay.open .court-rules-card { transform: translateY(0) scale(1); }
+.court-rules-close {
+  position: sticky; z-index: 2; top: 0; float: right; margin: -22px -25px 0 18px;
+  width: 42px; height: 42px; border: 0; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #F6F1E7; background: #1C1A17;
+  font: 400 28px/1 "Manrope",sans-serif; transition: background .15s, color .15s;
+}
+.court-rules-close:hover, .court-rules-close:focus-visible { background: #FF5A36; color: #1C1A17; outline: none; }
+.court-rules-kicker {
+  margin: 0 58px 32px 0; color: #FF5A36;
+  font: 700 35.1px/1.1 "Space Grotesk",sans-serif;
+}
+.court-rules-section + .court-rules-section { margin-top: 34px; padding-top: 32px; border-top: 1.5px solid #E2DACB; }
+.court-rules-section h2 { margin: 0 0 18px; font: 700 27px/1.1 "Space Grotesk",sans-serif; color: #1C1A17; }
+.court-rules-section p, .court-rules-section li { font: 500 14.5px/1.68 "Manrope",sans-serif; }
+.court-rules-section p { margin: 0 0 16px; }
+.court-rules-section ul { list-style: none; margin: 0; padding: 0; }
+.court-rules-section li { position: relative; padding-left: 22px; margin-bottom: 11px; }
+.court-rules-section li::before { content: ""; position: absolute; left: 0; top: .72em; width: 7px; height: 7px; border-radius: 50%; background: #FF5A36; }
+.court-rules-link { padding: 0; border: 0; background: none; color: #E8431E; cursor: pointer; font: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+.court-rules-path {
+  display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px;
+  margin: 4px 0 18px;
+}
+.court-rules-path > div {
+  min-height: 76px; box-sizing: border-box; padding: 14px 15px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid #E2DACB; border-radius: 12px;
+  background: #FFFFFF; color: #1C1A17;
+}
+.court-rules-path strong {
+  font: 700 15px/1.35 "Space Grotesk",sans-serif; text-align: center;
+}
+.court-rules-percentages { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; margin: 0 0 20px !important; }
+.court-rules-percentages li { margin: 0; }
+.court-rules-warning { padding: 16px 18px; border-left: 5px solid #FF5A36; border-radius: 0 10px 10px 0; background: #FFFFFF; }
+
+/* --- Wetterausfall melden: Dialog + Karte „Letzte Buchung" --- */
+.weather-card { width: min(560px,100%); }
+.weather-dialog-booking { margin: -14px 0 22px; font: 700 14px/1.5 "Space Grotesk",sans-serif; color: #7A7368; }
+.weather-pct-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 18px; }
+.weather-pct { padding: 16px 10px; border: 1.5px solid #E2DACB; border-radius: 12px; background: #FFFFFF; cursor: pointer; text-align: center; transition: border-color .15s, background .15s; }
+.weather-pct .pct-num { display: block; font: 700 24px/1.1 "Space Grotesk",sans-serif; color: #1C1A17; }
+.weather-pct .pct-sub { display: block; margin-top: 5px; font: 500 12px/1.35 "Manrope",sans-serif; color: #7A7368; }
+.weather-pct:hover, .weather-pct:focus-visible { border-color: #FF5A36; outline: none; }
+.weather-pct.selected { background: #1C1A17; border-color: #FF5A36; }
+.weather-pct.selected .pct-num, .weather-pct.selected .pct-sub { color: #F6F1E7; }
+.weather-credit-box { display: none; margin: 0 0 18px; padding: 14px; text-align: center; background: #FFFFFF; border: 1.5px solid #E2DACB; border-radius: 12px; }
+.weather-credit-box.visible { display: block; }
+.weather-credit-amount { font: 700 27px/1.2 "Space Grotesk",sans-serif; color: #FF5A36; }
+.weather-submit { width: 100%; padding: 15px; border: 0; border-radius: 12px; background: #FF5A36; color: #FFFFFF; font: 700 15px "Space Grotesk",sans-serif; letter-spacing: .03em; cursor: pointer; transition: background .15s; }
+.weather-submit:disabled { opacity: .45; cursor: not-allowed; }
+.weather-submit:hover:not(:disabled), .weather-submit:focus-visible { background: #E8431E; outline: none; }
+.weather-report-btn { display: block; width: 100%; margin-top: 12px; padding: 14px; border: 0; border-radius: 10px; background: #FF5A36; color: #FFFFFF; font: 700 14px "Space Grotesk",sans-serif; letter-spacing: .03em; cursor: pointer; transition: background .15s; }
+.weather-report-btn:hover, .weather-report-btn:focus-visible { background: #E8431E; outline: none; }
+.weather-report-hint { margin-top: 9px; text-align: center; font: 500 12px "Manrope",sans-serif; color: #7A7368; }
+.weather-status-note { margin-top: 10px; font: 500 13px/1.55 "Manrope",sans-serif; }
+
+@media (max-width: 720px) {
+  body.bielstein-theme .court-rules-trigger { width: 40px; height: 40px; }
+  .court-rules-overlay { padding: 12px; align-items: stretch; }
+  .court-rules-card { max-height: none; padding: 34px 22px 38px; border-radius: 18px; box-shadow: 5px 5px 0 #FF5A36; }
+  .court-rules-close { margin: -18px -8px 0 12px; }
+  .court-rules-kicker { margin-bottom: 26px; }
+  .court-rules-path { grid-template-columns: 1fr; }
+  .court-rules-path > div { min-height: 0; }
+  .court-rules-percentages { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  body.bielstein-theme .appbar { gap: 8px; }
+  body.bielstein-theme .appbar-wordmark { font-size: 17px; }
+  body.bielstein-theme .appbar-btn { padding: 8px 10px; font-size: 11px; }
+}
+@media (max-width: 420px) {
+  body.bielstein-theme #appbarAuth .appbar-btn.ghost { display: none; }
+}
+
 /* ── SPLASH / EINSTIEGSSEITE (Werte 1:1 aus der Vorlage) ── */
 .pb-splash {
   position: fixed; inset: 0; z-index: 9999;
@@ -7776,7 +8171,7 @@ body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
    Seite wirkt trotz viel Fläche geklemmt. iPhone bleibt unverändert. */
 @media (min-width: 700px) {
   .pb-splash-inner {
-    padding: clamp(90px, 12vh, 170px) 40px clamp(72px, 9vh, 140px);
+    padding: clamp(48px, 6.5vh, 90px) 40px clamp(38px, 4.8vh, 74px);
   }
 }
 .pb-splash-top { display: flex; align-items: flex-start; justify-content: space-between; }
@@ -7817,6 +8212,50 @@ body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
      Additiv: liest nur den vorhandenen Login-Status aus, ändert keine App-Logik. -->
 <script>
 (function(){
+  var rulesOverlay = document.getElementById('courtRulesOverlay');
+  var rulesClose = document.getElementById('courtRulesClose');
+  var rulesTrigger = document.getElementById('courtRulesTrigger');
+  var rulesReport = document.getElementById('courtRulesReport');
+  var rulesPreviousFocus = null;
+
+  window.openCourtRules = function(){
+    if(!rulesOverlay) return;
+    rulesPreviousFocus = document.activeElement;
+    rulesOverlay.classList.add('open');
+    rulesOverlay.setAttribute('aria-hidden','false');
+    document.documentElement.style.overflow = 'hidden';
+    if(rulesClose) rulesClose.focus();
+  };
+  window.closeCourtRules = function(){
+    if(!rulesOverlay) return;
+    rulesOverlay.classList.remove('open');
+    rulesOverlay.setAttribute('aria-hidden','true');
+    document.documentElement.style.removeProperty('overflow');
+    if(rulesPreviousFocus && rulesPreviousFocus.focus) rulesPreviousFocus.focus();
+    else if(rulesTrigger) rulesTrigger.focus();
+  };
+  if(rulesClose) rulesClose.addEventListener('click', window.closeCourtRules);
+  if(rulesOverlay) rulesOverlay.addEventListener('click', function(e){
+    if(e.target === rulesOverlay) window.closeCourtRules();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && rulesOverlay && rulesOverlay.classList.contains('open')) window.closeCourtRules();
+  });
+  if(rulesReport) rulesReport.addEventListener('click', function(){
+    window.closeCourtRules();
+    try { if(typeof setMode === 'function') setMode('play'); } catch(e){}
+    try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ window.scrollTo(0,0); }
+    /* Gibt es eine meldbare Buchung, direkt zur Karte „Letzte Buchung"
+       springen. Kurze Wartezeit, weil die Karte erst nach dem Laden der
+       Buchungen aus der Datenbank erscheint. */
+    setTimeout(function(){
+      var card = document.getElementById('weatherReportCard');
+      if(card && card.style.display !== 'none'){
+        try { card.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e){}
+      }
+    }, 900);
+  });
+
   /* Branding oben links führt immer zurück zur Buchungsseite */
   window.goHome = function(){
     try { if (typeof setMode === 'function') setMode('book'); } catch(e){}
