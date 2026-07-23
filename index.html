@@ -7963,12 +7963,17 @@ body.bielstein-theme #creditConfirmModal .cc-option {
   text-transform: none !important; letter-spacing: 0 !important;
 }
 body.bielstein-theme #creditConfirmModal .cc-credit {
-  background: #FF5A36 !important; color: #1C1A17 !important; border: 1.5px solid #FF5A36 !important;
+  background: #FCE9E2 !important; color: #1C1A17 !important; border: 1.5px solid #F1C8B9 !important;
 }
 body.bielstein-theme #creditConfirmModal .cc-stripe {
   background: #FFFFFF !important; color: #1C1A17 !important; border: 1.5px solid #D9CFBF !important;
 }
-body.bielstein-theme #creditConfirmModal .cc-stripe:hover { background: #F6F1E7 !important; border-color: #FF5A36 !important; }
+body.bielstein-theme #creditConfirmModal .cc-credit:hover,
+body.bielstein-theme #creditConfirmModal .cc-credit:focus-visible,
+body.bielstein-theme #creditConfirmModal .cc-stripe:hover,
+body.bielstein-theme #creditConfirmModal .cc-stripe:focus-visible {
+  background: #FCE9E2 !important; border-color: #FF5A36 !important; outline: none;
+}
 body.bielstein-theme #creditConfirmModal .cc-option-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 body.bielstein-theme #creditConfirmModal .cc-option-copy strong {
   color: inherit; font: 700 15px/1.2 "Space Grotesk",sans-serif;
