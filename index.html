@@ -719,8 +719,17 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 }
 
 /* ■■ TOAST ■■ */
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #000; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.92rem; letter-spacing: 0.06em; padding: 11px 22px; border-radius: 10px; box-shadow: 0 4px 24px rgba(246,246,246,0.25); transition: transform 0.3s ease; z-index: 999; white-space: nowrap; }
+/* Versteckt wird um die EIGENE Höhe + Abstand (calc(100% + 32px)), nicht um
+   feste 80px: mehrzeilige Toasts auf dem Smartphone sind höher als 80px und
+   blieben sonst nach dem Ausblenden unten im Bild hängen.
+   Optik: dezent im Stil der Court-Regeln-Karte (Creme, Ink, feiner Rahmen,
+   kleiner oranger Versatz-Schatten) statt der früheren Vollton-Plakette.
+   Schließbar über × und per Wegwischen (siehe hideToast/Swipe-Handler). */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(calc(100% + 32px)); display: flex; align-items: flex-start; gap: 12px; background: #F6F1E7; color: #1C1A17; font-family: "Manrope","Arial",sans-serif; font-weight: 600; font-size: 13.5px; line-height: 1.55; letter-spacing: 0; text-align: left; padding: 14px 14px 14px 18px; border: 1.5px solid #E2DACB; border-radius: 14px; box-shadow: 0 10px 30px rgba(28,26,23,0.22), 4px 4px 0 rgba(255,90,54,0.95); transition: transform 0.3s ease; z-index: 999; white-space: normal; max-width: min(440px, calc(100vw - 24px)); }
 .toast.show { transform: translateX(-50%) translateY(0); }
+.toast-msg { flex: 1; }
+.toast-close { flex-shrink: 0; width: 24px; height: 24px; margin: -1px -2px 0 0; padding: 0; border: 0; border-radius: 50%; cursor: pointer; background: #1C1A17; color: #F6F1E7; font: 400 15px/1 "Manrope",sans-serif; display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; }
+.toast-close:hover, .toast-close:focus-visible { background: #FF5A36; color: #1C1A17; outline: none; }
 
 /* ■■ SCROLLBAR ■■ */
 ::-webkit-scrollbar { width: 6px; }
@@ -761,7 +770,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   .book-btn { font-size: 1.2rem; border-radius: 14px; }
   .abo-cta  { font-size: 1.15rem; border-radius: 14px; }
   .abo-price-total { font-size: 1.5rem; }
-  .toast { font-size: 1rem; padding: 12px 18px; border-radius: 12px; white-space: normal; text-align: center; max-width: calc(100vw - 24px); }
+  .toast { font-size: 13px; border-radius: 12px; max-width: calc(100vw - 24px); }
 }
 
 /* ════════════════════════════════════════
@@ -966,19 +975,8 @@ main {
         <input class="form-input" type="tel" id="regPhone" placeholder="z.B. 0170 1234567" autocomplete="tel">
         <div class="form-hint">Für Rückfragen bei Wetter/Zugangsproblemen</div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Geburtsjahr</label>
-        <input class="form-input" type="number" id="regYear" placeholder="z.B. 1985" min="1920" max="2015">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Geschlecht</label>
-        <select class="form-input" id="regGender">
-          <option value="">Bitte wählen</option>
-          <option value="weiblich">weiblich</option>
-          <option value="maennlich">männlich</option>
-          <option value="divers">divers</option>
-        </select>
-      </div>
+      <!-- Geburtsjahr und Geschlecht werden bewusst NICHT mehr erhoben
+           (Datenminimierung, Entscheidung Jörn 23.07.2026). -->
       <div class="form-hint" style="margin-bottom:14px;line-height:1.5;">
         <strong>Mitglied der Tennisfreunde oder Freibad-Dauerkarte?</strong><br>
         Du musst nichts angeben. Sobald du deine E-Mail-Adresse bestätigt hast,
@@ -1097,8 +1095,17 @@ main {
 <div class="court-rules-overlay" id="courtRulesOverlay" aria-hidden="true">
   <article class="court-rules-card" role="dialog" aria-modal="true" aria-labelledby="courtRulesTitle">
     <button class="court-rules-close" id="courtRulesClose" type="button" aria-label="Court-Regeln schließen">×</button>
-    <div class="court-rules-kicker" id="courtRulesTitle">Court-Regeln</div>
+    <div class="court-rules-kicker" id="courtRulesTitle">Infos</div>
 
+    <!-- Umschalter: Court-Regeln | Impressum -->
+    <div class="court-rules-tabs" role="tablist" aria-label="Infobereiche">
+      <button type="button" class="court-rules-tab active" id="crTabRules" role="tab" aria-selected="true" onclick="setCourtRulesTab('rules')">Court-Regeln</button>
+      <button type="button" class="court-rules-tab" id="crTabImpressum" role="tab" aria-selected="false" onclick="setCourtRulesTab('impressum')">Impressum</button>
+      <button type="button" class="court-rules-tab" id="crTabPrivacy" role="tab" aria-selected="false" onclick="setCourtRulesTab('privacy')">Datenschutz</button>
+      <button type="button" class="court-rules-tab" id="crTabAgb" role="tab" aria-selected="false" onclick="setCourtRulesTab('agb')">AGB</button>
+    </div>
+
+    <div id="courtRulesViewRules">
     <section class="court-rules-section">
       <h2>Fair Play</h2>
       <ul>
@@ -1134,6 +1141,131 @@ main {
       <p class="court-rules-warning"><strong>Bei Gewitter gilt ohne Ausnahme:</strong> Spiel sofort beenden, Court verlassen und einen geschützten Ort aufsuchen.</p>
       <p>Normaler Wind und niedrige Temperaturen allein gelten nicht als Wetterausfall. Bei Sturm, Schnee, Eis, Pfützen oder anderen unsicheren Platzverhältnissen sperren wir die Courts. Betroffene Buchungen werden automatisch gutgeschrieben.</p>
     </section>
+    </div><!-- /courtRulesViewRules -->
+
+    <!-- Impressum: Pflichtangaben nach § 5 DDG (Stand 2026). Bewusst OHNE
+         Link zur EU-OS-Plattform - die wurde zum 20.07.2025 abgeschaltet,
+         ein verbliebener Link gilt als abmahnfähig. Der Hinweis nach
+         § 36 VSBG bleibt dagegen Pflicht. Orange Platzhalter ersetzt Jörn
+         vor dem Livegang durch die echten Vereinsdaten. -->
+    <div id="courtRulesViewImpressum" style="display:none;">
+    <section class="court-rules-section">
+      <h2>Angaben gemäß § 5 DDG</h2>
+      <p>
+        <strong>Tennisfreunde Bielstein e.V.</strong><br>
+        Jahnstraße 13<br>
+        51674 Wiehl
+      </p>
+      <p>Postanschrift: Postfach 21 22, 51622 Wiehl</p>
+      <h3>Vertreten durch den Vorstand (§ 26 BGB)</h3>
+      <p>
+        Jens Kämper, Vorsitzender (kommissarisch)<br>
+        Sebastian Manz, Geschäftsführer<br>
+        Daniel Pollmann, Kassenwart<br>
+        Die Vertretung erfolgt gemeinschaftlich.
+      </p>
+      <h3>Kontakt</h3>
+      <p>
+        Telefon: 02262 / 4074<br>
+        E-Mail: info@tfbielstein.de
+      </p>
+      <h3>Registereintrag</h3>
+      <p>
+        Eingetragen im Vereinsregister des Amtsgerichts Köln<br>
+        Registernummer: VR 600693
+      </p>
+      <h3>Umsatzsteuer</h3>
+      <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: DE330174727</p>
+      <h3>Inhaltlich verantwortlich (§ 18 Abs. 2 MStV)</h3>
+      <p>Sebastian Manz, Jahnstraße 13, 51674 Wiehl</p>
+    </section>
+
+    <section class="court-rules-section">
+      <h2>Verbraucherstreitbeilegung</h2>
+      <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen (§ 36 VSBG).</p>
+    </section>
+
+    <section class="court-rules-section">
+      <h2>Haftung &amp; Urheberrecht</h2>
+      <p>Für die Inhalte dieser Seiten sind wir nach den allgemeinen Gesetzen verantwortlich (§ 7 Abs. 1 DDG). Trotz sorgfältiger Prüfung übernehmen wir keine Gewähr für Richtigkeit, Vollständigkeit und Aktualität der bereitgestellten Informationen.</p>
+      <p>Unsere Seiten enthalten Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Für diese Inhalte ist stets der jeweilige Anbieter verantwortlich; zum Zeitpunkt der Verlinkung waren keine Rechtsverstöße erkennbar.</p>
+      <p>Die durch uns erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Vervielfältigung, Bearbeitung und Verbreitung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung des Tennisfreunde Bielstein e.V. Genannte Produkt- und Firmennamen sind Marken bzw. eingetragene Marken der jeweiligen Inhaber.</p>
+    </section>
+    </div><!-- /courtRulesViewImpressum -->
+
+    <!-- Datenschutzerklärung: zugeschnitten auf das Buchungssystem
+         (Konten, Buchungen, Stripe-Zahlungen, Supabase, Resend, GitHub
+         Pages; kein Tracking, keine Werbung). -->
+    <div id="courtRulesViewPrivacy" style="display:none;">
+    <section class="court-rules-section">
+      <h2>Datenschutzerklärung</h2>
+      <p>Stand: Juli 2026. Diese Erklärung gilt für das Buchungssystem auf padel-bielstein.de. Kurz gesagt: Wir verarbeiten nur die Daten, die für Buchung, Bezahlung und Betrieb der Anlage nötig sind – keine Werbung, kein Tracking, kein Datenverkauf.</p>
+      <h3>Verantwortlicher</h3>
+      <p>
+        Tennisfreunde Bielstein e.V.<br>
+        Jahnstraße 13, 51674 Wiehl<br>
+        Telefon: 02262 / 4074 · E-Mail: info@tfbielstein.de
+      </p>
+      <h3>Welche Daten wir verarbeiten – und wozu</h3>
+      <ul>
+        <li><strong>Benutzerkonto:</strong> Name, E-Mail-Adresse und Telefonnummer (für Rückfragen bei Wetter- oder Zugangsproblemen) sowie weitere Angaben aus der Registrierung. Ohne Konto ist keine Buchung möglich. Rechtsgrundlage: Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO).</li>
+        <li><strong>Buchungen, Abos, Guthaben:</strong> gebuchte Zeiten, Preise, Guthabenbewegungen und Wetterausfall-Meldungen – zur Vertragserfüllung und wegen gesetzlicher Aufbewahrungspflichten (Art. 6 Abs. 1 lit. b und c DSGVO).</li>
+        <li><strong>Zahlungen:</strong> laufen über den Zahlungsdienstleister Stripe. Deine Kartendaten werden ausschließlich von Stripe erhoben und verarbeitet – wir selbst sehen und speichern keine Kartendaten.</li>
+        <li><strong>Mitgliederrabatt:</strong> zur Gewährung des Rabatts gleichen wir deine bestätigte E-Mail-Adresse mit unserer Mitgliederliste ab (Art. 6 Abs. 1 lit. b DSGVO).</li>
+        <li><strong>Zutritt zur Anlage:</strong> Türöffnungen über die App werden protokolliert, um Missbrauch der Anlage vorzubeugen (berechtigtes Interesse, Art. 6 Abs. 1 lit. f DSGVO).</li>
+        <li><strong>Technische Zugriffsdaten:</strong> beim Aufruf der Seite fallen serverseitig automatisch Verbindungsdaten an (z. B. IP-Adresse) – zur Bereitstellung und Absicherung des Dienstes.</li>
+      </ul>
+      <h3>Kein Tracking, keine Werbung</h3>
+      <p>Wir setzen keine Werbe- oder Tracking-Cookies und keine Analyse-Tools ein. Im Browser wird nur technisch Notwendiges gespeichert (z. B. deine Anmeldung, damit du eingeloggt bleibst).</p>
+      <h3>Unsere Dienstleister</h3>
+      <p>Für den Betrieb setzen wir folgende Dienstleister als Auftragsverarbeiter ein. Soweit dabei Daten in die USA übermittelt werden, geschieht das auf Grundlage der EU-Standardvertragsklauseln bzw. des EU-US Data Privacy Framework:</p>
+      <ul>
+        <li><strong>Supabase</strong> – Datenbank und Anmeldung</li>
+        <li><strong>Stripe</strong> (Stripe Payments Europe Ltd., Dublin, Irland) – Zahlungsabwicklung</li>
+        <li><strong>Resend</strong> – Versand von Buchungs- und Systemmails</li>
+        <li><strong>GitHub Pages</strong> – Auslieferung der Website</li>
+      </ul>
+      <h3>Speicherdauer</h3>
+      <p>Dein Konto bleibt gespeichert, bis du es löschen lässt. Buchungs- und Zahlungsdaten bewahren wir so lange auf, wie gesetzliche Aufbewahrungspflichten bestehen (bis zu zehn Jahre, § 147 AO / § 257 HGB). Danach werden sie gelöscht.</p>
+      <h3>Deine Rechte</h3>
+      <p>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch (Art. 15–21 DSGVO). Schreib dazu einfach an info@tfbielstein.de. Du kannst dich außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren – zuständig ist die Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (www.ldi.nrw.de).</p>
+    </section>
+    </div><!-- /courtRulesViewPrivacy -->
+
+    <!-- AGB inkl. Stornoregeln. Entscheidungen Jörn 23.07.2026:
+         Einzelbuchung stornierbar bis 24 h vor Spielbeginn, Erstattung als
+         Spielguthaben, Slot wird freigegeben; Abo nicht stornierbar (endet
+         automatisch nach 1 Jahr). Kein Widerruf bei termingebundenen
+         Buchungen (§ 312g Abs. 2 Nr. 9 BGB); Widerruf nur für
+         unverbrauchtes Wertkarten-Guthaben. -->
+    <div id="courtRulesViewAgb" style="display:none;">
+    <section class="court-rules-section">
+      <h2>Allgemeine Geschäftsbedingungen</h2>
+      <p>Stand: Juli 2026. Diese Bedingungen gelten für alle Buchungen und Käufe über das Buchungssystem auf padel-bielstein.de.</p>
+      <h3>1. Vertragspartner</h3>
+      <p>Dein Vertragspartner ist der Tennisfreunde Bielstein e.V., Jahnstraße 13, 51674 Wiehl (siehe Impressum).</p>
+      <h3>2. Vertragsschluss und Preise</h3>
+      <p>Der Vertrag kommt zustande, sobald du den Buchungs- bzw. Kaufvorgang abschließt und die Zahlung bestätigt wird oder dein Spielguthaben belastet wird. Du erhältst eine Bestätigung per E-Mail. Alle angezeigten Preise sind Endpreise.</p>
+      <h3>3. Bezahlung</h3>
+      <p>Die Bezahlung erfolgt online über unseren Zahlungsdienstleister Stripe oder über dein Spielguthaben. Vorhandenes Guthaben wird dir beim Bezahlen angeboten und nur mit deiner Bestätigung verrechnet.</p>
+      <h3>4. Stornierung von Einzelbuchungen</h3>
+      <p>Einzelbuchungen kannst du bis <strong>24 Stunden vor Spielbeginn</strong> stornieren. Der volle Buchungswert wird dir als Spielguthaben gutgeschrieben und der Platz wieder freigegeben. Bei späterer Stornierung oder Nichtantritt ist keine Erstattung möglich.</p>
+      <p>Unabhängig davon gilt bei wetterbedingten Ausfällen unsere Wetterausfall-Regelung (siehe Court-Regeln): gemeldete und bestätigte Ausfälle werden anteilig als Guthaben gutgeschrieben.</p>
+      <h3>5. Jahresabo</h3>
+      <p>Das Jahresabo sichert dir deinen festen wöchentlichen Termin für ein Jahr. Es hat eine feste Laufzeit, endet automatisch und verlängert sich nicht. Eine Stornierung oder ordentliche Kündigung ist ausgeschlossen; das Recht beider Seiten zur Kündigung aus wichtigem Grund bleibt unberührt. Wetterbedingt ausgefallene Abo-Termine werden nicht erstattet – das Wetterrisiko ist im Abopreis bereits berücksichtigt.</p>
+      <h3>6. Wertkarten und Spielguthaben</h3>
+      <p>Wertkarten laden dein Spielguthaben auf. Guthaben wird bei Buchungen verrechnet (ältestes zuerst), ist nicht übertragbar und wird – abgesehen von deinen gesetzlichen Rechten – nicht bar ausgezahlt.</p>
+      <h3>7. Widerrufsrecht</h3>
+      <p>Für Platzbuchungen und das Jahresabo besteht <strong>kein</strong> gesetzliches Widerrufsrecht, da es sich um Freizeitdienstleistungen mit festem Termin bzw. Zeitraum handelt (§ 312g Abs. 2 Nr. 9 BGB). Es gelten die Stornoregeln aus Ziffer 4.</p>
+      <p>Beim Kauf einer Wertkarte hast du als Verbraucher das Recht, den Vertrag innerhalb von 14 Tagen ohne Angabe von Gründen zu widerrufen. Der Widerruf ist formlos möglich, z. B. per E-Mail an info@tfbielstein.de. Im Widerrufsfall erstatten wir dir das noch unverbrauchte Guthaben unverzüglich auf dem Zahlungsweg, den du beim Kauf verwendet hast.</p>
+      <h3>8. Nutzung der Anlage</h3>
+      <p>Für die Nutzung der Courts gelten unsere Court-Regeln (erster Reiter dieser Karte) als Bestandteil dieser Bedingungen. Die sportliche Nutzung erfolgt auf eigene Verantwortung.</p>
+      <h3>9. Haftung</h3>
+      <p>Wir haften unbeschränkt für Vorsatz und grobe Fahrlässigkeit sowie für Schäden aus der Verletzung von Leben, Körper oder Gesundheit. Bei einfacher Fahrlässigkeit haften wir nur für die Verletzung wesentlicher Vertragspflichten und begrenzt auf den vorhersehbaren, vertragstypischen Schaden.</p>
+      <h3>10. Schlussbestimmungen</h3>
+      <p>Es gilt deutsches Recht. Sollte eine Bestimmung unwirksam sein, bleibt der Rest wirksam. Zur Verbraucherstreitbeilegung siehe Impressum.</p>
+    </section>
+    </div><!-- /courtRulesViewAgb -->
   </article>
 </div>
 
@@ -1488,6 +1620,7 @@ main {
       <div class="admin-tab"        id="atab-prices"    onclick="setAdminTab('prices')">💰 Preise</div>
       <div class="admin-tab"        id="atab-internal"  onclick="setAdminTab('internal')">📋 Interne Buchungen</div>
       <div class="admin-tab"        id="atab-bookings"  onclick="setAdminTab('bookings')">📅 Buchungsübersicht</div>
+      <div class="admin-tab"        id="atab-weather"   onclick="setAdminTab('weather')">🌧 Wetterausfälle</div>
       <div class="admin-tab"        id="atab-mis"       onclick="setAdminTab('mis')">📊 MIS</div>
       <div class="admin-tab"        id="atab-users"     onclick="setAdminTab('users')">👤 Nutzer</div>
       <div class="admin-tab"        id="atab-wipe"      onclick="setAdminTab('wipe')" style="display:none;">🧹 Platte putzen</div>
@@ -1795,6 +1928,26 @@ main {
         </div>
       </div>
     </div><!-- /adminBookings -->
+
+    <!-- ── WETTERAUSFÄLLE (Schritt C) ──
+         Meldungen aus weather_reports über admin_list_weather_reports().
+         Zu jeder Meldung werden die echten Regendaten für Wiehl-Bielstein
+         zur gebuchten Spielzeit geladen (Bright Sky / DWD, kostenlos).
+         ✓/✗ ruft admin_decide_weather_report(); bei ✓ schreibt die
+         DATENBANK die Gutschrift ins Kontobuch (Skript 21). -->
+    <div id="adminWeather" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-title">🌧 Wetterausfall-Meldungen</div>
+        <div style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5;">
+          Offene Meldungen zuerst. Der Wetterabgleich zeigt Niederschlag, Wind und
+          Temperatur für Wiehl-Bielstein zur gebuchten Spielzeit
+          (Quelle: Bright Sky / Deutscher Wetterdienst).
+        </div>
+        <div id="weatherAdminList">
+          <div style="color:#555;text-align:center;padding:24px;">Wird geladen …</div>
+        </div>
+      </div>
+    </div><!-- /adminWeather -->
 
     <!-- ── MIS ── -->
     <div id="adminMis" style="display:none;">
@@ -2432,9 +2585,9 @@ body.bielstein-theme #tabPlay:not(.active) {
         <div class="admin-section-title">Registrierte Nutzer</div>
         <div style="overflow-x:auto;">
           <table class="admin-table">
-            <thead><tr><th>Name</th><th>E-Mail</th><th>Typ</th><th>Mitglied#</th><th>Jahrgang</th><th>Registriert</th></tr></thead>
+            <thead><tr><th>Name</th><th>E-Mail</th><th>Typ</th><th>Mitglied#</th><th>Registriert</th></tr></thead>
             <tbody id="usersTbody">
-              <tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
+              <tr><td colspan="5" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
             </tbody>
           </table>
         </div>
@@ -2486,6 +2639,9 @@ body.bielstein-theme #tabPlay:not(.active) {
   <footer class="site-footer">
     <div class="site-footer-left">
       <a href="https://tfbielstein.de" target="_blank">Tennisfreunde Bielstein e.V. →</a>
+      <a href="#impressum" style="margin-left:14px;" onclick="event.preventDefault(); openCourtRules('impressum');">Impressum</a>
+      <a href="#datenschutz" style="margin-left:14px;" onclick="event.preventDefault(); openCourtRules('privacy');">Datenschutz</a>
+      <a href="#agb" style="margin-left:14px;" onclick="event.preventDefault(); openCourtRules('agb');">AGB</a>
     </div>
     <div class="site-footer-center">
       <button class="admin-footer-link" id="adminFooterBtn" onclick="curMode==='admin' ? setMode('book') : setMode('admin')">⚙ Admin</button>
@@ -2496,7 +2652,10 @@ body.bielstein-theme #tabPlay:not(.active) {
   </footer>
 </main>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status">
+  <span class="toast-msg" id="toastMsg"></span>
+  <button class="toast-close" type="button" aria-label="Meldung schließen" onclick="hideToast()">×</button>
+</div>
 
 <!-- ■■ SUPABASE SDK ■■ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3536,13 +3695,11 @@ async function doRegister() {
   const email  = document.getElementById('regEmail').value.trim();
   const pw     = document.getElementById('regPw').value;
   const phone  = document.getElementById('regPhone').value.trim() || null;
-  const year   = parseInt(document.getElementById('regYear').value);
-  const gender = document.getElementById('regGender').value || null;
+  // Geburtsjahr und Geschlecht werden seit 23.07.2026 nicht mehr erhoben
+  // (Datenminimierung). Der Profil-Trigger verträgt fehlende Metadaten.
   if (!name)            { showAuthErr('Bitte Name eingeben.'); return; }
   if (!email)           { showAuthErr('Bitte E-Mail eingeben.'); return; }
   if (pw.length < 8)    { showAuthErr('Passwort mindestens 8 Zeichen.'); return; }
-  if (!year || year < 1920 || year > 2015) { showAuthErr('Bitte gültiges Geburtsjahr eingeben.'); return; }
-  if (!gender)           { showAuthErr('Bitte Geschlecht auswählen.'); return; }
 
   // Mitgliedschaft wird NICHT hier gesetzt. Der Server erkennt sie über die
   // bestätigte E-Mail-Adresse. Die Datenbank setzt diese Felder beim Anlegen
@@ -3567,8 +3724,6 @@ async function doRegister() {
         data: {
           full_name:  name,
           phone:      phone || '',
-          gender:     gender || '',
-          birth_year: String(year),
         },
       },
     });
@@ -4495,7 +4650,6 @@ async function confirmBooking(skipAuthCheck) {
 
   const email    = currentProfile?.email || currentUser?.email;
   const fullName = currentProfile?.full_name || '';
-  const birthYear = currentProfile?.birth_year || null;
   const custType = currentProfile?.customer_type || 'account';
   const emailTheme = getCheckoutEmailTheme();
   const userId = await dataUserId();
@@ -4539,7 +4693,6 @@ async function confirmBooking(skipAuthCheck) {
           customer_type: custType,
           email,
           full_name: fullName,
-          birth_year: birthYear,
           ui_theme: emailTheme.key,
           email_theme: emailTheme,
           email_theme_key: emailTheme.key,
@@ -4599,7 +4752,6 @@ async function submitAbo(skipAuthCheck) {
 
   const email = currentProfile?.email || currentUser?.email;
   const fullName = currentProfile?.full_name || '';
-  const birthYear = currentProfile?.birth_year || null;
   const custType = currentProfile?.customer_type || 'account';
   const emailTheme = getCheckoutEmailTheme();
   const userId = await dataUserId();
@@ -4628,7 +4780,6 @@ async function submitAbo(skipAuthCheck) {
     customer_type: custType,
     email,
     full_name: fullName,
-    birth_year: birthYear,
     ui_theme: emailTheme.key,
     email_theme: emailTheme,
     email_theme_key: emailTheme.key
@@ -4664,7 +4815,6 @@ async function submitAbo(skipAuthCheck) {
           customer_type: custType,
           email,
           full_name: fullName,
-          birth_year: birthYear,
           ui_theme: emailTheme.key,
           email_theme: emailTheme,
           email_theme_key: emailTheme.key
@@ -4802,10 +4952,35 @@ function updateAboSummary() {
 
 function showToast(msg) {
   const t = document.getElementById("toast");
-  t.textContent = msg;
+  const m = document.getElementById("toastMsg");
+  if (m) m.textContent = msg; else t.textContent = msg;
   t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 3500);
+  // Ein neuer Toast verlängert die Anzeige des alten nicht mehr versehentlich:
+  // der vorherige Timer wird verworfen, sonst blendet er den neuen zu früh aus.
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(hideToast, 5000);
 }
+
+// Toast jederzeit schließbar: über das × oder per Wegwischen (Touch).
+function hideToast() {
+  clearTimeout(showToast._timer);
+  const t = document.getElementById("toast");
+  if (t) t.classList.remove("show");
+}
+(function(){
+  const t = document.getElementById("toast");
+  if (!t) return;
+  let sx = 0, sy = 0;
+  t.addEventListener("touchstart", function(e){
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+  }, { passive: true });
+  t.addEventListener("touchend", function(e){
+    const dx = e.changedTouches[0].clientX - sx;
+    const dy = e.changedTouches[0].clientY - sy;
+    // seitlich oder nach unten wischen = schließen
+    if (Math.abs(dx) > 60 || dy > 40) hideToast();
+  }, { passive: true });
+})();
 
 // ============================================================
 //  ADMIN – Initialisierung & Tab-Steuerung
@@ -4898,17 +5073,154 @@ async function doAdminWipe() {
   }
 }
 
+// ============================================================
+//  ADMIN – WETTERAUSFÄLLE (Schritt C)
+//  Liste über admin_list_weather_reports() (Datenbank prüft Admin-Rolle
+//  selbst). Zu jeder Meldung werden die echten Stundenwerte für
+//  Wiehl-Bielstein geladen (Bright Sky / DWD, kostenlos, ohne Key).
+//  ✓ ruft admin_decide_weather_report(approve=true) auf - die GUTSCHRIFT
+//  rechnet und schreibt ausschließlich die Datenbank (Skript 21).
+// ============================================================
+const WEATHER_COORDS = { lat: 50.97, lon: 7.52 };   // Wiehl-Bielstein
+const weatherDayCache = {};                          // "YYYY-MM-DD" -> Stundenliste
+
+async function loadAdminWeather() {
+  const box = document.getElementById('weatherAdminList');
+  if (!box) return;
+  box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:24px;">Wird geladen …</div>';
+  let rows = [];
+  try {
+    const { data, error } = await sb.rpc('admin_list_weather_reports');
+    if (error) throw error;
+    rows = data || [];
+  } catch(e) {
+    box.innerHTML = `<div style="color:#B8402C;padding:18px;">Meldungen konnten nicht geladen werden: ${esc(e?.message || 'Unbekannter Fehler')}</div>`;
+    return;
+  }
+  if (!rows.length) {
+    box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:24px;">Keine Wetterausfall-Meldungen vorhanden.</div>';
+    return;
+  }
+
+  box.innerHTML = rows.map(r => {
+    const dateStr = formatDateDE(r.booking_date);
+    const timeStr = `${String(r.hour_start).padStart(2,'0')}:00–${String(r.hour_start + r.duration).padStart(2,'0')}:00`;
+    const credit = Math.round((r.price_paid_cents || 0) * r.percent / 100);
+    const statusBadge = r.status === 'pending'
+      ? '<span style="color:#B8402C;font-weight:800;">● offen</span>'
+      : r.status === 'approved'
+        ? `<span style="color:#1F8A5F;font-weight:800;">✓ bestätigt · ${weatherFmtEUR(r.credit_cents || 0)}</span>`
+        : '<span style="color:#7A7368;font-weight:800;">✗ abgelehnt</span>';
+    const noteRow = (r.status !== 'pending' && r.admin_note)
+      ? `<div style="font-size:0.76rem;color:#7A7368;margin-top:6px;">Vermerk: ${esc(r.admin_note)}</div>` : '';
+    const actions = r.status === 'pending' ? `
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button onclick="adminDecideWeather('${r.report_id}', true)"
+                style="flex:1;min-width:170px;padding:11px 14px;border:0;border-radius:9px;background:#1F8A5F;color:#fff;font:700 13px 'Space Grotesk',sans-serif;cursor:pointer;">
+          ✓ Bestätigen – ${weatherFmtEUR(credit)} gutschreiben</button>
+        <button onclick="adminDecideWeather('${r.report_id}', false)"
+                style="flex:0 1 auto;min-width:120px;padding:11px 14px;border:1.5px solid #E2DACB;border-radius:9px;background:transparent;color:#7A7368;font:700 13px 'Space Grotesk',sans-serif;cursor:pointer;">
+          ✗ Ablehnen</button>
+      </div>` : noteRow;
+    return `
+      <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+          <div style="flex:1;min-width:220px;">
+            <div style="font:800 15px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(r.user_name || r.user_email || '—')}</div>
+            <div style="font-size:0.8rem;color:#7A7368;margin-top:2px;">${esc(r.user_email || '')}</div>
+            <div style="font-size:0.85rem;color:#1C1A17;margin-top:6px;">${dateStr} · ${timeStr} Uhr · Court #${r.court} · Buchungswert ${weatherFmtEUR(r.price_paid_cents || 0)}</div>
+            <div style="font-size:0.85rem;color:#1C1A17;margin-top:2px;">meldet <strong>${r.percent} % ausgefallen</strong> → Gutschrift ${weatherFmtEUR(credit)}</div>
+          </div>
+          <div style="text-align:right;">
+            ${statusBadge}
+            <div style="font-size:0.72rem;color:#7A7368;margin-top:3px;">gemeldet am ${formatDateDE(String(r.created_at).slice(0,10))}</div>
+          </div>
+        </div>
+        <div id="wx-${r.report_id}" style="font-size:0.8rem;color:#7A7368;margin-top:10px;padding:10px 12px;background:#F6F1E7;border-radius:8px;">Wetterdaten werden geladen …</div>
+        ${actions}
+      </div>`;
+  }).join('');
+
+  rows.forEach(r => fillWeatherInfo(r));
+}
+
+// Stundenwerte (Niederschlag, Wind, Temperatur) zur gebuchten Spielzeit.
+// Ein Abruf pro Datum, danach aus dem Zwischenspeicher.
+async function fillWeatherInfo(r) {
+  const el = document.getElementById('wx-' + r.report_id);
+  if (!el) return;
+  try {
+    const day = String(r.booking_date).slice(0, 10);
+    if (!weatherDayCache[day]) {
+      const res = await fetch(`https://api.brightsky.dev/weather?lat=${WEATHER_COORDS.lat}&lon=${WEATHER_COORDS.lon}&date=${day}`);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      weatherDayCache[day] = json.weather || [];
+    }
+    const hours = weatherDayCache[day].filter(w => {
+      const h = new Date(w.timestamp).getHours();
+      return h >= r.hour_start && h < r.hour_start + r.duration;
+    });
+    if (!hours.length) {
+      el.textContent = 'Für diesen Zeitraum liegen (noch) keine DWD-Stundenwerte vor – bitte selbst einschätzen.';
+      return;
+    }
+    const parts = hours.map(w => {
+      const h = new Date(w.timestamp).getHours();
+      const mm   = w.precipitation != null ? w.precipitation.toLocaleString('de-DE', {maximumFractionDigits: 1}) : '?';
+      const wind = w.wind_speed    != null ? Math.round(w.wind_speed) : '?';
+      const temp = w.temperature   != null ? Math.round(w.temperature) : '?';
+      return `${h}–${h + 1} Uhr: <strong>${mm} mm Niederschlag</strong> · Wind ${wind} km/h · ${temp} °C`;
+    });
+    const totalRain = hours.reduce((s, w) => s + (w.precipitation || 0), 0);
+    const verdict = totalRain > 0
+      ? `<span style="color:#1F8A5F;font-weight:800;">Regen bestätigt (${totalRain.toLocaleString('de-DE',{maximumFractionDigits:1})} mm gesamt)</span>`
+      : `<span style="color:#B8402C;font-weight:800;">Kein Niederschlag gemessen</span>`;
+    el.innerHTML = `${verdict}<br>` + parts.join('<br>');
+  } catch(e) {
+    el.textContent = 'Wetterdaten gerade nicht abrufbar (' + (e?.message || 'Fehler') + ') – bitte selbst einschätzen.';
+  }
+}
+
+async function adminDecideWeather(reportId, approve) {
+  let note = null;
+  if (!approve) {
+    note = prompt('Grund der Ablehnung (wird dem Nutzer angezeigt, optional):') || null;
+  }
+  if (!confirm(approve
+    ? 'Meldung bestätigen? Die Gutschrift wird sofort ins Kontobuch geschrieben.'
+    : 'Meldung ablehnen?')) return;
+  try {
+    const { data, error } = await sb.rpc('admin_decide_weather_report', {
+      p_report_id: reportId,
+      p_approve:   approve,
+      p_note:      note
+    });
+    if (error) throw error;
+    showToast(approve
+      ? `✓ Bestätigt – ${weatherFmtEUR(data?.credit_cents || 0)} wurden gutgeschrieben.`
+      : 'Meldung abgelehnt.');
+    loadAdminWeather();
+  } catch(e) {
+    alert('Entscheidung fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
+  }
+}
+
 function setAdminTab(tab) {
   document.getElementById('adminFreibad').style.display   = tab==='freibad'  ? 'block' : 'none';
   document.getElementById('adminPrices').style.display    = tab==='prices'   ? 'block' : 'none';
   document.getElementById('adminInternal').style.display  = tab==='internal' ? 'block' : 'none';
   document.getElementById('adminBookings').style.display  = tab==='bookings' ? 'block' : 'none';
+  document.getElementById('adminWeather').style.display   = tab==='weather'  ? 'block' : 'none';
   document.getElementById('adminMis').style.display       = tab==='mis'      ? 'block' : 'none';
   document.getElementById('adminUsers').style.display     = tab==='users'    ? 'block' : 'none';
   document.getElementById('adminWipe').style.display      = tab==='wipe'     ? 'block' : 'none';
-  ['freibad','prices','internal','bookings','mis','users','wipe'].forEach(t =>
+  ['freibad','prices','internal','bookings','weather','mis','users','wipe'].forEach(t =>
     document.getElementById('atab-'+t).classList.toggle('active', t===tab)
   );
+  // Wetterausfälle laden bei JEDEM Öffnen neu - hier ändern sich Zustände
+  // durch Entscheidungen, ein veralteter Stand wäre irreführend.
+  if (tab==='weather') { loadAdminWeather(); }
   if (tab==='freibad'  && !adminTabLoaded.freibad)  { loadAdminFreibad();  adminTabLoaded.freibad=true; }
   if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
   if (tab==='internal' && !adminTabLoaded.internal) { loadInternalBookings(); adminTabLoaded.internal=true; }
@@ -4942,6 +5254,7 @@ document.getElementById('adminFreibad').style.display   = 'block';
 document.getElementById('adminPrices').style.display    = 'none';
 document.getElementById('adminInternal').style.display  = 'none';
 document.getElementById('adminBookings').style.display  = 'none';
+document.getElementById('adminWeather').style.display   = 'none';
 document.getElementById('adminMis').style.display       = 'none';
 document.getElementById('adminUsers').style.display     = 'none';
 
@@ -5343,7 +5656,7 @@ async function loadAdminUsers() {
     const data = res.ok ? await res.json() : [];
     const tbody = document.getElementById('usersTbody');
     if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Keine Nutzer gefunden</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center;padding:24px;">Keine Nutzer gefunden</td></tr>';
       return;
     }
     tbody.innerHTML = data.map(u => `
@@ -5352,7 +5665,6 @@ async function loadAdminUsers() {
         <td style="color:#888;">${u.email || '—'}</td>
         <td><span class="admin-badge ${u.customer_type || 'account'}">${u.customer_type || 'account'}</span></td>
         <td style="color:#888;">${u.member_number || '—'}</td>
-        <td>${u.birth_year || '—'}</td>
         <td style="color:#555;">${u.created_at ? formatDateDE(u.created_at.slice(0,10)) : '—'}</td>
       </tr>`).join('');
   } catch(e) { console.warn('Users Admin Fehler:', e); }
@@ -6011,8 +6323,6 @@ function profileCardHTML() {
   const name = esc(currentProfile?.full_name);
   const email = esc(currentProfile?.email || currentUser?.email);
   const phone = esc(currentProfile?.phone);
-  const gender = currentProfile?.gender || '';
-  const year = currentProfile?.birth_year || '';
   const inits = (currentProfile?.full_name || '').trim().split(/\s+/).filter(Boolean)
     .slice(0, 2).map(w => w[0].toUpperCase()).join('') || '·';
   // Mitgliedschaft wird serverseitig über die BESTÄTIGTE E-Mail-Adresse erkannt
@@ -6038,15 +6348,7 @@ function profileCardHTML() {
       <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
       <div class="form-group"><label class="form-label">E-Mail</label><input class="form-input" id="pfEmail" type="email" value="${email}"></div>
       <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
-      <div class="form-group">
-        <label class="form-label">Geschlecht</label>
-        <div class="acct-radios">
-          <label><input type="radio" name="pfGender" value="maennlich"${gender === 'maennlich' ? ' checked' : ''}> Männlich</label>
-          <label><input type="radio" name="pfGender" value="weiblich"${gender === 'weiblich' ? ' checked' : ''}> Weiblich</label>
-          <label><input type="radio" name="pfGender" value="divers"${gender === 'divers' ? ' checked' : ''}> Divers</label>
-        </div>
-      </div>
-      <div class="form-group"><label class="form-label">Geburtsjahr</label><input class="form-input" id="pfYear" type="number" min="1920" max="2015" placeholder="z.B. 1985" value="${year}"></div>
+      <!-- Geschlecht und Geburtsjahr entfernt (Datenminimierung, 23.07.2026) -->
       <button class="book-btn visible" id="pfSaveBtn" style="width:100%;position:static;" onclick="saveProfile()">Änderungen speichern</button>
       <div class="profile-save-ok" id="pfSaveMsg"></div>
     </div>
@@ -6801,10 +7103,8 @@ async function saveProfile() {
   const name  = document.getElementById('pfName').value.trim();
   const email = document.getElementById('pfEmail').value.trim().toLowerCase();
   const phone = document.getElementById('pfPhone').value.trim();
-  const genderEl = document.querySelector('input[name="pfGender"]:checked');
-  const gender = genderEl ? genderEl.value : null;
-  const yearEl = document.getElementById('pfYear');
-  const birthYear = yearEl && yearEl.value ? parseInt(yearEl.value, 10) : null;
+  // Geschlecht/Geburtsjahr werden nicht mehr erhoben (Datenminimierung
+  // 23.07.2026); vorhandene Werte in der Datenbank bleiben unangetastet.
   if (!name)  { msg.style.color = '#d64545'; msg.textContent = 'Bitte einen Namen angeben.'; return; }
   if (!email) { msg.style.color = '#d64545'; msg.textContent = 'Bitte eine E-Mail angeben.'; return; }
   msg.style.color = ''; msg.textContent = 'Wird gespeichert …';
@@ -6828,9 +7128,9 @@ async function saveProfile() {
     // Update liefert sonst unter Umständen keinen HTTP-Fehler, aber 0 Zeilen.
     const { data: saved, error: profileErr } = await sb
       .from('users')
-      .update({ full_name: name, phone: phone || null, email, gender, birth_year: birthYear })
+      .update({ full_name: name, phone: phone || null, email })
       .eq('auth_id', currentUser.id)
-      .select('auth_id,full_name,email,phone,gender,birth_year')
+      .select('auth_id,full_name,email,phone')
       .maybeSingle();
 
     if (profileErr) throw new Error('Profildaten konnten nicht gespeichert werden: ' + profileErr.message);
@@ -8140,17 +8440,21 @@ body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
 
 /* ── COURT-REGELN: mittiger Header-Button + Wertkarten-Overlay ── */
 body.bielstein-theme .court-rules-trigger {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  /* Immer exakt mittig ZWISCHEN Wortmarke (links) und Account (rechts),
+     nicht in der Bildschirmmitte: margin auto teilt den freien Raum im
+     Flex-Header auf beiden Seiten gleich auf - auf jeder Displaybreite
+     (iPhone, iPad, Desktop) und in beiden Zuständen (an-/abgemeldet). */
+  position: static; margin: 0 auto; flex: 0 0 auto;
   width: 40px; height: 40px; padding: 0; border-radius: 10px; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   color: #F6F1E7; background: transparent;
   border: none;
-  transition: color .18s, border-color .18s, transform .18s;
+  transition: color .18s, transform .18s;
 }
 body.bielstein-theme .court-rules-trigger:hover,
 body.bielstein-theme .court-rules-trigger:focus-visible {
   color: #FF5A36; background: transparent;
-  transform: translate(-50%,-50%) scale(1.05); outline: none;
+  transform: scale(1.05); outline: none;
 }
 body.bielstein-theme .court-rules-glyph {
   position: relative; display: block; width: 4.25px; height: 17px;
@@ -8221,6 +8525,18 @@ body.bielstein-theme .court-rules-glyph::after {
 .court-rules-percentages { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; margin: 0 0 20px !important; }
 .court-rules-percentages li { margin: 0; }
 .court-rules-warning { padding: 16px 18px; border-left: 5px solid #FF5A36; border-radius: 0 10px 10px 0; background: #FFFFFF; }
+
+/* --- Umschalter Court-Regeln | Impressum in der Info-Karte --- */
+.court-rules-tabs { display: flex; flex-wrap: wrap; gap: 5px; margin: -8px 0 32px; padding: 5px; width: max-content; max-width: 100%; background: #EFE9DC; border: 1.5px solid #E2DACB; border-radius: 12px; }
+@media (max-width: 560px) { .court-rules-tab { padding: 9px 11px; font-size: 12px; } }
+.court-rules-tab { border: 0; background: transparent; color: #7A7368; font: 700 13px/1 "Space Grotesk",sans-serif; letter-spacing: .04em; padding: 10px 16px; border-radius: 8px; cursor: pointer; transition: color .15s, background .15s; }
+.court-rules-tab.active { background: #1C1A17; color: #F6F1E7; }
+.court-rules-tab:not(.active):hover, .court-rules-tab:focus-visible { color: #1C1A17; outline: none; }
+
+/* --- Impressum: Zwischenüberschriften + Platzhalter-Markierung --- */
+.court-rules-section h3 { margin: 22px 0 8px; font: 700 16px/1.2 "Space Grotesk",sans-serif; color: #1C1A17; }
+.imp-ph { background: #FFE9E2; border: 1px dashed #FF5A36; border-radius: 6px; padding: 0 6px; color: #B8402C; font-weight: 700; }
+.imp-note { margin: 26px 0 0; padding: 12px 16px; border-left: 5px solid #FF5A36; border-radius: 0 10px 10px 0; background: #FFFFFF; font: 600 12.5px/1.6 "Manrope",sans-serif; color: #7A7368; }
 
 /* --- Wetterausfall melden: Dialog + Karte „Letzte Buchung" --- */
 .weather-card { width: min(560px,100%); }
@@ -8334,9 +8650,29 @@ body.bielstein-theme .court-rules-glyph::after {
   var rulesReport = document.getElementById('courtRulesReport');
   var rulesPreviousFocus = null;
 
-  window.openCourtRules = function(){
+  /* Umschalter in der Info-Karte: Court-Regeln | Impressum | Datenschutz */
+  var CR_TABS = {
+    rules:     { view: 'courtRulesViewRules',     tab: 'crTabRules' },
+    impressum: { view: 'courtRulesViewImpressum', tab: 'crTabImpressum' },
+    privacy:   { view: 'courtRulesViewPrivacy',   tab: 'crTabPrivacy' },
+    agb:       { view: 'courtRulesViewAgb',       tab: 'crTabAgb' }
+  };
+  window.setCourtRulesTab = function(tab){
+    if(!CR_TABS[tab]) tab = 'rules';
+    Object.keys(CR_TABS).forEach(function(k){
+      var v = document.getElementById(CR_TABS[k].view);
+      var t = document.getElementById(CR_TABS[k].tab);
+      if(v) v.style.display = (k === tab) ? '' : 'none';
+      if(t){ t.classList.toggle('active', k === tab); t.setAttribute('aria-selected', k === tab ? 'true' : 'false'); }
+    });
+    var card = document.querySelector('.court-rules-card');
+    if(card) card.scrollTop = 0;
+  };
+
+  window.openCourtRules = function(tab){
     if(!rulesOverlay) return;
     rulesPreviousFocus = document.activeElement;
+    window.setCourtRulesTab(tab || 'rules');
     rulesOverlay.classList.add('open');
     rulesOverlay.setAttribute('aria-hidden','false');
     document.documentElement.style.overflow = 'hidden';
