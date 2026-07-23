@@ -1042,14 +1042,15 @@ main {
      Bestaetigung des Nutzers belastet werden. -->
 <div class="modal-overlay" id="creditConfirmModal">
   <div class="modal">
-    <div class="modal-title">Mit Guthaben bezahlen?</div>
+    <div class="modal-title">Zahlungsart wählen</div>
     <div class="modal-sub" id="ccSub">—</div>
     <div class="cc-lines">
       <div class="cc-line"><span>Buchung</span><span id="ccPrice">—</span></div>
       <div class="cc-line"><span>Aktuelles Guthaben</span><span id="ccBalance">—</span></div>
       <div class="cc-line cc-line-total"><span>Guthaben danach</span><span id="ccAfter">—</span></div>
     </div>
-    <button class="modal-btn" id="ccOk">Guthaben abbuchen und buchen →</button>
+    <button class="modal-btn" id="ccOk">Guthaben verwenden →</button>
+    <button class="modal-btn cc-stripe" id="ccStripe">Kein Guthaben verwenden →</button>
     <button class="modal-btn cc-cancel" id="ccCancel">Abbrechen</button>
   </div>
 </div>
@@ -4601,9 +4602,10 @@ async function fetchCreditBalanceCents() {
   return (data || []).reduce((s, e) => s + (Number(e.amount_cents) || 0), 0);
 }
 
-// Zustimmung zur Abbuchung einholen. Gibt true zurueck, wenn der Nutzer
-// zustimmt. Guthaben ist bezahltes Geld und wird nie ungefragt belastet.
-function askCreditConfirm(priceCents, balanceCents) {
+// Zahlungsart ausdrücklich wählen lassen. Rückgabe: 'credit' = Guthaben zuerst
+// verwenden (Rest ggf. über Stripe), 'stripe' = Guthaben unangetastet lassen
+// und den vollen Betrag über Stripe zahlen, null = Abbruch.
+function askPaymentChoice(priceCents, balanceCents) {
   // Eigene Formatierung: eur() liegt in einem anderen Skriptblock und ist hier
   // nicht sichtbar.
   const fmt = (cents) =>
@@ -4611,30 +4613,33 @@ function askCreditConfirm(priceCents, balanceCents) {
   return new Promise(resolve => {
     const modal  = document.getElementById('creditConfirmModal');
     const okBtn  = document.getElementById('ccOk');
+    const stripeBtn = document.getElementById('ccStripe');
     const cancel = document.getElementById('ccCancel');
-    if (!modal || !okBtn || !cancel) { resolve(true); return; }
+    if (!modal || !okBtn || !stripeBtn || !cancel) { resolve('stripe'); return; }
 
     const used  = Math.min(priceCents, balanceCents);
     const after = balanceCents - used;
     const rest  = priceCents - used;
 
     document.getElementById('ccSub').textContent = rest > 0
-      ? 'Dein Guthaben deckt einen Teil. Der Rest wird über Stripe bezahlt.'
-      : 'Diese Buchung wird vollständig von deinem Guthaben bezahlt.';
+      ? 'Du kannst dein Guthaben zuerst einsetzen und nur den Rest über Stripe bezahlen.'
+      : 'Dein Guthaben deckt die Buchung vollständig. Du kannst stattdessen trotzdem per Karte bezahlen.';
     document.getElementById('ccPrice').textContent   = fmt(priceCents);
     document.getElementById('ccBalance').textContent = fmt(balanceCents);
     document.getElementById('ccAfter').textContent   = fmt(after);
     okBtn.textContent = rest > 0
-      ? `${fmt(used)} abbuchen, ${fmt(rest)} per Karte →`
-      : 'Guthaben abbuchen und buchen →';
+      ? `${fmt(used)} Guthaben verwenden →`
+      : 'Guthaben verwenden →';
+    stripeBtn.textContent = `Kein Guthaben verwenden · ${fmt(priceCents)} per Karte →`;
 
     const close = (answer) => {
       modal.classList.remove('open');
-      okBtn.onclick = null; cancel.onclick = null;
+      okBtn.onclick = null; stripeBtn.onclick = null; cancel.onclick = null;
       resolve(answer);
     };
-    okBtn.onclick  = () => close(true);
-    cancel.onclick = () => close(false);
+    okBtn.onclick     = () => close('credit');
+    stripeBtn.onclick = () => close('stripe');
+    cancel.onclick    = () => close(null);
 
     modal.classList.add('open');
   });
@@ -4686,12 +4691,14 @@ async function confirmBooking(skipAuthCheck) {
     showToast('Guthabenstand konnte nicht geprüft werden. Bitte erneut versuchen.');
     return;
   }
+  let useCredit = false;
   if (balanceCents > 0) {
-    const ok = await askCreditConfirm(price_cents, balanceCents);
-    if (!ok) { showToast('Buchung abgebrochen.'); return; }
+    const paymentChoice = await askPaymentChoice(price_cents, balanceCents);
+    if (!paymentChoice) { showToast('Buchung abgebrochen.'); return; }
+    useCredit = paymentChoice === 'credit';
   }
 
-  const fullyByCredit = balanceCents >= price_cents;
+  const fullyByCredit = useCredit && balanceCents >= price_cents;
   showToast(fullyByCredit ? 'Buchung wird abgeschlossen …' : 'Weiter zu Stripe …');
 
   try {
@@ -4711,6 +4718,7 @@ async function confirmBooking(skipAuthCheck) {
           customer_type: custType,
           email,
           full_name: fullName,
+          use_credit: useCredit,
           ui_theme: emailTheme.key,
           email_theme: emailTheme,
           email_theme_key: emailTheme.key,
@@ -7934,6 +7942,14 @@ body.bielstein-theme #creditConfirmModal .cc-line-total span:last-child { color:
 body.bielstein-theme #creditConfirmModal .cc-cancel {
   background: transparent !important; color: #7A7368 !important;
   border: 1.5px solid #E2DACB !important; margin-top: 10px;
+}
+body.bielstein-theme #creditConfirmModal .cc-stripe {
+  background: #FFFFFF !important; color: #1C1A17 !important;
+  border: 1.5px solid #FF5A36 !important; box-shadow: none !important;
+  margin-top: 10px;
+}
+body.bielstein-theme #creditConfirmModal .cc-stripe:hover {
+  background: #FCE9E2 !important;
 }
 
 /* ── LEGENDE ── */
