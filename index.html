@@ -645,6 +645,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .freibad-note { background: #FFFFFF; border: 1px solid #E2DACB; border-left: 4px solid #FF5A36; border-radius: 12px; padding: 15px 17px; margin: 8px 0 22px; }
 .freibad-note-title { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: #1C1A17; margin-bottom: 8px; }
 .freibad-note p { margin: 0; font-size: 0.92rem; line-height: 1.65; color: #1C1A17; }
+.freibad-note p + p { margin-top: 10px; }
 .freibad-note strong { font-weight: 700; }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
@@ -1370,8 +1371,9 @@ main {
     </div>
 
     <div class="freibad-note">
-      <div class="freibad-note-title">■ Zugang während der Freibad-Öffnungszeiten</div>
-      <p>Während der Öffnungszeiten des Freibads Bielstein erfolgt der Zugang zur Padel-Anlage <strong>ausschließlich über den Eingang des Freibads</strong>. Dein Padel-Ticket gilt zu diesen Zeiten zusätzlich als Eintrittskarte für das Freibad. Deine Zugangscodes (gleichzeitig Eintrittskarten für das Freibad) kannst du ab 24 h vor Spielbeginn an deine 3 Mitspieler weiterleiten.</p>
+      <div class="freibad-note-title">■ Zugang zur Padel-Anlage</div>
+      <p>Während der Öffnungszeiten des Freibads Bielstein erfolgt der Zugang zur Padel-Anlage <strong>ausschließlich über den Eingang des Freibads</strong>. Dein Padel-Ticket gilt zu diesen Zeiten zugleich als Eintrittskarte für das Freibad. Außerhalb der Öffnungszeiten erfolgt der Zugang <strong>ausschließlich über die Parkplatzseite (Tür A)</strong>.</p>
+      <p>Die Zugangscodes kannst du ab 24 h vor Spielbeginn an deine Mitspieler weiterleiten. Kannst oder möchtest du selbst nicht spielen, lassen sie sich an bis zu 4 Personen weitergeben.</p>
     </div>
 
     <div class="summary-card" id="sumCard">
@@ -1489,8 +1491,9 @@ main {
         </div>
 
         <div class="freibad-note">
-          <div class="freibad-note-title">■ Zugang während der Freibad-Öffnungszeiten</div>
-          <p>Während der Öffnungszeiten des Freibads Bielstein erfolgt der Zugang zur Padel-Anlage <strong>ausschließlich über den Eingang des Freibads</strong>. Dein Padel-Ticket gilt zu diesen Zeiten zusätzlich als Eintrittskarte für das Freibad. Deine Zugangscodes (gleichzeitig Eintrittskarten für das Freibad) kannst du ab 24 h vor Spielbeginn an deine 3 Mitspieler weiterleiten.</p>
+          <div class="freibad-note-title">■ Zugang zur Padel-Anlage</div>
+          <p>Während der Öffnungszeiten des Freibads Bielstein erfolgt der Zugang zur Padel-Anlage <strong>ausschließlich über den Eingang des Freibads</strong>. Dein Padel-Ticket gilt zu diesen Zeiten zugleich als Eintrittskarte für das Freibad. Außerhalb der Öffnungszeiten erfolgt der Zugang <strong>ausschließlich über die Parkplatzseite (Tür A)</strong>.</p>
+          <p>Die Zugangscodes kannst du ab 24 h vor Spielbeginn an deine Mitspieler weiterleiten. Kannst oder möchtest du selbst nicht spielen, lassen sie sich an bis zu 4 Personen weitergeben.</p>
         </div>
       </div>
 
@@ -4452,6 +4455,17 @@ async function renderPlaySection() {
   courtBtn.disabled  = false;
   doorBtns.style.display = 'block';
 
+  // SIMULATION der zuständigen Tür (echte Türöffnung folgt später):
+  // Grundlage sind die im Admin hinterlegten Freibad-Öffnungszeiten.
+  //   Freibad offen  → Zugang über Tür B (Freibadseite)  → courtBtn aktiv
+  //   Freibad zu     → Zugang über Tür A (Parkplatzseite) → accessBtn aktiv
+  // Die aktive Tür wird kräftig orange, die andere bleibt sichtbar, aber dezent.
+  const tuerFreibadOffen = isFreibadOpen();
+  accessBtn.classList.toggle('door-active',   !tuerFreibadOffen);
+  accessBtn.classList.toggle('door-inactive',  tuerFreibadOffen);
+  courtBtn .classList.toggle('door-active',    tuerFreibadOffen);
+  courtBtn .classList.toggle('door-inactive', !tuerFreibadOffen);
+
   renderDoorLog();
   renderMyBookingsLists();   // gemeinsames chronologisches „Demnächst" unter den Türen
   renderWeatherReportCard(); // „Letzte Buchung" mit Wetterausfall-Meldung
@@ -7369,6 +7383,22 @@ body.bielstein-theme .door-btn.court {
 body.bielstein-theme .door-btn.access:hover:not(:disabled),
 body.bielstein-theme .door-btn.court:hover:not(:disabled) {
   background-color: #FF7454 !important; border: none !important; color: #F6F1E7 !important;
+}
+/* SIMULATION: nur die aktuell zuständige Tür kräftig orange; die andere bleibt
+   sichtbar, aber dezent beige. Steuerung per JS (door-active / door-inactive)
+   auf Basis der Freibad-Öffnungszeiten. Steht bewusst NACH der access/court-
+   Regel (überschreibt sie) und VOR der is-open-Regel (Klick bleibt Anthrazit). */
+body.bielstein-theme .door-btn.door-active {
+  background-color: #FF5A36 !important; border: none !important; color: #F6F1E7 !important;
+  box-shadow: 0 6px 22px rgba(241,107,36,.30) !important;
+}
+body.bielstein-theme .door-btn.door-inactive {
+  background-color: #F3ECDD !important; color: #A08A6E !important;
+  border: 1px solid rgba(241,107,36,.30) !important; box-shadow: none !important;
+}
+body.bielstein-theme .door-btn.door-inactive:hover:not(:disabled) {
+  background-color: #EDE4D2 !important; color: #8A745A !important;
+  border-color: rgba(241,107,36,.45) !important;
 }
 /* Nur „Tür A" / „Tür B" schwarz, der Rest bleibt beige. */
 body.bielstein-theme .door-btn-main { color: #1C1A17 !important; }
