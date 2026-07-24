@@ -5863,7 +5863,7 @@ async function savePrices() {
   }
 
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/prices`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/prices?on_conflict=hour,day_type`, {
       method: 'POST',
       headers: {
         ...__authH,
