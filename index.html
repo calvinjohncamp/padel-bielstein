@@ -640,6 +640,12 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 .door-info { background: #1C1A17; border: 1px solid #2A2723; border-radius: 12px; padding: 13px 16px; font-size: 0.82rem; color: #FFFFFF; line-height: 1.6; margin-bottom: 14px; }
 .door-info strong { color: #FFFFFF; }
+
+/* Hinweis: Freibad-Zugang (Buchungsseite + Jetzt-spielen-Seite) */
+.freibad-note { background: #FFFFFF; border: 1px solid #E2DACB; border-left: 4px solid #FF5A36; border-radius: 12px; padding: 15px 17px; margin: 8px 0 22px; }
+.freibad-note-title { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: #1C1A17; margin-bottom: 8px; }
+.freibad-note p { margin: 0; font-size: 0.92rem; line-height: 1.65; color: #1C1A17; }
+.freibad-note strong { font-weight: 700; }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
 .door-log-icon { font-size: 1rem; }
@@ -1363,6 +1369,11 @@ main {
       <div class="court-col"><div class="court-hdr"><div class="court-name">Court #2</div></div><div class="slots-grid" id="slots2"></div></div>
     </div>
 
+    <div class="freibad-note">
+      <div class="freibad-note-title">■ Zugang während der Freibad-Öffnungszeiten</div>
+      <p>Während der Öffnungszeiten des Freibads Bielstein erfolgt der Zugang zur Padel-Anlage <strong>ausschließlich über den Eingang des Freibads</strong>. Dein Padel-Ticket gilt zu diesen Zeiten zusätzlich als Eintrittskarte für das Freibad. Deine Zugangscodes (gleichzeitig Eintrittskarten für das Freibad) kannst du ab 24 h vor Spielbeginn an deine 3 Mitspieler weiterleiten.</p>
+    </div>
+
     <div class="summary-card" id="sumCard">
       <div class="sum-hdr">Deine Buchung</div>
       <div class="sum-row"><span class="sl">Datum</span><span class="sv" id="sDate">—</span></div>
@@ -1475,6 +1486,11 @@ main {
         </div>
         <div class="door-note" id="doorNote">
           Türen öffnen sich ab 5 Minuten vor Spielbeginn. Beide Türen des gebuchten Courts sind bis spätestens 10 Minuten nach Spielende von außen zu schließen.
+        </div>
+
+        <div class="freibad-note">
+          <div class="freibad-note-title">■ Zugang während der Freibad-Öffnungszeiten</div>
+          <p>Während der Öffnungszeiten des Freibads Bielstein erfolgt der Zugang zur Padel-Anlage <strong>ausschließlich über den Eingang des Freibads</strong>. Dein Padel-Ticket gilt zu diesen Zeiten zusätzlich als Eintrittskarte für das Freibad. Deine Zugangscodes (gleichzeitig Eintrittskarten für das Freibad) kannst du ab 24 h vor Spielbeginn an deine 3 Mitspieler weiterleiten.</p>
         </div>
       </div>
 
