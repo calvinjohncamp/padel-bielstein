@@ -4194,6 +4194,19 @@ function weatherDeadlineDate(b) {
   return new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1, 23, 59, 0);
 }
 
+// Buchungswert in Cent – für Anzeige und Gutschrift-Berechnung der Wettermeldung.
+// (Beim Cleanup am 27.07.2026 versehentlich mitentfernt, hier wiederhergestellt.)
+function weatherBookingValueCents(b) {
+  if (!b) return 0;
+  if (!b.weather_preview_slot && Number(b.price_paid_cents || 0) > 0) {
+    return Number(b.price_paid_cents);
+  }
+  const start = Number(b.hour_start || 0);
+  const dur = Number(b.duration || 1);
+  const map = prices(b.date);
+  return Math.round(sumHourlyPrices(map, start, dur) * 100);
+}
+
 function renderWeatherDoorEvidence(b) {
   const start = weatherStartDate(b);
   const end = weatherEndDate(b);
