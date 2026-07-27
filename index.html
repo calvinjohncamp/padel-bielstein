@@ -4232,23 +4232,10 @@ function renderWeatherProofShell(b) {
 
 async function loadWeatherProofForBooking(b) {
   const panel = document.getElementById('weatherProofPanel');
-  if (!panel || !b) return;
-  if (panel.dataset.loading === '1') return;
-  panel.dataset.loading = '1';
-  panel.innerHTML = '<div class="wx-wx-today yesterday"><div class="pbwx-note">Wetter zum Spieltag wird geladen …</div></div>';
-
-  for (let attempt = 0; attempt < 30; attempt += 1) {
-    if (window.PBWeather && window.PBWeather.renderBookingProof) {
-      try { await window.PBWeather.renderBookingProof(panel, b); }
-      catch (e) { console.warn('Wetterbeleg (Folio) konnte nicht geladen werden:', e); }
-      finally { panel.dataset.loading = '0'; }
-      return;
-    }
-    await new Promise(resolve => setTimeout(resolve, 100));
+  if (panel && b && window.PBWeather && window.PBWeather.renderBookingProof) {
+    try { await window.PBWeather.renderBookingProof(panel, b); }
+    catch (e) { console.warn('Wetterbeleg (Folio) konnte nicht geladen werden:', e); }
   }
-
-  panel.dataset.loading = '0';
-  panel.innerHTML = '<div class="wx-wx-today yesterday"><div class="pbwx-note">Die Wetteranzeige konnte gerade nicht initialisiert werden. Bitte Seite neu laden; die Meldung bleibt trotzdem möglich.</div></div>';
 }
 
 async function renderWeatherReportCard() {
