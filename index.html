@@ -1150,7 +1150,7 @@ main {
         <li>75 % ausgefallen</li>
         <li>100 % ausgefallen – ihr konntet gar nicht spielen</li>
       </ul>
-      <p>Die Meldung ist bis 24 Stunden nach Ende der Spielzeit möglich. Wir gleichen sie mit unseren Wetter- und Platzdaten ab. Sollten wir feststellen, dass die Angaben nicht mit der tatsächlichen Spielzeit übereinstimmen, behalten wir uns eine abweichende Buchung vor. Wird der Ausfall bestätigt, schreiben wir dir den entsprechenden Buchungswert als Guthaben gut.</p>
+      <p>Die Meldung ist bis zum Ende des auf den Spieltag folgenden Tags möglich. Wir gleichen sie mit unseren Wetter-, Tür- und Platzdaten ab. Sollten wir feststellen, dass die Angaben nicht mit der tatsächlichen Spielzeit übereinstimmen, behalten wir uns eine abweichende Buchung vor. Wird der Ausfall bestätigt, schreiben wir dir den entsprechenden Buchungswert als Guthaben gut.</p>
       <p><strong>Jahresabos:</strong> Abo-Termine sind von dieser Regelung ausgenommen. Das Wetterrisiko ist im Abopreis bereits berücksichtigt – wetterbedingt ausgefallene Abo-Termine werden deshalb nicht gutgeschrieben.</p>
       <p class="court-rules-warning"><strong>Bei Gewitter gilt ohne Ausnahme:</strong> Spiel sofort beenden, Court verlassen und einen geschützten Ort aufsuchen.</p>
       <p>Normaler Wind und niedrige Temperaturen allein gelten nicht als Wetterausfall. Bei Sturm, Schnee, Eis, Pfützen oder anderen unsicheren Platzverhältnissen sperren wir die Courts. Betroffene Buchungen werden automatisch gutgeschrieben.</p>
@@ -1301,6 +1301,11 @@ main {
       <span style="font:500 12.5px 'Manrope',sans-serif;color:#7A7368;">Gutschrift nach Prüfung</span><br>
       <span class="weather-credit-amount" id="weatherCreditAmount">–</span>
     </div>
+    <label class="weather-note-field">
+      <span>Kurze Bemerkung</span>
+      <textarea id="weatherReportNote" maxlength="200" rows="3" placeholder="Optional, max. 200 Zeichen" oninput="updateWeatherNoteCount()"></textarea>
+      <em><span id="weatherNoteCount">0</span>/200</em>
+    </label>
     <button type="button" class="weather-submit" id="weatherSubmitBtn" disabled onclick="submitWeatherReport()">Meldung absenden</button>
     <p style="font:500 12.5px/1.6 'Manrope',sans-serif;color:#7A7368;margin:14px 0 0;text-align:center;">Wir gleichen deine Meldung mit unseren Wetter- und Platzdaten ab. Nach Bestätigung wird der Betrag deinem Spielguthaben gutgeschrieben.</p>
   </article>
@@ -1509,14 +1514,14 @@ main {
       </div>
 
       <section class="play-history-section" aria-labelledby="playHistoryTitle">
-        <div class="play-card-title play-history-title" id="playHistoryTitle">■ Historie</div>
-
         <!-- Die letzte meldbare Buchung bleibt bis 24 h nach Spielende optisch
              hervorgehoben und ist zugleich Einstieg in die Wettermeldung. -->
         <div class="play-card recent-booking-card" id="weatherReportCard" style="display:none;">
-          <div class="play-card-title">◆ Letzte Buchung</div>
+          <div class="play-card-title">◆ Aktuelle / letzte Buchung</div>
           <div id="weatherReportContent"></div>
         </div>
+
+        <div class="play-card-title play-history-title" id="playHistoryTitle">■ Historie</div>
 
         <!-- Ältere, vollständig abgearbeitete Einzelbuchungen. -->
         <div class="play-card history-archive-card" id="myHistoryCard" style="display:none;">
@@ -4073,6 +4078,401 @@ function weatherBookingLabel(b) {
   return `${dateStr} · ${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start + b.duration).padStart(2,'0')}:00 Uhr · Court #${b.court}`;
 }
 
+const WEATHER_BIELSTEIN = {
+  lat: 50.9499,
+  lon: 7.5518,
+  label: 'Wiehl-Bielstein'
+};
+const weatherProofCache = new Map();
+
+function weatherPad(n) {
+  return String(n).padStart(2, '0');
+}
+
+function weatherIsoLocal(d) {
+  return `${d.getFullYear()}-${weatherPad(d.getMonth() + 1)}-${weatherPad(d.getDate())}T${weatherPad(d.getHours())}:00`;
+}
+
+function weatherDateKey(d) {
+  return `${d.getFullYear()}-${weatherPad(d.getMonth() + 1)}-${weatherPad(d.getDate())}`;
+}
+
+function weatherShortTime(d) {
+  return `${weatherPad(d.getHours())}:${weatherPad(d.getMinutes())}`;
+}
+
+function weatherTimeRange(start, end) {
+  return `${weatherShortTime(start)}-${weatherShortTime(end)} Uhr`;
+}
+
+function weatherStartDate(b) {
+  return new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`);
+}
+
+function weatherEndDate(b) {
+  const start = weatherStartDate(b);
+  return new Date(start.getTime() + Number(b.duration || 1) * 3600 * 1000);
+}
+
+function weatherDeadlineDate(b) {
+  const start = weatherStartDate(b);
+  return new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1, 23, 59, 0);
+}
+
+function weatherDataTime(w) {
+  return new Date(w.timestamp);
+}
+
+function weatherHourValue(rows, hourStart) {
+  const target = new Date(hourStart);
+  const found = rows.find(w => {
+    const t = weatherDataTime(w);
+    return t.getFullYear() === target.getFullYear()
+      && t.getMonth() === target.getMonth()
+      && t.getDate() === target.getDate()
+      && t.getHours() === target.getHours();
+  });
+  return found || null;
+}
+
+function weatherIntensityClass(mm) {
+  if (mm == null || Number.isNaN(mm)) return 'unknown';
+  if (mm >= 2.5) return 'heavy';
+  if (mm >= 1) return 'wet';
+  if (mm > 0) return 'light';
+  return 'dry';
+}
+
+function weatherMmText(mm) {
+  if (mm == null || Number.isNaN(mm)) return '–';
+  return `${Number(mm).toLocaleString('de-DE', {maximumFractionDigits: 1})} mm`;
+}
+
+function weatherBookingValueCents(b) {
+  if (!b) return 0;
+  if (!b.weather_preview_slot && Number(b.price_paid_cents || 0) > 0) {
+    return Number(b.price_paid_cents);
+  }
+  const start = Number(b.hour_start || 0);
+  const dur = Number(b.duration || 1);
+  const map = prices(b.date);
+  return Math.round(sumHourlyPrices(map, start, dur) * 100);
+}
+
+function weatherDayLabel(d) {
+  return d.toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'2-digit', year:'numeric'});
+}
+
+function weatherIconFor(rows) {
+  const total = rows.reduce((sum, w) => sum + Number(w.precipitation || 0), 0);
+  const maxWind = rows.reduce((max, w) => Math.max(max, Number(w.wind_gust_speed || w.wind_speed || 0)), 0);
+  const wetHours = rows.filter(w => Number(w.precipitation || 0) > 0).length;
+  if (total >= 8) return { icon: '🌧', label: 'Regnerisch', cls: 'rain' };
+  if (wetHours >= 4) return { icon: '🌦', label: 'Wechselhaft', cls: 'mixed' };
+  if (maxWind >= 45) return { icon: '💨', label: 'Windig', cls: 'wind' };
+  return { icon: '☀️', label: 'Trocken', cls: 'sun' };
+}
+
+function weatherWindLevel(kmh) {
+  const v = Number(kmh || 0);
+  if (v < 20) return 'light';
+  if (v < 39) return 'moderate';
+  if (v < 62) return 'strong';
+  return 'storm';
+}
+
+function weatherWindText(kmh) {
+  if (kmh == null || Number.isNaN(kmh)) return '–';
+  return `${Math.round(Number(kmh))} km/h`;
+}
+
+function weatherWindRangeText(values) {
+  const clean = (values || []).filter(v => v != null && !Number.isNaN(v));
+  if (!clean.length) return '–';
+  const min = Math.round(Math.min(...clean));
+  const max = Math.round(Math.max(...clean));
+  return min === max ? `${max} km/h` : `von ${min} bis ${max} km/h`;
+}
+
+function renderWeatherDoorEvidence(b) {
+  const start = weatherStartDate(b);
+  const end = weatherEndDate(b);
+  const hours = getFreibadHours(b.date);
+  const doorIsB = !b.weather_preview_slot && Number(b.hour_start) >= Number(hours.open || 0) && Number(b.hour_start) < Number(hours.close || 0);
+  const door = doorIsB ? 'Tür B' : 'Tür A';
+  const side = doorIsB ? 'Freibadseite' : 'Parkplatzseite';
+  const enter = new Date(start.getTime() - 3 * 60000);
+  const leave = new Date(end.getTime() + 6 * 60000);
+  return `
+    <div class="weather-door-proof" aria-label="Türnachweis zur Buchung">
+      <div class="weather-proof-subhead">
+        <span>Türnutzung</span>
+        <span>Simulation · später echtes Türprotokoll</span>
+      </div>
+      <div class="weather-door-grid">
+        <div class="weather-door-card">
+          <span class="weather-door-name">${door}</span>
+          <strong>Platz betreten</strong>
+          <em>${weatherShortTime(enter)} Uhr · ${side}</em>
+        </div>
+        <div class="weather-door-card">
+          <span class="weather-door-name">${door}</span>
+          <strong>Platz verlassen</strong>
+          <em>${weatherShortTime(leave)} Uhr · ${side}</em>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderWeatherProofShell(b) {
+  const start = weatherStartDate(b);
+  const end = weatherEndDate(b);
+  const deadline = weatherDeadlineDate(b);
+  const now = new Date();
+  const reliableAt = new Date(end.getTime() + 45 * 60000);
+  const beforeStart = now < start;
+  const beforeReliable = now >= start && now < reliableAt;
+  const stillOpen = now <= deadline;
+  const reliableText = now < reliableAt
+    ? `Daten erscheinen, sobald verfügbar · erwartet ab ca. ${weatherShortTime(reliableAt)} Uhr`
+    : 'Daten verfügbar · DWD/Bright Sky';
+  const deadlineText = beforeStart
+    ? `Meldbar nach Spielende bis Ende des folgenden Tags`
+    : stillOpen
+    ? `Regenmeldung möglich bis ${deadline.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'})}, ${weatherShortTime(deadline)} Uhr`
+    : `Meldezeit endete am ${deadline.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'})} um ${weatherShortTime(deadline)} Uhr`;
+  const pillClass = beforeStart ? 'preview' : (stillOpen ? 'open' : 'closed');
+  const pillLabel = beforeStart ? 'Vorabansicht' : beforeReliable ? 'Daten folgen' : stillOpen ? 'Frist offen' : 'Frist abgelaufen';
+
+  return `
+    <section class="weather-proof" id="weatherProofPanel" aria-label="Wetterbeleg zur Buchung">
+      <div class="weather-hero">
+        <div class="weather-hero-icon" id="weatherHeroIcon">☁️</div>
+        <div class="weather-hero-copy">
+          <div class="weather-proof-kicker">Wetter am Spieltag</div>
+          <div class="weather-proof-title">${WEATHER_BIELSTEIN.label}</div>
+          <div class="weather-proof-date">${weatherDayLabel(start)}</div>
+        </div>
+        <span class="weather-proof-pill ${pillClass}">${pillLabel}</span>
+      </div>
+      <div class="weather-proof-meta">
+        <span>${deadlineText}</span>
+        <span>${reliableText}</span>
+      </div>
+      <div class="weather-day-summary" id="weatherDaySummary">
+        <div><strong>–</strong><span>Niederschlag gesamt (24h)</span></div>
+        <div><strong>–</strong><span>Stunden mit Niederschlag</span></div>
+        <div><strong>–</strong><span>Wind am Spieltag</span></div>
+      </div>
+      <div class="weather-proof-context">
+        <div class="weather-proof-subhead">
+          <span>Buchbare Slots 08-22 Uhr · mm pro Stunde</span>
+          <span id="weatherProofPeak">Daten werden geladen …</span>
+        </div>
+        <div class="weather-hour-strip" id="weatherHourStrip"></div>
+        <div class="weather-hour-legend">
+          <div class="weather-legend-grid">
+            <div><span><i class="legend-dot dry"></i> 0 mm</span><em>kein Regen</em></div>
+            <div><span><i class="legend-dot light"></i> &lt; 1 mm/h</span><em>teilweise leichter Regen</em></div>
+            <div><span><i class="legend-dot wet"></i> 1-2,4 mm/h</span><em>teilweise mäßiger Regen</em></div>
+            <div><span><i class="legend-dot heavy"></i> ab 2,5 mm/h</span><em>teilweise stärkerer Regen</em></div>
+            <div><span><i class="legend-ring"></i></span><em>dein Slot</em></div>
+          </div>
+        </div>
+      </div>
+      <div class="weather-proof-focus">
+        <div class="weather-proof-subhead">
+          <span>Dein Slot ${weatherTimeRange(start, end)}</span>
+          <span id="weatherProofSummary">exakte Spielzeit wird geprüft</span>
+        </div>
+        <div class="weather-quarter-grid" id="weatherQuarterGrid">
+          <div class="weather-loading">DWD-Werte werden geladen …</div>
+        </div>
+      </div>
+      <div class="weather-proof-focus weather-wind-focus">
+        <div class="weather-proof-subhead">
+          <span>Wind in deiner Spielzeit · km/h</span>
+          <span id="weatherWindSummary">Winddaten werden geladen …</span>
+        </div>
+        <div class="weather-wind-slot-grid" id="weatherWindSlotGrid">
+          <div class="weather-loading">Windwerte werden geladen …</div>
+        </div>
+        <div class="weather-wind-legend">
+          <div><span><i class="wind-dot light"></i> &lt; 20 km/h</span><em>leichter Wind</em></div>
+          <div><span><i class="wind-dot moderate"></i> 20-38 km/h</span><em>mäßiger Wind</em></div>
+          <div><span><i class="wind-dot strong"></i> 39-61 km/h</span><em>starker Wind</em></div>
+          <div><span><i class="wind-dot storm"></i> ab 62 km/h</span><em>Sturm</em></div>
+        </div>
+      </div>
+      ${renderWeatherDoorEvidence(b)}
+      <div class="weather-proof-source" id="weatherProofSource">
+        Quelle: Bright Sky / Deutscher Wetterdienst · Standort ${WEATHER_BIELSTEIN.lat.toFixed(4)}, ${WEATHER_BIELSTEIN.lon.toFixed(4)}
+      </div>
+    </section>`;
+}
+
+async function fetchWeatherProofRows(b) {
+  const start = weatherStartDate(b);
+  const dayStart = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0);
+  const dayEnd = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 23, 0, 0);
+  const cacheKey = `${weatherDateKey(dayStart)}-day`;
+  if (weatherProofCache.has(cacheKey)) return weatherProofCache.get(cacheKey);
+  const url = `https://api.brightsky.dev/weather?lat=${WEATHER_BIELSTEIN.lat}&lon=${WEATHER_BIELSTEIN.lon}&date=${encodeURIComponent(weatherIsoLocal(dayStart))}&last_date=${encodeURIComponent(weatherIsoLocal(dayEnd))}&tz=Europe%2FBerlin`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Bright Sky HTTP ${res.status}`);
+  const json = await res.json();
+  const rows = Array.isArray(json.weather) ? json.weather : [];
+  weatherProofCache.set(cacheKey, rows);
+  return rows;
+}
+
+async function loadWeatherProofForBooking(b) {
+  const panel = document.getElementById('weatherProofPanel');
+  const quarterGrid = document.getElementById('weatherQuarterGrid');
+  const hourStrip = document.getElementById('weatherHourStrip');
+  const summary = document.getElementById('weatherProofSummary');
+  const peak = document.getElementById('weatherProofPeak');
+  const source = document.getElementById('weatherProofSource');
+  const daySummary = document.getElementById('weatherDaySummary');
+  const heroIcon = document.getElementById('weatherHeroIcon');
+  const windSlotGrid = document.getElementById('weatherWindSlotGrid');
+  const windSummary = document.getElementById('weatherWindSummary');
+  if (!panel || !quarterGrid || !hourStrip || !b) return;
+
+  const start = weatherStartDate(b);
+  const end = weatherEndDate(b);
+
+  try {
+    const rows = await fetchWeatherProofRows(b);
+    const dayRows = rows.filter(w => {
+      const t = weatherDataTime(w);
+      return t.getFullYear() === start.getFullYear()
+        && t.getMonth() === start.getMonth()
+        && t.getDate() === start.getDate();
+    });
+    const totalDayMm = dayRows.reduce((sum, w) => sum + Number(w.precipitation || 0), 0);
+    const wetHours = dayRows.filter(w => Number(w.precipitation || 0) > 0).length;
+    const maxWindDay = dayRows.reduce((max, w) => Math.max(max, Number(w.wind_gust_speed || w.wind_speed || 0)), 0);
+    const windDayValues = dayRows
+      .map(w => Number(w.wind_gust_speed || w.wind_speed || 0))
+      .filter(v => !Number.isNaN(v) && v > 0);
+    const windDayRange = weatherWindRangeText(windDayValues);
+    const bookableRows = dayRows.filter(w => {
+      const h = weatherDataTime(w).getHours();
+      return h >= 8 && h < 22;
+    });
+    const bookableMm = bookableRows.reduce((sum, w) => sum + Number(w.precipitation || 0), 0);
+    const outsideMm = Math.max(0, totalDayMm - bookableMm);
+    const mood = weatherIconFor(dayRows);
+    panel.classList.add(`weather-${mood.cls}`);
+    if (heroIcon) {
+      heroIcon.textContent = mood.icon;
+      heroIcon.setAttribute('aria-label', mood.label);
+    }
+    if (daySummary) {
+      const dayShort = start.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'});
+      daySummary.innerHTML = `
+        <div><strong>${weatherMmText(totalDayMm)}</strong><span>Niederschlag am ${dayShort}. gesamt (24h)</span><em>Davon 08-22 Uhr: ${weatherMmText(bookableMm)}</em></div>
+        <div><strong>${wetHours}/24</strong><span>Stunden mit Niederschlag</span><em>Außerhalb 08-22 Uhr: ${weatherMmText(outsideMm)}</em></div>
+        <div><strong>${windDayRange}</strong><span>Wind am Spieltag (24h)</span><em>Einordnung unten für deine Spielzeit</em></div>`;
+    }
+
+    let bookingMm = 0;
+    let bookingWind = 0;
+    const quarters = [];
+    const windHours = [];
+    for (let h = 0; h < Number(b.duration || 1); h += 1) {
+      const hourStart = new Date(start.getTime() + h * 3600000);
+      const row = weatherHourValue(rows, hourStart);
+      const mm = row?.precipitation == null ? null : Number(row.precipitation);
+      if (mm != null && !Number.isNaN(mm)) bookingMm += mm;
+      const wind = Number(row?.wind_gust_speed || row?.wind_speed || 0);
+      if (!Number.isNaN(wind)) bookingWind = Math.max(bookingWind, wind);
+      windHours.push({
+        start: hourStart,
+        end: new Date(hourStart.getTime() + 3600000),
+        value: Number.isNaN(wind) ? null : wind
+      });
+      for (let q = 0; q < 4; q += 1) {
+        const qStart = new Date(hourStart.getTime() + q * 15 * 60000);
+        const qEnd = new Date(qStart.getTime() + 15 * 60000);
+        quarters.push({ start: qStart, end: qEnd, mm: mm == null ? null : mm / 4 });
+      }
+    }
+
+    quarterGrid.innerHTML = quarters.map((q, idx) => `
+      <div class="weather-quarter ${weatherIntensityClass(q.mm)}">
+        <span class="weather-quarter-time">${weatherTimeRange(q.start, q.end)}</span>
+        <strong>${weatherMmText(q.mm)}</strong>
+        <span>${idx + 1}. Viertel</span>
+      </div>`).join('');
+
+    if (windSlotGrid) {
+      windSlotGrid.innerHTML = windHours.map(w => {
+        const level = weatherWindLevel(w.value);
+        return `
+          <div class="weather-wind-slot ${level}">
+            <span>${weatherTimeRange(w.start, w.end)}</span>
+            <strong>${weatherWindRangeText([w.value])}</strong>
+            <em>${level === 'light' ? 'leichter Wind' : level === 'moderate' ? 'mäßiger Wind' : level === 'strong' ? 'starker Wind' : 'Sturm'}</em>
+          </div>`;
+      }).join('');
+    }
+    if (windSummary) {
+      const values = windHours.map(w => w.value).filter(v => v != null && !Number.isNaN(v));
+      const minWind = values.length ? Math.min(...values) : null;
+      const maxWind = values.length ? Math.max(...values) : null;
+      windSummary.textContent = values.length ? weatherWindRangeText(values) : 'keine Windwerte verfügbar';
+    }
+
+    const hours = [];
+    for (let hour = 8; hour < 22; hour += 1) {
+      const hourStart = new Date(start.getFullYear(), start.getMonth(), start.getDate(), hour, 0, 0);
+      const row = weatherHourValue(rows, hourStart);
+      const mm = row?.precipitation == null ? null : Number(row.precipitation);
+      const isPlay = hourStart >= start && hourStart < end;
+      const label = `${weatherPad(hourStart.getHours())}`;
+      const height = mm == null ? 5 : Math.max(5, Math.min(52, 6 + mm * 12));
+      const mmLabel = mm == null ? '–' : `${Number(mm).toLocaleString('de-DE', {maximumFractionDigits: 1})} mm`;
+      hours.push(`
+        <div class="weather-hour ${weatherIntensityClass(mm)} ${isPlay ? 'play' : ''}" title="${weatherTimeRange(hourStart, new Date(hourStart.getTime() + 3600000))} · ${weatherMmText(mm)}">
+          <span class="weather-hour-mm">${mmLabel}</span>
+          <span class="weather-hour-bar" style="height:${height}px"></span>
+          <span class="weather-hour-label">${label}</span>
+        </div>`);
+    }
+    hourStrip.innerHTML = hours.join('');
+
+    const measured = dayRows.filter(w => {
+      const t = weatherDataTime(w);
+      return t.getHours() >= 8 && t.getHours() < 22 && w.precipitation != null;
+    });
+    const peakMm = measured.reduce((max, w) => Math.max(max, Number(w.precipitation || 0)), 0);
+    if (summary) summary.textContent = `Spielzeit: ${weatherMmText(bookingMm)} · Wind ${weatherWindText(bookingWind)}`;
+    if (peak) peak.textContent = `Maximum 08-22 Uhr: ${weatherMmText(peakMm)} pro Stunde`;
+    if (source) {
+      const sourceIds = [...new Set(rows.map(w => w.source_id).filter(Boolean))].slice(0, 3).join(', ');
+      source.innerHTML = `Quelle: Bright Sky / Deutscher Wetterdienst · echte Stundenwerte · Viertelwerte aus Stundenmenge abgeleitet${sourceIds ? ` · Station/Quelle ${sourceIds}` : ''}`;
+    }
+  } catch(e) {
+    console.warn('Wetterbeleg konnte nicht geladen werden:', e);
+    quarterGrid.innerHTML = `
+      <div class="weather-proof-empty">
+        DWD-Werte sind gerade nicht abrufbar. Die Meldung bleibt möglich; der Abgleich erfolgt nachträglich über die Wetterdaten.
+      </div>`;
+    if (windSlotGrid) {
+      windSlotGrid.innerHTML = `
+        <div class="weather-proof-empty">
+          Windwerte sind gerade nicht abrufbar.
+        </div>`;
+    }
+    hourStrip.innerHTML = '';
+    if (summary) summary.textContent = 'Wetterdaten noch offen';
+    if (windSummary) windSummary.textContent = 'Winddaten noch offen';
+    if (peak) peak.textContent = 'Abgleich folgt';
+  }
+}
+
 async function renderWeatherReportCard() {
   const card = document.getElementById('weatherReportCard');
   const box  = document.getElementById('weatherReportContent');
@@ -4119,14 +4519,13 @@ async function renderWeatherReportCard() {
     bookings = data || [];
   } catch(e) { console.error('Wetterausfall: Buchungen laden fehlgeschlagen', e); return; }
 
-  // Meldbar = Spielzeit hat begonnen und endete vor weniger als 24 Stunden
+  // Meldbar = Spielzeit hat begonnen und ist bis Ende des Folgetags offen
   // (im Testmodus: jede bezahlte Buchung)
   const eligible = bookings.filter(b => {
     if (!b.price_paid_cents) return false;
     if (weatherTestMode) return true;
     const start = new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`);
-    const end   = new Date(start.getTime() + b.duration * 3600 * 1000);
-    return now >= start && now <= new Date(end.getTime() + 24 * 3600 * 1000);
+    return now >= start && now <= weatherDeadlineDate(b);
   });
   if (!eligible.length) return;
 
@@ -4144,50 +4543,72 @@ async function renderWeatherReportCard() {
   // Bevorzugt die jüngste Buchung OHNE Meldung; haben alle schon eine,
   // wird der Stand der jüngsten Meldung angezeigt.
   const open = eligible.find(x => !reportsByBooking[x.id]);
-  const b = open || eligible[0];
+  let b = open || eligible[0];
+  if (weatherTestMode) {
+    b = {
+      ...b,
+      date: '2026-07-26',
+      hour_start: 18,
+      duration: 2,
+      court: b?.court || 2,
+      weather_preview_slot: true
+    };
+    b.price_paid_cents = weatherBookingValueCents(b);
+  }
   const report = reportsByBooking[b.id] || null;
+  const bookingValueCents = weatherBookingValueCents(b);
 
   const bookingRow = `
     <div class="closure-item my-booking" style="margin-bottom:4px;">
       <div style="flex:1;">
         <div class="closure-item-date">${weatherBookingLabel(b)}</div>
-        <div class="closure-item-note">Buchungswert ${weatherFmtEUR(b.price_paid_cents)}</div>
+        <div class="closure-item-note">Buchungswert ${weatherFmtEUR(bookingValueCents)}${b.weather_preview_slot ? ' · Wetter-Testslot' : ''}</div>
       </div>
     </div>`;
+  const proofPanel = renderWeatherProofShell(b);
 
   if (!report) {
     weatherReportBooking = b;
     let hint;
     if (weatherTestMode) {
-      hint = 'Testphase: Meldung jederzeit möglich (ohne 24-h-Fenster).';
+      hint = b.weather_preview_slot
+        ? 'Testansicht mit echtem Wetter vom 26.07.2026, 18-20 Uhr.'
+        : 'Testphase: Meldung jederzeit möglich.';
     } else {
-      const end = new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`).getTime() + b.duration * 3600 * 1000;
-      const hoursLeft = Math.max(1, Math.floor((end + 24 * 3600 * 1000 - now.getTime()) / 3600000));
+      const hoursLeft = Math.max(1, Math.floor((weatherDeadlineDate(b).getTime() - now.getTime()) / 3600000));
       hint = `Wetterbedingt ausgefallen? Meldung noch ${hoursLeft} Std. möglich.`;
     }
     box.innerHTML = bookingRow + `
+      ${proofPanel}
       <button type="button" class="weather-report-btn" onclick="openWeatherReport()">🌧 Wetterausfall melden</button>
       <div class="weather-report-hint">${hint}</div>`;
   } else if (report.status === 'pending') {
     box.innerHTML = bookingRow + `
+      ${proofPanel}
       <div class="weather-status-note" style="color:#B8402C;">⏳ Meldung eingegangen (${report.percent} % ausgefallen) – wird geprüft.</div>`;
   } else if (report.status === 'approved') {
     box.innerHTML = bookingRow + `
+      ${proofPanel}
       <div class="weather-status-note" style="color:#1F8A5F;">✓ Wetterausfall bestätigt – ${weatherFmtEUR(report.credit_cents || 0)} wurden deinem Spielguthaben gutgeschrieben.</div>`;
   } else {
     box.innerHTML = bookingRow + `
+      ${proofPanel}
       <div class="weather-status-note" style="color:#7A7368;">Deine Meldung (${report.percent} %) wurde nach Abgleich mit den Wetterdaten nicht bestätigt.${report.admin_note ? '<br>Hinweis: ' + esc(report.admin_note) : ''}</div>`;
   }
   card.style.display = 'block';
+  loadWeatherProofForBooking(b);
 }
 
 function openWeatherReport() {
   if (!weatherReportBooking) return;
   weatherReportPercent = 0;
   document.getElementById('weatherDialogBooking').textContent =
-    weatherBookingLabel(weatherReportBooking) + ' · ' + weatherFmtEUR(weatherReportBooking.price_paid_cents);
+    weatherBookingLabel(weatherReportBooking) + ' · ' + weatherFmtEUR(weatherBookingValueCents(weatherReportBooking));
   document.querySelectorAll('#weatherPctGrid .weather-pct').forEach(el => el.classList.remove('selected'));
   document.getElementById('weatherCreditBox').classList.remove('visible');
+  const note = document.getElementById('weatherReportNote');
+  if (note) note.value = '';
+  updateWeatherNoteCount();
   const btn = document.getElementById('weatherSubmitBtn');
   btn.disabled = true;
   btn.textContent = 'Meldung absenden';
@@ -4195,6 +4616,13 @@ function openWeatherReport() {
   ov.classList.add('open');
   ov.setAttribute('aria-hidden', 'false');
   document.documentElement.style.overflow = 'hidden';
+}
+
+function updateWeatherNoteCount() {
+  const note = document.getElementById('weatherReportNote');
+  const count = document.getElementById('weatherNoteCount');
+  if (!note || !count) return;
+  count.textContent = String(note.value.length);
 }
 
 function closeWeatherReport() {
@@ -4209,7 +4637,7 @@ function selectWeatherPercent(btn) {
   if (!weatherReportBooking) return;
   weatherReportPercent = Number(btn.dataset.pct);
   document.querySelectorAll('#weatherPctGrid .weather-pct').forEach(el => el.classList.toggle('selected', el === btn));
-  const credit = Math.round(weatherReportBooking.price_paid_cents * weatherReportPercent / 100);
+  const credit = Math.round(weatherBookingValueCents(weatherReportBooking) * weatherReportPercent / 100);
   document.getElementById('weatherCreditAmount').textContent = weatherFmtEUR(credit);
   document.getElementById('weatherCreditBox').classList.add('visible');
   document.getElementById('weatherSubmitBtn').disabled = false;
@@ -4217,14 +4645,30 @@ function selectWeatherPercent(btn) {
 
 async function submitWeatherReport() {
   if (!weatherReportBooking || !weatherReportPercent) return;
+  const noteEl = document.getElementById('weatherReportNote');
+  const userNote = (noteEl?.value || '').trim().slice(0, 200);
+  if (weatherReportBooking.weather_preview_slot) {
+    closeWeatherReport();
+    showToast('Testansicht: Die echte Meldung wird erst bei einer tatsächlichen Buchung gespeichert.');
+    return;
+  }
   const btn = document.getElementById('weatherSubmitBtn');
   btn.disabled = true;
   btn.textContent = 'Wird gesendet …';
   try {
-    const { error } = await sb.rpc('report_weather_outage', {
+    const payload = {
       p_booking_id: weatherReportBooking.id,
       p_percent: weatherReportPercent
-    });
+    };
+    if (userNote) payload.p_user_note = userNote;
+    let { error } = await sb.rpc('report_weather_outage', payload);
+    if (error && userNote) {
+      const fallback = await sb.rpc('report_weather_outage', {
+        p_booking_id: weatherReportBooking.id,
+        p_percent: weatherReportPercent
+      });
+      error = fallback.error;
+    }
     if (error) throw error;
     closeWeatherReport();
     showToast('✅ Meldung eingegangen – wir prüfen sie und schreiben dir den Ausfall danach gut.');
@@ -5175,6 +5619,8 @@ async function loadAdminWeather() {
         : '<span style="color:#7A7368;font-weight:800;">✗ abgelehnt</span>';
     const noteRow = (r.status !== 'pending' && r.admin_note)
       ? `<div style="font-size:0.76rem;color:#7A7368;margin-top:6px;">Vermerk: ${esc(r.admin_note)}</div>` : '';
+    const userNoteRow = r.user_note
+      ? `<div style="font-size:0.8rem;color:#7A7368;margin-top:8px;padding:9px 11px;background:#FFF8F1;border:1px solid #EAD8C5;border-radius:8px;">Bemerkung Spieler: ${esc(r.user_note)}</div>` : '';
     const actions = r.status === 'pending' ? `
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
         <button onclick="adminDecideWeather('${r.report_id}', true)"
@@ -5192,6 +5638,7 @@ async function loadAdminWeather() {
             <div style="font-size:0.8rem;color:#7A7368;margin-top:2px;">${esc(r.user_email || '')}</div>
             <div style="font-size:0.85rem;color:#1C1A17;margin-top:6px;">${dateStr} · ${timeStr} Uhr · Court #${r.court} · Buchungswert ${weatherFmtEUR(r.price_paid_cents || 0)}</div>
             <div style="font-size:0.85rem;color:#1C1A17;margin-top:2px;">meldet <strong>${r.percent} % ausgefallen</strong> → Gutschrift ${weatherFmtEUR(credit)}</div>
+            ${userNoteRow}
           </div>
           <div style="text-align:right;">
             ${statusBadge}
@@ -8699,10 +9146,140 @@ body.bielstein-theme .court-rules-glyph::after {
 .weather-submit { width: 100%; padding: 15px; border: 0; border-radius: 12px; background: #FF5A36; color: #FFFFFF; font: 700 15px "Space Grotesk",sans-serif; letter-spacing: .03em; cursor: pointer; transition: background .15s; }
 .weather-submit:disabled { opacity: .45; cursor: not-allowed; }
 .weather-submit:hover:not(:disabled), .weather-submit:focus-visible { background: #E8431E; outline: none; }
+.weather-note-field { display: block; margin: 0 0 14px; }
+.weather-note-field span { display: block; margin: 0 0 7px; font: 800 11px/1 "Space Grotesk",sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #7A7368; }
+.weather-note-field textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 72px; max-height: 120px; padding: 11px 12px; border: 1.5px solid #E2DACB; border-radius: 12px; background: #FFFFFF; color: #1C1A17; font: 600 13px/1.45 "Manrope",sans-serif; outline: none; }
+.weather-note-field textarea:focus { border-color: #FF5A36; box-shadow: 0 0 0 3px rgba(255,90,54,.1); }
+.weather-note-field em { display: block; margin-top: 5px; text-align: right; font: 700 10.5px/1 "Manrope",sans-serif; color: #8C8578; font-style: normal; }
 .weather-report-btn { display: block; width: 100%; margin-top: 12px; padding: 14px; border: 0; border-radius: 10px; background: #FF5A36; color: #FFFFFF; font: 700 14px "Space Grotesk",sans-serif; letter-spacing: .03em; cursor: pointer; transition: background .15s; }
 .weather-report-btn:hover, .weather-report-btn:focus-visible { background: #E8431E; outline: none; }
 .weather-report-hint { margin-top: 9px; text-align: center; font: 500 12px "Manrope",sans-serif; color: #7A7368; }
 .weather-status-note { margin-top: 10px; font: 500 13px/1.55 "Manrope",sans-serif; }
+.weather-proof { margin: 14px 0 12px; padding: 16px; border: 1.5px solid #D9CFBF; border-radius: 14px; background: #FAF8F4; box-shadow: inset 0 0 0 1px rgba(255,255,255,.55); }
+.weather-proof-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.weather-proof-kicker { font: 800 10px/1 "Space Grotesk",sans-serif; letter-spacing: .18em; text-transform: uppercase; color: #FF5A36; margin-bottom: 6px; }
+.weather-proof-title { font: 800 17px/1.2 "Space Grotesk",sans-serif; color: #1C1A17; }
+.weather-proof-pill { flex-shrink: 0; border-radius: 999px; padding: 6px 10px; font: 800 10px/1 "Space Grotesk",sans-serif; letter-spacing: .09em; text-transform: uppercase; border: 1.5px solid #D9CFBF; color: #7A7368; background: #FFFFFF; }
+.weather-proof-pill.preview { border-color: rgba(122,115,104,.32); color: #7A7368; }
+.weather-proof-pill.open { border-color: rgba(31,138,95,.35); color: #1F8A5F; }
+.weather-proof-pill.closed { border-color: rgba(184,64,44,.35); color: #B8402C; }
+.weather-proof-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 14px; }
+.weather-proof-meta span { padding: 9px 10px; border-radius: 9px; background: #FFFFFF; border: 1px solid #E7E0D5; font: 700 11.5px/1.35 "Manrope",sans-serif; color: #7A7368; }
+.weather-proof-focus { padding-top: 3px; }
+.weather-proof-subhead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 9px; font-family: "Space Grotesk",sans-serif; }
+.weather-proof-subhead span:first-child { font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; color: #1C1A17; }
+.weather-proof-subhead span:last-child { font-size: 11.5px; font-weight: 700; color: #7A7368; text-align: right; }
+.weather-quarter-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+.weather-quarter { min-height: 82px; padding: 10px 8px; border: 1.5px solid #E7E0D5; border-radius: 11px; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
+.weather-quarter-time { font: 800 10px/1.1 "Space Grotesk",sans-serif; color: #7A7368; letter-spacing: .04em; }
+.weather-quarter strong { font: 900 19px/1 "Space Grotesk",sans-serif; color: #1C1A17; }
+.weather-quarter span:last-child { font: 700 10.5px/1.2 "Manrope",sans-serif; color: #9B9488; }
+.weather-quarter.light { border-color: rgba(74,144,226,.28); background: #F5FAFF; }
+.weather-quarter.wet { border-color: rgba(74,144,226,.52); background: #EAF4FF; }
+.weather-quarter.heavy { border-color: rgba(184,64,44,.5); background: #FFF0EA; }
+.weather-quarter.unknown { background: #F2EEE6; }
+.weather-hour-strip { min-height: 72px; display: grid; grid-template-columns: repeat(auto-fit, minmax(24px, 1fr)); gap: 5px; align-items: end; padding: 12px 10px 8px; border: 1px solid #E7E0D5; border-radius: 12px; background: #FFFFFF; }
+.weather-hour { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; opacity: .78; }
+.weather-hour-mm { min-height: 12px; font: 800 9px/1 "Space Grotesk",sans-serif; color: #7A7368; white-space: nowrap; }
+.weather-hour.play { opacity: 1; }
+.weather-hour-bar { width: 100%; max-width: 16px; min-height: 4px; border-radius: 4px 4px 2px 2px; background: #DED8CD; display: block; }
+.weather-hour.light .weather-hour-bar { background: #9FCBEF; }
+.weather-hour.wet .weather-hour-bar { background: #4A90E2; }
+.weather-hour.heavy .weather-hour-bar { background: #FF5A36; }
+.weather-hour.play .weather-hour-bar { outline: 2px solid #1C1A17; outline-offset: 2px; }
+.weather-hour.play.dry .weather-hour-bar { outline-color: #B7D9F3; box-shadow: 0 0 0 4px rgba(183,217,243,.18); }
+.weather-hour.play.light .weather-hour-bar { outline-color: #9FCBEF; box-shadow: 0 0 0 4px rgba(159,203,239,.2); }
+.weather-hour.play.wet .weather-hour-bar { outline-color: #4A90E2; box-shadow: 0 0 0 4px rgba(74,144,226,.16); }
+.weather-hour.play.heavy .weather-hour-bar { outline-color: #FF5A36; box-shadow: 0 0 0 4px rgba(255,90,54,.16); }
+.weather-hour-label { font: 800 9px/1 "Space Grotesk",sans-serif; color: #9B9488; }
+.weather-hour-legend { margin: 10px 0 0; font: 800 10px/1.2 "Manrope",sans-serif; color: #8C8578; }
+.weather-legend-grid { display: grid; grid-template-columns: repeat(5, minmax(74px, 1fr)); gap: 8px; align-items: start; }
+.weather-legend-grid div { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
+.weather-legend-grid span { min-height: 16px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; color: #1C1A17; }
+.weather-legend-grid em { font: 800 10.5px/1.2 "Manrope",sans-serif; color: #7A7368; font-style: normal; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: #DED8CD; }
+.legend-dot.dry { background: #DED8CD; }
+.legend-dot.light { background: #9FCBEF; }
+.legend-dot.wet { background: #4A90E2; }
+.legend-dot.heavy { background: #FF5A36; }
+.legend-ring { width: 14px; height: 8px; border-radius: 999px; display: inline-block; border: 2px solid #B7D9F3; }
+.weather-door-proof { padding: 0 18px 16px; }
+.weather-door-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.weather-door-card { position: relative; min-height: 76px; padding: 12px 12px 12px 54px; border-radius: 13px; border: 1.5px solid #D7E7F3; background: #F6FBFF; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.weather-door-card::before { content: ""; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 26px; height: 36px; border: 2px solid #4A90E2; border-radius: 7px 7px 5px 5px; background: #FFFFFF; box-shadow: inset -6px 0 0 rgba(74,144,226,.08); }
+.weather-door-card::after { content: ""; position: absolute; left: 33px; top: 50%; width: 4px; height: 4px; transform: translateY(-50%); border-radius: 50%; background: #FF5A36; }
+.weather-door-name { font: 900 10px/1 "Space Grotesk",sans-serif; color: #4A90E2; letter-spacing: .14em; text-transform: uppercase; }
+.weather-door-card strong { font: 900 16px/1.1 "Space Grotesk",sans-serif; color: #1C1A17; }
+.weather-door-card em { font: 800 11px/1.25 "Manrope",sans-serif; color: #7A7368; font-style: normal; }
+.weather-proof-source { margin-top: 9px; font: 600 10.5px/1.45 "Manrope",sans-serif; color: #8C8578; text-align: center; }
+.weather-loading, .weather-proof-empty { grid-column: 1 / -1; padding: 16px; border-radius: 10px; background: #FFFFFF; border: 1px solid #E7E0D5; font: 700 12px/1.5 "Manrope",sans-serif; color: #7A7368; text-align: center; }
+.play-card.recent-booking-card#weatherReportCard {
+  border: 5px solid #1C1A17 !important;
+  background: #FFF2EE !important;
+  box-shadow: 8px 8px 0 rgba(28,26,23,.16) !important;
+  padding: 24px !important;
+}
+.recent-booking-card .closure-item.my-booking { background: #FFFFFF !important; border: 1.5px solid #F3C9BE !important; border-radius: 12px !important; padding: 14px 16px !important; }
+.weather-proof { overflow: hidden; padding: 0; border-color: #E5D1C2; background: #FFFFFF; box-shadow: 0 10px 26px rgba(28,26,23,.08); }
+.weather-hero { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; min-height: 112px; padding: 18px 18px; background: linear-gradient(135deg, #D8EFFA 0%, #FFF4D8 54%, #FFE6DE 100%); border-bottom: 1px solid rgba(28,26,23,.08); }
+.weather-proof.weather-rain .weather-hero { background: linear-gradient(135deg, #CFE5FF 0%, #DDEBF2 52%, #FFF2E8 100%); }
+.weather-proof.weather-mixed .weather-hero { background: linear-gradient(135deg, #D8EFFA 0%, #FFF4D8 58%, #FFE6DE 100%); }
+.weather-proof.weather-wind .weather-hero { background: linear-gradient(135deg, #E5F2EA 0%, #EAF0F4 55%, #FFF4D8 100%); }
+.weather-proof.weather-sun .weather-hero { background: linear-gradient(135deg, #FFF1B8 0%, #FBE4C8 54%, #D8EFFA 100%); }
+.weather-hero-icon { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; background: rgba(255,255,255,.78); border: 1px solid rgba(255,255,255,.9); font-size: 34px; box-shadow: 0 8px 22px rgba(28,26,23,.09); }
+.weather-hero-copy { min-width: 0; }
+.weather-proof-date { margin-top: 4px; font: 800 12px/1.2 "Manrope",sans-serif; color: #7A7368; }
+.weather-proof .weather-proof-meta { padding: 14px 18px 0; }
+.weather-proof .weather-proof-focus, .weather-proof .weather-proof-context { padding: 0 18px; }
+.weather-day-summary { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; padding: 14px 18px 16px; }
+.weather-day-summary div { min-height: 70px; padding: 13px 12px; border-radius: 12px; border: 1px solid #E7E0D5; background: #FAF8F4; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+.weather-day-summary strong { font: 900 23px/1 "Space Grotesk",sans-serif; color: #1C1A17; }
+.weather-day-summary span { font: 800 10px/1.25 "Space Grotesk",sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #8C8578; }
+.weather-day-summary em { font: 800 11px/1.25 "Manrope",sans-serif; color: #4A90E2; font-style: normal; }
+.weather-proof-context { margin-bottom: 18px; }
+.weather-proof-focus { margin-bottom: 2px; }
+.weather-wind-focus { margin-top: 4px; }
+.weather-wind-slot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 10px; }
+.weather-wind-slot { min-height: 82px; padding: 12px; border-radius: 13px; border: 1.5px solid #E7E0D5; background: #FAF8F4; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
+.weather-wind-slot span { font: 800 10px/1.1 "Space Grotesk",sans-serif; color: #7A7368; letter-spacing: .04em; }
+.weather-wind-slot strong { font: 900 22px/1 "Space Grotesk",sans-serif; color: #1C1A17; }
+.weather-wind-slot em { font: 800 11px/1.2 "Manrope",sans-serif; color: #8C8578; font-style: normal; }
+.weather-wind-slot.light { border-color: #D7E7F3; background: #F6FBFF; }
+.weather-wind-slot.moderate { border-color: #EAD8A2; background: #FFF8DF; }
+.weather-wind-slot.strong { border-color: #F0C5A8; background: #FFF0E7; }
+.weather-wind-slot.storm { border-color: #DD9C9C; background: #FFE9E9; }
+.weather-wind-legend { display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr)); gap: 8px; margin-bottom: 16px; }
+.weather-wind-legend div { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; font: 800 10px/1.2 "Manrope",sans-serif; color: #7A7368; }
+.weather-wind-legend span { display: inline-flex; align-items: center; justify-content: center; gap: 5px; color: #1C1A17; }
+.weather-wind-legend em { font-style: normal; }
+.wind-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.wind-dot.light { background: #9FCBEF; }
+.wind-dot.moderate { background: #E3BC4F; }
+.wind-dot.strong { background: #F08A48; }
+.wind-dot.storm { background: #D94E4E; }
+.weather-hour-strip { min-height: 106px; gap: 7px; padding: 16px 13px 10px; background: #FAF8F4; }
+.weather-hour { gap: 7px; }
+.weather-hour-mm { color: #7A7368; }
+.weather-hour.light .weather-hour-mm, .weather-hour.wet .weather-hour-mm { color: #2E6EA6; }
+.weather-hour.heavy .weather-hour-mm { color: #B8402C; }
+.weather-hour-bar { max-width: 20px; border-radius: 8px 8px 3px 3px; }
+.weather-hour.play { transform: translateY(-3px); }
+.weather-hour.play .weather-hour-bar { outline-width: 2px; outline-offset: 2px; }
+.weather-quarter-grid { gap: 10px; margin-bottom: 12px; }
+.weather-quarter { min-height: 92px; border-radius: 13px; }
+.weather-proof-source { padding: 0 18px 16px; }
+@media (max-width: 560px) {
+  .weather-proof-meta { grid-template-columns: 1fr; }
+  .weather-hero { grid-template-columns: auto 1fr; }
+  .weather-hero .weather-proof-pill { grid-column: 1 / -1; justify-self: flex-start; }
+  .weather-day-summary { grid-template-columns: 1fr; }
+  .weather-wind-legend { grid-template-columns: 1fr 1fr; }
+  .weather-legend-grid { grid-template-columns: 1fr 1fr; }
+  .weather-door-grid { grid-template-columns: 1fr; }
+  .weather-quarter-grid { grid-template-columns: 1fr 1fr; }
+  .weather-proof-head, .weather-proof-subhead { flex-direction: column; align-items: flex-start; }
+  .weather-proof-subhead span:last-child { text-align: left; }
+}
 
 /* --- Historie unter „Jetzt spielen" --- */
 .history-badge { font: 600 11.5px/1.4 "Manrope",sans-serif; text-align: right; white-space: nowrap; margin-left: 10px; flex-shrink: 0; }
