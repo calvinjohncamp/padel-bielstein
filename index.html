@@ -914,6 +914,77 @@ main {
   main { padding-top: 4px !important; }
 }
 </style>
+
+<style id="pbwx-weather-style">
+/* ===== Folio-Wettersystematik, 1:1 aus Folio.today — vollständig isoliert unter .pbwx.
+   Eigene Farb-/Schrift-Tokens (navy/burnt-orange/Serif), bewusst abweichend von der
+   Padel-Optik (mit Jörn so abgestimmt). Kein Einfluss auf den Rest der Seite. ===== */
+.pbwx{
+  --paper:#F5F1E8; --ink:#14253F; --ink-soft:#6B6255; --ink-faint:#8C8474;
+  --rule:#C7BFA9; --rule-strong:#14253F; --flag:#C8632A; --rain:#4A90D9;
+  --font-display:Georgia,"Iowan Old Style","Times New Roman",Times,serif;
+  --font-sans:"Satoshi","General Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+  color:var(--ink); font-family:var(--font-sans); -webkit-font-smoothing:antialiased;
+}
+.pbwx *{box-sizing:border-box;}
+
+/* Sektion (Buchungsseite): eigenständige helle Zeitungs-Karte auf dunklem Grund */
+.pbwx .wx-section{background:var(--paper);border:1.5px solid var(--rule-strong);border-radius:18px;padding:22px 24px 26px;margin-top:26px;}
+.pbwx .wx-section-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.pbwx .wx-section-eyebrow{font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--flag);}
+.pbwx .wx-section-head h2{font-family:var(--font-display);font-weight:700;font-size:24px;margin:0;color:var(--ink);}
+.pbwx .wx-section-head.weather-head{row-gap:8px;margin-bottom:20px;}
+.pbwx .wx-section-head.weather-head .wx-section-eyebrow{flex-basis:100%;}
+.pbwx .wx-section-head.weather-head h2{flex:1 1 auto;}
+.pbwx .wx-section-note{margin-left:auto;font-size:11px;color:var(--ink-faint);letter-spacing:.05em;align-self:flex-end;}
+
+.pbwx .wx-weather{display:grid;gap:16px;}
+.pbwx .wx-wx-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;}
+@media (max-width:760px){ .pbwx .wx-wx-pair{grid-template-columns:1fr;} }
+.pbwx .wx-wx-today{border:1.5px solid var(--ink);border-radius:16px;padding:20px 22px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(160deg,#FBF7EE,#F0EADB);min-height:190px;}
+.pbwx .wx-wx-today.yesterday{border-color:var(--rule-strong);background:linear-gradient(160deg,#F4EFE4,#FBF7EE);}
+.pbwx .wx-wx-today-top{display:flex;align-items:center;gap:14px;}
+.pbwx .wx-wx-today-top svg{flex:none;width:64px;height:64px;}
+.pbwx .wx-wx-temp{font-family:var(--font-display);font-weight:700;font-size:40px;line-height:1;color:var(--ink);}
+.pbwx .wx-wx-range{font-size:12px;color:var(--ink-soft);font-weight:700;margin-top:4px;}
+.pbwx .wx-wx-cond{font-size:13px;color:var(--ink-soft);margin-top:3px;line-height:1.3;}
+.pbwx .wx-wx-place{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--flag);margin-bottom:10px;}
+.pbwx .wx-wx-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--rule);font-size:11.5px;color:var(--ink-soft);}
+.pbwx .wx-wx-meta span{min-width:0;line-height:1.25;}
+.pbwx .wx-wx-meta b{display:block;color:var(--ink);font-weight:700;margin-top:2px;white-space:nowrap;}
+.pbwx .wx-wx-meta em{display:block;font-style:normal;color:var(--rain);font-size:10.5px;font-weight:700;margin-top:2px;white-space:nowrap;}
+.pbwx .wx-wx-days{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+@media (max-width:620px){ .pbwx .wx-wx-days{grid-template-columns:repeat(3,1fr);} }
+@media (max-width:380px){ .pbwx .wx-wx-days{grid-template-columns:repeat(2,1fr);} }
+.pbwx .wx-wx-day{border:1px solid var(--rule);border-radius:14px;padding:12px 8px 10px;text-align:center;background:#FBF7EE;}
+.pbwx .wx-wx-day .d{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;}
+.pbwx .wx-wx-day svg{width:38px;height:38px;display:block;margin:0 auto 8px;}
+.pbwx .wx-wx-day .hi{font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--ink);}
+.pbwx .wx-wx-day .lo{font-size:12px;color:var(--ink-faint);margin-top:1px;}
+.pbwx .wx-wx-day .mm,.pbwx .wx-wx-day .wind{font-size:10.5px;color:var(--ink-soft);margin-top:4px;font-weight:600;font-variant-numeric:tabular-nums;}
+.pbwx .wx-wx-hourly-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media (max-width:760px){ .pbwx .wx-wx-hourly-grid{grid-template-columns:1fr;} }
+.pbwx .wx-wx-hourly{border:1px solid var(--rule);border-radius:14px;padding:14px 18px 12px;background:#FBF7EE;}
+.pbwx .wx-wx-hourly .hd{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+.pbwx .wx-wx-hourly .hd span{min-width:0;line-height:1.25;}
+.pbwx .wx-wx-hourly .hd b{flex:none;border:1px solid rgba(74,144,217,.22);border-radius:999px;background:rgba(74,144,217,.06);padding:4px 8px;color:var(--ink-soft);font-size:10px;font-weight:600;letter-spacing:.02em;white-space:nowrap;text-transform:none;}
+.pbwx .wx-wx-bars{display:flex;align-items:flex-end;gap:5px;}
+.pbwx .wx-wx-bar{flex:1;display:flex;flex-direction:column;align-items:center;}
+.pbwx .wx-wx-bar .track{position:relative;width:100%;max-width:22px;height:64px;display:flex;align-items:flex-end;background:rgba(74,144,217,.10);border-radius:5px;overflow:hidden;}
+.pbwx .wx-wx-bar .fill{width:100%;background:var(--rain);border-radius:5px 5px 0 0;min-height:2px;}
+.pbwx .wx-wx-bar .temp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:9px;font-weight:600;color:rgba(31,45,68,.62);line-height:1;white-space:nowrap;text-shadow:0 1px 0 rgba(255,255,255,.7);}
+.pbwx .wx-wx-bar .hr{font-size:9.5px;color:var(--ink);font-weight:500;margin-top:6px;font-variant-numeric:tabular-nums;}
+.pbwx .wx-wx-bar .mm{font-size:9.5px;color:#000;font-weight:800;height:14px;line-height:1;white-space:nowrap;}
+
+/* „Jetzt spielen"-Beleg: einspaltige Karte, die gespielten Stunden hervorgehoben */
+.pbwx.pbwx-proof{display:block;}
+.pbwx.pbwx-proof .wx-wx-today{min-height:auto;}
+.pbwx.pbwx-proof .wx-wx-hourly{margin-top:14px;}
+.pbwx .wx-wx-bar.pbwx-play .fill{background:var(--flag);}
+.pbwx .wx-wx-bar.pbwx-play .track{background:rgba(200,99,42,.14);}
+.pbwx .wx-wx-bar.pbwx-play .hr{color:var(--flag);font-weight:700;}
+.pbwx .pbwx-note{font-size:12px;color:var(--ink-soft);line-height:1.4;margin-top:6px;}
+</style>
 </head>
 <body class="bielstein-theme">
 
@@ -1391,6 +1462,28 @@ main {
       <div class="sum-row total"><span class="sl">Gesamt</span><span class="sv" id="sTotal">—</span></div>
     </div>
     <button class="book-btn" id="bookBtn" onclick="confirmBooking()">Jetzt buchen &amp; bezahlen →</button>
+
+    <!-- ===== Wetter (Folio-Systematik, 1:1 aus Folio.today · Optik/Schriften bewusst abweichend) ===== -->
+    <div class="pbwx">
+      <section class="wx-section" id="pbwxWeather" style="display:none;">
+        <div class="wx-section-head weather-head">
+          <span class="wx-section-eyebrow">Wetter</span>
+          <h2>Bielstein · gestern, heute, Ausblick</h2>
+          <span class="wx-section-note">51674 Wiehl-Bielstein</span>
+        </div>
+        <div class="wx-weather">
+          <div class="wx-wx-pair">
+            <div class="wx-wx-today" id="pbwxToday"></div>
+            <div class="wx-wx-today yesterday" id="pbwxYesterday"></div>
+          </div>
+          <div class="wx-wx-hourly-grid">
+            <div class="wx-wx-hourly" id="pbwxTodayHourly" style="display:none;"></div>
+            <div class="wx-wx-hourly" id="pbwxYesterdayHourly" style="display:none;"></div>
+          </div>
+          <div class="wx-wx-days" id="pbwxDays"></div>
+        </div>
+      </section>
+    </div>
   </div>
 
   <!-- ABO MODE -->
@@ -4078,31 +4171,13 @@ function weatherBookingLabel(b) {
   return `${dateStr} · ${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start + b.duration).padStart(2,'0')}:00 Uhr · Court #${b.court}`;
 }
 
-const WEATHER_BIELSTEIN = {
-  lat: 50.9499,
-  lon: 7.5518,
-  label: 'Wiehl-Bielstein'
-};
-const weatherProofCache = new Map();
 
 function weatherPad(n) {
   return String(n).padStart(2, '0');
 }
 
-function weatherIsoLocal(d) {
-  return `${d.getFullYear()}-${weatherPad(d.getMonth() + 1)}-${weatherPad(d.getDate())}T${weatherPad(d.getHours())}:00`;
-}
-
-function weatherDateKey(d) {
-  return `${d.getFullYear()}-${weatherPad(d.getMonth() + 1)}-${weatherPad(d.getDate())}`;
-}
-
 function weatherShortTime(d) {
   return `${weatherPad(d.getHours())}:${weatherPad(d.getMinutes())}`;
-}
-
-function weatherTimeRange(start, end) {
-  return `${weatherShortTime(start)}-${weatherShortTime(end)} Uhr`;
 }
 
 function weatherStartDate(b) {
@@ -4117,81 +4192,6 @@ function weatherEndDate(b) {
 function weatherDeadlineDate(b) {
   const start = weatherStartDate(b);
   return new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1, 23, 59, 0);
-}
-
-function weatherDataTime(w) {
-  return new Date(w.timestamp);
-}
-
-function weatherHourValue(rows, hourStart) {
-  const target = new Date(hourStart);
-  const found = rows.find(w => {
-    const t = weatherDataTime(w);
-    return t.getFullYear() === target.getFullYear()
-      && t.getMonth() === target.getMonth()
-      && t.getDate() === target.getDate()
-      && t.getHours() === target.getHours();
-  });
-  return found || null;
-}
-
-function weatherIntensityClass(mm) {
-  if (mm == null || Number.isNaN(mm)) return 'unknown';
-  if (mm >= 2.5) return 'heavy';
-  if (mm >= 1) return 'wet';
-  if (mm > 0) return 'light';
-  return 'dry';
-}
-
-function weatherMmText(mm) {
-  if (mm == null || Number.isNaN(mm)) return '–';
-  return `${Number(mm).toLocaleString('de-DE', {maximumFractionDigits: 1})} mm`;
-}
-
-function weatherBookingValueCents(b) {
-  if (!b) return 0;
-  if (!b.weather_preview_slot && Number(b.price_paid_cents || 0) > 0) {
-    return Number(b.price_paid_cents);
-  }
-  const start = Number(b.hour_start || 0);
-  const dur = Number(b.duration || 1);
-  const map = prices(b.date);
-  return Math.round(sumHourlyPrices(map, start, dur) * 100);
-}
-
-function weatherDayLabel(d) {
-  return d.toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'2-digit', year:'numeric'});
-}
-
-function weatherIconFor(rows) {
-  const total = rows.reduce((sum, w) => sum + Number(w.precipitation || 0), 0);
-  const maxWind = rows.reduce((max, w) => Math.max(max, Number(w.wind_gust_speed || w.wind_speed || 0)), 0);
-  const wetHours = rows.filter(w => Number(w.precipitation || 0) > 0).length;
-  if (total >= 8) return { icon: '🌧', label: 'Regnerisch', cls: 'rain' };
-  if (wetHours >= 4) return { icon: '🌦', label: 'Wechselhaft', cls: 'mixed' };
-  if (maxWind >= 45) return { icon: '💨', label: 'Windig', cls: 'wind' };
-  return { icon: '☀️', label: 'Trocken', cls: 'sun' };
-}
-
-function weatherWindLevel(kmh) {
-  const v = Number(kmh || 0);
-  if (v < 20) return 'light';
-  if (v < 39) return 'moderate';
-  if (v < 62) return 'strong';
-  return 'storm';
-}
-
-function weatherWindText(kmh) {
-  if (kmh == null || Number.isNaN(kmh)) return '–';
-  return `${Math.round(Number(kmh))} km/h`;
-}
-
-function weatherWindRangeText(values) {
-  const clean = (values || []).filter(v => v != null && !Number.isNaN(v));
-  if (!clean.length) return '–';
-  const min = Math.round(Math.min(...clean));
-  const max = Math.round(Math.max(...clean));
-  return min === max ? `${max} km/h` : `von ${min} bis ${max} km/h`;
 }
 
 function renderWeatherDoorEvidence(b) {
@@ -4225,251 +4225,16 @@ function renderWeatherDoorEvidence(b) {
 }
 
 function renderWeatherProofShell(b) {
-  const start = weatherStartDate(b);
-  const end = weatherEndDate(b);
-  const deadline = weatherDeadlineDate(b);
-  const now = new Date();
-  const reliableAt = new Date(end.getTime() + 45 * 60000);
-  const beforeStart = now < start;
-  const beforeReliable = now >= start && now < reliableAt;
-  const stillOpen = now <= deadline;
-  const reliableText = now < reliableAt
-    ? `Daten erscheinen, sobald verfügbar · erwartet ab ca. ${weatherShortTime(reliableAt)} Uhr`
-    : 'Daten verfügbar · DWD/Bright Sky';
-  const deadlineText = beforeStart
-    ? `Meldbar nach Spielende bis Ende des folgenden Tags`
-    : stillOpen
-    ? `Regenmeldung möglich bis ${deadline.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'})}, ${weatherShortTime(deadline)} Uhr`
-    : `Meldezeit endete am ${deadline.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'})} um ${weatherShortTime(deadline)} Uhr`;
-  const pillClass = beforeStart ? 'preview' : (stillOpen ? 'open' : 'closed');
-  const pillLabel = beforeStart ? 'Vorabansicht' : beforeReliable ? 'Daten folgen' : stillOpen ? 'Frist offen' : 'Frist abgelaufen';
-
-  return `
-    <section class="weather-proof" id="weatherProofPanel" aria-label="Wetterbeleg zur Buchung">
-      <div class="weather-hero">
-        <div class="weather-hero-icon" id="weatherHeroIcon">☁️</div>
-        <div class="weather-hero-copy">
-          <div class="weather-proof-kicker">Wetter am Spieltag</div>
-          <div class="weather-proof-title">${WEATHER_BIELSTEIN.label}</div>
-          <div class="weather-proof-date">${weatherDayLabel(start)}</div>
-        </div>
-        <span class="weather-proof-pill ${pillClass}">${pillLabel}</span>
-      </div>
-      <div class="weather-proof-meta">
-        <span>${deadlineText}</span>
-        <span>${reliableText}</span>
-      </div>
-      <div class="weather-day-summary" id="weatherDaySummary">
-        <div><strong>–</strong><span>Niederschlag gesamt (24h)</span></div>
-        <div><strong>–</strong><span>Stunden mit Niederschlag</span></div>
-        <div><strong>–</strong><span>Wind am Spieltag</span></div>
-      </div>
-      <div class="weather-proof-context">
-        <div class="weather-proof-subhead">
-          <span>Buchbare Slots 08-22 Uhr · mm pro Stunde</span>
-          <span id="weatherProofPeak">Daten werden geladen …</span>
-        </div>
-        <div class="weather-hour-strip" id="weatherHourStrip"></div>
-        <div class="weather-hour-legend">
-          <div class="weather-legend-grid">
-            <div><span><i class="legend-dot dry"></i> 0 mm</span><em>kein Regen</em></div>
-            <div><span><i class="legend-dot light"></i> &lt; 1 mm/h</span><em>teilweise leichter Regen</em></div>
-            <div><span><i class="legend-dot wet"></i> 1-2,4 mm/h</span><em>teilweise mäßiger Regen</em></div>
-            <div><span><i class="legend-dot heavy"></i> ab 2,5 mm/h</span><em>teilweise stärkerer Regen</em></div>
-            <div><span><i class="legend-ring"></i></span><em>dein Slot</em></div>
-          </div>
-        </div>
-      </div>
-      <div class="weather-proof-focus">
-        <div class="weather-proof-subhead">
-          <span>Dein Slot ${weatherTimeRange(start, end)}</span>
-          <span id="weatherProofSummary">exakte Spielzeit wird geprüft</span>
-        </div>
-        <div class="weather-quarter-grid" id="weatherQuarterGrid">
-          <div class="weather-loading">DWD-Werte werden geladen …</div>
-        </div>
-      </div>
-      <div class="weather-proof-focus weather-wind-focus">
-        <div class="weather-proof-subhead">
-          <span>Wind in deiner Spielzeit · km/h</span>
-          <span id="weatherWindSummary">Winddaten werden geladen …</span>
-        </div>
-        <div class="weather-wind-slot-grid" id="weatherWindSlotGrid">
-          <div class="weather-loading">Windwerte werden geladen …</div>
-        </div>
-        <div class="weather-wind-legend">
-          <div><span><i class="wind-dot light"></i> &lt; 20 km/h</span><em>leichter Wind</em></div>
-          <div><span><i class="wind-dot moderate"></i> 20-38 km/h</span><em>mäßiger Wind</em></div>
-          <div><span><i class="wind-dot strong"></i> 39-61 km/h</span><em>starker Wind</em></div>
-          <div><span><i class="wind-dot storm"></i> ab 62 km/h</span><em>Sturm</em></div>
-        </div>
-      </div>
-      ${renderWeatherDoorEvidence(b)}
-      <div class="weather-proof-source" id="weatherProofSource">
-        Quelle: Bright Sky / Deutscher Wetterdienst · Standort ${WEATHER_BIELSTEIN.lat.toFixed(4)}, ${WEATHER_BIELSTEIN.lon.toFixed(4)}
-      </div>
-    </section>`;
-}
-
-async function fetchWeatherProofRows(b) {
-  const start = weatherStartDate(b);
-  const dayStart = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0);
-  const dayEnd = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 23, 0, 0);
-  const cacheKey = `${weatherDateKey(dayStart)}-day`;
-  if (weatherProofCache.has(cacheKey)) return weatherProofCache.get(cacheKey);
-  const url = `https://api.brightsky.dev/weather?lat=${WEATHER_BIELSTEIN.lat}&lon=${WEATHER_BIELSTEIN.lon}&date=${encodeURIComponent(weatherIsoLocal(dayStart))}&last_date=${encodeURIComponent(weatherIsoLocal(dayEnd))}&tz=Europe%2FBerlin`;
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Bright Sky HTTP ${res.status}`);
-  const json = await res.json();
-  const rows = Array.isArray(json.weather) ? json.weather : [];
-  weatherProofCache.set(cacheKey, rows);
-  return rows;
+  // Folio-Wetter: nur die leere Hülle (füllt loadWeatherProofForBooking über
+  // window.PBWeather.renderBookingProof) + darunter der Türnachweis.
+  return `<div class="pbwx pbwx-proof" id="weatherProofPanel"></div>` + renderWeatherDoorEvidence(b);
 }
 
 async function loadWeatherProofForBooking(b) {
   const panel = document.getElementById('weatherProofPanel');
-  const quarterGrid = document.getElementById('weatherQuarterGrid');
-  const hourStrip = document.getElementById('weatherHourStrip');
-  const summary = document.getElementById('weatherProofSummary');
-  const peak = document.getElementById('weatherProofPeak');
-  const source = document.getElementById('weatherProofSource');
-  const daySummary = document.getElementById('weatherDaySummary');
-  const heroIcon = document.getElementById('weatherHeroIcon');
-  const windSlotGrid = document.getElementById('weatherWindSlotGrid');
-  const windSummary = document.getElementById('weatherWindSummary');
-  if (!panel || !quarterGrid || !hourStrip || !b) return;
-
-  const start = weatherStartDate(b);
-  const end = weatherEndDate(b);
-
-  try {
-    const rows = await fetchWeatherProofRows(b);
-    const dayRows = rows.filter(w => {
-      const t = weatherDataTime(w);
-      return t.getFullYear() === start.getFullYear()
-        && t.getMonth() === start.getMonth()
-        && t.getDate() === start.getDate();
-    });
-    const totalDayMm = dayRows.reduce((sum, w) => sum + Number(w.precipitation || 0), 0);
-    const wetHours = dayRows.filter(w => Number(w.precipitation || 0) > 0).length;
-    const maxWindDay = dayRows.reduce((max, w) => Math.max(max, Number(w.wind_gust_speed || w.wind_speed || 0)), 0);
-    const windDayValues = dayRows
-      .map(w => Number(w.wind_gust_speed || w.wind_speed || 0))
-      .filter(v => !Number.isNaN(v) && v > 0);
-    const windDayRange = weatherWindRangeText(windDayValues);
-    const bookableRows = dayRows.filter(w => {
-      const h = weatherDataTime(w).getHours();
-      return h >= 8 && h < 22;
-    });
-    const bookableMm = bookableRows.reduce((sum, w) => sum + Number(w.precipitation || 0), 0);
-    const outsideMm = Math.max(0, totalDayMm - bookableMm);
-    const mood = weatherIconFor(dayRows);
-    panel.classList.add(`weather-${mood.cls}`);
-    if (heroIcon) {
-      heroIcon.textContent = mood.icon;
-      heroIcon.setAttribute('aria-label', mood.label);
-    }
-    if (daySummary) {
-      const dayShort = start.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'});
-      daySummary.innerHTML = `
-        <div><strong>${weatherMmText(totalDayMm)}</strong><span>Niederschlag am ${dayShort}. gesamt (24h)</span><em>Davon 08-22 Uhr: ${weatherMmText(bookableMm)}</em></div>
-        <div><strong>${wetHours}/24</strong><span>Stunden mit Niederschlag</span><em>Außerhalb 08-22 Uhr: ${weatherMmText(outsideMm)}</em></div>
-        <div><strong>${windDayRange}</strong><span>Wind am Spieltag (24h)</span><em>Einordnung unten für deine Spielzeit</em></div>`;
-    }
-
-    let bookingMm = 0;
-    let bookingWind = 0;
-    const quarters = [];
-    const windHours = [];
-    for (let h = 0; h < Number(b.duration || 1); h += 1) {
-      const hourStart = new Date(start.getTime() + h * 3600000);
-      const row = weatherHourValue(rows, hourStart);
-      const mm = row?.precipitation == null ? null : Number(row.precipitation);
-      if (mm != null && !Number.isNaN(mm)) bookingMm += mm;
-      const wind = Number(row?.wind_gust_speed || row?.wind_speed || 0);
-      if (!Number.isNaN(wind)) bookingWind = Math.max(bookingWind, wind);
-      windHours.push({
-        start: hourStart,
-        end: new Date(hourStart.getTime() + 3600000),
-        value: Number.isNaN(wind) ? null : wind
-      });
-      for (let q = 0; q < 4; q += 1) {
-        const qStart = new Date(hourStart.getTime() + q * 15 * 60000);
-        const qEnd = new Date(qStart.getTime() + 15 * 60000);
-        quarters.push({ start: qStart, end: qEnd, mm: mm == null ? null : mm / 4 });
-      }
-    }
-
-    quarterGrid.innerHTML = quarters.map((q, idx) => `
-      <div class="weather-quarter ${weatherIntensityClass(q.mm)}">
-        <span class="weather-quarter-time">${weatherTimeRange(q.start, q.end)}</span>
-        <strong>${weatherMmText(q.mm)}</strong>
-        <span>${idx + 1}. Viertel</span>
-      </div>`).join('');
-
-    if (windSlotGrid) {
-      windSlotGrid.innerHTML = windHours.map(w => {
-        const level = weatherWindLevel(w.value);
-        return `
-          <div class="weather-wind-slot ${level}">
-            <span>${weatherTimeRange(w.start, w.end)}</span>
-            <strong>${weatherWindRangeText([w.value])}</strong>
-            <em>${level === 'light' ? 'leichter Wind' : level === 'moderate' ? 'mäßiger Wind' : level === 'strong' ? 'starker Wind' : 'Sturm'}</em>
-          </div>`;
-      }).join('');
-    }
-    if (windSummary) {
-      const values = windHours.map(w => w.value).filter(v => v != null && !Number.isNaN(v));
-      const minWind = values.length ? Math.min(...values) : null;
-      const maxWind = values.length ? Math.max(...values) : null;
-      windSummary.textContent = values.length ? weatherWindRangeText(values) : 'keine Windwerte verfügbar';
-    }
-
-    const hours = [];
-    for (let hour = 8; hour < 22; hour += 1) {
-      const hourStart = new Date(start.getFullYear(), start.getMonth(), start.getDate(), hour, 0, 0);
-      const row = weatherHourValue(rows, hourStart);
-      const mm = row?.precipitation == null ? null : Number(row.precipitation);
-      const isPlay = hourStart >= start && hourStart < end;
-      const label = `${weatherPad(hourStart.getHours())}`;
-      const height = mm == null ? 5 : Math.max(5, Math.min(52, 6 + mm * 12));
-      const mmLabel = mm == null ? '–' : `${Number(mm).toLocaleString('de-DE', {maximumFractionDigits: 1})} mm`;
-      hours.push(`
-        <div class="weather-hour ${weatherIntensityClass(mm)} ${isPlay ? 'play' : ''}" title="${weatherTimeRange(hourStart, new Date(hourStart.getTime() + 3600000))} · ${weatherMmText(mm)}">
-          <span class="weather-hour-mm">${mmLabel}</span>
-          <span class="weather-hour-bar" style="height:${height}px"></span>
-          <span class="weather-hour-label">${label}</span>
-        </div>`);
-    }
-    hourStrip.innerHTML = hours.join('');
-
-    const measured = dayRows.filter(w => {
-      const t = weatherDataTime(w);
-      return t.getHours() >= 8 && t.getHours() < 22 && w.precipitation != null;
-    });
-    const peakMm = measured.reduce((max, w) => Math.max(max, Number(w.precipitation || 0)), 0);
-    if (summary) summary.textContent = `Spielzeit: ${weatherMmText(bookingMm)} · Wind ${weatherWindText(bookingWind)}`;
-    if (peak) peak.textContent = `Maximum 08-22 Uhr: ${weatherMmText(peakMm)} pro Stunde`;
-    if (source) {
-      const sourceIds = [...new Set(rows.map(w => w.source_id).filter(Boolean))].slice(0, 3).join(', ');
-      source.innerHTML = `Quelle: Bright Sky / Deutscher Wetterdienst · echte Stundenwerte · Viertelwerte aus Stundenmenge abgeleitet${sourceIds ? ` · Station/Quelle ${sourceIds}` : ''}`;
-    }
-  } catch(e) {
-    console.warn('Wetterbeleg konnte nicht geladen werden:', e);
-    quarterGrid.innerHTML = `
-      <div class="weather-proof-empty">
-        DWD-Werte sind gerade nicht abrufbar. Die Meldung bleibt möglich; der Abgleich erfolgt nachträglich über die Wetterdaten.
-      </div>`;
-    if (windSlotGrid) {
-      windSlotGrid.innerHTML = `
-        <div class="weather-proof-empty">
-          Windwerte sind gerade nicht abrufbar.
-        </div>`;
-    }
-    hourStrip.innerHTML = '';
-    if (summary) summary.textContent = 'Wetterdaten noch offen';
-    if (windSummary) windSummary.textContent = 'Winddaten noch offen';
-    if (peak) peak.textContent = 'Abgleich folgt';
+  if (panel && b && window.PBWeather && window.PBWeather.renderBookingProof) {
+    try { await window.PBWeather.renderBookingProof(panel, b); }
+    catch (e) { console.warn('Wetterbeleg (Folio) konnte nicht geladen werden:', e); }
   }
 }
 
@@ -7695,6 +7460,474 @@ init();
   </div>
 </div>
 
+<!-- ============================ FOLIO-WETTER (1:1 aus Folio.today) ============================
+     Isolierte IIFE. Quellen: Open-Meteo (Prognose heute + 6-Tage) und Bright Sky / DWD
+     (beobachtete Werte gestern & am Spieltag). Standort Wiehl-Bielstein, ohne API-Key.
+     Bespielt: die Wettersektion unten auf der Buchungsseite (#pbwxWeather) und – über
+     window.PBWeather.renderBookingProof – den Beleg unter „Jetzt spielen / letzte Buchung". -->
+<script>
+(function(){
+  const WX_LAT = 50.9499, WX_LON = 7.5518;
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  const rnd = v => (v==null||isNaN(v)) ? '—' : Math.round(v);
+  const mmFmt = v => (v==null||isNaN(v)) ? '—' : Number(v).toLocaleString('de-DE',{maximumFractionDigits:1});
+
+  function wxMap(code){
+    const c = Number(code);
+    if(c===0) return {t:'Sonnig',ic:'sun'};
+    if(c===1) return {t:'Heiter',ic:'heiter'};
+    if(c===2) return {t:'Heiter',ic:'heiter'};
+    if(c===3) return {t:'Bewölkt',ic:'bewoelkt'};
+    if(c===45||c===48) return {t:'Bewölkt',ic:'bewoelkt'};
+    if(c>=51&&c<=57) return {t:'Bewölkt, zeitweise Regen',ic:'cloud-rain'};
+    if(c>=61&&c<=67) return {t:'Regen',ic:'rain'};
+    if(c>=71&&c<=77) return {t:'Schnee',ic:'snow'};
+    if(c===80||c===81) return {t:'Bewölkt, zeitweise Regen',ic:'cloud-rain'};
+    if(c===82) return {t:'Regen',ic:'rain'};
+    if(c===85||c===86) return {t:'Schnee',ic:'snow'};
+    if(c>=95) return {t:'Gewitter',ic:'thunder'};
+    return {t:'Bewölkt',ic:'bewoelkt'};
+  }
+  function wxDateKeyLocal(d){
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function wxIsoLocal(d){
+    return wxDateKeyLocal(d)+'T'+String(d.getHours()).padStart(2,'0')+':00';
+  }
+  function wxDataTime(w){ return new Date(w.timestamp); }
+  function wxHourRow(rows,dateKey,hour){
+    return (rows||[]).find(w => {
+      const t = wxDataTime(w);
+      return wxDateKeyLocal(t) === dateKey && t.getHours() === hour;
+    }) || null;
+  }
+  function wxWeightedRainStats(rows){
+    const all = rows || [];
+    const outdoor = all.filter(w => { const h = wxDataTime(w).getHours(); return h >= 8 && h < 22; });
+    const other   = all.filter(w => { const h = wxDataTime(w).getHours(); return h < 8 || h >= 22; });
+    const sumRain = list => list.reduce((sum,w)=>sum+Number(w.precipitation||0),0);
+    const wetCount = list => list.filter(w=>Number(w.precipitation||0)>0).length;
+    return {
+      rain: sumRain(outdoor) * 0.7 + sumRain(other) * 0.3,
+      wetHours: wetCount(outdoor) * 0.7 + wetCount(other) * 0.3
+    };
+  }
+  function wxObservedBaseMood(rows){
+    const all = rows || [];
+    const text = all.map(w => String(w.condition || w.icon || w.weather || '').toLowerCase()).join(' ');
+    const rain = all.reduce((sum,w)=>sum+Number(w.precipitation||0),0);
+    const temps = all.map(w=>Number(w.temperature)).filter(v=>!Number.isNaN(v));
+    const maxTemp = temps.length ? Math.max(...temps) : null;
+    if(/thunder|gewitter|storm/.test(text)) return {t:'Gewitter',ic:'thunder'};
+    if(/snow|schnee|sleet|graupel|hail/.test(text)) return {t:'Schnee',ic:'snow'};
+    if(rain > 0 && maxTemp != null && maxTemp <= 1) return {t:'Schnee',ic:'snow'};
+    return {t:'Bewölkt',ic:'bewoelkt'};
+  }
+  function wxFriendlyMood(base,rain,wetHours,maxTemp,sunHours){
+    const mm = Number(rain || 0);
+    const wet = Number(wetHours || 0);
+    const sun = sunHours == null || Number.isNaN(sunHours) ? null : Number(sunHours);
+    const isSnow = base && base.ic === 'snow';
+    if(base && base.ic === 'thunder') return {t:'Gewitter',ic:'thunder'};
+    if(mm >= 5) return isSnow ? {t:'Schnee',ic:'snow'} : {t:'Regen',ic:'rain'};
+    if(mm >= 0.3){
+      if(isSnow){
+        if(sun != null && sun >= 5) return {t:'Heiter, zeitweise Schnee',ic:'heiter-snow'};
+        return {t:'Bewölkt, zeitweise Schnee',ic:'cloud-snow'};
+      }
+      if(sun != null && sun >= 5) return {t:'Heiter, zeitweise Regen',ic:'heiter-rain'};
+      return {t:'Bewölkt, zeitweise Regen',ic:'cloud-rain'};
+    }
+    if(mm > 0 || wet > 0){
+      if(sun != null && sun >= 5) return {t:'Heiter',ic:'heiter'};
+      return {t:'Bewölkt',ic:'bewoelkt'};
+    }
+    if(sun != null){
+      if(sun >= 10) return {t:'Sonnig',ic:'sun'};
+      if(sun >= 5) return {t:'Heiter',ic:'heiter'};
+      return {t:'Bewölkt',ic:'bewoelkt'};
+    }
+    if(base.ic === 'sun') return {t:'Sonnig',ic:'sun'};
+    if(base.ic === 'heiter') return {t:'Heiter',ic:'heiter'};
+    if(base.ic === 'snow') return {t:'Bewölkt',ic:'bewoelkt'};
+    return {t:'Bewölkt',ic:'bewoelkt'};
+  }
+  function wxBrightMood(rows){
+    const weighted = wxWeightedRainStats(rows || []);
+    const temps = (rows||[]).map(w=>Number(w.temperature)).filter(v=>!Number.isNaN(v));
+    const maxTemp = temps.length ? Math.max(...temps) : null;
+    return wxFriendlyMood(wxObservedBaseMood(rows || []),weighted.rain,weighted.wetHours,maxTemp,null);
+  }
+  function wxHoursLabel(mood){
+    const text = mood && mood.t ? String(mood.t) : '';
+    if(text.indexOf('Schnee') >= 0) return 'Schneestunden';
+    if(text.indexOf('Gewitter') >= 0) return 'Gewitterstunden';
+    return 'Regenstunden';
+  }
+  function wetHoursText(n,mood){
+    const label = wxHoursLabel(mood);
+    if(n == null || isNaN(n)) return '— '+label;
+    return Number(n) === 1 ? '1 '+label.slice(0,-1) : Number(n)+' '+label;
+  }
+  function hourlyMmLabel(v){
+    const amount = Number(v || 0);
+    // Positive Werte immer mit einer Nachkommastelle (1 -> "1,0"), damit die
+    // Reihe konsistent ist; glatte 0 bleibt "0".
+    return amount > 0 ? Number(amount).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1}) : '0';
+  }
+  async function wxFetchBrightSkyDay(dateKey){
+    const dayStart = new Date(dateKey+'T00:00:00');
+    const dayEnd = new Date(dateKey+'T23:00:00');
+    const url = 'https://api.brightsky.dev/weather?lat='+WX_LAT+'&lon='+WX_LON
+      + '&date='+encodeURIComponent(wxIsoLocal(dayStart))
+      + '&last_date='+encodeURIComponent(wxIsoLocal(dayEnd))
+      + '&tz=Europe%2FBerlin';
+    const r = await fetch(url,{cache:'no-store'});
+    if(!r.ok) throw new Error('Bright Sky HTTP '+r.status);
+    const json = await r.json();
+    return Array.isArray(json.weather) ? json.weather : [];
+  }
+  function wxIcon(key,size){
+    const s = size||48;
+    const open = '<svg viewBox="0 0 64 64" width="'+s+'" height="'+s+'" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">';
+    const cloud = (fill,stroke,x,y,sc)=>'<g transform="translate('+x+','+y+') scale('+sc+')"><path d="M18 44h26a11 11 0 0 0 2-21.7A15 15 0 0 0 16 20a11 11 0 0 0 2 24z" fill="'+fill+'" stroke="'+stroke+'" stroke-width="2"/></g>';
+    const rays = '<g stroke="#F5A623" stroke-width="3" stroke-linecap="round"><path d="M32 5v7M32 52v7M5 32h7M52 32h7M12 12l5 5M47 47l5 5M52 12l-5 5M12 52l5-5"/></g>';
+    const flakes = '<g stroke="#7FB5E6" stroke-width="2" stroke-linecap="round"><path d="M24 48v8M20 52h8M21.5 49.5l5 5M26.5 49.5l-5 5M40 48v8M36 52h8M37.5 49.5l5 5M42.5 49.5l-5 5"/></g>';
+    switch(key){
+      case 'sun':
+        return open + rays + '<circle cx="32" cy="32" r="13" fill="#FBC02D" stroke="#F5A623" stroke-width="2"/></svg>';
+      case 'partly':
+      case 'heiter':
+        return open
+          + '<circle cx="26" cy="25" r="14" fill="#FBC02D" stroke="#F5A623" stroke-width="2"/>'
+          + '<g stroke="#F5A623" stroke-width="2.6" stroke-linecap="round"><path d="M26 3v7M26 40v7M4 25h7M41 25h7M10 9l5 5M38 38l5 5M43 9l-5 5M10 41l5-5"/></g>'
+          + cloud('#DCE6EC','#9FB2C0', 22, 16, .62) + '</svg>';
+      case 'wolkig':
+      case 'bewoelkt':
+        return open + cloud('#DCE6EC','#9FB2C0', 4, 4, 1) + '</svg>';
+      case 'cloud':
+        return open + cloud('#E3EAEF','#B4C0C8', 2, 6, .95) + cloud('#CBD7DE','#9FB2C0', 6, 2, 1) + '</svg>';
+      case 'fog':
+        return open + cloud('#DCE6EC','#B4C0C8', 4, -2, 1)
+          + '<g stroke="#B4C0C8" stroke-width="3" stroke-linecap="round"><path d="M14 50h30M18 57h26M12 43h24"/></g></svg>';
+      case 'rain':
+        return open + cloud('#CBD7DE','#9FB2C0', 4, -4, 1)
+          + '<g stroke="#4A90D9" stroke-width="3.4" stroke-linecap="round"><path d="M20 46l-3 8M32 46l-3 8M44 46l-3 8"/></g></svg>';
+      case 'light-rain':
+      case 'heiter-rain':
+        return open
+          + '<circle cx="24" cy="22" r="12" fill="#FBC02D" stroke="#F5A623" stroke-width="2"/>'
+          + '<g stroke="#F5A623" stroke-width="2.3" stroke-linecap="round"><path d="M24 4v6M6 23h6M11 9l4 4M40 10l-4 4"/></g>'
+          + cloud('#DCE6EC','#9FB2C0', 12, 8, .82)
+          + '<g stroke="#4A90D9" stroke-width="2.8" stroke-linecap="round"><path d="M30 48l-2.5 7M43 48l-2.5 7"/></g></svg>';
+      case 'cloud-rain':
+        return open + cloud('#DCE6EC','#9FB2C0', 4, 0, .98)
+          + '<g stroke="#4A90D9" stroke-width="2.9" stroke-linecap="round"><path d="M25 47l-2.5 7M39 47l-2.5 7"/></g></svg>';
+      case 'heiter-snow':
+        return open
+          + '<circle cx="24" cy="22" r="12" fill="#FBC02D" stroke="#F5A623" stroke-width="2"/>'
+          + '<g stroke="#F5A623" stroke-width="2.3" stroke-linecap="round"><path d="M24 4v6M6 23h6M11 9l4 4M40 10l-4 4"/></g>'
+          + cloud('#DCE6EC','#9FB2C0', 12, 8, .82)
+          + flakes + '</svg>';
+      case 'cloud-snow':
+        return open + cloud('#DCE6EC','#9FB2C0', 4, 0, .98) + flakes + '</svg>';
+      case 'snow':
+        return open + cloud('#DCE6EC','#B4C0C8', 4, -4, 1)
+          + '<g stroke="#7FB5E6" stroke-width="2.2" stroke-linecap="round"><path d="M18 47v8M14 51h8M15.5 48.5l5 5M20.5 48.5l-5 5M32 50v8M28 54h8M29.5 51.5l5 5M34.5 51.5l-5 5M46 47v8M42 51h8M43.5 48.5l5 5M48.5 48.5l-5 5"/></g></svg>';
+      case 'thunder':
+        return open + cloud('#B9C6CE','#8CA0AC', 4, -4, 1)
+          + '<g stroke="#4A90D9" stroke-width="2.8" stroke-linecap="round"><path d="M22 47l-2.5 7M44 47l-2.5 7"/></g>'
+          + '<path d="M33 42l-8 13h7l-4 10 13-16h-7l4-7z" fill="#FBC02D" stroke="#F5A623" stroke-width="1.5"/></svg>';
+      default:
+        return open + cloud('#DCE6EC','#B4C0C8', 4, 4, 1) + '</svg>';
+    }
+  }
+
+  // ===================== Buchungsseite: gestern / heute / 6-Tage =====================
+  async function loadWeather(){
+    if(!document.getElementById('pbwxWeather')) return;
+    try{
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude='+WX_LAT+'&longitude='+WX_LON
+        + '&current=temperature_2m,weather_code,wind_speed_10m'
+        + '&hourly=temperature_2m,precipitation,wind_speed_10m'
+        + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,sunshine_duration'
+        + '&timezone=Europe%2FBerlin&forecast_days=7&past_days=1';
+      const r = await fetch(url);
+      if(!r.ok) return;
+      const d = await r.json();
+      const dl = d.daily || {};
+      const dayIndex = dateStr => (dl.time||[]).findIndex(x => x === dateStr);
+      const todayKey = wxDateKeyLocal(new Date());
+      const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate()-1);
+      const yesterdayKey = wxDateKeyLocal(yesterdayDate);
+      const todayIdx = Math.max(0, dayIndex(todayKey));
+      const yIdx = Math.max(0, dayIndex(yesterdayKey));
+      const dayName = new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'});
+      const shortDay = new Intl.DateTimeFormat('de-DE',{weekday:'short'});
+
+      function forecastWetHours(dateKey){
+        const hourly = d.hourly || {};
+        if(!hourly.time || !hourly.precipitation) return null;
+        let count = 0;
+        for(let hour=0; hour<24; hour++){
+          const stamp = dateKey+'T'+String(hour).padStart(2,'0')+':00';
+          const i = hourly.time.findIndex(t => t === stamp);
+          if(i >= 0 && Number(hourly.precipitation[i]||0) > 0) count++;
+        }
+        return count;
+      }
+      function forecastWindowStats(dateKey){
+        const hourly = d.hourly || {};
+        if(!hourly.time || !hourly.precipitation) return {rain:null, wetHours:null};
+        const rows = [];
+        for(let hour=0; hour<24; hour++){
+          const stamp = dateKey+'T'+String(hour).padStart(2,'0')+':00';
+          const i = hourly.time.findIndex(t => t === stamp);
+          if(i >= 0) rows.push({timestamp:stamp, precipitation:Number(hourly.precipitation[i]||0)});
+        }
+        return rows.length ? wxWeightedRainStats(rows) : {rain:null, wetHours:null};
+      }
+      function forecastOutdoorRain(dateKey){
+        const hourly = d.hourly || {};
+        if(!hourly.time || !hourly.precipitation) return null;
+        let rain = 0; let found = false;
+        for(let hour=8; hour<=21; hour++){
+          const stamp = dateKey+'T'+String(hour).padStart(2,'0')+':00';
+          const i = hourly.time.findIndex(t => t === stamp);
+          if(i >= 0){ found = true; rain += Math.max(0,Number(hourly.precipitation[i]||0)); }
+        }
+        return found ? rain : null;
+      }
+      function sunHoursForDay(idx){
+        const seconds = dl.sunshine_duration && dl.sunshine_duration[idx];
+        return seconds == null || isNaN(seconds) ? null : Number(seconds) / 3600;
+      }
+
+      function renderWeatherCard(el, idx, label){
+        if(!el || idx < 0) return;
+        const baseMood = wxMap(dl.weather_code && dl.weather_code[idx]);
+        const min = dl.temperature_2m_min && dl.temperature_2m_min[idx];
+        const max = dl.temperature_2m_max && dl.temperature_2m_max[idx];
+        const rain = dl.precipitation_sum && dl.precipitation_sum[idx];
+        const wind = dl.wind_speed_10m_max && dl.wind_speed_10m_max[idx];
+        const wetHours = dl.time && dl.time[idx] ? forecastWetHours(dl.time[idx]) : null;
+        const outdoor = dl.time && dl.time[idx] ? forecastWindowStats(dl.time[idx]) : {rain:null, wetHours:null};
+        const outdoorRain = dl.time && dl.time[idx] ? forecastOutdoorRain(dl.time[idx]) : null;
+        const moodRain = outdoor.rain == null ? rain : outdoor.rain;
+        const moodWet = outdoor.wetHours == null ? wetHours : outdoor.wetHours;
+        const dm = wxFriendlyMood(baseMood,moodRain,moodWet,max,sunHoursForDay(idx));
+        const hoursLabel = wxHoursLabel(dm);
+        el.innerHTML =
+          '<div>'
+          + '<div class="wx-wx-place">Bielstein · '+esc(label)+'</div>'
+          + '<div class="wx-wx-today-top">'+wxIcon(dm.ic,64)
+          + '<div><div class="wx-wx-temp">'+rnd(max)+'°</div>'
+          + '<div class="wx-wx-range">'+rnd(min)+' bis '+rnd(max)+'°</div>'
+          + '<div class="wx-wx-cond">'+esc(dm.t)+' · '+esc(dayName.format(new Date(dl.time[idx]+'T12:00:00')))+'</div></div></div>'
+          + '</div>'
+          + '<div class="wx-wx-meta">'
+          + '<span>Niederschlag 24h <b>'+mmFmt(rain)+' mm</b>'+(outdoorRain!=null ? '<em>8-22 Uhr: '+mmFmt(outdoorRain)+' mm</em>' : '')+'</span>'
+          + (wetHours!=null ? '<span>'+hoursLabel+' <b>'+wetHours+'</b></span>' : '')
+          + '<span>Wind <b>bis '+rnd(wind)+' km/h</b></span>'
+          + '</div>';
+      }
+
+      renderWeatherCard(document.getElementById('pbwxToday'), todayIdx, 'heute');
+
+      let yesterdayRows = null;
+      try{ yesterdayRows = await wxFetchBrightSkyDay(yesterdayKey); }catch(e){ yesterdayRows = null; }
+
+      function renderObservedWeatherCard(el, rows, dateKey, fallbackIdx){
+        if(!el) return;
+        if(!rows || !rows.length){ renderWeatherCard(el, fallbackIdx, 'gestern'); return; }
+        const temps = rows.map(w=>Number(w.temperature)).filter(v=>!Number.isNaN(v));
+        const winds = rows.map(w=>Number(w.wind_gust_speed||w.wind_speed)).filter(v=>!Number.isNaN(v));
+        const rain = rows.reduce((sum,w)=>sum+Number(w.precipitation||0),0);
+        const wetHours = rows.filter(w=>Number(w.precipitation||0)>0).length;
+        const outdoorRain = rows.reduce((sum,w)=>{
+          const h = wxDataTime(w).getHours();
+          return h >= 8 && h < 22 ? sum + Number(w.precipitation||0) : sum;
+        },0);
+        const dm = wxBrightMood(rows);
+        const hoursLabel = wxHoursLabel(dm);
+        const min = temps.length ? Math.min(...temps) : null;
+        const max = temps.length ? Math.max(...temps) : null;
+        const wind = winds.length ? Math.max(...winds) : null;
+        el.innerHTML =
+          '<div>'
+          + '<div class="wx-wx-place">Bielstein · gestern</div>'
+          + '<div class="wx-wx-today-top">'+wxIcon(dm.ic,64)
+          + '<div><div class="wx-wx-temp">'+rnd(max)+'°</div>'
+          + '<div class="wx-wx-range">'+rnd(min)+' bis '+rnd(max)+'°</div>'
+          + '<div class="wx-wx-cond">'+esc(dm.t)+' · '+esc(dayName.format(new Date(dateKey+'T12:00:00')))+'</div></div></div>'
+          + '</div>'
+          + '<div class="wx-wx-meta">'
+          + '<span>Niederschlag 24h <b>'+mmFmt(rain)+' mm</b><em>8-22 Uhr: '+mmFmt(outdoorRain)+' mm</em></span>'
+          + '<span>'+hoursLabel+' <b>'+wetHours+'</b></span>'
+          + '<span>Wind <b>bis '+rnd(wind)+' km/h</b></span>'
+          + '</div>';
+      }
+      renderObservedWeatherCard(document.getElementById('pbwxYesterday'), yesterdayRows, yesterdayKey, yIdx);
+
+      function renderHourlyBox(el, dateKey, title){
+        const hourly = d.hourly || {};
+        if(!el || !hourly.time) return;
+        let bars = ''; let windowRain = 0;
+        for(let hour=8; hour<=21; hour++){
+          const stamp = dateKey+'T'+String(hour).padStart(2,'0')+':00';
+          const i = hourly.time.findIndex(t => t === stamp);
+          const amount = i >= 0 && hourly.precipitation ? Math.max(0, Number(hourly.precipitation[i]||0)) : 0;
+          windowRain += amount;
+          const temp = i >= 0 && hourly.temperature_2m ? Math.round(Number(hourly.temperature_2m[i]||0)) : null;
+          const h = Math.min(100, amount * 32);
+          bars += '<div class="wx-wx-bar">'
+            + '<span class="mm">'+hourlyMmLabel(amount)+'</span>'
+            + '<div class="track"><div class="fill" style="height:'+Math.max(2,h)+'%"></div><span class="temp">'+(temp==null?'–':temp+'°')+'</span></div>'
+            + '<span class="hr">'+hour+'</span></div>';
+        }
+        el.innerHTML = '<div class="hd"><span>'+esc(title)+'</span><b>'+mmFmt(windowRain)+' mm</b></div><div class="wx-wx-bars">'+bars+'</div>';
+        el.style.display = '';
+      }
+      renderHourlyBox(document.getElementById('pbwxTodayHourly'), todayKey, 'Niederschlag heute · 8 bis 22 Uhr · Prognose');
+
+      function renderObservedHourlyBox(el, rows, dateKey){
+        if(!el) return;
+        if(!rows || !rows.length){ renderHourlyBox(el, dateKey, 'Niederschlag gestern · 8 bis 22 Uhr'); return; }
+        let bars = ''; let windowRain = 0;
+        for(let hour=8; hour<=21; hour++){
+          const row = wxHourRow(rows,dateKey,hour);
+          const amount = row && row.precipitation != null ? Math.max(0,Number(row.precipitation||0)) : 0;
+          windowRain += amount;
+          const temp = row && row.temperature != null ? Math.round(Number(row.temperature)) : null;
+          const h = Math.min(100, amount * 32);
+          bars += '<div class="wx-wx-bar">'
+            + '<span class="mm">'+hourlyMmLabel(amount)+'</span>'
+            + '<div class="track"><div class="fill" style="height:'+Math.max(2,h)+'%"></div><span class="temp">'+(temp==null?'–':temp+'°')+'</span></div>'
+            + '<span class="hr">'+hour+'</span></div>';
+        }
+        el.innerHTML = '<div class="hd"><span>Niederschlag gestern · 8 bis 22 Uhr · DWD/Bright Sky</span><b>'+mmFmt(windowRain)+' mm</b></div><div class="wx-wx-bars">'+bars+'</div>';
+        el.style.display = '';
+      }
+      renderObservedHourlyBox(document.getElementById('pbwxYesterdayHourly'), yesterdayRows, yesterdayKey);
+
+      const daysEl = document.getElementById('pbwxDays');
+      if(daysEl && dl.time){
+        let html = ''; let shown = 0;
+        for(let i=todayIdx+1;i<dl.time.length && shown<6;i++){
+          const dt = new Date(dl.time[i]+'T12:00:00');
+          const label = shortDay.format(dt).replace('.','');
+          const baseMood = wxMap(dl.weather_code && dl.weather_code[i]);
+          const rain = dl.precipitation_sum && dl.precipitation_sum[i];
+          const wind = dl.wind_speed_10m_max && dl.wind_speed_10m_max[i];
+          const wetHours = forecastWetHours(dl.time[i]);
+          const outdoor = forecastWindowStats(dl.time[i]);
+          const dm = wxFriendlyMood(baseMood,outdoor.rain, outdoor.wetHours,dl.temperature_2m_max[i],sunHoursForDay(i));
+          html += '<div class="wx-wx-day">'
+            + '<div class="d">'+esc(label)+'</div>'
+            + wxIcon(dm.ic,38)
+            + '<div class="hi">'+rnd(dl.temperature_2m_max[i])+'°</div>'
+            + '<div class="lo">'+rnd(dl.temperature_2m_min[i])+'°</div>'
+            + '<div class="mm">'+mmFmt(rain)+' mm</div>'
+            + (wetHours!=null ? '<div class="mm">'+wetHoursText(wetHours,dm)+'</div>' : '')
+            + '<div class="wind">Wind '+rnd(wind)+' km/h</div>'
+            + '</div>';
+          shown++;
+        }
+        daysEl.innerHTML = html;
+      }
+
+      document.getElementById('pbwxWeather').style.display = '';
+    }catch(e){ /* Wetter optional — Sektion bleibt ausgeblendet */ }
+  }
+
+  // ============ „Jetzt spielen"-Beleg: EINE große Folio-Gestern-Karte zum Spieltag.
+  //  Bewusst OHNE Stundenleiste/Viertelraster: DWD liefert Stundenwerte, die sich
+  //  nicht seriös auf 15-Minuten herunterbrechen lassen. Die Karte gibt den Tages-
+  //  kontext (24h / 8-22 Uhr / Regenstunden / Wind); den Ausfallanteil melden die
+  //  Spieler ehrlich selbst (25/50/75/100 %). ============
+  // Überschrift der Spieltag-Kachel: wird IMMER automatisch aus der jeweiligen
+  // Buchung gebaut (Datum · Spielzeit · Court) – die Beispielbuchung ist nur ein
+  // Platzhalter im Testmodus.
+  function proofPlaceLabel(b){
+    // Nur der Spieltag als Datum – Uhrzeit und Court stehen bereits in der
+    // Buchungszeile darüber; die Wetterkachel beschreibt genau diesen Tag.
+    let out = 'Bielstein · Spieltag';
+    try{
+      const dateStr = new Date(b.date+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+      out += ' · '+dateStr;
+    }catch(e){}
+    return out;
+  }
+  function proofCardHTML(rows, b){
+    const temps = rows.map(w=>Number(w.temperature)).filter(v=>!Number.isNaN(v));
+    const winds = rows.map(w=>Number(w.wind_gust_speed||w.wind_speed)).filter(v=>!Number.isNaN(v));
+    const rain = rows.reduce((s,w)=>s+Number(w.precipitation||0),0);
+    const wetHours = rows.filter(w=>Number(w.precipitation||0)>0).length;
+    const outdoorRain = rows.reduce((s,w)=>{ const h = wxDataTime(w).getHours(); return h>=8 && h<22 ? s+Number(w.precipitation||0) : s; },0);
+    const dm = wxBrightMood(rows);
+    const hoursLabel = wxHoursLabel(dm);
+    const min = temps.length ? Math.min(...temps) : null;
+    const max = temps.length ? Math.max(...temps) : null;
+    const wind = winds.length ? Math.max(...winds) : null;
+    return '<div class="wx-wx-today yesterday">'
+      + '<div>'
+      + '<div class="wx-wx-place">'+esc(proofPlaceLabel(b))+'</div>'
+      + '<div class="wx-wx-today-top">'+wxIcon(dm.ic,64)
+      + '<div><div class="wx-wx-temp">'+rnd(max)+'°</div>'
+      + '<div class="wx-wx-range">'+rnd(min)+' bis '+rnd(max)+'°</div>'
+      + '<div class="wx-wx-cond">'+esc(dm.t)+'</div></div></div>'
+      + '</div>'
+      + '<div class="wx-wx-meta">'
+      + '<span>Niederschlag 24h <b>'+mmFmt(rain)+' mm</b><em>8-22 Uhr: '+mmFmt(outdoorRain)+' mm</em></span>'
+      + '<span>'+hoursLabel+' <b>'+wetHours+'</b></span>'
+      + '<span>Wind <b>bis '+rnd(wind)+' km/h</b></span>'
+      + '</div></div>';
+  }
+  // Stundenleiste zum Spieltag (beobachtete DWD-Werte). Die gebuchten Stunden sind
+  // orange markiert – so sehen Spieler UND Admin, um welche Slots es geht und ob
+  // genau in dieser Zeit Niederschlag fiel.
+  function proofHourlyHTML(rows, dayKey, playStart, playEnd){
+    let bars = ''; let windowRain = 0;
+    for(let hour=8; hour<=21; hour++){
+      const row = wxHourRow(rows,dayKey,hour);
+      const amount = row && row.precipitation != null ? Math.max(0,Number(row.precipitation||0)) : 0;
+      windowRain += amount;
+      const temp = row && row.temperature != null ? Math.round(Number(row.temperature)) : null;
+      const h = Math.min(100, amount * 32);
+      const played = hour >= playStart && hour < playEnd;
+      bars += '<div class="wx-wx-bar'+(played?' pbwx-play':'')+'">'
+        + '<span class="mm">'+hourlyMmLabel(amount)+'</span>'
+        + '<div class="track"><div class="fill" style="height:'+Math.max(2,h)+'%"></div><span class="temp">'+(temp==null?'–':temp+'°')+'</span></div>'
+        + '<span class="hr">'+hour+'</span></div>';
+    }
+    return '<div class="wx-wx-hourly"><div class="hd"><span>Niederschlag am Spieltag · 8 bis 22 Uhr · DWD/Bright Sky</span><b>'+mmFmt(windowRain)+' mm</b></div><div class="wx-wx-bars">'+bars+'</div></div>';
+  }
+  async function renderBookingProof(container, b){
+    if(!container || !b) return;
+    const dayKey = String(b.date);
+    const playStart = Number(b.hour_start || 0);
+    const playEnd = playStart + Number(b.duration || 1);
+    container.innerHTML = '<div class="wx-wx-today yesterday"><div class="pbwx-note">Wetter zum Spieltag wird geladen …</div></div>';
+    let rows = null;
+    try{ rows = await wxFetchBrightSkyDay(dayKey); }catch(e){ rows = null; }
+    if(!rows || !rows.length){
+      container.innerHTML = '<div class="wx-wx-today yesterday"><div class="wx-wx-place">'+esc(proofPlaceLabel(b))+'</div>'
+        + '<div class="pbwx-note">Die Wetterdaten sind gerade nicht abrufbar. Deine Meldung bleibt trotzdem möglich – der Abgleich mit den DWD-Werten erfolgt nachträglich.</div></div>';
+      return;
+    }
+    container.innerHTML = proofCardHTML(rows, b) + proofHourlyHTML(rows, dayKey, playStart, playEnd);
+  }
+
+  window.PBWeather = { renderBookingProof: renderBookingProof };
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', loadWeather);
+  } else {
+    loadWeather();
+  }
+})();
+</script>
 
 </body>
 </html>
@@ -9155,54 +9388,9 @@ body.bielstein-theme .court-rules-glyph::after {
 .weather-report-btn:hover, .weather-report-btn:focus-visible { background: #E8431E; outline: none; }
 .weather-report-hint { margin-top: 9px; text-align: center; font: 500 12px "Manrope",sans-serif; color: #7A7368; }
 .weather-status-note { margin-top: 10px; font: 500 13px/1.55 "Manrope",sans-serif; }
-.weather-proof { margin: 14px 0 12px; padding: 16px; border: 1.5px solid #D9CFBF; border-radius: 14px; background: #FAF8F4; box-shadow: inset 0 0 0 1px rgba(255,255,255,.55); }
-.weather-proof-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-.weather-proof-kicker { font: 800 10px/1 "Space Grotesk",sans-serif; letter-spacing: .18em; text-transform: uppercase; color: #FF5A36; margin-bottom: 6px; }
-.weather-proof-title { font: 800 17px/1.2 "Space Grotesk",sans-serif; color: #1C1A17; }
-.weather-proof-pill { flex-shrink: 0; border-radius: 999px; padding: 6px 10px; font: 800 10px/1 "Space Grotesk",sans-serif; letter-spacing: .09em; text-transform: uppercase; border: 1.5px solid #D9CFBF; color: #7A7368; background: #FFFFFF; }
-.weather-proof-pill.preview { border-color: rgba(122,115,104,.32); color: #7A7368; }
-.weather-proof-pill.open { border-color: rgba(31,138,95,.35); color: #1F8A5F; }
-.weather-proof-pill.closed { border-color: rgba(184,64,44,.35); color: #B8402C; }
-.weather-proof-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 14px; }
-.weather-proof-meta span { padding: 9px 10px; border-radius: 9px; background: #FFFFFF; border: 1px solid #E7E0D5; font: 700 11.5px/1.35 "Manrope",sans-serif; color: #7A7368; }
-.weather-proof-focus { padding-top: 3px; }
 .weather-proof-subhead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 9px; font-family: "Space Grotesk",sans-serif; }
 .weather-proof-subhead span:first-child { font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; color: #1C1A17; }
 .weather-proof-subhead span:last-child { font-size: 11.5px; font-weight: 700; color: #7A7368; text-align: right; }
-.weather-quarter-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
-.weather-quarter { min-height: 82px; padding: 10px 8px; border: 1.5px solid #E7E0D5; border-radius: 11px; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
-.weather-quarter-time { font: 800 10px/1.1 "Space Grotesk",sans-serif; color: #7A7368; letter-spacing: .04em; }
-.weather-quarter strong { font: 900 19px/1 "Space Grotesk",sans-serif; color: #1C1A17; }
-.weather-quarter span:last-child { font: 700 10.5px/1.2 "Manrope",sans-serif; color: #9B9488; }
-.weather-quarter.light { border-color: rgba(74,144,226,.28); background: #F5FAFF; }
-.weather-quarter.wet { border-color: rgba(74,144,226,.52); background: #EAF4FF; }
-.weather-quarter.heavy { border-color: rgba(184,64,44,.5); background: #FFF0EA; }
-.weather-quarter.unknown { background: #F2EEE6; }
-.weather-hour-strip { min-height: 72px; display: grid; grid-template-columns: repeat(auto-fit, minmax(24px, 1fr)); gap: 5px; align-items: end; padding: 12px 10px 8px; border: 1px solid #E7E0D5; border-radius: 12px; background: #FFFFFF; }
-.weather-hour { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; opacity: .78; }
-.weather-hour-mm { min-height: 12px; font: 800 9px/1 "Space Grotesk",sans-serif; color: #7A7368; white-space: nowrap; }
-.weather-hour.play { opacity: 1; }
-.weather-hour-bar { width: 100%; max-width: 16px; min-height: 4px; border-radius: 4px 4px 2px 2px; background: #DED8CD; display: block; }
-.weather-hour.light .weather-hour-bar { background: #9FCBEF; }
-.weather-hour.wet .weather-hour-bar { background: #4A90E2; }
-.weather-hour.heavy .weather-hour-bar { background: #FF5A36; }
-.weather-hour.play .weather-hour-bar { outline: 2px solid #1C1A17; outline-offset: 2px; }
-.weather-hour.play.dry .weather-hour-bar { outline-color: #B7D9F3; box-shadow: 0 0 0 4px rgba(183,217,243,.18); }
-.weather-hour.play.light .weather-hour-bar { outline-color: #9FCBEF; box-shadow: 0 0 0 4px rgba(159,203,239,.2); }
-.weather-hour.play.wet .weather-hour-bar { outline-color: #4A90E2; box-shadow: 0 0 0 4px rgba(74,144,226,.16); }
-.weather-hour.play.heavy .weather-hour-bar { outline-color: #FF5A36; box-shadow: 0 0 0 4px rgba(255,90,54,.16); }
-.weather-hour-label { font: 800 9px/1 "Space Grotesk",sans-serif; color: #9B9488; }
-.weather-hour-legend { margin: 10px 0 0; font: 800 10px/1.2 "Manrope",sans-serif; color: #8C8578; }
-.weather-legend-grid { display: grid; grid-template-columns: repeat(5, minmax(74px, 1fr)); gap: 8px; align-items: start; }
-.weather-legend-grid div { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
-.weather-legend-grid span { min-height: 16px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; color: #1C1A17; }
-.weather-legend-grid em { font: 800 10.5px/1.2 "Manrope",sans-serif; color: #7A7368; font-style: normal; }
-.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: #DED8CD; }
-.legend-dot.dry { background: #DED8CD; }
-.legend-dot.light { background: #9FCBEF; }
-.legend-dot.wet { background: #4A90E2; }
-.legend-dot.heavy { background: #FF5A36; }
-.legend-ring { width: 14px; height: 8px; border-radius: 999px; display: inline-block; border: 2px solid #B7D9F3; }
 .weather-door-proof { padding: 0 18px 16px; }
 .weather-door-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .weather-door-card { position: relative; min-height: 76px; padding: 12px 12px 12px 54px; border-radius: 13px; border: 1.5px solid #D7E7F3; background: #F6FBFF; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
@@ -9211,8 +9399,6 @@ body.bielstein-theme .court-rules-glyph::after {
 .weather-door-name { font: 900 10px/1 "Space Grotesk",sans-serif; color: #4A90E2; letter-spacing: .14em; text-transform: uppercase; }
 .weather-door-card strong { font: 900 16px/1.1 "Space Grotesk",sans-serif; color: #1C1A17; }
 .weather-door-card em { font: 800 11px/1.25 "Manrope",sans-serif; color: #7A7368; font-style: normal; }
-.weather-proof-source { margin-top: 9px; font: 600 10.5px/1.45 "Manrope",sans-serif; color: #8C8578; text-align: center; }
-.weather-loading, .weather-proof-empty { grid-column: 1 / -1; padding: 16px; border-radius: 10px; background: #FFFFFF; border: 1px solid #E7E0D5; font: 700 12px/1.5 "Manrope",sans-serif; color: #7A7368; text-align: center; }
 .play-card.recent-booking-card#weatherReportCard {
   border: 5px solid #1C1A17 !important;
   background: #FFF2EE !important;
@@ -9220,63 +9406,8 @@ body.bielstein-theme .court-rules-glyph::after {
   padding: 24px !important;
 }
 .recent-booking-card .closure-item.my-booking { background: #FFFFFF !important; border: 1.5px solid #F3C9BE !important; border-radius: 12px !important; padding: 14px 16px !important; }
-.weather-proof { overflow: hidden; padding: 0; border-color: #E5D1C2; background: #FFFFFF; box-shadow: 0 10px 26px rgba(28,26,23,.08); }
-.weather-hero { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; min-height: 112px; padding: 18px 18px; background: linear-gradient(135deg, #D8EFFA 0%, #FFF4D8 54%, #FFE6DE 100%); border-bottom: 1px solid rgba(28,26,23,.08); }
-.weather-proof.weather-rain .weather-hero { background: linear-gradient(135deg, #CFE5FF 0%, #DDEBF2 52%, #FFF2E8 100%); }
-.weather-proof.weather-mixed .weather-hero { background: linear-gradient(135deg, #D8EFFA 0%, #FFF4D8 58%, #FFE6DE 100%); }
-.weather-proof.weather-wind .weather-hero { background: linear-gradient(135deg, #E5F2EA 0%, #EAF0F4 55%, #FFF4D8 100%); }
-.weather-proof.weather-sun .weather-hero { background: linear-gradient(135deg, #FFF1B8 0%, #FBE4C8 54%, #D8EFFA 100%); }
-.weather-hero-icon { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; background: rgba(255,255,255,.78); border: 1px solid rgba(255,255,255,.9); font-size: 34px; box-shadow: 0 8px 22px rgba(28,26,23,.09); }
-.weather-hero-copy { min-width: 0; }
-.weather-proof-date { margin-top: 4px; font: 800 12px/1.2 "Manrope",sans-serif; color: #7A7368; }
-.weather-proof .weather-proof-meta { padding: 14px 18px 0; }
-.weather-proof .weather-proof-focus, .weather-proof .weather-proof-context { padding: 0 18px; }
-.weather-day-summary { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; padding: 14px 18px 16px; }
-.weather-day-summary div { min-height: 70px; padding: 13px 12px; border-radius: 12px; border: 1px solid #E7E0D5; background: #FAF8F4; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
-.weather-day-summary strong { font: 900 23px/1 "Space Grotesk",sans-serif; color: #1C1A17; }
-.weather-day-summary span { font: 800 10px/1.25 "Space Grotesk",sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #8C8578; }
-.weather-day-summary em { font: 800 11px/1.25 "Manrope",sans-serif; color: #4A90E2; font-style: normal; }
-.weather-proof-context { margin-bottom: 18px; }
-.weather-proof-focus { margin-bottom: 2px; }
-.weather-wind-focus { margin-top: 4px; }
-.weather-wind-slot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 10px; }
-.weather-wind-slot { min-height: 82px; padding: 12px; border-radius: 13px; border: 1.5px solid #E7E0D5; background: #FAF8F4; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
-.weather-wind-slot span { font: 800 10px/1.1 "Space Grotesk",sans-serif; color: #7A7368; letter-spacing: .04em; }
-.weather-wind-slot strong { font: 900 22px/1 "Space Grotesk",sans-serif; color: #1C1A17; }
-.weather-wind-slot em { font: 800 11px/1.2 "Manrope",sans-serif; color: #8C8578; font-style: normal; }
-.weather-wind-slot.light { border-color: #D7E7F3; background: #F6FBFF; }
-.weather-wind-slot.moderate { border-color: #EAD8A2; background: #FFF8DF; }
-.weather-wind-slot.strong { border-color: #F0C5A8; background: #FFF0E7; }
-.weather-wind-slot.storm { border-color: #DD9C9C; background: #FFE9E9; }
-.weather-wind-legend { display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr)); gap: 8px; margin-bottom: 16px; }
-.weather-wind-legend div { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; font: 800 10px/1.2 "Manrope",sans-serif; color: #7A7368; }
-.weather-wind-legend span { display: inline-flex; align-items: center; justify-content: center; gap: 5px; color: #1C1A17; }
-.weather-wind-legend em { font-style: normal; }
-.wind-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-.wind-dot.light { background: #9FCBEF; }
-.wind-dot.moderate { background: #E3BC4F; }
-.wind-dot.strong { background: #F08A48; }
-.wind-dot.storm { background: #D94E4E; }
-.weather-hour-strip { min-height: 106px; gap: 7px; padding: 16px 13px 10px; background: #FAF8F4; }
-.weather-hour { gap: 7px; }
-.weather-hour-mm { color: #7A7368; }
-.weather-hour.light .weather-hour-mm, .weather-hour.wet .weather-hour-mm { color: #2E6EA6; }
-.weather-hour.heavy .weather-hour-mm { color: #B8402C; }
-.weather-hour-bar { max-width: 20px; border-radius: 8px 8px 3px 3px; }
-.weather-hour.play { transform: translateY(-3px); }
-.weather-hour.play .weather-hour-bar { outline-width: 2px; outline-offset: 2px; }
-.weather-quarter-grid { gap: 10px; margin-bottom: 12px; }
-.weather-quarter { min-height: 92px; border-radius: 13px; }
-.weather-proof-source { padding: 0 18px 16px; }
 @media (max-width: 560px) {
-  .weather-proof-meta { grid-template-columns: 1fr; }
-  .weather-hero { grid-template-columns: auto 1fr; }
-  .weather-hero .weather-proof-pill { grid-column: 1 / -1; justify-self: flex-start; }
-  .weather-day-summary { grid-template-columns: 1fr; }
-  .weather-wind-legend { grid-template-columns: 1fr 1fr; }
-  .weather-legend-grid { grid-template-columns: 1fr 1fr; }
   .weather-door-grid { grid-template-columns: 1fr; }
-  .weather-quarter-grid { grid-template-columns: 1fr 1fr; }
   .weather-proof-head, .weather-proof-subhead { flex-direction: column; align-items: flex-start; }
   .weather-proof-subhead span:last-child { text-align: left; }
 }
@@ -9329,7 +9460,7 @@ body.bielstein-theme .play-history-title {
   margin: 0 0 12px 2px !important;
 }
 body.bielstein-theme #weatherReportCard {
-  margin: 0 0 12px !important;
+  margin: 0 0 28px !important;
   background: #FDEAE3 !important;
   border: 1px solid #F1C8B9 !important;
   box-shadow: none !important;
