@@ -942,7 +942,7 @@ main {
 .pbwx .wx-wx-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;}
 @media (max-width:760px){ .pbwx .wx-wx-pair{grid-template-columns:1fr;} }
 .pbwx .wx-wx-today{border:1.5px solid var(--ink);border-radius:16px;padding:20px 22px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(160deg,#FBF7EE,#F0EADB);min-height:190px;}
-.pbwx .wx-wx-today.yesterday{border-color:var(--rule-strong);background:linear-gradient(160deg,#F4EFE4,#FBF7EE);}
+.pbwx .wx-wx-today.yesterday,.pbwx .wx-wx-today.alt{border-color:var(--rule-strong);background:linear-gradient(160deg,#F4EFE4,#FBF7EE);}
 .pbwx .wx-wx-today-top{display:flex;align-items:center;gap:14px;}
 .pbwx .wx-wx-today-top svg{flex:none;width:64px;height:64px;}
 .pbwx .wx-wx-temp{font-family:var(--font-display);font-weight:700;font-size:40px;line-height:1;color:var(--ink);}
@@ -1468,17 +1468,17 @@ main {
       <section class="wx-section" id="pbwxWeather" style="display:none;">
         <div class="wx-section-head weather-head">
           <span class="wx-section-eyebrow">Wetter</span>
-          <h2>Bielstein · heute, gestern, Ausblick</h2>
+          <h2>Bielstein · heute, morgen, Ausblick</h2>
           <span class="wx-section-note">51674 Wiehl-Bielstein</span>
         </div>
         <div class="wx-weather">
           <div class="wx-wx-pair">
             <div class="wx-wx-today" id="pbwxToday"></div>
-            <div class="wx-wx-today yesterday" id="pbwxYesterday"></div>
+            <div class="wx-wx-today alt" id="pbwxTomorrow"></div>
           </div>
           <div class="wx-wx-hourly-grid">
             <div class="wx-wx-hourly" id="pbwxTodayHourly" style="display:none;"></div>
-            <div class="wx-wx-hourly" id="pbwxYesterdayHourly" style="display:none;"></div>
+            <div class="wx-wx-hourly" id="pbwxTomorrowHourly" style="display:none;"></div>
           </div>
           <div class="wx-wx-days" id="pbwxDays"></div>
         </div>
@@ -7665,17 +7665,16 @@ init();
         + '&current=temperature_2m,weather_code,wind_speed_10m'
         + '&hourly=temperature_2m,precipitation,wind_speed_10m'
         + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,sunshine_duration'
-        + '&timezone=Europe%2FBerlin&forecast_days=7&past_days=1';
+        + '&timezone=Europe%2FBerlin&forecast_days=8&past_days=0';
       const r = await fetch(url);
       if(!r.ok) return;
       const d = await r.json();
       const dl = d.daily || {};
       const dayIndex = dateStr => (dl.time||[]).findIndex(x => x === dateStr);
       const todayKey = wxDateKeyLocal(new Date());
-      const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate()-1);
-      const yesterdayKey = wxDateKeyLocal(yesterdayDate);
       const todayIdx = Math.max(0, dayIndex(todayKey));
-      const yIdx = Math.max(0, dayIndex(yesterdayKey));
+      const tomorrowIdx = todayIdx + 1;
+      const tomorrowKey = (dl.time && dl.time[tomorrowIdx]) || todayKey;
       const dayName = new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'});
       const shortDay = new Intl.DateTimeFormat('de-DE',{weekday:'short'});
 
@@ -7747,41 +7746,7 @@ init();
       }
 
       renderWeatherCard(document.getElementById('pbwxToday'), todayIdx, 'heute');
-
-      let yesterdayRows = null;
-      try{ yesterdayRows = await wxFetchBrightSkyDay(yesterdayKey); }catch(e){ yesterdayRows = null; }
-
-      function renderObservedWeatherCard(el, rows, dateKey, fallbackIdx){
-        if(!el) return;
-        if(!rows || !rows.length){ renderWeatherCard(el, fallbackIdx, 'gestern'); return; }
-        const temps = rows.map(w=>Number(w.temperature)).filter(v=>!Number.isNaN(v));
-        const winds = rows.map(w=>Number(w.wind_gust_speed||w.wind_speed)).filter(v=>!Number.isNaN(v));
-        const rain = rows.reduce((sum,w)=>sum+Number(w.precipitation||0),0);
-        const wetHours = rows.filter(w=>Number(w.precipitation||0)>0).length;
-        const outdoorRain = rows.reduce((sum,w)=>{
-          const h = wxDataTime(w).getHours();
-          return h >= 8 && h < 22 ? sum + Number(w.precipitation||0) : sum;
-        },0);
-        const dm = wxBrightMood(rows);
-        const hoursLabel = wxHoursLabel(dm);
-        const min = temps.length ? Math.min(...temps) : null;
-        const max = temps.length ? Math.max(...temps) : null;
-        const wind = winds.length ? Math.max(...winds) : null;
-        el.innerHTML =
-          '<div>'
-          + '<div class="wx-wx-place">Bielstein · gestern</div>'
-          + '<div class="wx-wx-today-top">'+wxIcon(dm.ic,64)
-          + '<div><div class="wx-wx-temp">'+rnd(max)+'°</div>'
-          + '<div class="wx-wx-range">'+rnd(min)+' bis '+rnd(max)+'°</div>'
-          + '<div class="wx-wx-cond">'+esc(dm.t)+' · '+esc(dayName.format(new Date(dateKey+'T12:00:00')))+'</div></div></div>'
-          + '</div>'
-          + '<div class="wx-wx-meta">'
-          + '<span>Niederschlag 24h <b>'+mmFmt(rain)+' mm</b><em>8-22 Uhr: '+mmFmt(outdoorRain)+' mm</em></span>'
-          + '<span>'+hoursLabel+' <b>'+wetHours+'</b></span>'
-          + '<span>Wind <b>bis '+rnd(wind)+' km/h</b></span>'
-          + '</div>';
-      }
-      renderObservedWeatherCard(document.getElementById('pbwxYesterday'), yesterdayRows, yesterdayKey, yIdx);
+      renderWeatherCard(document.getElementById('pbwxTomorrow'), tomorrowIdx, 'morgen');
 
       function renderHourlyBox(el, dateKey, title){
         const hourly = d.hourly || {};
@@ -7803,31 +7768,12 @@ init();
         el.style.display = '';
       }
       renderHourlyBox(document.getElementById('pbwxTodayHourly'), todayKey, 'Niederschlag heute · 8 bis 22 Uhr · Prognose');
-
-      function renderObservedHourlyBox(el, rows, dateKey){
-        if(!el) return;
-        if(!rows || !rows.length){ renderHourlyBox(el, dateKey, 'Niederschlag gestern · 8 bis 22 Uhr'); return; }
-        let bars = ''; let windowRain = 0;
-        for(let hour=8; hour<=21; hour++){
-          const row = wxHourRow(rows,dateKey,hour);
-          const amount = row && row.precipitation != null ? Math.max(0,Number(row.precipitation||0)) : 0;
-          windowRain += amount;
-          const temp = row && row.temperature != null ? Math.round(Number(row.temperature)) : null;
-          const h = Math.min(100, amount * 32);
-          bars += '<div class="wx-wx-bar">'
-            + '<span class="mm">'+hourlyMmLabel(amount)+'</span>'
-            + '<div class="track"><div class="fill" style="height:'+Math.max(2,h)+'%"></div><span class="temp">'+(temp==null?'–':temp+'°')+'</span></div>'
-            + '<span class="hr">'+hour+'</span></div>';
-        }
-        el.innerHTML = '<div class="hd"><span>Niederschlag gestern · 8 bis 22 Uhr · DWD/Bright Sky</span><b>'+mmFmt(windowRain)+' mm</b></div><div class="wx-wx-bars">'+bars+'</div>';
-        el.style.display = '';
-      }
-      renderObservedHourlyBox(document.getElementById('pbwxYesterdayHourly'), yesterdayRows, yesterdayKey);
+      renderHourlyBox(document.getElementById('pbwxTomorrowHourly'), tomorrowKey, 'Niederschlag morgen · 8 bis 22 Uhr · Prognose');
 
       const daysEl = document.getElementById('pbwxDays');
       if(daysEl && dl.time){
         let html = ''; let shown = 0;
-        for(let i=todayIdx+1;i<dl.time.length && shown<6;i++){
+        for(let i=todayIdx+2;i<dl.time.length && shown<6;i++){
           const dt = new Date(dl.time[i]+'T12:00:00');
           const label = shortDay.format(dt).replace('.','');
           const baseMood = wxMap(dl.weather_code && dl.weather_code[i]);
