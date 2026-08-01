@@ -1152,7 +1152,7 @@ main {
       <p class="pb-splash-claim">Zwei Courts, eine App. Buche deinen Slot, sichere dir dein Jahresabo und behalte dein Guthaben im Blick.</p>
     </div>
     <div>
-      <button type="button" class="pb-splash-cta" id="pbSplashCta">Jetzt loslegen →</button>
+      <button type="button" class="pb-splash-cta" id="pbSplashCta"><span>Jetzt loslegen</span><span aria-hidden="true">→</span></button>
       <p class="pb-splash-foot">Ab Frühjahr 2027 in Bielstein</p>
       <div id="pbSplashSponsor"></div>
     </div>
@@ -1453,8 +1453,6 @@ main {
       <p>Die Zugangscodes kannst du ab 24 h vor Spielbeginn an deine Mitspieler weiterleiten. Kannst oder möchtest du selbst nicht spielen, lassen sie sich an bis zu 4 Personen weitergeben.</p>
     </div>
 
-    <div id="pbSponsorBook" class="pbsp-slot"></div>
-
     <div class="summary-card" id="sumCard">
       <div class="sum-hdr">Deine Buchung</div>
       <div class="sum-row"><span class="sl">Datum</span><span class="sv" id="sDate">—</span></div>
@@ -1465,6 +1463,8 @@ main {
       <div class="sum-row total"><span class="sl">Gesamt</span><span class="sv" id="sTotal">—</span></div>
     </div>
     <button class="book-btn" id="bookBtn" onclick="confirmBooking()">Jetzt buchen &amp; bezahlen →</button>
+
+    <div id="pbSponsorBook" class="pbsp-slot"></div>
 
     <!-- ===== Wetter (Folio-Systematik, 1:1 aus Folio.today · Optik/Schriften bewusst abweichend) ===== -->
     <div class="pbwx">
@@ -1598,6 +1598,8 @@ main {
         </div>
       </div>
 
+      <div id="pbSponsorPlay" class="pbsp-slot"></div>
+
       <!-- Alle kommenden Termine in einer gemeinsamen chronologischen Liste:
            Einzelbuchungen und jeweils der nächste Termin eines Jahresabos. -->
       <div class="play-card upcoming-bookings-card" id="upcomingBookingsCard" style="margin-top:14px;">
@@ -1616,8 +1618,6 @@ main {
           <div class="play-card-title">◆ Aktuelle / letzte Buchung</div>
           <div id="weatherReportContent"></div>
         </div>
-
-        <div id="pbSponsorPlay" class="pbsp-slot"></div>
 
         <div class="play-card-title play-history-title" id="playHistoryTitle">■ Historie</div>
 
@@ -10059,14 +10059,17 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
      Partner rotierend unter „Jetzt buchen", Supporter rotierend unter
      „Jetzt spielen". Reine Anzeige – bei jedem Fehler bleibt die App normal. -->
 <style>
-.pbsp-slot{margin:6px 0 20px;}
-.pbsp-kicker{font-family:"Space Grotesk","Arial Narrow","Impact",sans-serif;font-weight:700;font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:#7A7368;margin:0 0 6px 2px;}
-.pbsp-tile{display:inline-flex;align-items:center;justify-content:center;width:140px;height:64px;padding:0 12px;background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;}
-.pbsp-tile img{max-height:50px;max-width:116px;width:auto;height:auto;object-fit:contain;display:block;}
-.pbsp-tile.pbsp-prem{width:auto;height:76px;padding:0 22px;}
-.pbsp-tile.pbsp-prem img{max-height:48px;max-width:none;}
-#pbSplashSponsor{border-top:1px solid #33302b;padding-top:16px;}
-#pbSplashSponsor .pbsp-kicker{color:#8A8276;letter-spacing:0.22em;font-weight:600;}
+.pbsp-slot{margin:8px 0 22px;}
+.pbsp-kicker{font-family:"Space Grotesk","Arial Narrow","Impact",sans-serif;font-weight:700;font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:#7A7368;margin:0 0 8px 2px;}
+.pbsp-tile{display:inline-flex;align-items:center;justify-content:center;width:180px;height:82px;padding:0 16px;background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;}
+.pbsp-tile img{max-height:60px;max-width:150px;width:auto;height:auto;object-fit:contain;display:block;}
+.pbsp-tile.pbsp-prem{width:auto;height:84px;padding:0 26px;}
+.pbsp-tile.pbsp-prem img{max-height:54px;max-width:none;}
+#pbSplashSponsor{border-top:1px solid #3A362F;margin-top:38px;padding-top:26px;}
+#pbSplashSponsor .pbsp-kicker{color:#8A8276;letter-spacing:0.2em;font-weight:600;margin-bottom:16px;}
+.pb-splash-inner{padding-bottom:clamp(40px,4.5vh,60px);}
+.pb-splash-foot{text-align:left;margin-left:2px;}
+.pb-splash-cta{display:flex;align-items:center;justify-content:space-between;text-align:left;gap:12px;}
 </style>
 <script>
 (function(){
@@ -10093,8 +10096,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       var idx=parseInt(localStorage.getItem(ROT_KEY)||'0',10)||0;
       try{ localStorage.setItem(ROT_KEY, String(idx+1)); }catch(e){}
       if(prem.length) fill('pbSplashSponsor', 'Präsentiert von unserem Premium-Partner', prem[0], true);
-      if(part.length) fill('pbSponsorBook',   'Unser Partner',   part[idx % part.length], false);
-      if(supp.length) fill('pbSponsorPlay',   'Unterstützt von', supp[idx % supp.length], false);
+      if(part.length) fill('pbSponsorBook',   'Das Wetter wird dir präsentiert von', part[idx % part.length], false);
+      // „Jetzt spielen": flexibel – Partner ODER Supporter, was gerade in der Rotation dran ist
+      var mix = part.concat(supp);
+      if(mix.length) fill('pbSponsorPlay',   'Dein Spieltag wird dir präsentiert von', mix[idx % mix.length], false);
     }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', loadSponsorsDisplay);
