@@ -1154,6 +1154,7 @@ main {
     <div>
       <button type="button" class="pb-splash-cta" id="pbSplashCta">Jetzt loslegen →</button>
       <p class="pb-splash-foot">Ab Frühjahr 2027 in Bielstein</p>
+      <div id="pbSplashSponsor"></div>
     </div>
   </div>
 </div>
@@ -1452,6 +1453,8 @@ main {
       <p>Die Zugangscodes kannst du ab 24 h vor Spielbeginn an deine Mitspieler weiterleiten. Kannst oder möchtest du selbst nicht spielen, lassen sie sich an bis zu 4 Personen weitergeben.</p>
     </div>
 
+    <div id="pbSponsorBook" class="pbsp-slot"></div>
+
     <div class="summary-card" id="sumCard">
       <div class="sum-hdr">Deine Buchung</div>
       <div class="sum-row"><span class="sl">Datum</span><span class="sv" id="sDate">—</span></div>
@@ -1613,6 +1616,8 @@ main {
           <div class="play-card-title">◆ Aktuelle / letzte Buchung</div>
           <div id="weatherReportContent"></div>
         </div>
+
+        <div id="pbSponsorPlay" class="pbsp-slot"></div>
 
         <div class="play-card-title play-history-title" id="playHistoryTitle">■ Historie</div>
 
@@ -10047,3 +10052,52 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 })();
 </script>
 <!-- v0.41: Header-Cache-Buster + email_theme Payload für Original/Bielstein-Mailfarben -->
+
+<!-- ══ SPONSOREN-ANZEIGE (Skript 24/25) ══
+     Liest die aktiven Sponsoren aus der öffentlichen Sicht sponsors_public
+     (funktioniert auch ohne Login, für den Splash). Premium immer auf Home,
+     Partner rotierend unter „Jetzt buchen", Supporter rotierend unter
+     „Jetzt spielen". Reine Anzeige – bei jedem Fehler bleibt die App normal. -->
+<style>
+.pbsp-slot{margin:6px 0 20px;}
+.pbsp-kicker{font-family:"Space Grotesk","Arial Narrow","Impact",sans-serif;font-weight:700;font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:#7A7368;margin:0 0 6px 2px;}
+.pbsp-tile{display:inline-flex;align-items:center;justify-content:center;width:140px;height:64px;padding:0 12px;background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;}
+.pbsp-tile img{max-height:50px;max-width:116px;width:auto;height:auto;object-fit:contain;display:block;}
+.pbsp-tile.pbsp-prem{width:auto;height:76px;padding:0 22px;}
+.pbsp-tile.pbsp-prem img{max-height:48px;max-width:none;}
+#pbSplashSponsor{border-top:1px solid #33302b;padding-top:16px;}
+#pbSplashSponsor .pbsp-kicker{color:#8A8276;letter-spacing:0.22em;font-weight:600;}
+</style>
+<script>
+(function(){
+  var ROT_KEY='pbSponsorRot';
+  function esc(s){ return String(s==null?'':s).replace(/"/g,'&quot;'); }
+  function tile(s, prem){
+    if(!s || !s.logo_url) return '';
+    return '<div class="pbsp-tile'+(prem?' pbsp-prem':'')+'"><img src="'+s.logo_url+'" alt="'+esc(s.name)+'"></div>';
+  }
+  function fill(id, kicker, s, prem){
+    var el=document.getElementById(id); if(!el) return;
+    var t=tile(s, prem);
+    el.innerHTML = t ? ('<div class="pbsp-kicker">'+kicker+'</div>'+t) : '';
+  }
+  async function loadSponsorsDisplay(){
+    try{
+      if(typeof sb==='undefined' || !sb) return;
+      var res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
+      if(res.error) throw res.error;
+      var rows = res.data || [];
+      var pick = function(t){ return rows.filter(function(r){return r.tier===t;})
+                                  .sort(function(a,b){return (a.sort_order||0)-(b.sort_order||0);}); };
+      var prem=pick('premium'), part=pick('partner'), supp=pick('supporter');
+      var idx=parseInt(localStorage.getItem(ROT_KEY)||'0',10)||0;
+      try{ localStorage.setItem(ROT_KEY, String(idx+1)); }catch(e){}
+      if(prem.length) fill('pbSplashSponsor', 'Präsentiert von unserem Premium-Partner', prem[0], true);
+      if(part.length) fill('pbSponsorBook',   'Unser Partner',   part[idx % part.length], false);
+      if(supp.length) fill('pbSponsorPlay',   'Unterstützt von', supp[idx % supp.length], false);
+    }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', loadSponsorsDisplay);
+  else loadSponsorsDisplay();
+})();
+</script>
