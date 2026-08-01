@@ -1739,6 +1739,7 @@ main {
       <div class="admin-tab"        id="atab-internal"  onclick="setAdminTab('internal')">📋 Interne Buchungen</div>
       <div class="admin-tab"        id="atab-bookings"  onclick="setAdminTab('bookings')">📅 Buchungsübersicht</div>
       <div class="admin-tab"        id="atab-weather"   onclick="setAdminTab('weather')">🌧 Wetterausfälle</div>
+      <div class="admin-tab"        id="atab-sponsors"  onclick="setAdminTab('sponsors')">🤝 Sponsoren</div>
       <div class="admin-tab"        id="atab-mis"       onclick="setAdminTab('mis')">📊 MIS</div>
       <div class="admin-tab"        id="atab-users"     onclick="setAdminTab('users')">👤 Nutzer</div>
       <div class="admin-tab"        id="atab-wipe"      onclick="setAdminTab('wipe')" style="display:none;">🧹 Platte putzen</div>
@@ -2066,6 +2067,75 @@ main {
         </div>
       </div>
     </div><!-- /adminWeather -->
+
+    <!-- ── SPONSOREN (Skript 24: sponsors + admin_* Funktionen) ── -->
+    <div id="adminSponsors" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-title">🤝 Sponsor anlegen / bearbeiten</div>
+        <div style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5;">
+          <strong>Premium</strong> erscheint auf der Startseite und in <em>jeder</em> Bestätigungsmail.
+          <strong>Partner</strong> (Kachel unter „Jetzt buchen“) und <strong>Supporter</strong> (Kachel unter „Jetzt spielen“) wechseln sich rotierend ab.
+          Logo als PNG/JPG/SVG mit möglichst wenig Rand hochladen – es wird in eine feste Kachel (140 × 64) eingepasst.
+        </div>
+        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
+          <input type="hidden" id="spEditId">
+          <input type="hidden" id="spLogoUrl">
+          <div style="display:grid;grid-template-columns:1fr 120px;gap:12px;margin-bottom:12px;">
+            <div>
+              <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Stufe</label>
+              <select id="spTier" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+                <option value="partner">Partner (2.000 €)</option>
+                <option value="supporter">Supporter (1.000 €)</option>
+                <option value="premium">Premium (Home + jede Mail)</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Reihenfolge</label>
+              <input id="spSort" type="number" value="0" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Name</label>
+            <input id="spName" type="text" placeholder="z. B. Sparkasse Gummersbach" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Logo (Bilddatei)</label>
+            <input id="spFile" type="file" accept="image/*" onchange="sponsorPreviewFile()" style="width:100%;font:500 13px 'Manrope',sans-serif;color:#1C1A17;">
+            <div id="spPreview" style="margin-top:10px;"></div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;font:600 14px 'Manrope',sans-serif;color:#1C1A17;margin-bottom:14px;cursor:pointer;">
+            <input id="spActive" type="checkbox" checked style="width:18px;height:18px;"> aktiv (wird angezeigt)
+          </label>
+          <div style="display:flex;gap:8px;">
+            <button onclick="saveSponsor()" id="spSaveBtn" style="flex:1;padding:12px 16px;border:0;border-radius:9px;background:#FF5A36;color:#1C1A17;font:700 14px 'Space Grotesk',sans-serif;cursor:pointer;">Speichern</button>
+            <button onclick="resetSponsorForm()" style="flex:0 0 auto;padding:12px 16px;border:1.5px solid #E2DACB;border-radius:9px;background:transparent;color:#7A7368;font:700 14px 'Space Grotesk',sans-serif;cursor:pointer;">Neu / Abbrechen</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Aktuelle Sponsoren</div>
+        <div id="sponsorsAdminList"><div style="color:#7A7368;text-align:center;padding:24px;">Wird geladen …</div></div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Mail-Häufigkeit</div>
+        <div style="font-size:0.78rem;color:#888;margin-bottom:12px;line-height:1.5;">
+          In jeder Bestätigungsmail: Premium + genau ein weiterer. Wie oft ein Partner im Verhältnis zu einem Supporter drankommt (Start 2 : 1 = doppelt so oft):
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div>
+            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Partner-Gewicht</label>
+            <input id="spWPartner" type="number" min="1" value="2" style="width:110px;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+          </div>
+          <div>
+            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Supporter-Gewicht</label>
+            <input id="spWSupporter" type="number" min="1" value="1" style="width:110px;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+          </div>
+          <button onclick="saveSponsorWeights()" style="padding:11px 16px;border:0;border-radius:9px;background:#FF5A36;color:#1C1A17;font:700 13px 'Space Grotesk',sans-serif;cursor:pointer;">Speichern</button>
+        </div>
+      </div>
+    </div><!-- /adminSponsors -->
 
     <!-- ── MIS ── -->
     <div id="adminMis" style="display:none;">
@@ -5493,21 +5563,185 @@ async function adminDecideWeather(reportId, approve) {
   }
 }
 
+// ============================================================
+//  ADMIN – Sponsoren (Skript 24: Tabelle sponsors + admin_* Funktionen)
+//  Logos liegen im Storage-Bucket 'sponsor-logos' (öffentlich lesbar,
+//  Upload nur für Admins). Geschrieben wird ausschließlich über die
+//  geprüften SECURITY-DEFINER-Funktionen – nie direkt in die Tabelle.
+// ============================================================
+async function loadAdminSponsors() {
+  const box = document.getElementById('sponsorsAdminList');
+  if (!box) return;
+  box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:24px;">Wird geladen …</div>';
+  let rows = [];
+  try {
+    const { data, error } = await sb.rpc('admin_list_sponsors');
+    if (error) throw error;
+    rows = data || [];
+  } catch(e) {
+    box.innerHTML = `<div style="color:#B8402C;padding:18px;">Sponsoren konnten nicht geladen werden: ${esc(e?.message || 'Unbekannter Fehler')}</div>`;
+    return;
+  }
+  window.__sponsorRows = rows;
+  loadSponsorWeights();
+
+  if (!rows.length) {
+    box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:24px;">Noch keine Sponsoren angelegt.</div>';
+    return;
+  }
+  const tierLabel = { premium:'Premium', partner:'Partner', supporter:'Supporter' };
+  box.innerHTML = rows.map(s => {
+    const logo = s.logo_url
+      ? `<img src="${esc(s.logo_url)}" alt="" style="max-height:38px;max-width:104px;object-fit:contain;display:block;">`
+      : '<span style="color:#B8402C;font-size:0.7rem;text-align:center;line-height:1.2;">kein<br>Logo</span>';
+    const active = s.active
+      ? '<span style="color:#1F8A5F;font-weight:800;">● aktiv</span>'
+      : '<span style="color:#7A7368;font-weight:800;">○ inaktiv</span>';
+    return `
+      <div style="display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid #E2DACB;border-radius:12px;padding:12px 14px;margin-bottom:10px;">
+        <div style="width:118px;height:58px;flex:none;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;">${logo}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
+          <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;">${tierLabel[s.tier] || s.tier} · Reihenfolge ${s.sort_order} · ${active}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex:none;">
+          <button onclick="editSponsor('${s.id}')" style="padding:8px 12px;border:1.5px solid #E2DACB;border-radius:8px;background:transparent;color:#1C1A17;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Bearbeiten</button>
+          <button onclick="deleteSponsor('${s.id}')" style="padding:8px 12px;border:1.5px solid #E2DACB;border-radius:8px;background:transparent;color:#B8402C;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Löschen</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function loadSponsorWeights() {
+  try {
+    const { data, error } = await sb.from('app_settings')
+      .select('mail_weight_partner, mail_weight_supporter').eq('id', true).single();
+    if (error) throw error;
+    if (data) {
+      document.getElementById('spWPartner').value   = data.mail_weight_partner;
+      document.getElementById('spWSupporter').value = data.mail_weight_supporter;
+    }
+  } catch(e) { /* Standardwerte 2 / 1 bleiben stehen */ }
+}
+
+function sponsorPreviewFile() {
+  const f = document.getElementById('spFile').files[0];
+  const box = document.getElementById('spPreview');
+  if (!f) { box.innerHTML = ''; return; }
+  const url = URL.createObjectURL(f);
+  box.innerHTML = `<div style="display:inline-flex;align-items:center;justify-content:center;width:140px;height:64px;background:#fff;border:1.5px solid #E2DACB;border-radius:10px;"><img src="${url}" style="max-height:50px;max-width:116px;object-fit:contain;"></div>`;
+}
+
+function editSponsor(id) {
+  const s = (window.__sponsorRows || []).find(r => r.id === id);
+  if (!s) return;
+  document.getElementById('spEditId').value   = s.id;
+  document.getElementById('spLogoUrl').value  = s.logo_url || '';
+  document.getElementById('spTier').value     = s.tier;
+  document.getElementById('spName').value     = s.name;
+  document.getElementById('spSort').value     = s.sort_order;
+  document.getElementById('spActive').checked = !!s.active;
+  document.getElementById('spFile').value     = '';
+  document.getElementById('spPreview').innerHTML = s.logo_url
+    ? `<div style="font-size:0.72rem;color:#7A7368;margin-bottom:6px;">Aktuelles Logo (nur ersetzt, wenn Du eine neue Datei wählst):</div><div style="display:inline-flex;align-items:center;justify-content:center;width:140px;height:64px;background:#fff;border:1.5px solid #E2DACB;border-radius:10px;"><img src="${esc(s.logo_url)}" style="max-height:50px;max-width:116px;object-fit:contain;"></div>`
+    : '';
+  document.getElementById('spSaveBtn').textContent = 'Änderung speichern';
+  document.getElementById('adminSponsors').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function resetSponsorForm() {
+  document.getElementById('spEditId').value   = '';
+  document.getElementById('spLogoUrl').value  = '';
+  document.getElementById('spTier').value     = 'partner';
+  document.getElementById('spName').value     = '';
+  document.getElementById('spSort').value     = '0';
+  document.getElementById('spActive').checked = true;
+  document.getElementById('spFile').value     = '';
+  document.getElementById('spPreview').innerHTML = '';
+  document.getElementById('spSaveBtn').textContent = 'Speichern';
+}
+
+async function saveSponsor() {
+  const btn    = document.getElementById('spSaveBtn');
+  const id     = document.getElementById('spEditId').value || null;
+  const tier   = document.getElementById('spTier').value;
+  const name   = document.getElementById('spName').value.trim();
+  const sort   = parseInt(document.getElementById('spSort').value) || 0;
+  const active = document.getElementById('spActive').checked;
+  let   logoUrl = document.getElementById('spLogoUrl').value || null;
+  const file   = document.getElementById('spFile').files[0];
+
+  if (!name) { alert('Bitte einen Namen angeben.'); return; }
+
+  const prev = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Speichert …';
+  try {
+    if (file) {
+      const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g,'') || 'png';
+      const uid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2));
+      const path = `logo-${uid}.${ext}`;
+      const { error: upErr } = await sb.storage.from('sponsor-logos').upload(path, file, { upsert:true, cacheControl:'3600' });
+      if (upErr) throw upErr;
+      logoUrl = sb.storage.from('sponsor-logos').getPublicUrl(path).data.publicUrl;
+    }
+    const { error } = await sb.rpc('admin_upsert_sponsor', {
+      p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort
+    });
+    if (error) throw error;
+    showToast('Sponsor gespeichert.');
+    resetSponsorForm();
+    loadAdminSponsors();
+  } catch(e) {
+    alert('Speichern fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
+    btn.textContent = prev;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function deleteSponsor(id) {
+  const s = (window.__sponsorRows || []).find(r => r.id === id);
+  if (!confirm(`Sponsor „${s ? s.name : ''}“ wirklich löschen?`)) return;
+  try {
+    const { error } = await sb.rpc('admin_delete_sponsor', { p_id: id });
+    if (error) throw error;
+    showToast('Sponsor gelöscht.');
+    loadAdminSponsors();
+  } catch(e) {
+    alert('Löschen fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
+  }
+}
+
+async function saveSponsorWeights() {
+  const p = parseInt(document.getElementById('spWPartner').value) || 0;
+  const s = parseInt(document.getElementById('spWSupporter').value) || 0;
+  if (p < 1 || s < 1) { alert('Gewichte müssen mindestens 1 sein.'); return; }
+  try {
+    const { error } = await sb.rpc('admin_update_sponsor_settings', { p_partner_weight: p, p_supporter_weight: s });
+    if (error) throw error;
+    showToast('Mail-Häufigkeit gespeichert.');
+  } catch(e) {
+    alert('Speichern fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
+  }
+}
+
 function setAdminTab(tab) {
   document.getElementById('adminFreibad').style.display   = tab==='freibad'  ? 'block' : 'none';
   document.getElementById('adminPrices').style.display    = tab==='prices'   ? 'block' : 'none';
   document.getElementById('adminInternal').style.display  = tab==='internal' ? 'block' : 'none';
   document.getElementById('adminBookings').style.display  = tab==='bookings' ? 'block' : 'none';
   document.getElementById('adminWeather').style.display   = tab==='weather'  ? 'block' : 'none';
+  document.getElementById('adminSponsors').style.display  = tab==='sponsors' ? 'block' : 'none';
   document.getElementById('adminMis').style.display       = tab==='mis'      ? 'block' : 'none';
   document.getElementById('adminUsers').style.display     = tab==='users'    ? 'block' : 'none';
   document.getElementById('adminWipe').style.display      = tab==='wipe'     ? 'block' : 'none';
-  ['freibad','prices','internal','bookings','weather','mis','users','wipe'].forEach(t =>
+  ['freibad','prices','internal','bookings','weather','sponsors','mis','users','wipe'].forEach(t =>
     document.getElementById('atab-'+t).classList.toggle('active', t===tab)
   );
   // Wetterausfälle laden bei JEDEM Öffnen neu - hier ändern sich Zustände
   // durch Entscheidungen, ein veralteter Stand wäre irreführend.
   if (tab==='weather') { loadAdminWeather(); }
+  if (tab==='sponsors') { loadAdminSponsors(); }
   if (tab==='freibad'  && !adminTabLoaded.freibad)  { loadAdminFreibad();  adminTabLoaded.freibad=true; }
   if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
   if (tab==='internal' && !adminTabLoaded.internal) { loadInternalBookings(); adminTabLoaded.internal=true; }
