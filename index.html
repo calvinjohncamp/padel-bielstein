@@ -146,16 +146,16 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 /* ■■ MODE TABS ■■ */
 .mode-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
 .mode-tab {
-  height: 60px; padding: 0 20px; border-radius: 12px; cursor: pointer; transition: all 0.2s;
+  height: 68px; padding: 0 20px; border-radius: 12px; cursor: pointer; transition: all 0.2s;
   border: 1.5px solid var(--border); background: var(--card);
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1.16rem;
   letter-spacing: 0.08em; text-transform: uppercase; color: var(--white);
 }
 #tabAbo:not(.active) { color: var(--blue); border-color: var(--blue); }
 .mode-tab:hover { border-color: #444; }
 .mode-tab.active { background: var(--gold); border-color: var(--gold-dk); color: #0a0a0a !important; }
-.mode-tab .tab-icon { font-size: 1.1rem; }
+.mode-tab .tab-icon { font-size: 1.4rem; }
 
 /* ■■ STEPS ■■ */
 .step-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -751,8 +751,8 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   body { font-size: 18px; line-height: 1.25; }
   main { padding: 18px 14px 56px; }
   .hero { margin-bottom: 16px; }
-  .mode-tab { padding: 16px 14px; font-size: 1.06rem; border-radius: 14px; }
-  .mode-tab .tab-icon { font-size: 1.2rem; }
+  .mode-tab { padding: 16px 14px; font-size: 1.2rem; border-radius: 14px; }
+  .mode-tab .tab-icon { font-size: 1.45rem; }
   .step-num { width: 26px; height: 26px; font-size: 0.9rem; }
   .step-lbl { font-size: 0.88rem; letter-spacing: 0.12em; }
   .date-chip { min-width: 74px; padding: 12px 14px; border-radius: 12px; }
@@ -790,7 +790,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
   .date-chip .dnum { font-size: 1.65rem; }
   .slot { padding: 12px; }
   .slot-time { font-size: 1.05rem; }
-  .mode-tab { font-size: 0.9rem; }
+  .mode-tab { font-size: 1.02rem; }
   .step-lbl { font-size: 0.78rem; }
 }
 
@@ -8554,14 +8554,14 @@ body.bielstein-theme #mainTabs::-webkit-scrollbar { display: none; }
 body.bielstein-theme #mainTabs .mode-tab {
   flex: 1 1 auto; min-width: max-content;
   display: flex; align-items: center; justify-content: center;
-  height: auto; min-height: 0; padding: 11px 10px;
+  height: auto; min-height: 0; padding: 15px 12px;
   border-radius: 10px !important;
   border: none !important;
   background: transparent !important;
   color: #7A7368 !important;
   font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
   font-weight: 700 !important;
-  font-size: 12.5px !important;
+  font-size: 15.5px !important;
   letter-spacing: 0 !important;
   text-transform: none !important;
   white-space: nowrap; text-align: center;
@@ -8581,15 +8581,15 @@ body.bielstein-theme #mainTabs .mode-tab:not(.active):hover {
 /* CSS-gezeichnete Symbole statt Emoji (wie in der Vorlage) */
 body.bielstein-theme #mainTabs .tab-icon {
   font-size: 0 !important; line-height: 0;
-  width: 11px; height: 11px; flex-shrink: 0;
-  margin-right: 7px; display: inline-block;
+  width: 14px; height: 14px; flex-shrink: 0;
+  margin-right: 8px; display: inline-block;
   border: 1.5px solid currentColor; border-radius: 3px;
 }
 body.bielstein-theme #tabAbo .tab-icon { border-radius: 50%; }
 body.bielstein-theme #tabPlay .tab-icon {
   border: none; width: 0; height: 0; border-radius: 0;
-  border-top: 5.5px solid transparent; border-bottom: 5.5px solid transparent;
-  border-left: 9px solid currentColor;
+  border-top: 7px solid transparent; border-bottom: 7px solid transparent;
+  border-left: 11.5px solid currentColor;
 }
 /* Wertkarten: zwei Karten im Hochformat, die hintere leicht gekippt dahinter.
    Als SVG statt CSS-Kaesten, weil die hintere Karte hinter der vorderen
@@ -8597,7 +8597,7 @@ body.bielstein-theme #tabPlay .tab-icon {
    hellen, dunklen oder Hover-Grund. Stattdessen stanzt eine Maske die vordere
    Karte samt Abstand aus der hinteren aus; das funktioniert auf jedem Grund. */
 body.bielstein-theme #tabGutscheine .tab-icon {
-  width: 16.9px; height: 16.9px;          /* zweimal 10 % groesser als die uebrigen */
+  width: 21.5px; height: 21.5px;          /* proportional zu den uebrigen (jetzt 14px) */
   border: none !important; border-radius: 0 !important;
   display: inline-flex; align-items: center;
 }
@@ -10065,6 +10065,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pbsp-tile img{max-height:90px;max-width:226px;width:auto;height:auto;object-fit:contain;display:block;}
 .pbsp-tile.pbsp-prem{width:auto;height:84px;padding:0 26px;}
 .pbsp-tile.pbsp-prem img{max-height:54px;max-width:none;}
+.pbsp-duo{display:flex;gap:12px;align-items:stretch;max-width:560px;}
+.pbsp-duo .pbsp-tile{flex:1 1 0;min-width:0;width:auto;height:116px;padding:0 16px;}
+.pbsp-duo .pbsp-tile img{max-height:80px;max-width:100%;}
 #pbSplashSponsor{border-top:1px solid #3A362F;margin-top:38px;padding-top:26px;}
 #pbSplashSponsor .pbsp-kicker{color:#8A8276;letter-spacing:0.2em;font-weight:600;margin-bottom:16px;}
 .pb-splash-inner{padding-bottom:clamp(40px,4.5vh,60px);}
@@ -10084,6 +10087,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var t=tile(s, prem);
     el.innerHTML = t ? ('<div class="pbsp-kicker">'+kicker+'</div>'+t) : '';
   }
+  function fillDuo(id, kicker, partner, supporter){
+    var el=document.getElementById(id); if(!el) return;
+    var a=tile(partner,false), b=tile(supporter,false);
+    var inner=(a||b) ? ('<div class="pbsp-duo">'+a+b+'</div>') : '';
+    el.innerHTML = inner ? ('<div class="pbsp-kicker">'+kicker+'</div>'+inner) : '';
+  }
   async function loadSponsorsDisplay(){
     try{
       if(typeof sb==='undefined' || !sb) return;
@@ -10096,10 +10105,13 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       var idx=parseInt(localStorage.getItem(ROT_KEY)||'0',10)||0;
       try{ localStorage.setItem(ROT_KEY, String(idx+1)); }catch(e){}
       if(prem.length) fill('pbSplashSponsor', 'Präsentiert von unserem Premium-Partner', prem[0], true);
-      if(part.length) fill('pbSponsorBook',   'Das Wetter wird dir präsentiert von', part[idx % part.length], false);
-      // „Jetzt spielen": flexibel – Partner ODER Supporter, was gerade in der Rotation dran ist
-      var mix = part.concat(supp);
-      if(mix.length) fill('pbSponsorPlay',   'Dein Spieltag wird dir präsentiert von', mix[idx % mix.length], false);
+      // „Jetzt buchen" & „Jetzt spielen": je Partner (links) + Supporter (rechts), gleiche Größe.
+      var P=function(o){ return part.length ? part[((o%part.length)+part.length)%part.length] : null; };
+      var S=function(o){ return supp.length ? supp[((o%supp.length)+supp.length)%supp.length] : null; };
+      if(part.length || supp.length){
+        fillDuo('pbSponsorBook', 'Das Wetter wird dir präsentiert von',  P(idx),   S(idx));
+        fillDuo('pbSponsorPlay', 'Dein Spieltag wird dir präsentiert von', P(idx+3), S(idx+4));
+      }
     }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', loadSponsorsDisplay);
