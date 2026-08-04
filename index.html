@@ -1,4 +1,16 @@
 <!DOCTYPE html>
+<!--
+  ============================================================================
+  © 2026 Tennisfreunde Bielstein e.V. · ALLE RECHTE VORBEHALTEN
+  Padel Bielstein – Buchungssoftware (padel-bielstein.de)
+
+  Dieser Quelltext sowie Aufbau, Logik und Gestaltung dieser Anwendung sind
+  urheberrechtlich geschützt (§ 2, § 69a ff. UrhG). Vervielfältigung,
+  Bearbeitung, Weiterverbreitung oder Nachbau – ganz oder in Teilen – sind
+  ohne vorherige schriftliche Zustimmung des Tennisfreunde Bielstein e.V.
+  nicht gestattet.  Kontakt: info@tfbielstein.de
+  ============================================================================
+-->
 <!-- Padel Bielstein v0.29 – Original restored + Bielstein theme color fix -->
 <html lang="de">
 <head>
@@ -1541,6 +1553,9 @@ main {
       <div class="abo-weather">Dein Slot gehört dir – gespielt wird, wenn das Wetter es zulässt.</div>
       <button class="abo-cta" onclick="submitAbo(false)">■ Jahresabo sichern</button>
     </div>
+
+    <!-- Sponsoren: Abo-Seite (unter dem letzten Slot, über der Fußzeile) -->
+    <div id="pbSponsorAbo" class="pbsp-slot"></div>
   </div>
 
   <!-- JETZT SPIELEN MODE -->
@@ -1726,6 +1741,9 @@ main {
       </div>
 
     </div>
+
+    <!-- Sponsoren: Guthaben-Seite (unter Kaufen/Abos, immer über dem Verlauf) -->
+    <div id="pbSponsorGuthaben" class="pbsp-slot"></div>
 
     <!-- Verlauf (Vorlage) – echte Bewegungen aus Supabase -->
     <div class="wk-history-wrap">
@@ -2840,6 +2858,7 @@ body.bielstein-theme #tabPlay:not(.active) {
     </div>
     <div class="site-footer-right">
       <div>Padel Bielstein<br>Jahnstraße 15 · 51674 Wiehl-Bielstein</div>
+      <div style="margin-top:7px;font-size:0.66rem;color:#8a8276;letter-spacing:0.03em;">© 2026 Tennisfreunde Bielstein e.V. · Alle Rechte vorbehalten</div>
       <button class="admin-footer-link" id="adminFooterBtn" onclick="curMode==='admin' ? setMode('book') : setMode('admin')">⚙ Admin</button>
     </div>
   </footer>
@@ -10101,16 +10120,38 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       var rows = res.data || [];
       var pick = function(t){ return rows.filter(function(r){return r.tier===t;})
                                   .sort(function(a,b){return (a.sort_order||0)-(b.sort_order||0);}); };
-      var prem=pick('premium'), part=pick('partner'), supp=pick('supporter');
+      var prem=pick('premium'), part=pick('partner'), supp=pick('supporter'), reg=pick('regional');
       var idx=parseInt(localStorage.getItem(ROT_KEY)||'0',10)||0;
       try{ localStorage.setItem(ROT_KEY, String(idx+1)); }catch(e){}
+
+      // Splash: Premium exklusiv.
       if(prem.length) fill('pbSplashSponsor', 'Präsentiert von unserem Premium-Partner', prem[0], true);
-      // „Jetzt buchen" & „Jetzt spielen": je Partner (links) + Supporter (rechts), gleiche Größe.
-      var P=function(o){ return part.length ? part[((o%part.length)+part.length)%part.length] : null; };
-      var S=function(o){ return supp.length ? supp[((o%supp.length)+supp.length)%supp.length] : null; };
-      if(part.length || supp.length){
-        fillDuo('pbSponsorBook', 'Das Wetter wird dir präsentiert von',  P(idx),   S(idx));
-        fillDuo('pbSponsorPlay', 'Dein Spieltag wird dir präsentiert von', P(idx+3), S(idx+4));
+
+      // Gewichtete Reihum-Liste 4:2:1 (Partner 4x, Supporter 2x, Regional 1x je Logo).
+      // Spiegelt app_settings.app_weight_partner/supporter/regional (dort im Admin änderbar).
+      var wP=4, wS=2, wR=1, maxw=Math.max(wP,wS,wR), playlist=[];
+      for(var pass=1; pass<=maxw; pass++){
+        if(pass<=wP) part.forEach(function(c){ playlist.push(c); });
+        if(pass<=wS) supp.forEach(function(c){ playlist.push(c); });
+        if(pass<=wR) reg.forEach(function(c){  playlist.push(c); });
+      }
+      var N=playlist.length;
+      // Zwei verschiedene Logos ab Position base; rotiert pro Seitenaufruf über idx.
+      function pair(base){
+        if(N===0) return [null,null];
+        if(N===1) return [playlist[0], null];
+        var m=function(i){ return playlist[((i%N)+N)%N]; };
+        var a=m(base), b=m(base+1);
+        if(b===a) b=m(base+2);
+        return [a,b];
+      }
+      if(N){
+        var q=Math.floor(N/4)||1, base=idx*2;
+        var pB=pair(base), pP=pair(base+q), pG=pair(base+2*q), pA=pair(base+3*q);
+        fillDuo('pbSponsorBook',     'Das Wetter wird dir präsentiert von',    pB[0], pB[1]);
+        fillDuo('pbSponsorPlay',     'Dein Spieltag wird dir präsentiert von', pP[0], pP[1]);
+        fillDuo('pbSponsorGuthaben', 'Dein Guthaben wird dir präsentiert von', pG[0], pG[1]);
+        fillDuo('pbSponsorAbo',      'Dein Abo wird dir präsentiert von',      pA[0], pA[1]);
       }
     }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
   }
