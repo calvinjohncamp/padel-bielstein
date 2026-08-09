@@ -666,6 +666,29 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .scroll-top-btn { position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; width: 48px; height: 48px; border-radius: 50%; border: none; background: #FF5A36; color: #1C1A17; font-family: "Space Grotesk","Arial Narrow",sans-serif; font-size: 1.7rem; font-weight: 900; line-height: 1; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.28); opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .22s ease, transform .22s ease, background .18s; display: flex; align-items: center; justify-content: center; }
 .scroll-top-btn.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 .scroll-top-btn:hover { background: #ff4a22; }
+/* ── PARTNER-SEITE (Galerie im Look der Eingangs-Displays) ── */
+.pbp-board { background:#1C1A17; border-radius:18px; color:#F6F1E7; padding:clamp(18px,3.5vw,40px) clamp(16px,3.5vw,36px) clamp(24px,4vw,44px); }
+.pbp-head { display:flex; align-items:center; gap:clamp(21px,4.5vw,45px); padding:2px 0 clamp(12px,1.9vw,20px); }
+.pbp-head + .pbp-seclabel { margin-top:clamp(16px,2.6vw,28px); }
+.pbp-brand { height:clamp(54px,8vw,84px); width:auto; border-radius:13px; flex:0 0 auto; }
+.pbp-rule { width:2px; align-self:stretch; background:#FF5A36; opacity:.75; min-height:52px; }
+.pbp-wtop { font-family:"Space Grotesk","Arial Narrow",sans-serif; font-weight:800; letter-spacing:.02em; font-size:clamp(15px,2.1vw,25px); color:#F6F1E7; line-height:1.06; text-transform:uppercase; white-space:nowrap; }
+.pbp-wsub { font-family:"Space Grotesk","Arial Narrow",sans-serif; font-weight:700; color:#FF5A36; font-size:clamp(13px,1.9vw,20px); margin-top:7px; }
+.pbp-seclabel, .pbp-thanks { display:flex; align-items:center; gap:clamp(12px,2.5vw,26px); margin:clamp(22px,3.5vw,38px) 0 clamp(13px,2.2vw,20px); }
+.pbp-thanks { margin:clamp(28px,4.5vw,46px) 0 2px; }
+.pbp-line { flex:1 1 auto; height:1.5px; background:#FF5A36; opacity:.85; }
+.pbp-lbl { flex:0 0 auto; font-family:"Space Grotesk","Arial Narrow",sans-serif; font-weight:800; color:#FF5A36; text-transform:uppercase; letter-spacing:.16em; font-size:clamp(12px,1.6vw,16px); white-space:nowrap; }
+.pbp-thanks .pbp-lbl { font-weight:700; letter-spacing:.13em; font-size:clamp(11px,1.5vw,15px); text-align:center; }
+.pbp-premwrap { margin-bottom:2px; }
+.pbp-tile { background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,.28); }
+.pbp-tile img { max-width:82%; max-height:66%; width:auto; height:auto; object-fit:contain; display:block; }
+.pbp-tile-prem { aspect-ratio:7.4/1; min-height:92px; }
+.pbp-tile-prem img { max-width:34%; max-height:58%; }
+.pbp-grid { display:grid; gap:clamp(9px,1.3vw,15px); }
+.pbp-grid .pbp-tile { aspect-ratio:2.32/1; }
+.pbp-grid-partner, .pbp-grid-regional { grid-template-columns:repeat(6,1fr); }
+@media (max-width:820px){ .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(3,1fr); } .pbp-tile-prem img { max-width:52%; } .pbp-wtop { white-space:normal; } }
+@media (max-width:520px){ .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(2,1fr); } .pbp-tile-prem img { max-width:64%; } .pbp-tile-prem { aspect-ratio:4.6/1; } .pbp-head { gap:14px; } }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
 .door-log-icon { font-size: 1rem; }
@@ -1429,11 +1452,12 @@ main {
   </div>
 
 
-  <div class="mode-tabs" style="grid-template-columns:1fr 1fr 1fr 1fr;" id="mainTabs">
+  <div class="mode-tabs" style="grid-template-columns:repeat(5,1fr);" id="mainTabs">
     <div class="mode-tab active" id="tabBook" onclick="setMode('book')"><span class="tab-icon">■</span> Jetzt buchen</div>
     <div class="mode-tab" id="tabAbo" onclick="setMode('abo')"><span class="tab-icon">■</span> Jahresabo sichern</div>
     <div class="mode-tab" id="tabPlay" onclick="setMode('play')"><span class="tab-icon">▶</span> Jetzt spielen</div>
     <div class="mode-tab" id="tabGutscheine" onclick="setMode('gutscheine')"><span class="tab-icon"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><defs><mask id="pbCardStack" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20"><rect width="20" height="20" fill="#fff"/><rect x="7.2" y="3.7" width="10.1" height="14.6" rx="2.8" fill="#000"/></mask></defs><g stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><g mask="url(#pbCardStack)"><rect x="5.5" y="5" width="7.5" height="12" rx="1.5" transform="rotate(-12 13 17)"/></g><rect x="8.5" y="5" width="7.5" height="12" rx="1.5"/></g></svg></span> Guthaben</div>
+    <div class="mode-tab" id="tabPartner" onclick="setMode('partner')"><span class="tab-icon">■</span> Partner</div>
   </div>
   <!-- Admin Tab entfernt – Admin-Zugang über Fußzeile -->
 
@@ -1759,6 +1783,11 @@ main {
       <div id="wkHistory"><div class="wk-empty">Wird geladen …</div></div>
     </div>
 
+  </div>
+
+  <!-- PARTNER MODE – Galerie im Look der Eingangs-Displays (liest sponsors_public) -->
+  <div id="modePartner" style="display:none;">
+    <div id="partnerBoard"></div>
   </div>
 
   <!-- ADMIN MODE -->
@@ -3392,16 +3421,19 @@ function setMode(m) {
   document.getElementById('modeAbo').style.display        = m==='abo'        ? 'block' : 'none';
   document.getElementById('modePlay').style.display       = m==='play'       ? 'block' : 'none';
   document.getElementById('modeGutscheine').style.display  = m==='gutscheine' ? 'block' : 'none';
+  document.getElementById('modePartner').style.display     = m==='partner'    ? 'block' : 'none';
   document.getElementById('modeAdmin').style.display       = m==='admin'      ? 'block' : 'none';
   document.getElementById('tabBook').classList.toggle('active',  m==='book');
   document.getElementById('tabAbo').classList.toggle('active',   m==='abo');
   document.getElementById('tabPlay').classList.toggle('active',  m==='play');
   document.getElementById('tabGutscheine').classList.toggle('active', m==='gutscheine');
+  document.getElementById('tabPartner').classList.toggle('active', m==='partner');
   const adminFooter = document.getElementById('adminFooterBtn');
   if (adminFooter) adminFooter.style.fontWeight = m==='admin' ? '900' : '700';
   if (m==='abo')  { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
   if (m==='play') { renderPlaySection(); }
   if (m==='gutscheine') { renderCardSizeGrid(); loadMyCards(); renderAboCard(); }
+  if (m==='partner' && typeof renderPartnerBoard==='function') { renderPartnerBoard(); }
   if (m==='admin') {
     document.getElementById('mainTabs').style.display = 'none';
     document.getElementById('heroHeader').style.cursor = 'pointer';
@@ -9880,6 +9912,43 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     window.addEventListener('scroll', toggle, { passive:true });
     toggle();
   })();
+
+  /* Partner-Seite (5. Tab): Galerie im Look der Eingangs-Displays.
+     Liest die aktiven Sponsoren aus sponsors_public – neue Partner erscheinen
+     automatisch. Premium groß oben, dann Partner, dann Regionale Partner.
+     Reine Anzeige – Fehler nie an die App weiterreichen. */
+  window.renderPartnerBoard = async function(){
+    var host=document.getElementById('partnerBoard'); if(!host) return;
+    var esc=function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+    var BRAND='https://padel-bielstein.de/sponsors/brand-padel-bielstein.png';
+    var tile=function(s,cls){ return '<div class="pbp-tile'+(cls?(' '+cls):'')+'">'
+      +'<img src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy"></div>'; };
+    var label=function(t){ return '<div class="pbp-seclabel"><span class="pbp-line"></span>'
+      +'<span class="pbp-lbl">'+t+'</span><span class="pbp-line"></span></div>'; };
+    try{
+      if(typeof sb==='undefined' || !sb){ host.innerHTML=''; return; }
+      var res=await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
+      if(res.error) throw res.error;
+      var rows=res.data||[];
+      var by=function(a,b){ return (a.sort_order||0)-(b.sort_order||0); };
+      var prem=rows.filter(function(r){return r.tier==='premium';}).sort(by);
+      var part=rows.filter(function(r){return r.tier==='partner';}).sort(by);
+      var reg =rows.filter(function(r){return r.tier==='regional';}).sort(by);
+      var h='<div class="pbp-board">'
+        +'<header class="pbp-head"><img class="pbp-brand" src="'+BRAND+'" alt="Padel Bielstein">'
+        +'<div class="pbp-rule"></div><div class="pbp-welcome">'
+        +'<div class="pbp-wtop">Aus der Region, für die Region</div>'
+        +'<div class="pbp-wsub">Unsere starken Partner vor Ort</div></div></header>';
+      if(prem.length) h+=label('Premium-Partner')+'<div class="pbp-premwrap">'+tile(prem[0],'pbp-tile-prem')+'</div>';
+      if(part.length) h+=label('Partner')+'<div class="pbp-grid pbp-grid-partner">'+part.map(function(s){return tile(s);}).join('')+'</div>';
+      if(reg.length)  h+=label('Regionale Partner')+'<div class="pbp-grid pbp-grid-regional">'+reg.map(function(s){return tile(s);}).join('')+'</div>';
+      h+='<div class="pbp-thanks"><span class="pbp-line"></span>'
+        +'<span class="pbp-lbl">Vielen Dank für die Unterstützung!</span><span class="pbp-line"></span></div>';
+      h+='</div>';
+      host.innerHTML=h;
+    }catch(e){ host.innerHTML=''; }
+  };
 
   function initials(name){
     return (name||'').trim().split(/\s+/).filter(Boolean).slice(0,2)
