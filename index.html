@@ -685,7 +685,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .pbp-tile-prem { aspect-ratio:7.4/1; min-height:92px; }
 .pbp-tile-prem img { max-width:34%; max-height:58%; }
 .pbp-grid { display:grid; gap:clamp(9px,1.3vw,15px); }
-.pbp-grid .pbp-tile { aspect-ratio:2.32/1; box-sizing:border-box; padding:6% 11%; }
+.pbp-grid .pbp-tile { aspect-ratio:2.32/1; box-sizing:border-box; padding:8% 13%; }
 /* Robust in JEDEM Browser (auch Safari/iPad): Logo füllt die inset Kachelfläche
    per object-fit statt Prozent-max-height gegen eine aspect-ratio-Höhe. */
 .pbp-grid .pbp-tile img { max-width:none; max-height:none; width:100%; height:100%; object-fit:contain; }
@@ -1459,7 +1459,7 @@ main {
     <div class="mode-tab active" id="tabBook" onclick="setMode('book')"><span class="tab-icon">■</span> Jetzt buchen</div>
     <div class="mode-tab" id="tabAbo" onclick="setMode('abo')"><span class="tab-icon">■</span> Jahresabo sichern</div>
     <div class="mode-tab" id="tabPlay" onclick="setMode('play')"><span class="tab-icon">▶</span> Jetzt spielen</div>
-    <div class="mode-tab" id="tabGutscheine" onclick="setMode('gutscheine')"><span class="tab-icon"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><defs><mask id="pbCardStack" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20"><rect width="20" height="20" fill="#fff"/><rect x="7.2" y="3.7" width="10.1" height="14.6" rx="2.8" fill="#000"/></mask></defs><g stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><g mask="url(#pbCardStack)"><rect x="5.5" y="5" width="7.5" height="12" rx="1.5" transform="rotate(-12 13 17)"/></g><rect x="8.5" y="5" width="7.5" height="12" rx="1.5"/></g></svg></span> Guthaben</div>
+    <div class="mode-tab" id="tabGutscheine" onclick="setMode('gutscheine')"><span class="tab-icon"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><defs><mask id="pbCardStack" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20"><rect width="20" height="20" fill="#fff"/><rect x="7.2" y="3.7" width="10.1" height="14.6" rx="2.8" fill="#000"/></mask></defs><g stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><g mask="url(#pbCardStack)"><rect x="5.5" y="5" width="7.5" height="12" rx="1.5" transform="rotate(-12 13 17)"/></g><rect x="8.5" y="5" width="7.5" height="12" rx="1.5"/></g></svg></span> Guthaben</div>
     <div class="mode-tab" id="tabPartner" onclick="setMode('partner')" style="display:none;"><span class="tab-icon"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true"><path d="M10 3.8 L17.4 16.6 L2.6 16.6 Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></span> Partner</div>
   </div>
   <!-- Admin Tab entfernt – Admin-Zugang über Fußzeile -->
@@ -8674,7 +8674,7 @@ body.bielstein-theme #tabPlay .tab-icon {
    hellen, dunklen oder Hover-Grund. Stattdessen stanzt eine Maske die vordere
    Karte samt Abstand aus der hinteren aus; das funktioniert auf jedem Grund. */
 body.bielstein-theme #tabGutscheine .tab-icon {
-  width: 15px; height: 15px;              /* auf Familiengröße reduziert -> dezenterer Strich */
+  width: 14px; height: 14px;              /* exakt wie Buchen/Abo/Spielen */
   border: none !important; border-radius: 0 !important;
   display: inline-flex; align-items: center;
 }
@@ -10248,12 +10248,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pbsp-slot{margin:8px 0 22px;}
 .pbsp-kicker{font-family:"Space Grotesk","Arial Narrow","Impact",sans-serif;font-weight:700;font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:#7A7368;margin:0 0 8px 2px;}
 .pbsp-tile{display:inline-flex;align-items:center;justify-content:center;width:270px;height:123px;padding:0 22px;background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:14px;}
-.pbsp-tile img{max-height:90px;max-width:226px;width:auto;height:auto;object-fit:contain;display:block;}
+.pbsp-tile img{max-height:70px;max-width:196px;width:auto;height:auto;object-fit:contain;display:block;}
 .pbsp-tile.pbsp-prem{width:auto;height:84px;padding:0 26px;}
-.pbsp-tile.pbsp-prem img{max-height:54px;max-width:none;}
+.pbsp-tile.pbsp-prem img{max-height:46px;max-width:none;}
 .pbsp-duo{display:flex;gap:12px;align-items:stretch;max-width:560px;}
 .pbsp-duo .pbsp-tile{flex:1 1 0;min-width:0;width:auto;height:116px;padding:0 16px;}
-.pbsp-duo .pbsp-tile img{max-height:80px;max-width:100%;}
+.pbsp-duo .pbsp-tile img{max-height:62px;max-width:88%;}
 #pbSplashSponsor{border-top:1px solid #3A362F;margin-top:38px;padding-top:26px;}
 #pbSplashSponsor .pbsp-kicker{color:#8A8276;letter-spacing:0.2em;font-weight:600;margin-bottom:16px;}
 .pb-splash-inner{padding-bottom:clamp(40px,4.5vh,60px);}
