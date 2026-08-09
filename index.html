@@ -659,10 +659,11 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .freibad-note p { margin: 0; font-size: 0.92rem; line-height: 1.65; color: #1C1A17; }
 .freibad-note p + p { margin-top: 10px; }
 .freibad-note strong { font-weight: 700; }
-.freibad-route { margin-top: 12px !important; padding-top: 12px; border-top: 1px solid #EFE7D6; font-size: 0.88rem !important; color: #5C564C !important; letter-spacing: 0.01em; }
-.freibad-route a { color: #FF5A36; text-decoration: none; font-weight: 700; white-space: nowrap; }
+.freibad-route { margin-top: 14px !important; padding: 12px 15px; border: 2px solid #FF5A36; border-radius: 11px; background: #FFF6F2; font-size: 0.9rem !important; color: #1C1A17 !important; letter-spacing: 0.01em; }
+.freibad-route strong { font-weight: 800; }
+.freibad-route a { color: #FF5A36; text-decoration: none; font-weight: 800; white-space: nowrap; }
 .freibad-route a:hover { text-decoration: underline; }
-.scroll-top-btn { position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; width: 46px; height: 46px; border-radius: 50%; border: none; background: #FF5A36; color: #1C1A17; font-size: 1.4rem; font-weight: 900; line-height: 1; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.28); opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .22s ease, transform .22s ease, background .18s; display: flex; align-items: center; justify-content: center; }
+.scroll-top-btn { position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; width: 48px; height: 48px; border-radius: 50%; border: none; background: #FF5A36; color: #1C1A17; font-family: "Space Grotesk","Arial Narrow",sans-serif; font-size: 1.7rem; font-weight: 900; line-height: 1; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.28); opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .22s ease, transform .22s ease, background .18s; display: flex; align-items: center; justify-content: center; }
 .scroll-top-btn.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 .scroll-top-btn:hover { background: #ff4a22; }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
@@ -2865,9 +2866,10 @@ body.bielstein-theme #tabPlay:not(.active) {
         <a href="#agb" onclick="event.preventDefault(); openCourtRules('agb');">AGB</a>
       </div>
       <button class="admin-footer-link" id="adminFooterBtn" onclick="curMode==='admin' ? setMode('book') : setMode('admin')">⚙ Adminbereich</button>
+    </div>
+    <div class="site-footer-right">
       <div class="footer-copy">© 2026 Tennisfreunde Bielstein e.V. · Alle Rechte vorbehalten</div>
     </div>
-    <div class="site-footer-right" aria-hidden="true"></div>
   </footer>
 </main>
 
@@ -9474,11 +9476,13 @@ body.bielstein-theme .site-footer-center a:hover { color: #1C1A17; }
 body.bielstein-theme .site-footer-center .admin-footer-link {
   color: #9A9384 !important; font-size: 11px; letter-spacing: .1em;
 }
+body.bielstein-theme .site-footer-right {
+  display: flex; align-items: center; justify-content: flex-end;
+}
 body.bielstein-theme .footer-copy {
   font-size: 10.5px; font-weight: 500; color: #9A9384;
-  letter-spacing: .04em; text-transform: none;
+  letter-spacing: .04em; text-transform: none; text-align: right; line-height: 1.5;
 }
-body.bielstein-theme .site-footer-right { display: none; }
 @media (max-width: 800px) {
   body.bielstein-theme .site-footer {
     grid-template-columns: 1fr 1fr !important; row-gap: 22px !important;
