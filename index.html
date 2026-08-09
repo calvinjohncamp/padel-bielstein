@@ -659,6 +659,12 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .freibad-note p { margin: 0; font-size: 0.92rem; line-height: 1.65; color: #1C1A17; }
 .freibad-note p + p { margin-top: 10px; }
 .freibad-note strong { font-weight: 700; }
+.freibad-route { margin-top: 12px !important; padding-top: 12px; border-top: 1px solid #EFE7D6; font-size: 0.88rem !important; color: #5C564C !important; letter-spacing: 0.01em; }
+.freibad-route a { color: #FF5A36; text-decoration: none; font-weight: 700; white-space: nowrap; }
+.freibad-route a:hover { text-decoration: underline; }
+.scroll-top-btn { position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; width: 46px; height: 46px; border-radius: 50%; border: none; background: #FF5A36; color: #1C1A17; font-size: 1.4rem; font-weight: 900; line-height: 1; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.28); opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .22s ease, transform .22s ease, background .18s; display: flex; align-items: center; justify-content: center; }
+.scroll-top-btn.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.scroll-top-btn:hover { background: #ff4a22; }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
 .door-log-icon { font-size: 1rem; }
@@ -1610,6 +1616,7 @@ main {
           <div class="freibad-note-title">■ Zugang zur Padel-Anlage</div>
           <p>Während der Öffnungszeiten des Freibads Bielstein erfolgt der Zugang zur Padel-Anlage <strong>ausschließlich über den Eingang des Freibads</strong>. Dein Padel-Ticket gilt zu diesen Zeiten zugleich als Eintrittskarte für das Freibad. Außerhalb der Öffnungszeiten erfolgt der Zugang <strong>ausschließlich über die Parkplatzseite (Tür A)</strong>.</p>
           <p>Die Zugangscodes kannst du ab 24 h vor Spielbeginn an deine Mitspieler weiterleiten. Kannst oder möchtest du selbst nicht spielen, lassen sie sich an bis zu 4 Personen weitergeben.</p>
+          <p class="freibad-route">📍 <strong>Padel Bielstein</strong> · Jahnstraße 13, 51674 Wiehl-Bielstein · <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Jahnstra%C3%9Fe%2013%2C%2051674%20Wiehl-Bielstein" target="_blank" rel="noopener">Route planen →</a></p>
         </div>
       </div>
 
@@ -2852,15 +2859,15 @@ body.bielstein-theme #tabPlay:not(.active) {
       <a href="https://tfbielstein.de" target="_blank">Tennisfreunde Bielstein e.V. →</a>
     </div>
     <div class="site-footer-center">
-      <a href="#impressum" onclick="event.preventDefault(); openCourtRules('impressum');">Impressum</a>
-      <a href="#datenschutz" onclick="event.preventDefault(); openCourtRules('privacy');">Datenschutz</a>
-      <a href="#agb" onclick="event.preventDefault(); openCourtRules('agb');">AGB</a>
+      <div class="footer-legal">
+        <a href="#impressum" onclick="event.preventDefault(); openCourtRules('impressum');">Impressum</a>
+        <a href="#datenschutz" onclick="event.preventDefault(); openCourtRules('privacy');">Datenschutz</a>
+        <a href="#agb" onclick="event.preventDefault(); openCourtRules('agb');">AGB</a>
+      </div>
+      <button class="admin-footer-link" id="adminFooterBtn" onclick="curMode==='admin' ? setMode('book') : setMode('admin')">⚙ Adminbereich</button>
+      <div class="footer-copy">© 2026 Tennisfreunde Bielstein e.V. · Alle Rechte vorbehalten</div>
     </div>
-    <div class="site-footer-right">
-      <div>Padel Bielstein<br>Jahnstraße 15 · 51674 Wiehl-Bielstein</div>
-      <div style="margin-top:7px;font-size:0.66rem;color:#8a8276;letter-spacing:0.03em;">© 2026 Tennisfreunde Bielstein e.V. · Alle Rechte vorbehalten</div>
-      <button class="admin-footer-link" id="adminFooterBtn" onclick="curMode==='admin' ? setMode('book') : setMode('admin')">⚙ Admin</button>
-    </div>
+    <div class="site-footer-right" aria-hidden="true"></div>
   </footer>
 </main>
 
@@ -2868,6 +2875,9 @@ body.bielstein-theme #tabPlay:not(.active) {
   <span class="toast-msg" id="toastMsg"></span>
   <button class="toast-close" type="button" aria-label="Meldung schließen" onclick="hideToast()">×</button>
 </div>
+
+<!-- Schwebender „nach oben"-Pfeil: erscheint nach etwas Scrollen, auf jeder Seite -->
+<button id="scrollTopBtn" class="scroll-top-btn" type="button" aria-label="Nach oben" title="Nach oben" onclick="pbScrollTop()">↑</button>
 
 <!-- ■■ SUPABASE SDK ■■ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -9438,7 +9448,7 @@ body.bielstein-theme .card-pager button.pager-arrow svg { width: 20px !important
 body.bielstein-theme .site-footer {
   border-top: 1.5px solid #E2DACB !important;
   padding: 24px 0 28px !important; margin-top: 48px !important;
-  grid-template-columns: minmax(210px,1fr) auto minmax(250px,1fr) !important;
+  grid-template-columns: 1fr auto 1fr !important;
   column-gap: clamp(28px,5vw,72px) !important;
 }
 body.bielstein-theme .site-footer-right,
@@ -9450,20 +9460,25 @@ body.bielstein-theme .site-footer-center {
 body.bielstein-theme .site-footer-left a { color: #7A7368 !important; font-size: 0.75rem !important; }
 body.bielstein-theme .site-footer-left a:hover { color: #1C1A17 !important; }
 body.bielstein-theme .site-footer-center {
-  display: flex; align-items: center; justify-content: center; gap: 22px;
-  white-space: nowrap;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 9px; white-space: normal;
+}
+body.bielstein-theme .footer-legal {
+  display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap;
 }
 body.bielstein-theme .site-footer-center a {
   color: #7A7368; text-decoration: none; font-size: 12px;
   letter-spacing: .06em; text-transform: uppercase;
 }
 body.bielstein-theme .site-footer-center a:hover { color: #1C1A17; }
-body.bielstein-theme .site-footer-right {
-  display: flex; align-items: center; justify-content: flex-end; gap: 24px;
+body.bielstein-theme .site-footer-center .admin-footer-link {
+  color: #9A9384 !important; font-size: 11px; letter-spacing: .1em;
 }
-body.bielstein-theme .site-footer-right .admin-footer-link {
-  flex: 0 0 auto; color: #9A9384 !important;
+body.bielstein-theme .footer-copy {
+  font-size: 10.5px; font-weight: 500; color: #9A9384;
+  letter-spacing: .04em; text-transform: none;
 }
+body.bielstein-theme .site-footer-right { display: none; }
 @media (max-width: 800px) {
   body.bielstein-theme .site-footer {
     grid-template-columns: 1fr 1fr !important; row-gap: 22px !important;
@@ -9845,6 +9860,22 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     try { if (typeof setMode === 'function') setMode('book'); } catch(e){}
     try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ window.scrollTo(0,0); }
   };
+
+  /* Schwebender „nach oben"-Pfeil: sanft nach oben, egal wo man gerade ist.
+     Erscheint erst nach etwas Scrollen. */
+  window.pbScrollTop = function(){
+    try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ window.scrollTo(0,0); }
+  };
+  (function(){
+    var btn = document.getElementById('scrollTopBtn');
+    if(!btn) return;
+    var toggle = function(){
+      var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+      btn.classList.toggle('show', y > 320);
+    };
+    window.addEventListener('scroll', toggle, { passive:true });
+    toggle();
+  })();
 
   function initials(name){
     return (name||'').trim().split(/\s+/).filter(Boolean).slice(0,2)
