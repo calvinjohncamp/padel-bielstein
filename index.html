@@ -334,6 +334,8 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .loyalty-card-number { font-family: "Manrope","Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4rem; line-height: 0.9; letter-spacing: -0.02em; color: #1C1A17; margin-bottom: 4px; }
 .loyalty-card-sub { font-size: 0.66rem; color: #8C8B84; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 16px; }
 .loyalty-card-name { font-size: 1.02rem; font-weight: 700; color: #1C1A17; margin-bottom: 2px; }
+.acct-partner-logo-wrap { display:flex; align-items:center; justify-content:center; background:#fff; border:1.5px solid #E2DACB; border-radius:14px; padding:14px 18px; min-height:84px; margin:4px 0; box-shadow:0 4px 14px rgba(0,0,0,.06); }
+.acct-partner-logo { max-width:82%; max-height:60px; width:auto; height:auto; object-fit:contain; display:block; }
 .loyalty-card-email { font-size: 0.8rem; color: #8C8B84; margin-bottom: 18px; }
 /* Rewards-Raster: gleiche Breite wie die Punch-Canvas (288px), damit die Karte
    genauso groß ist wie die Guthaben-/Zwanzigerkarten. */
@@ -1824,6 +1826,32 @@ main {
 
     </div>
 
+    <!-- Guthaben verschenken: eigenes Guthaben an eine E-Mail schenken -->
+    <div class="play-card gift-card" id="giftCard" style="margin-top:16px;display:none;">
+      <div class="play-card-title">◆ Guthaben verschenken</div>
+      <p style="font-size:0.85rem;color:var(--gray);margin:4px 0 14px;line-height:1.5;">
+        Verschenke eigenes Spielguthaben an eine beliebige E-Mail. Der Betrag wird sofort von deinem Guthaben abgezogen; der Empfänger löst es beim nächsten Login ein (auch ohne bestehendes Konto möglich).
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 140px;gap:12px;">
+        <div>
+          <label class="form-label">Empfänger-E-Mail</label>
+          <input id="giftEmail" class="form-input" type="email" placeholder="name@beispiel.de">
+        </div>
+        <div>
+          <label class="form-label">Betrag (€)</label>
+          <input id="giftAmount" class="form-input" type="number" min="1" step="1" placeholder="25">
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <label class="form-label">Nachricht (optional)</label>
+        <input id="giftNote" class="form-input" type="text" maxlength="120" placeholder="Viel Spaß beim Padeln!">
+      </div>
+      <button id="giftSendBtn" class="book-btn visible" style="width:100%;position:static;margin-top:16px;" onclick="sendGiftCredit()">
+        <span>Guthaben verschenken</span><span class="card-purchase-arrow" aria-hidden="true">→</span>
+      </button>
+      <div id="giftMsg" class="profile-save-ok"></div>
+    </div>
+
     <!-- Sponsoren: Guthaben-Seite (unter Kaufen/Abos, immer über dem Verlauf) -->
     <div id="pbSponsorGuthaben" class="pbsp-slot"></div>
 
@@ -2219,6 +2247,28 @@ main {
             <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Name</label>
             <input id="spName" type="text" placeholder="z. B. Sparkasse Gummersbach" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
           </div>
+
+          <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
+            <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Ansprechpartner (Partner-Vorteil)</div>
+            <div style="font-size:0.76rem;color:#7A7368;line-height:1.5;margin-bottom:10px;">
+              Trägt hier eine <strong>E-Mail</strong> ein und meldet sich diese Person mit genau dieser Adresse an, wird sie automatisch wie ein Mitglied behandelt: <strong>10 % Rabatt</strong> auf alle Buchungen inkl. Abos (bis zu 2 Abos).
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div>
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Kontakt-Name</label>
+                <input id="spContactName" type="text" placeholder="Ansprechpartner" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              </div>
+              <div>
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Telefon</label>
+                <input id="spContactPhone" type="tel" placeholder="0160 …" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              </div>
+              <div style="grid-column:1 / -1;">
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Kontakt-E-Mail (schaltet den Rabatt frei)</label>
+                <input id="spContactEmail" type="email" placeholder="kontakt@firma.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              </div>
+            </div>
+          </div>
+
           <div style="margin-bottom:12px;">
             <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Logo (Bilddatei)</label>
             <input id="spFile" type="file" accept="image/*" onchange="sponsorPreviewFile()" style="width:100%;font:500 13px 'Manrope',sans-serif;color:#1C1A17;">
@@ -2894,7 +2944,7 @@ body.bielstein-theme #tabPlay:not(.active) {
         <div class="admin-section-title">Registrierte Nutzer</div>
         <div style="overflow-x:auto;">
           <table class="admin-table">
-            <thead><tr><th>Name</th><th>E-Mail</th><th>Typ</th><th>Mitglied#</th><th>Registriert</th></tr></thead>
+            <thead><tr><th>Name</th><th>E-Mail</th><th>Telefon</th><th>Typ</th><th>Mitglied#</th><th>Registriert</th></tr></thead>
             <tbody id="usersTbody">
               <tr><td colspan="5" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
             </tbody>
@@ -3531,7 +3581,8 @@ function setMode(m) {
   if (adminFooter) adminFooter.style.fontWeight = m==='admin' ? '900' : '700';
   if (m==='abo')  { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
   if (m==='play') { renderPlaySection(); }
-  if (m==='gutscheine') { renderCardSizeGrid(); loadMyCards(); renderAboCard(); }
+  if (m==='gutscheine') { renderCardSizeGrid(); loadMyCards(); renderAboCard();
+    var gc=document.getElementById('giftCard'); if(gc) gc.style.display = currentUser ? 'block' : 'none'; }
   if (m==='partner' && typeof renderPartnerBoard==='function') { renderPartnerBoard(); }
   if (m==='admin') {
     document.getElementById('mainTabs').style.display = 'none';
@@ -3828,11 +3879,29 @@ async function loadProfile(authId) {
 // E-Mail-Adresse mit der offiziellen Vereinsliste. Das Ergebnis dient hier nur
 // der Anzeige – abgerechnet wird ausschließlich der serverseitig berechnete Preis.
 let myMemberSources = [];
+let myPartner = null;   // {tier,name,logo_url} wenn die E-Mail ein Partner-Kontakt ist
 
 async function loadMemberDiscount() {
   member = null;
   myMemberSources = [];
   if (!currentUser) return;
+
+  // Partner-Status (Firma) + geschenktes Guthaben einlösen – unabhängig von der
+  // Vereinsmitgliedschaft.
+  try {
+    const { data: pt } = await sb.rpc('my_partner');
+    myPartner = (Array.isArray(pt) && pt.length) ? pt[0] : null;
+  } catch(e) { myPartner = null; }
+  try {
+    const { data: g } = await sb.rpc('claim_my_credit_gifts');
+    if (g && g.claimed_cents > 0) {
+      showToast('🎁 Du hast ' + (g.claimed_cents/100).toFixed(2).replace('.',',') + ' € geschenktes Guthaben erhalten!');
+      try { if (typeof renderCreditOverview === 'function') renderCreditOverview(); } catch(_e) {}
+      try { if (typeof renderMyHistory === 'function') renderMyHistory(true); } catch(_e) {}
+      try { if (typeof loadMyCards === 'function') loadMyCards(); } catch(_e) {}
+    }
+  } catch(e) { /* Geschenke sind Zusatz – Fehler nie an die App weiterreichen */ }
+
   try {
     const { data: sources, error } = await sb.rpc('my_membership');
     if (error) throw error;
@@ -4806,6 +4875,45 @@ async function renderMyHistory(reset) {
 }
 
 function loadMoreHistory() { renderMyHistory(false); }
+
+// Guthaben verschenken: bucht sofort vom eigenen Saldo ab und legt dem
+// Empfänger ein einlösbares Geschenk an (Server prüft den Saldo).
+async function sendGiftCredit() {
+  const emailEl = document.getElementById('giftEmail');
+  const amtEl   = document.getElementById('giftAmount');
+  const noteEl  = document.getElementById('giftNote');
+  const btn     = document.getElementById('giftSendBtn');
+  const msg     = document.getElementById('giftMsg');
+  const setMsg  = (t,c) => { if(msg){ msg.style.color=c||''; msg.textContent=t||''; } };
+  if (!currentUser) { setMsg('Bitte zuerst anmelden.', '#B8402C'); return; }
+  const email = (emailEl.value || '').trim();
+  const eur   = parseFloat(String(amtEl.value || '').replace(',', '.'));
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setMsg('Bitte eine gültige Empfänger-E-Mail angeben.', '#B8402C'); return; }
+  if (!(eur > 0)) { setMsg('Bitte einen Betrag größer als 0 angeben.', '#B8402C'); return; }
+  const cents = Math.round(eur * 100);
+  const eurTxt = eur.toFixed(2).replace('.', ',');
+  if (!confirm(`${eurTxt} € an ${email} verschenken?\nDer Betrag wird sofort von deinem Guthaben abgezogen.`)) return;
+  const prev = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Wird verschenkt …'; }
+  setMsg('', '');
+  try {
+    const { data, error } = await sb.rpc('gift_credit', {
+      p_recipient_email: email, p_amount_cents: cents, p_note: (noteEl.value || '').trim() || null
+    });
+    if (error) throw error;
+    const nb = (data && data.new_balance_cents != null) ? (data.new_balance_cents/100).toFixed(2).replace('.', ',') : null;
+    setMsg('Verschenkt!' + (nb!=null ? ' Neues Guthaben: ' + nb + ' €' : ''), '#1F8A5F');
+    showToast('🎁 Guthaben verschenkt.');
+    emailEl.value=''; amtEl.value=''; noteEl.value='';
+    try { if (typeof renderCreditOverview === 'function') renderCreditOverview(); } catch(_e){}
+    try { if (typeof renderMyHistory === 'function') renderMyHistory(true); } catch(_e){}
+    try { if (typeof loadMyCards === 'function') loadMyCards(); } catch(_e){}
+  } catch(e) {
+    setMsg('Fehlgeschlagen: ' + ((e && e.message) || 'Unbekannter Fehler'), '#B8402C');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = prev; }
+  }
+}
 
 // Prüft ob eine Buchung gerade aktiv ist (±15 Min)
 function getActiveBooking(bookings) {
@@ -5811,6 +5919,9 @@ function editSponsor(id) {
   document.getElementById('spName').value     = s.name;
   document.getElementById('spSort').value     = s.sort_order;
   document.getElementById('spActive').checked = !!s.active;
+  document.getElementById('spContactName').value  = s.contact_name  || '';
+  document.getElementById('spContactEmail').value = s.contact_email || '';
+  document.getElementById('spContactPhone').value = s.contact_phone || '';
   document.getElementById('spFile').value     = '';
   document.getElementById('spPreview').innerHTML = s.logo_url
     ? `<div style="font-size:0.72rem;color:#7A7368;margin-bottom:6px;">Aktuelles Logo (nur ersetzt, wenn Du eine neue Datei wählst):</div><div style="display:inline-flex;align-items:center;justify-content:center;width:140px;height:64px;background:#fff;border:1.5px solid #E2DACB;border-radius:10px;"><img src="${esc(s.logo_url)}" style="max-height:50px;max-width:116px;object-fit:contain;"></div>`
@@ -5826,6 +5937,9 @@ function resetSponsorForm() {
   document.getElementById('spName').value     = '';
   document.getElementById('spSort').value     = '0';
   document.getElementById('spActive').checked = true;
+  document.getElementById('spContactName').value  = '';
+  document.getElementById('spContactEmail').value = '';
+  document.getElementById('spContactPhone').value = '';
   document.getElementById('spFile').value     = '';
   document.getElementById('spPreview').innerHTML = '';
   document.getElementById('spSaveBtn').textContent = 'Speichern';
@@ -5840,8 +5954,12 @@ async function saveSponsor() {
   const active = document.getElementById('spActive').checked;
   let   logoUrl = document.getElementById('spLogoUrl').value || null;
   const file   = document.getElementById('spFile').files[0];
+  const contactName  = document.getElementById('spContactName').value.trim();
+  const contactEmail = document.getElementById('spContactEmail').value.trim();
+  const contactPhone = document.getElementById('spContactPhone').value.trim();
 
   if (!name) { alert('Bitte einen Namen angeben.'); return; }
+  if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
 
   const prev = btn.textContent;
   btn.disabled = true; btn.textContent = 'Speichert …';
@@ -5855,7 +5973,8 @@ async function saveSponsor() {
       logoUrl = sb.storage.from('sponsor-logos').getPublicUrl(path).data.publicUrl;
     }
     const { error } = await sb.rpc('admin_upsert_sponsor', {
-      p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort
+      p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort,
+      p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null
     });
     if (error) throw error;
     showToast('Sponsor gespeichert.');
@@ -6349,17 +6468,32 @@ async function loadAdminUsers() {
     const data = res.ok ? await res.json() : [];
     const tbody = document.getElementById('usersTbody');
     if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center;padding:24px;">Keine Nutzer gefunden</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Keine Nutzer gefunden</td></tr>';
       return;
     }
-    tbody.innerHTML = data.map(u => `
+    // Partner-Kontakte laden -> E-Mail => {phone, tier} (für Telefon + Partner-Kennung)
+    const partnerBy = {};
+    try {
+      const { data: sp } = await sb.rpc('admin_list_sponsors');
+      (sp || []).forEach(s => {
+        if (s.contact_email) partnerBy[String(s.contact_email).trim().toLowerCase()] = { phone: s.contact_phone || '', tier: s.tier, active: s.active };
+      });
+    } catch(e) { /* ohne Partner-Infos weiter */ }
+    const tierLbl = { premium:'Premium-Partner', partner:'Partner', regional:'Regional-Partner', supporter:'Supporter' };
+    tbody.innerHTML = data.map(u => {
+      const p = partnerBy[String(u.email || '').trim().toLowerCase()];
+      const phone = (u.phone && String(u.phone).trim()) ? u.phone : ((p && p.phone) ? p.phone : '—');
+      const partnerChip = (p && p.active) ? ` <span class="admin-badge member" style="margin-left:4px;">★ ${tierLbl[p.tier] || 'Partner'}</span>` : '';
+      return `
       <tr>
-        <td style="color:#e0e0e0;">${u.full_name || '—'}</td>
+        <td style="color:#e0e0e0;">${u.full_name || '—'}${partnerChip}</td>
         <td style="color:#888;">${u.email || '—'}</td>
+        <td style="color:#888;">${phone}</td>
         <td><span class="admin-badge ${u.customer_type || 'account'}">${u.customer_type || 'account'}</span></td>
         <td style="color:#888;">${u.member_number || '—'}</td>
         <td style="color:#555;">${u.created_at ? formatDateDE(u.created_at.slice(0,10)) : '—'}</td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
   } catch(e) { console.warn('Users Admin Fehler:', e); }
 }
 
@@ -7032,10 +7166,31 @@ function profileCardHTML() {
         : '<strong>10 % Rabatt</strong> auf alle Buchungen inkl. Abos.'}</div>
       ${on ? '' : `<a class="acct-member-link" href="${link}" target="_blank" rel="noopener">Mitglied werden →</a>`}
     </div>`;
-  return `<div class="loyalty-card acct-card">
+  // Partner-Kontakt? Dann Firmenlogo + Stufen-Badge statt großem Namen/Mitgliedschaft.
+  const isPartner = !!myPartner;
+  const tierLbl = { premium:'Premium-Partner', partner:'Partner', regional:'Regional-Partner', supporter:'Supporter' };
+  const headerVisual = (isPartner && myPartner.logo_url)
+    ? `<div class="acct-partner-logo-wrap"><img class="acct-partner-logo" src="${esc(myPartner.logo_url)}" alt="${esc(myPartner.name||'')}"></div>`
+    : `<div class="rw-name acct-name">${(isPartner ? esc(myPartner.name) : '') || name || '—'}</div>`;
+  const memberSection = isPartner
+    ? `<div class="acct-member">
+         <div class="acct-member-head">
+           <span class="acct-check on" aria-hidden="true">✓</span>
+           <span class="acct-member-title">${tierLbl[myPartner.tier] || 'Partner'} von Padel Bielstein</span>
+         </div>
+         <div class="acct-member-sub"><strong>10 % Rabatt</strong> auf alle Buchungen inkl. Abos (bis zu 2 Abos).</div>
+       </div>
+       <div class="acct-hint">Als Partner wirst du automatisch wie ein Mitglied behandelt – erkannt über deine bestätigte E-Mail-Adresse.</div>`
+    : `${memberRow(srcs.includes('tfb'), 'Mitgliedschaft Tennisfreunde Bielstein', 'https://tfbielstein.de')}
+       ${memberRow(srcs.includes('freibad'), 'Dauerkarte Freibad Bielstein', 'https://www.wiehl.de')}
+       <div class="acct-hint">
+         Wird automatisch über deine bestätigte E-Mail-Adresse erkannt – du musst nichts eintragen.
+         ${srcs.length ? '' : '<br><button type="button" class="acct-report-btn" onclick="reportMissingMembership()">Ich bin Mitglied, werde aber nicht erkannt →</button>'}
+       </div>`;
+  return `<div class="loyalty-card acct-card${isPartner ? ' acct-card-partner' : ''}">
     <div class="rw-badge">${esc(inits)}</div>
-    <div class="rw-tagline">Dein Account</div>
-    <div class="rw-name acct-name">${name || '—'}</div>
+    <div class="rw-tagline">${isPartner ? 'Dein Partner-Account' : 'Dein Account'}</div>
+    ${headerVisual}
     <div class="rw-divider"></div>
     <div class="profile-form">
       <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
@@ -7046,12 +7201,7 @@ function profileCardHTML() {
       <div class="profile-save-ok" id="pfSaveMsg"></div>
     </div>
     <div class="rw-divider" style="margin-top:20px;"></div>
-    ${memberRow(srcs.includes('tfb'), 'Mitgliedschaft Tennisfreunde Bielstein', 'https://tfbielstein.de')}
-    ${memberRow(srcs.includes('freibad'), 'Dauerkarte Freibad Bielstein', 'https://www.wiehl.de')}
-    <div class="acct-hint">
-      Wird automatisch über deine bestätigte E-Mail-Adresse erkannt – du musst nichts eintragen.
-      ${srcs.length ? '' : '<br><button type="button" class="acct-report-btn" onclick="reportMissingMembership()">Ich bin Mitglied, werde aber nicht erkannt →</button>'}
-    </div>
+    ${memberSection}
     <div class="profile-save-ok" id="membershipReportMsg"></div>
   </div>`;
 }
