@@ -663,6 +663,45 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .freibad-route strong { font-weight: 800; }
 .freibad-route a { color: #FF5A36; text-decoration: none; font-weight: 800; white-space: nowrap; }
 .freibad-route a:hover { text-decoration: underline; }
+/* ── ADMIN: Infotexte-Editor ── */
+.infos-picker { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.infos-pick { padding:8px 15px; border:1.5px solid #E2DACB; border-radius:9px; background:#fff; color:#7A7368; font:700 13px "Space Grotesk",sans-serif; letter-spacing:.03em; cursor:pointer; transition:all .15s; }
+.infos-pick:hover { color:#1C1A17; }
+.infos-pick.active { background:#1C1A17; border-color:#1C1A17; color:#F6F1E7; }
+.infos-toolbar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+.infos-toolbar button { min-width:34px; height:32px; padding:0 10px; border:1.5px solid #E2DACB; border-radius:8px; background:#fff; color:#1C1A17; font:700 13px "Space Grotesk",sans-serif; cursor:pointer; transition:all .15s; }
+.infos-toolbar button:hover { background:#F6F1E7; border-color:#FF5A36; }
+.legal-editor { background:#FFFFFF; color:#1C1A17; border:1.5px solid #E2DACB; border-radius:12px; padding:18px 22px; max-height:52vh; overflow:auto; font-family:"Manrope",Arial,sans-serif; font-size:0.93rem; line-height:1.62; outline:none; }
+.legal-editor:focus { border-color:#FF5A36; box-shadow:0 0 0 3px rgba(255,90,54,.12); }
+.legal-editor h3 { font-family:"Space Grotesk","Arial Narrow",sans-serif; font-size:1rem; font-weight:800; margin:18px 0 8px; color:#1C1A17; }
+.legal-editor h3:first-child { margin-top:0; }
+.legal-editor p { margin:0 0 10px; }
+.legal-editor ul { margin:0 0 10px; padding-left:22px; }
+.legal-editor li { margin-bottom:6px; }
+.legal-editor strong { font-weight:700; }
+.legal-editor a, .legal-editor .court-rules-link { color:#FF5A36; }
+.infos-actions { display:flex; gap:8px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+.infos-btn-primary { padding:11px 20px; border:0; border-radius:9px; background:#FF5A36; color:#1C1A17; font:800 14px "Space Grotesk",sans-serif; cursor:pointer; }
+.infos-btn { padding:11px 16px; border:1.5px solid #E2DACB; border-radius:9px; background:transparent; color:#7A7368; font:700 13px "Space Grotesk",sans-serif; cursor:pointer; }
+.infos-btn:hover { color:#1C1A17; border-color:#1C1A17; }
+.infos-status { font-size:0.78rem; color:#7A7368; }
+/* ── ADMIN-Reiterleiste: aufgeräumter Segmented-Look (wie das Hauptmenü) ── */
+body.bielstein-theme #modeAdmin .admin-tabs {
+  background:#EFE9DC; border-radius:14px; padding:5px; gap:3px; margin-bottom:22px;
+}
+body.bielstein-theme #modeAdmin .admin-tabs .admin-tab {
+  background:transparent !important; border:none !important; box-shadow:none !important;
+  color:#7A7368 !important; border-radius:10px !important;
+  font-family:"Space Grotesk","Arial Narrow",sans-serif !important; font-weight:700 !important;
+  font-size:0.8rem !important; letter-spacing:0 !important; text-transform:none !important;
+  padding:9px 14px !important; transition:background .15s, color .15s;
+}
+body.bielstein-theme #modeAdmin .admin-tabs .admin-tab:hover {
+  background:rgba(28,26,23,0.06) !important; color:#1C1A17 !important;
+}
+body.bielstein-theme #modeAdmin .admin-tabs .admin-tab.active {
+  background:#1C1A17 !important; color:#F6F1E7 !important;
+}
 .scroll-top-btn { position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; width: 48px; height: 48px; border-radius: 50%; border: none; background: #FF5A36; color: #1C1A17; font-family: "Space Grotesk","Arial Narrow",sans-serif; font-size: 1.7rem; font-weight: 900; line-height: 1; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.28); opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .22s ease, transform .22s ease, background .18s; display: flex; align-items: center; justify-content: center; }
 .scroll-top-btn.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 .scroll-top-btn:hover { background: #ff4a22; }
@@ -1805,6 +1844,7 @@ main {
       <div class="admin-tab"        id="atab-sponsors"  onclick="setAdminTab('sponsors')">🤝 Sponsoren</div>
       <div class="admin-tab"        id="atab-mis"       onclick="setAdminTab('mis')">📊 MIS</div>
       <div class="admin-tab"        id="atab-users"     onclick="setAdminTab('users')">👤 Nutzer</div>
+      <div class="admin-tab"        id="atab-infos"     onclick="setAdminTab('infos')">📝 Infotexte</div>
       <div class="admin-tab"        id="atab-wipe"      onclick="setAdminTab('wipe')" style="display:none;">🧹 Platte putzen</div>
     </div>
 
@@ -2855,6 +2895,44 @@ body.bielstein-theme #tabPlay:not(.active) {
       </div>
 
     </div><!-- /adminUsers -->
+
+    <!-- ── INFOTEXTE (Court-Regeln / Impressum / Datenschutz / AGB) ── -->
+    <div id="adminInfos" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-title">📝 Infotexte bearbeiten</div>
+        <div style="font-size:0.8rem;color:#7A7368;margin-bottom:14px;line-height:1.55;">
+          Baustein wählen, Text direkt bearbeiten (wie in einem Textprogramm – Wörter/Sätze ändern,
+          markieren, löschen, einfügen) und <strong>Speichern</strong>. Die Änderung ist sofort für
+          alle sichtbar. „Standard wiederherstellen“ holt den fest hinterlegten Originaltext zurück
+          (danach noch speichern).
+        </div>
+
+        <div class="infos-picker">
+          <button type="button" class="infos-pick active" data-key="rules"     onclick="selectLegalBlock('rules')">Court-Regeln</button>
+          <button type="button" class="infos-pick"        data-key="impressum" onclick="selectLegalBlock('impressum')">Impressum</button>
+          <button type="button" class="infos-pick"        data-key="privacy"   onclick="selectLegalBlock('privacy')">Datenschutz</button>
+          <button type="button" class="infos-pick"        data-key="agb"       onclick="selectLegalBlock('agb')">AGB</button>
+        </div>
+
+        <div class="infos-toolbar">
+          <button type="button" onmousedown="event.preventDefault()" onclick="legalCmd('bold')" title="Fett (Auswahl)"><b>F</b></button>
+          <button type="button" onmousedown="event.preventDefault()" onclick="legalCmd('formatBlock','H3')" title="Zwischenüberschrift">H</button>
+          <button type="button" onmousedown="event.preventDefault()" onclick="legalCmd('formatBlock','P')" title="Normaler Absatz">¶</button>
+          <button type="button" onmousedown="event.preventDefault()" onclick="legalCmd('insertUnorderedList')" title="Aufzählung">•&nbsp;Liste</button>
+          <button type="button" onmousedown="event.preventDefault()" onclick="legalCmd('undo')" title="Rückgängig">↶</button>
+          <button type="button" onmousedown="event.preventDefault()" onclick="legalCmd('redo')" title="Wiederholen">↷</button>
+        </div>
+
+        <div id="legalEditor" class="legal-editor" contenteditable="true" spellcheck="true"></div>
+
+        <div class="infos-actions">
+          <button id="legalSaveBtn" type="button" class="infos-btn-primary" onclick="saveLegalBlock()">Speichern</button>
+          <button type="button" class="infos-btn" onclick="reloadLegalBlock()">Änderungen verwerfen</button>
+          <button type="button" class="infos-btn" onclick="resetLegalBlock()">Standard wiederherstellen</button>
+          <span id="legalStatus" class="infos-status"></span>
+        </div>
+      </div>
+    </div><!-- /adminInfos -->
 
     <!-- Nur während der Testphase sichtbar. Steuert app_settings.test_mode;
          steht der auf false, blendet die App den Bereich aus UND die
@@ -5816,8 +5894,9 @@ function setAdminTab(tab) {
   document.getElementById('adminSponsors').style.display  = tab==='sponsors' ? 'block' : 'none';
   document.getElementById('adminMis').style.display       = tab==='mis'      ? 'block' : 'none';
   document.getElementById('adminUsers').style.display     = tab==='users'    ? 'block' : 'none';
+  document.getElementById('adminInfos').style.display     = tab==='infos'    ? 'block' : 'none';
   document.getElementById('adminWipe').style.display      = tab==='wipe'     ? 'block' : 'none';
-  ['freibad','prices','internal','bookings','weather','sponsors','mis','users','wipe'].forEach(t =>
+  ['freibad','prices','internal','bookings','weather','sponsors','mis','users','infos','wipe'].forEach(t =>
     document.getElementById('atab-'+t).classList.toggle('active', t===tab)
   );
   // Wetterausfälle laden bei JEDEM Öffnen neu - hier ändern sich Zustände
@@ -5837,6 +5916,7 @@ function setAdminTab(tab) {
     setTimeout(doMisInit, 100);
   }
   if (tab==='users'    && !adminTabLoaded.users)    { loadAdminUsers();   adminTabLoaded.users=true; }
+  if (tab==='infos'    && !adminTabLoaded.infos)    { if(typeof initInfosEditor==='function') initInfosEditor(); adminTabLoaded.infos=true; }
 }
 
 // Reiter beim Öffnen des Admin-Bereichs freischalten, sofern Testphase läuft.
@@ -9898,13 +9978,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape' && rulesOverlay && rulesOverlay.classList.contains('open')) window.closeCourtRules();
   });
-  if(rulesReport) rulesReport.addEventListener('click', function(){
+  /* Delegation statt direkter Bindung: überlebt das Überschreiben des
+     Court-Regeln-Textes durch die Admin-Bearbeitung (id bleibt erhalten). */
+  if(rulesOverlay) rulesOverlay.addEventListener('click', function(ev){
+    var rep = ev.target && ev.target.closest && ev.target.closest('#courtRulesReport');
+    if(!rep) return;
     window.closeCourtRules();
     try { if(typeof setMode === 'function') setMode('play'); } catch(e){}
     try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ window.scrollTo(0,0); }
-    /* Gibt es eine meldbare Buchung, direkt zur Karte „Letzte Buchung"
-       springen. Kurze Wartezeit, weil die Karte erst nach dem Laden der
-       Buchungen aus der Datenbank erscheint. */
     setTimeout(function(){
       var card = document.getElementById('weatherReportCard');
       if(card && card.style.display !== 'none'){
@@ -9912,6 +9993,90 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
     }, 900);
   });
+
+  /* ── INFOTEXTE: Standard erfassen, Überschreibungen laden/anwenden, Editor ──
+     Die 4 Standardtexte bleiben fest in index.html (Fallback); die DB-Tabelle
+     legal_texts speichert nur Admin-Änderungen. */
+  var LEGAL_KEYS  = ['rules','impressum','privacy','agb'];
+  var LEGAL_VIEW  = { rules:'courtRulesViewRules', impressum:'courtRulesViewImpressum', privacy:'courtRulesViewPrivacy', agb:'courtRulesViewAgb' };
+  var LEGAL_LABEL = { rules:'Court-Regeln', impressum:'Impressum', privacy:'Datenschutz', agb:'AGB' };
+  window.__legalDefaults  = window.__legalDefaults  || {};
+  window.__legalOverrides = window.__legalOverrides || {};
+  var legalCurrent = 'rules';
+
+  function captureLegalDefaults(){
+    LEGAL_KEYS.forEach(function(k){
+      var v = document.getElementById(LEGAL_VIEW[k]);
+      if(v && window.__legalDefaults[k] === undefined) window.__legalDefaults[k] = v.innerHTML;
+    });
+  }
+  function applyLegalOverride(k){
+    var v = document.getElementById(LEGAL_VIEW[k]); if(!v) return;
+    var html = (window.__legalOverrides[k] != null) ? window.__legalOverrides[k] : window.__legalDefaults[k];
+    if(html != null) v.innerHTML = html;
+  }
+  function legalCurrentHtml(k){
+    return (window.__legalOverrides[k] != null) ? window.__legalOverrides[k] : (window.__legalDefaults[k] || '');
+  }
+  window.loadLegalOverrides = async function(){
+    try{
+      if(typeof sb==='undefined' || !sb) return;
+      var res = await sb.from('legal_texts').select('key,html');
+      if(res.error) return;
+      (res.data||[]).forEach(function(r){ if(LEGAL_KEYS.indexOf(r.key)>=0) window.__legalOverrides[r.key] = r.html; });
+      LEGAL_KEYS.forEach(applyLegalOverride);
+    }catch(e){}
+  };
+  window.selectLegalBlock = function(key){
+    if(LEGAL_KEYS.indexOf(key)<0) key='rules';
+    legalCurrent = key;
+    var picks = document.querySelectorAll('.infos-pick');
+    Array.prototype.forEach.call(picks, function(b){ b.classList.toggle('active', b.getAttribute('data-key')===key); });
+    var ed = document.getElementById('legalEditor'); if(ed) ed.innerHTML = legalCurrentHtml(key);
+    var st = document.getElementById('legalStatus');
+    if(st){ st.textContent = (window.__legalOverrides[key]!=null) ? 'Angepasste Version geladen.' : 'Standardtext geladen.'; st.style.color='#7A7368'; }
+  };
+  window.legalCmd = function(cmd, val){
+    var ed = document.getElementById('legalEditor'); if(ed) ed.focus();
+    if(cmd==='formatBlock' && val && val.charAt(0)!=='<') val='<'+val+'>';
+    try{ document.execCommand(cmd, false, val || null); }catch(e){}
+  };
+  window.reloadLegalBlock = function(){ window.selectLegalBlock(legalCurrent); };
+  window.resetLegalBlock = function(){
+    var ed = document.getElementById('legalEditor'); if(ed) ed.innerHTML = window.__legalDefaults[legalCurrent] || '';
+    var st = document.getElementById('legalStatus'); if(st){ st.textContent='Standardtext eingesetzt – zum Übernehmen bitte speichern.'; st.style.color='#B8402C'; }
+  };
+  window.saveLegalBlock = async function(){
+    var ed = document.getElementById('legalEditor'); if(!ed) return;
+    var btn = document.getElementById('legalSaveBtn'); var st = document.getElementById('legalStatus');
+    var html = ed.innerHTML;
+    if(!html || !html.replace(/<[^>]*>/g,'').trim()){ if(st){ st.textContent='Text ist leer.'; st.style.color='#B8402C'; } return; }
+    var prev = btn ? btn.textContent : 'Speichern';
+    if(btn){ btn.disabled=true; btn.textContent='Speichert …'; }
+    try{
+      var res = await sb.rpc('admin_update_legal_text', { p_key: legalCurrent, p_html: html });
+      if(res.error) throw res.error;
+      window.__legalOverrides[legalCurrent] = html;
+      applyLegalOverride(legalCurrent);
+      if(typeof showToast==='function') showToast('Infotext gespeichert.');
+      if(st){ st.textContent = LEGAL_LABEL[legalCurrent]+' gespeichert.'; st.style.color='#1F8A5F'; }
+    }catch(e){
+      if(st){ st.textContent='Speichern fehlgeschlagen: '+((e&&e.message)||'Unbekannter Fehler'); st.style.color='#B8402C'; }
+    }finally{ if(btn){ btn.disabled=false; btn.textContent=prev; } }
+  };
+  window.initInfosEditor = function(){ captureLegalDefaults(); window.selectLegalBlock(legalCurrent || 'rules'); };
+
+  (function(){
+    var ed = document.getElementById('legalEditor'); if(!ed) return;
+    ed.addEventListener('paste', function(e){
+      e.preventDefault();
+      var t = ((e.clipboardData || window.clipboardData) || {getData:function(){return '';}}).getData('text/plain');
+      try{ document.execCommand('insertText', false, t); }catch(err){}
+    });
+  })();
+
+  captureLegalDefaults();
+  window.loadLegalOverrides();
 
   /* Branding oben links führt immer zurück zur Buchungsseite */
   window.goHome = function(){
