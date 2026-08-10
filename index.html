@@ -5875,14 +5875,23 @@ async function loadAdminSponsors() {
     const active = s.active
       ? '<span style="color:#1F8A5F;font-weight:800;">● aktiv</span>'
       : '<span style="color:#7A7368;font-weight:800;">○ inaktiv</span>';
+    const hasContact = s.contact_name || s.contact_email || s.contact_phone;
+    const contactBlock = hasContact
+      ? `<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;line-height:1.4;max-width:40%;">
+           ${s.contact_name  ? `<div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.contact_name)}</div>` : ''}
+           ${s.contact_email ? `<div style="font:500 13px 'Manrope',sans-serif;color:#5C564C;word-break:break-word;">${esc(s.contact_email)}</div>` : ''}
+           ${s.contact_phone ? `<div style="font:500 13px 'Manrope',sans-serif;color:#5C564C;">${esc(s.contact_phone)}</div>` : ''}
+         </div>`
+      : '';
     return `
-      <div style="display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid #E2DACB;border-radius:12px;padding:12px 14px;margin-bottom:10px;">
+      <div style="position:relative;display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid #E2DACB;border-radius:12px;padding:12px 14px;margin-bottom:10px;">
         <div style="width:118px;height:58px;flex:none;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;">${logo}</div>
-        <div style="flex:1;min-width:0;">
+        <div style="flex:0 1 auto;min-width:0;">
           <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
           <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;">${tierLabel[s.tier] || s.tier} · Reihenfolge ${s.sort_order} · ${active}</div>
         </div>
-        <div style="display:flex;gap:6px;flex:none;">
+        ${contactBlock}
+        <div style="display:flex;gap:6px;flex:none;margin-left:auto;">
           <button onclick="editSponsor('${s.id}')" style="padding:8px 12px;border:1.5px solid #E2DACB;border-radius:8px;background:transparent;color:#1C1A17;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Bearbeiten</button>
           <button onclick="deleteSponsor('${s.id}')" style="padding:8px 12px;border:1.5px solid #E2DACB;border-radius:8px;background:transparent;color:#B8402C;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Löschen</button>
         </div>
