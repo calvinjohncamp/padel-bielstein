@@ -625,8 +625,9 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 /* ■■ JETZT SPIELEN ■■ */
 .play-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
 .play-card-title { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray); margin-bottom: 14px; }
-.play-booking-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.play-booking-item { display: flex; flex-direction: column; align-items: stretch; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .play-booking-item:last-child { border-bottom: none; }
+.play-booking-head { display: flex; align-items: center; justify-content: space-between; }
 .play-booking-info { display: flex; flex-direction: column; gap: 3px; }
 .play-booking-court { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; color: var(--gold); }
 .play-booking-time { font-size: 0.82rem; color: #b0b0b0; }
@@ -4440,6 +4441,208 @@ function nextAboDateAfter(abo, afterDate) {
   return abo.ends_on && result > abo.ends_on ? null : result;
 }
 
+// „Spieler informieren": teilt eine gebrandete BILDKARTE im App-CI über den
+// nativen Teilen-Dialog (WhatsApp/AirDrop/iMessage/Mail zeigen dann die schicke
+// Karte). Fallbacks: Text-Teilen, sonst mailto:. Die App muss NICHT wissen,
+// welches Programm genutzt wird - das regelt das Betriebssystem.
+const SHARE_URL = 'https://padel-bielstein.de';
+
+function shareMessageText(court, dateISO, hourStart, duration, kind) {
+  const d = new Date(dateISO + 'T12:00:00');
+  const wd = d.toLocaleDateString('de-DE', { weekday: 'long' });
+  const dm = d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+  const h1 = String(Number(hourStart)).padStart(2, '0') + ':00';
+  const h2 = String(Number(hourStart) + Number(duration)).padStart(2, '0') + ':00';
+  const was = kind === 'abo' ? 'ein Padel-Jahresabo' : 'einen Padel-Court';
+  return `Ich habe ${was} gebucht: Court #${court}, ${wd} ${dm} von ${h1}–${h2} Uhr ` +
+         `bei Padel Bielstein (Jahnstraße 13, Bielstein). Du bist dabei! 🎾`;
+}
+
+async function sharePlayInfo(court, dateISO, hourStart, duration, kind) {
+  const message = shareMessageText(court, dateISO, hourStart, duration, kind);
+  const fullText = message + '\n\n' + SHARE_URL;
+
+  let file = null;
+  try {
+    const blob = await buildShareCardBlob(court, dateISO, hourStart, duration, kind);
+    if (blob) file = new File([blob], 'padel-bielstein.png', { type: 'image/png' });
+  } catch (e) { console.warn('Share-Karte konnte nicht erzeugt werden:', e); }
+
+  // 1) Bild teilen (bevorzugt) – zeigt die Karte in WhatsApp/AirDrop/Mail …
+  if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], text: fullText }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  // 2) Nur Text teilen (Desktop / kein Datei-Teilen)
+  if (navigator.share) {
+    try { await navigator.share({ text: message, url: SHARE_URL }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  // 3) mailto:
+  const subject = 'Padel Bielstein – du bist dabei!';
+  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(fullText)}`;
+}
+
+// ---- Bausteine der Bildkarte -------------------------------------------------
+function loadImageSafe(url, cross) {
+  return new Promise((resolve) => {
+    if (!url) { resolve(null); return; }
+    const img = new Image();
+    if (cross) img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+function ccRoundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function ccDrawContain(ctx, img, x, y, w, h) {
+  const s = Math.min(w / img.width, h / img.height);
+  const dw = img.width * s, dh = img.height * s;
+  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+}
+// Zwei Partner für die Karte: Premium + einen rotierenden (Partner/Regional 3:1),
+// stabil pro Buchung (per Hash) – entspricht der Struktur der Bestätigungsmail.
+async function pickCardSponsors(seedStr) {
+  try {
+    if (typeof sb === 'undefined' || !sb) return [];
+    const res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
+    if (res.error) return [];
+    const rows = res.data || [];
+    const bySort = (a, b) => (a.sort_order || 0) - (b.sort_order || 0);
+    const prem = rows.filter(r => r.tier === 'premium').sort(bySort);
+    const part = rows.filter(r => r.tier === 'partner').sort(bySort);
+    const reg  = rows.filter(r => r.tier === 'regional').sort(bySort);
+    const wP = 3, wR = 1, maxw = Math.max(wP, wR), playlist = [];
+    for (let pass = 1; pass <= maxw; pass++) {
+      if (pass <= wP) part.forEach(c => playlist.push(c));
+      if (pass <= wR) reg.forEach(c => playlist.push(c));
+    }
+    let h = 0; for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) >>> 0;
+    const out = [];
+    if (prem[0]) out.push(prem[0]);
+    if (playlist.length) out.push(playlist[h % playlist.length]);
+    return out;
+  } catch (e) { return []; }
+}
+
+// Erzeugt die Buchungs-Grafik (PNG-Blob) im App-CI. Gibt null zurück, wenn das
+// Zeichnen scheitert (z. B. lokale file://-Vorschau: Bild-Export ist dort
+// gesperrt – auf der Live-Seite funktioniert es).
+async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
+  const W = 1080, PAD = 64, innerW = W - 2 * PAD, H = 1050;
+  const CREAM = '#F6F1E7', CORAL = '#FF5A36', MUTED = '#A8A49B', DIM = '#8A867E';
+
+  const d = new Date(dateISO + 'T12:00:00');
+  const dayLabel = d.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' });
+  const h1 = String(Number(hourStart)).padStart(2, '0') + ':00';
+  const h2 = String(Number(hourStart) + Number(duration)).padStart(2, '0') + ':00';
+
+  // Bilder + Fonts vorbereiten.
+  const sponsors = await pickCardSponsors(`${court}-${dateISO}-${hourStart}`);
+  const [logo, spA, spB] = await Promise.all([
+    loadImageSafe('assets/icons/logo-mark-2027-dark.png?v=20260721b', false),
+    loadImageSafe(sponsors[0] && /^https?:/i.test(sponsors[0].logo_url || '') ? sponsors[0].logo_url : null, true),
+    loadImageSafe(sponsors[1] && /^https?:/i.test(sponsors[1].logo_url || '') ? sponsors[1].logo_url : null, true),
+  ]);
+  try {
+    await Promise.all([
+      document.fonts.load('800 60px "Space Grotesk"'),
+      document.fonts.load('700 32px "Space Grotesk"'),
+      document.fonts.load('500 30px "Manrope"'),
+    ]);
+    await document.fonts.ready;
+  } catch (e) { /* Fallback-Fonts sind ok */ }
+
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+
+  // Hintergrund
+  ctx.fillStyle = '#1C1A17'; ctx.fillRect(0, 0, W, H);
+  ctx.textBaseline = 'top';
+
+  // Header: Logo + Wortmarke
+  if (logo) { ctx.save(); ccRoundRect(ctx, PAD, 64, 118, 118, 20); ctx.clip(); ctx.drawImage(logo, PAD, 64, 118, 118); ctx.restore(); }
+  ctx.textAlign = 'left';
+  ctx.font = '800 50px "Space Grotesk", sans-serif';
+  ctx.fillStyle = CREAM;  ctx.fillText('PADEL', PAD + 148, 71);
+  ctx.fillStyle = CORAL;  ctx.fillText('BIELSTEIN', PAD + 148, 127);
+
+  // Trennlinie
+  ctx.fillStyle = '#2A2723'; ctx.fillRect(PAD, 220, innerW, 2);
+
+  // Titel + Intro
+  ctx.fillStyle = CREAM; ctx.font = '800 60px "Space Grotesk", sans-serif';
+  ctx.fillText('Du bist dabei! 🎾', PAD, 258);
+  ctx.fillStyle = MUTED; ctx.font = '500 30px "Manrope", sans-serif';
+  ctx.fillText(kind === 'abo' ? 'Ich habe ein Padel-Jahresabo gebucht:' : 'Ich habe einen Padel-Court gebucht:', PAD, 344);
+
+  // Detail-Box
+  const boxY = 400, boxH = 270;
+  ctx.fillStyle = '#242019'; ccRoundRect(ctx, PAD, boxY, innerW, boxH, 22); ctx.fill();
+  ctx.strokeStyle = '#332F27'; ctx.lineWidth = 1.5; ccRoundRect(ctx, PAD, boxY, innerW, boxH, 22); ctx.stroke();
+  const rows = [['Platz', 'Court #' + court, false], ['Tag', dayLabel, false], ['Uhrzeit', h1 + ' – ' + h2 + ' Uhr', true]];
+  const rowsTop = boxY + 26, rowH = (boxH - 52) / 3;
+  ctx.textBaseline = 'middle';
+  rows.forEach(([label, value, hot], i) => {
+    const cy = rowsTop + i * rowH + rowH / 2;
+    if (i > 0) { ctx.fillStyle = '#332F27'; ctx.fillRect(PAD + 30, rowsTop + i * rowH, innerW - 60, 1); }
+    ctx.textAlign = 'left';  ctx.fillStyle = MUTED; ctx.font = '500 28px "Manrope", sans-serif'; ctx.fillText(label, PAD + 30, cy);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = hot ? CORAL : CREAM;
+    ctx.font = (hot ? '800 34px' : '700 32px') + ' "Space Grotesk", sans-serif';
+    ctx.fillText(value, W - PAD - 30, cy);
+  });
+  ctx.textBaseline = 'top';
+
+  // Adresse
+  ctx.textAlign = 'left'; ctx.fillStyle = DIM; ctx.font = '500 26px "Manrope", sans-serif';
+  ctx.fillText('📍 Padel Bielstein · Jahnstraße 13, Bielstein', PAD, boxY + boxH + 34);
+
+  // Footer: Kicker + zwei Partner-Kacheln
+  const divY = boxY + boxH + 96;
+  ctx.fillStyle = '#2A2723'; ctx.fillRect(PAD, divY, innerW, 2);
+  ctx.textAlign = 'left'; ctx.fillStyle = DIM; ctx.font = '700 20px "Space Grotesk", sans-serif';
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
+  ctx.fillText('DEIN NÄCHSTES MATCH WIRD DIR PRÄSENTIERT VON', PAD, divY + 30);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+
+  const tilesY = divY + 74, tileH = 150, tileW = (innerW - 24) / 2;
+  [[PAD, sponsors[0], spA], [PAD + tileW + 24, sponsors[1], spB]].forEach(([tx, sp, img]) => {
+    ctx.fillStyle = '#FFFFFF'; ccRoundRect(ctx, tx, tilesY, tileW, tileH, 18); ctx.fill();
+    if (img) {
+      ccDrawContain(ctx, img, tx + 30, tilesY + 26, tileW - 60, tileH - 52);
+    } else if (sp && sp.name) {
+      ctx.fillStyle = '#1C1A17'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '700 26px "Space Grotesk", sans-serif';
+      ctx.fillText(sp.name, tx + tileW / 2, tilesY + tileH / 2);
+      ctx.textBaseline = 'top';
+    }
+  });
+
+  return await new Promise((resolve) => {
+    try { cv.toBlob((b) => resolve(b), 'image/png', 0.95); }
+    catch (e) { resolve(null); }   // getaintetes Canvas (z. B. file://) -> null
+  });
+}
+
+// Kleiner Button-Baustein, in beiden Kacheln identisch.
+function informButtonHtml(court, dateISO, hourStart, duration, kind) {
+  return `<button type="button" class="inform-btn"
+      onclick="sharePlayInfo(${Number(court)}, '${dateISO}', ${Number(hourStart)}, ${Number(duration)}, '${kind === 'abo' ? 'abo' : 'single'}')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
+      <span>Spieler informieren</span>
+    </button>`;
+}
+
 // Füllt „Demnächst" als EINE gemeinsame chronologische Liste. Einzelbuchungen
 // und der jeweils nächste Abo-Termin haben dieselbe visuelle Wichtigkeit.
 async function renderMyBookingsLists() {
@@ -4485,11 +4688,14 @@ async function renderMyBookingsLists() {
     const price = !isAbo && item.price_paid_cents ? weatherFmtEUR(item.price_paid_cents) : '';
     const pending = item.status === 'pending';
     return `<div class="upcoming-item">
-      <div class="upcoming-item-main">
-        <div class="upcoming-item-date">${dateStr} · ${timeStr} Uhr</div>
-        <div class="upcoming-item-note">Court #${item.court}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
+      <div class="upcoming-item-head">
+        <div class="upcoming-item-main">
+          <div class="upcoming-item-date">${dateStr} · ${timeStr} Uhr</div>
+          <div class="upcoming-item-note">Court #${item.court}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
+        </div>
+        <span class="upcoming-kind">${isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>
       </div>
-      <span class="upcoming-kind">${isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>
+      ${informButtonHtml(item.court, item.date, item.hour_start, item.duration, isAbo ? 'abo' : 'single')}
     </div>`;
   }).join('');
 }
@@ -5018,13 +5224,17 @@ async function renderPlaySection() {
     const badgeTxt = status === 'now'  ? '● Läuft jetzt'     :
                      status === 'done' ? '✓ Spielzeit beendet' :
                      status === 'soon' ? '⏱ Bald'            : '✓ Beendet';
+    const dISO = b.date || todayStr();
     return `
       <div class="play-booking-item">
-        <div class="play-booking-info">
-          <div class="play-booking-court">Court #${b.court}${aboTag}</div>
-          <div class="play-booking-time">${h1} – ${h2} Uhr</div>
+        <div class="play-booking-head">
+          <div class="play-booking-info">
+            <div class="play-booking-court">Court #${b.court}${aboTag}</div>
+            <div class="play-booking-time">${h1} – ${h2} Uhr</div>
+          </div>
+          <span class="${badgeCls}">${badgeTxt}</span>
         </div>
-        <span class="${badgeCls}">${badgeTxt}</span>
+        ${informButtonHtml(b.court, dISO, b.hour_start, b.duration, b.isAbo ? 'abo' : 'single')}
       </div>`;
   }).join('');
   }
@@ -10058,10 +10268,13 @@ body.bielstein-theme #upcomingBookingsCard {
   box-shadow: none !important;
 }
 .upcoming-item {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  display: flex; flex-direction: column; align-items: stretch;
   padding: 15px 16px; margin-top: 9px;
   border: 1px solid #D9CFBF; border-radius: 12px;
   background: #F6F1E7; color: #1C1A17;
+}
+.upcoming-item-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
 .upcoming-item-main { min-width: 0; }
 .upcoming-item-date {
@@ -10076,6 +10289,19 @@ body.bielstein-theme #upcomingBookingsCard {
   font: 700 10.5px/1 "Space Grotesk",sans-serif; letter-spacing: .04em;
   text-transform: uppercase;
 }
+/* „Spieler informieren" – identisch in Heute- und Demnächst-Kachel. */
+.inform-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; margin-top: 12px; padding: 10px 12px;
+  border: 1.5px solid #FF5A36; border-radius: 10px;
+  background: #FFFFFF; color: #FF5A36;
+  font: 700 12.5px/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .03em;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background .15s, color .15s;
+}
+.inform-btn svg { flex: 0 0 auto; }
+.inform-btn:hover { background: #FF5A36; color: #FFFFFF; }
+.inform-btn:active { transform: translateY(1px); }
 body.bielstein-theme #upcomingBookingsCard .upcoming-empty {
   padding: 14px 0 !important; color: #7A7368 !important;
 }
@@ -10103,7 +10329,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 }
 @media (max-width: 560px) {
   .history-badge { white-space: normal; max-width: 42%; }
-  .upcoming-item { align-items: flex-start; gap: 10px; padding: 13px; }
+  .upcoming-item { padding: 13px; }
+  .upcoming-item-head { align-items: flex-start; gap: 10px; }
   .upcoming-kind { font-size: 9.5px; }
 }
 
