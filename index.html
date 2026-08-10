@@ -1233,6 +1233,24 @@ main {
   </div>
 </div>
 
+<!-- Hinweis, wenn das Jahresabo wegen bestehender Einzelbuchungen erst spaeter
+     startet. Wird nur vor der Zahlung gezeigt, wenn abo_delayed = true. -->
+<div class="modal-overlay" id="aboStartModal">
+  <div class="modal payment-choice-modal">
+    <div class="modal-title">Dein Abo startet etwas später</div>
+    <div class="modal-sub" id="aboStartSub">An deinem Wunsch-Termin liegen noch Einzelbuchungen. Dein Abo beginnt deshalb in der Woche danach – und läuft dann ein volles Jahr.</div>
+    <div class="cc-lines">
+      <div class="cc-line"><span>Erster Spieltag</span><span id="aboStartDate">—</span></div>
+      <div class="cc-line"><span>Läuft bis</span><span id="aboStartEnd">—</span></div>
+    </div>
+    <button class="modal-btn cc-option cc-stripe" id="aboStartOk">
+      <span class="cc-option-copy"><strong>Weiter zur Zahlung</strong><small>Sicher weiter zu Stripe</small></span>
+      <span class="cc-option-mark" aria-hidden="true">→</span>
+    </button>
+    <button class="modal-btn cc-cancel" id="aboStartCancel">Abbrechen</button>
+  </div>
+</div>
+
 <div class="pb-splash" id="pbSplash" hidden>
   <div class="pb-splash-inner">
     <div class="pb-splash-top">
@@ -3473,11 +3491,22 @@ function addLocalAboBlocksForWeekday(weekday) {
 async function addSupabaseAboBlocksForDate(dateStr) {
   try {
     const wd = new Date(dateStr + 'T12:00:00').getDay();
-    const { data, error } = await sb
+    // starts_on/ends_on kommen aus der erweiterten View (Skript 38). Fehlen sie
+    // (noch alte View), liefert PostgREST einen Fehler auf die Spaltenauswahl -
+    // dann fallen wir unten auf die alte, pauschale Sperre zurueck (sicher).
+    let data, error;
+    ({ data, error } = await sb
       .from('abo_availability')
-      .select('court, weekday, hour_start, duration, status')
+      .select('court, weekday, hour_start, duration, status, starts_on, ends_on')
       .eq('weekday', wd)
-      .eq('status', 'active');
+      .eq('status', 'active'));
+    if (error) {
+      ({ data, error } = await sb
+        .from('abo_availability')
+        .select('court, weekday, hour_start, duration, status')
+        .eq('weekday', wd)
+        .eq('status', 'active'));
+    }
 
     if (error) {
       console.warn('Supabase-Abos für Einzelansicht konnten nicht geladen werden:', error);
@@ -3485,6 +3514,12 @@ async function addSupabaseAboBlocksForDate(dateStr) {
     }
 
     for (const s of (data || [])) {
+      // Ein Abo sperrt Einzelstunden nur INNERHALB seines Gueltigkeitsfensters.
+      // Termine vor dem Abo-Start (spaeterer Beginn wegen bestehender
+      // Einzelbuchungen) bleiben buchbar. ISO-Datumsstrings vergleichen direkt.
+      if (s.starts_on && dateStr < s.starts_on) continue;
+      if (s.ends_on   && dateStr >= s.ends_on)  continue;
+
       const court = Number(s.court);
       const start = Number(s.hour_start);
       const dur = Number(s.duration || 1);
@@ -5355,6 +5390,45 @@ async function confirmBooking(skipAuthCheck) {
   }
 }
 
+// Datum "YYYY-MM-DD" -> "Fr, 02.04.2027" (fuer den Abo-Start-Hinweis).
+function fmtAboDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString('de-DE', {
+    weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'
+  });
+}
+
+// Zeigt den Starthinweis und liefert true (weiter zur Zahlung) / false (Abbruch).
+// Wird nur aufgerufen, wenn das Abo wegen bestehender Einzelbuchungen spaeter
+// beginnt (data.abo_delayed).
+function showAboStartConfirm(data) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('aboStartModal');
+    document.getElementById('aboStartDate').textContent = fmtAboDate(data.starts_on);
+    document.getElementById('aboStartEnd').textContent  = fmtAboDate(data.ends_on);
+
+    const ok     = document.getElementById('aboStartOk');
+    const cancel = document.getElementById('aboStartCancel');
+
+    const close = (result) => {
+      overlay.classList.remove('open');
+      ok.removeEventListener('click', onOk);
+      cancel.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onBackdrop);
+      resolve(result);
+    };
+    const onOk       = () => close(true);
+    const onCancel   = () => close(false);
+    const onBackdrop = (e) => { if (e.target === overlay) close(false); };
+
+    ok.addEventListener('click', onOk);
+    cancel.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onBackdrop);
+    overlay.classList.add('open');
+  });
+}
+
 async function submitAbo(skipAuthCheck) {
   if (!aboSlot || aboWd===null) {
     showToast('Bitte Wochentag und Slot wählen');
@@ -5456,6 +5530,18 @@ async function submitAbo(skipAuthCheck) {
     const data = await res.json();
 
     if (data.url) {
+      // Das echte Startfenster kommt vom Backend (Abo startet ggf. erst nach
+      // bestehenden Einzelbuchungen). Fuer die optimistische Anzeige nach der
+      // Zahlung ins gemerkte Abo uebernehmen.
+      if (data.starts_on) pendingAbo.starts_on = data.starts_on;
+      if (data.ends_on)   pendingAbo.ends_on   = data.ends_on;
+      storePendingAboCheckout(pendingAbo);
+
+      // Startet das Abo spaeter, erst den Hinweis zeigen und bestaetigen lassen.
+      if (data.abo_delayed) {
+        const weiter = await showAboStartConfirm(data);
+        if (!weiter) { showToast('Abgebrochen – es wurde nichts gebucht und nichts abgebucht.'); return; }
+      }
       window.location.href = data.url;
     } else {
       showToast('Fehler: ' + (data.error || 'Stripe-Checkout für Jahresabo noch nicht verfügbar'));
@@ -9189,57 +9275,57 @@ body.bielstein-theme #adminWipe .wipe-result.ok   { color: #1F8A5F; font-weight:
 body.bielstein-theme #adminWipe .wipe-result.warn { color: #B8402C; font-weight: 600; }
 
 /* ── GUTHABEN-BESTÄTIGUNG ── */
-body.bielstein-theme #creditConfirmModal .cc-lines {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-lines {
   margin: 20px 0 22px; padding: 4px 14px;
   border: 1px solid #E2DACB; border-radius: 12px; background: #FFFFFF;
 }
-body.bielstein-theme #creditConfirmModal .cc-line {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-line {
   display: flex; justify-content: space-between; align-items: baseline;
   padding: 11px 0; border-bottom: 1px solid #E2DACB;
   font-size: 14px; color: #7A7368;
 }
-body.bielstein-theme #creditConfirmModal .cc-line:last-child { border-bottom: 0; }
-body.bielstein-theme #creditConfirmModal .cc-line span:last-child {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-line:last-child { border-bottom: 0; }
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-line span:last-child {
   font-family: "Space Grotesk","Arial Narrow",sans-serif;
   font-weight: 700; color: #1C1A17;
 }
-body.bielstein-theme #creditConfirmModal .cc-cancel {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-cancel {
   width: auto !important; display: block; margin: 13px auto 0 !important; padding: 6px 12px !important;
   background: transparent !important; color: #7A7368 !important;
   border: 0 !important; box-shadow: none !important; font-size: 12.5px !important;
   text-transform: none !important; letter-spacing: .02em !important;
 }
-body.bielstein-theme #creditConfirmModal .cc-cancel:hover { color: #1C1A17 !important; text-decoration: underline; }
-body.bielstein-theme #creditConfirmModal .cc-choice-label {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-cancel:hover { color: #1C1A17 !important; text-decoration: underline; }
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-choice-label {
   margin-bottom: 8px; color: #7A7368;
   font: 700 10.5px/1 "Space Grotesk",sans-serif; letter-spacing: .12em; text-transform: uppercase;
 }
-body.bielstein-theme #creditConfirmModal .cc-option {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-option {
   min-height: 68px; margin: 0 0 9px !important; padding: 13px 16px !important;
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
   border-radius: 13px !important; box-shadow: none !important; text-align: left;
   text-transform: none !important; letter-spacing: 0 !important;
 }
-body.bielstein-theme #creditConfirmModal .cc-credit {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-credit {
   background: #FCE9E2 !important; color: #1C1A17 !important; border: 1.5px solid #F1C8B9 !important;
 }
-body.bielstein-theme #creditConfirmModal .cc-stripe {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-stripe {
   background: #FFFFFF !important; color: #1C1A17 !important; border: 1.5px solid #D9CFBF !important;
 }
-body.bielstein-theme #creditConfirmModal .cc-credit:hover,
-body.bielstein-theme #creditConfirmModal .cc-credit:focus-visible,
-body.bielstein-theme #creditConfirmModal .cc-stripe:hover,
-body.bielstein-theme #creditConfirmModal .cc-stripe:focus-visible {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-credit:hover,
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-credit:focus-visible,
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-stripe:hover,
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-stripe:focus-visible {
   background: #FCE9E2 !important; border-color: #FF5A36 !important; outline: none;
 }
-body.bielstein-theme #creditConfirmModal .cc-option-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-body.bielstein-theme #creditConfirmModal .cc-option-copy strong {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-option-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-option-copy strong {
   color: inherit; font: 700 15px/1.2 "Space Grotesk",sans-serif;
 }
-body.bielstein-theme #creditConfirmModal .cc-option-copy small {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-option-copy small {
   color: inherit; opacity: .72; font: 600 11.5px/1.35 "Manrope",sans-serif;
 }
-body.bielstein-theme #creditConfirmModal .cc-option-mark {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-option-mark {
   flex: 0 0 auto; color: inherit; font: 600 20px/1 "Space Grotesk",sans-serif;
 }
 
