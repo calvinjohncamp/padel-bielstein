@@ -4478,28 +4478,26 @@ function shareMessageText(court, dateISO, hourStart, duration, kind) {
 }
 
 async function sharePlayInfo(court, dateISO, hourStart, duration, kind) {
-  const message = shareMessageText(court, dateISO, hourStart, duration, kind);
-  const fullText = message + '\n\n' + SHARE_URL;
-
   let file = null;
   try {
     const blob = await buildShareCardBlob(court, dateISO, hourStart, duration, kind);
     if (blob) file = new File([blob], 'padel-bielstein.png', { type: 'image/png' });
   } catch (e) { console.warn('Share-Karte konnte nicht erzeugt werden:', e); }
 
-  // 1) Bild teilen (bevorzugt) – zeigt die Karte in WhatsApp/AirDrop/Mail …
+  // 1) NUR die Karte teilen – kein Begleittext (die Karte enthält alles inkl.
+  //    der sichtbaren Adresse padel-bielstein.de). So bleibt es überall elegant.
   if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-    try { await navigator.share({ files: [file], text: fullText }); return; }
+    try { await navigator.share({ files: [file] }); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }
   }
-  // 2) Nur Text teilen (Desktop / kein Datei-Teilen)
+  // 2) Fallback (Desktop ohne Bild-Teilen): wenigstens den Link teilen, damit
+  //    die Funktion dort nicht ins Leere läuft.
   if (navigator.share) {
-    try { await navigator.share({ text: message, url: SHARE_URL }); return; }
+    try { await navigator.share({ url: SHARE_URL }); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }
   }
-  // 3) mailto:
-  const subject = 'Padel Bielstein – du bist dabei!';
-  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(fullText)}`;
+  // 3) mailto: nur der Link (Betreff ohne weiteren Fließtext).
+  window.location.href = `mailto:?subject=${encodeURIComponent('Padel Bielstein')}&body=${encodeURIComponent(SHARE_URL)}`;
 }
 
 // ---- Bausteine der Bildkarte -------------------------------------------------
@@ -4661,9 +4659,14 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
   });
   ctx.textBaseline = 'top';
 
-  // Adresse
+  // Adresse (links) + Website als sichtbarer „Link" (rechts, Akzentfarbe).
+  // Ein Bild kann keinen echten Hyperlink tragen – die URL steht deshalb als
+  // Text auf der Karte, damit der separate Begleittext entfallen kann.
+  const addrY = boxY + boxH + 34;
   ctx.textAlign = 'left'; ctx.fillStyle = P.dim; ctx.font = '500 26px "Manrope", sans-serif';
-  ctx.fillText('📍 Padel Bielstein · Jahnstraße 13, Bielstein', PAD, boxY + boxH + 34);
+  ctx.fillText('📍 Padel Bielstein · Jahnstraße 13, Bielstein', PAD, addrY);
+  ctx.textAlign = 'right'; ctx.fillStyle = P.accent; ctx.font = '700 26px "Space Grotesk", sans-serif';
+  ctx.fillText('padel-bielstein.de', W - PAD, addrY);
 
   // Footer: Kicker + zwei Partner-Kacheln
   const divY = boxY + boxH + 96;
