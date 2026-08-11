@@ -10339,13 +10339,17 @@ body.bielstein-theme #upcomingBookingsCard {
   background: #F6F1E7; color: #1C1A17;
 }
 .upcoming-item-main { min-width: 0; }
-/* iPad/breit: alles in EINER Zeile – Info | „Spieler informieren" | Badge. */
+/* iPad/breit: 3-Spalten-Raster – Info links | Button IMMER mittig (feste
+   Spalte) | Badge rechts. So steht „Spieler informieren" in jeder Zeile an
+   exakt derselben Stelle, egal wie lang Text links oder Badge rechts sind. */
 .upcoming-item-head, .play-booking-head {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
 }
+.upcoming-item-head > :last-child, .play-booking-head > :last-child { justify-self: end; }
 /* Nur schmale Handy-Displays: gestapelt – Info, dann Button, dann Badge. */
 @media (max-width: 620px) {
-  .upcoming-item-head, .play-booking-head { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .upcoming-item-head, .play-booking-head { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .upcoming-item-head > :last-child, .play-booking-head > :last-child { justify-self: auto; }
   .upcoming-item-head .upcoming-item-main { width: 100%; }
   .play-booking-head .play-booking-info { width: 100%; }
 }
