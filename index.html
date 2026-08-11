@@ -4613,13 +4613,18 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
     await document.fonts.ready;
   } catch (e) { /* Fallback-Fonts sind ok */ }
 
-  // 2× rendern -> auf großen (Retina-)Displays gestochen scharf. Alle
-  // Koordinaten bleiben in „logischen" Einheiten (ctx.scale übernimmt den Rest).
-  const S = 2;
+  // Hoch auflösen -> scharfer Text + scharfes Logo auf großen Displays. Alle
+  // Koordinaten bleiben „logisch" (ctx.scale übernimmt den Rest).
+  // 3× ist das Maximum, das iOS-Safari SICHER verarbeitet (hartes Canvas-Limit
+  // ~16 MP bzw. 4096 px Kante) – 4× würde am iPhone/iPad reißen. 3240×3150
+  // liegt sicher darunter.
+  const S = 3;
   const cv = document.createElement('canvas');
   cv.width = W * S; cv.height = H * S;
   const ctx = cv.getContext('2d');
   ctx.scale(S, S);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';   // sauberes Herunterskalieren der Logos
 
   // Hintergrund
   ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
