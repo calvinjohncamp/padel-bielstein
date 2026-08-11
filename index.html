@@ -4717,13 +4717,13 @@ async function renderMyBookingsLists() {
     const price = !isAbo && item.price_paid_cents ? weatherFmtEUR(item.price_paid_cents) : '';
     const pending = item.status === 'pending';
     return `<div class="upcoming-item">
-      <div class="upcoming-item-main">
-        <div class="upcoming-item-date">${dateStr} · ${timeStr} Uhr</div>
-        <div class="upcoming-item-note">Court #${item.court}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
-        <div class="upcoming-item-actions">
-          ${informButtonHtml(item.court, item.date, item.hour_start, item.duration, isAbo ? 'abo' : 'single')}
-          <span class="upcoming-kind">${isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>
+      <div class="upcoming-item-head">
+        <div class="upcoming-item-main">
+          <div class="upcoming-item-date">${dateStr} · ${timeStr} Uhr</div>
+          <div class="upcoming-item-note">Court #${item.court}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
         </div>
+        ${informButtonHtml(item.court, item.date, item.hour_start, item.duration, isAbo ? 'abo' : 'single')}
+        <span class="upcoming-kind">${isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>
       </div>
     </div>`;
   }).join('');
@@ -5256,13 +5256,13 @@ async function renderPlaySection() {
     const dISO = b.date || todayStr();
     return `
       <div class="play-booking-item">
-        <div class="play-booking-info">
-          <div class="play-booking-court">Court #${b.court}${aboTag}</div>
-          <div class="play-booking-time">${h1} – ${h2} Uhr</div>
-          <div class="play-booking-actions">
-            ${informButtonHtml(b.court, dISO, b.hour_start, b.duration, b.isAbo ? 'abo' : 'single')}
-            <span class="${badgeCls}">${badgeTxt}</span>
+        <div class="play-booking-head">
+          <div class="play-booking-info">
+            <div class="play-booking-court">Court #${b.court}${aboTag}</div>
+            <div class="play-booking-time">${h1} – ${h2} Uhr</div>
           </div>
+          ${informButtonHtml(b.court, dISO, b.hour_start, b.duration, b.isAbo ? 'abo' : 'single')}
+          <span class="${badgeCls}">${badgeTxt}</span>
         </div>
       </div>`;
   }).join('');
@@ -10303,15 +10303,15 @@ body.bielstein-theme #upcomingBookingsCard {
   background: #F6F1E7; color: #1C1A17;
 }
 .upcoming-item-main { min-width: 0; }
-/* Dritte Zeile: „Spieler informieren" links + Badge rechts, gleicher Abstand
-   wie zwischen Zeile 1 und 2. */
-.upcoming-item-actions {
+/* iPad/breit: alles in EINER Zeile – Info | „Spieler informieren" | Badge. */
+.upcoming-item-head, .play-booking-head {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  margin-top: 10px;
 }
-.play-booking-actions {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  margin-top: 10px;
+/* Nur schmale Handy-Displays: gestapelt – Info, dann Button, dann Badge. */
+@media (max-width: 620px) {
+  .upcoming-item-head, .play-booking-head { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .upcoming-item-head .upcoming-item-main { width: 100%; }
+  .play-booking-head .play-booking-info { width: 100%; }
 }
 .upcoming-item-date {
   font: 700 15px/1.35 "Space Grotesk",sans-serif; color: #1C1A17;
