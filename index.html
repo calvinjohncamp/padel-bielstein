@@ -2256,8 +2256,8 @@ main {
       <div class="admin-section">
         <div class="admin-section-title">🤝 Sponsor anlegen / bearbeiten</div>
         <div style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5;">
-          <strong>Premium</strong> erscheint auf der Startseite und in <em>jeder</em> Bestätigungsmail.
-          <strong>Partner</strong> und <strong>Regional-Partner</strong> rotieren im Verhältnis 3 : 1 (Partner dreimal so oft) über Buchen / Spielen / Guthaben / Abo und in den Mails.
+          <strong>Premium</strong> erscheint exklusiv auf der Startseite.
+          In App und Mails rotieren <strong>Premium</strong>, <strong>Partner</strong> und <strong>Regional-Partner</strong> fair nach Gewichtung 15 : 3 : 1 (= 5 : 1 : 0,33).
           Logo als PNG/JPG/SVG mit möglichst wenig Rand hochladen – es wird in eine feste Kachel (140 × 64) eingepasst.
         </div>
         <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
@@ -2269,7 +2269,7 @@ main {
               <select id="spTier" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
                 <option value="partner">Partner (1.000 €)</option>
                 <option value="regional">Regional (300 €)</option>
-                <option value="premium">Premium (5.000 € · Home + jede Mail)</option>
+                <option value="premium">Premium (5.000 € · Home + Rotation)</option>
               </select>
             </div>
             <div>
@@ -2324,11 +2324,15 @@ main {
       </div>
 
       <div class="admin-section">
-        <div class="admin-section-title">Mail-Häufigkeit</div>
+        <div class="admin-section-title">Digitale Häufigkeit</div>
         <div style="font-size:0.78rem;color:#888;margin-bottom:12px;line-height:1.5;">
-          In jeder Bestätigungsmail: Premium + genau ein weiterer. Wie oft ein Partner im Verhältnis zu einem Regional-Partner drankommt (Start 3 : 1 = dreimal so oft):
+          In App und Bestätigungsmails rotieren alle drei Stufen gemeinsam. Technisch entspricht 15 : 3 : 1 der einfachen Verkaufslogik 5 : 1 : 0,33:
         </div>
         <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div>
+            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Premium-Gewicht</label>
+            <input id="spWPremium" type="number" min="1" value="15" style="width:110px;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+          </div>
           <div>
             <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Partner-Gewicht</label>
             <input id="spWPartner" type="number" min="1" value="3" style="width:110px;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
@@ -4523,8 +4527,9 @@ function ccDrawContain(ctx, img, x, y, w, h) {
   const dw = img.width * s, dh = img.height * s;
   ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
 }
-// Zwei Partner für die Karte: Premium + einen rotierenden (Partner/Regional 3:1),
-// stabil pro Buchung (per Hash) – entspricht der Struktur der Bestätigungsmail.
+// Zwei Partner für die Karte: gemeinsame Rotation Premium / Partner / Regional
+// mit 15:3:1 (= 5:1:0,33), stabil pro Buchung (per Hash). Wenn Premium
+// auftaucht, steht er links – wie in App und Mail.
 async function pickCardSponsors(seedStr) {
   try {
     if (typeof sb === 'undefined' || !sb) return [];
@@ -4535,15 +4540,37 @@ async function pickCardSponsors(seedStr) {
     const prem = rows.filter(r => r.tier === 'premium').sort(bySort);
     const part = rows.filter(r => r.tier === 'partner').sort(bySort);
     const reg  = rows.filter(r => r.tier === 'regional').sort(bySort);
-    const wP = 3, wR = 1, maxw = Math.max(wP, wR), playlist = [];
-    for (let pass = 1; pass <= maxw; pass++) {
-      if (pass <= wP) part.forEach(c => playlist.push(c));
-      if (pass <= wR) reg.forEach(c => playlist.push(c));
+    let wM = 15, wP = 3, wR = 1;
+    try {
+      const cfg = await sb.from('app_settings')
+        .select('app_weight_premium,app_weight_partner,app_weight_regional').eq('id', true).single();
+      if (cfg && cfg.data) {
+        wM = Number(cfg.data.app_weight_premium) || 15;
+        wP = Number(cfg.data.app_weight_partner) || 3;
+        wR = Number(cfg.data.app_weight_regional) || 1;
+      }
+    } catch(e) {}
+    const playlist = [];
+    const pushWeighted = (list, weight) => {
+      for (let i = 0; i < Math.max(Number(weight) || 0, 0); i++) list.forEach(c => playlist.push(c));
+    };
+    pushWeighted(prem, wM);
+    pushWeighted(part, wP);
+    pushWeighted(reg,  wR);
+    if (!playlist.length) {
+      pushWeighted(part, 3);
+      pushWeighted(reg,  1);
     }
     let h = 0; for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) >>> 0;
-    const out = [];
-    if (prem[0]) out.push(prem[0]);
-    if (playlist.length) out.push(playlist[h % playlist.length]);
+    if (!playlist.length) return [];
+    const first = playlist[h % playlist.length];
+    let second = null;
+    for (let step = 1; step < playlist.length + 1; step++) {
+      const cand = playlist[(h + step) % playlist.length];
+      if (cand !== first) { second = cand; break; }
+    }
+    let out = [first, second].filter(Boolean);
+    if (out[1]?.tier === 'premium' && out[0]?.tier !== 'premium') out = [out[1], out[0]];
     return out;
   } catch (e) { return []; }
 }
@@ -4588,9 +4615,13 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
     await document.fonts.ready;
   } catch (e) { /* Fallback-Fonts sind ok */ }
 
+  // 2× rendern -> auf großen (Retina-)Displays gestochen scharf. Alle
+  // Koordinaten bleiben in „logischen" Einheiten (ctx.scale übernimmt den Rest).
+  const S = 2;
   const cv = document.createElement('canvas');
-  cv.width = W; cv.height = H;
+  cv.width = W * S; cv.height = H * S;
   const ctx = cv.getContext('2d');
+  ctx.scale(S, S);
 
   // Hintergrund
   ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
@@ -6227,13 +6258,14 @@ async function loadAdminSponsors() {
 async function loadSponsorWeights() {
   try {
     const { data, error } = await sb.from('app_settings')
-      .select('mail_weight_partner, mail_weight_regional').eq('id', true).single();
+      .select('mail_weight_premium, mail_weight_partner, mail_weight_regional').eq('id', true).single();
     if (error) throw error;
     if (data) {
+      document.getElementById('spWPremium').value = data.mail_weight_premium || 15;
       document.getElementById('spWPartner').value  = data.mail_weight_partner;
       document.getElementById('spWRegional').value = data.mail_weight_regional;
     }
-  } catch(e) { /* Standardwerte 3 / 1 bleiben stehen */ }
+  } catch(e) { /* Standardwerte 15 / 3 / 1 bleiben stehen */ }
 }
 
 function sponsorPreviewFile() {
@@ -6336,13 +6368,14 @@ async function deleteSponsor(id) {
 }
 
 async function saveSponsorWeights() {
+  const m = parseInt(document.getElementById('spWPremium').value) || 0;
   const p = parseInt(document.getElementById('spWPartner').value) || 0;
   const r = parseInt(document.getElementById('spWRegional').value) || 0;
-  if (p < 1 || r < 1) { alert('Gewichte müssen mindestens 1 sein.'); return; }
+  if (m < 1 || p < 1 || r < 1) { alert('Gewichte müssen mindestens 1 sein.'); return; }
   try {
-    const { error } = await sb.rpc('admin_update_sponsor_settings', { p_partner_weight: p, p_regional_weight: r });
+    const { error } = await sb.rpc('admin_update_sponsor_settings', { p_premium_weight: m, p_partner_weight: p, p_regional_weight: r });
     if (error) throw error;
-    showToast('Mail-Häufigkeit gespeichert.');
+    showToast('Digitale Häufigkeit gespeichert.');
   } catch(e) {
     alert('Speichern fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
   }
@@ -10955,19 +10988,18 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 
 <!-- ══ SPONSOREN-ANZEIGE (Skript 24/25) ══
      Liest die aktiven Sponsoren aus der öffentlichen Sicht sponsors_public
-     (funktioniert auch ohne Login, für den Splash). Premium immer auf Home,
-     Partner + Regional rotieren 3:1 über Buchen / Spielen / Guthaben / Abo.
+     (funktioniert auch ohne Login, für den Splash). Premium bleibt exklusiv
+     auf Home; in den App-Kacheln rotieren Premium / Partner / Regional
+     fair gewichtet 15:3:1 (= 5:1:0,33).
      Reine Anzeige – bei jedem Fehler bleibt die App normal. -->
 <style>
 .pbsp-slot{margin:8px 0 22px;}
 .pbsp-kicker{font-family:"Space Grotesk","Arial Narrow","Impact",sans-serif;font-weight:700;font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:#7A7368;margin:0 0 8px 2px;}
 .pbsp-tile{display:inline-flex;align-items:center;justify-content:center;width:270px;height:123px;padding:0 22px;background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:14px;}
 .pbsp-tile img{max-height:70px;max-width:196px;width:auto;height:auto;object-fit:contain;display:block;}
-.pbsp-tile.pbsp-prem{width:auto;height:84px;padding:0 26px;}
-.pbsp-tile.pbsp-prem img{max-height:46px;max-width:none;}
 .pbsp-duo{display:flex;gap:12px;align-items:stretch;max-width:560px;}
-.pbsp-duo .pbsp-tile{flex:1 1 0;min-width:0;width:auto;height:116px;padding:0 16px;}
-.pbsp-duo .pbsp-tile img{max-height:62px;max-width:88%;}
+.pbsp-duo .pbsp-tile{flex:1 1 0;min-width:0;width:auto;height:123px;padding:0 16px;}
+.pbsp-duo .pbsp-tile img{max-height:70px;max-width:88%;}
 #pbSplashSponsor{border-top:1px solid #3A362F;margin-top:38px;padding-top:26px;}
 #pbSplashSponsor .pbsp-kicker{color:#8A8276;letter-spacing:0.2em;font-weight:600;margin-bottom:16px;}
 .pb-splash-inner{padding-bottom:clamp(40px,4.5vh,60px);}
@@ -10987,11 +11019,21 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var t=tile(s, prem);
     el.innerHTML = t ? ('<div class="pbsp-kicker">'+kicker+'</div>'+t) : '';
   }
-  function fillDuo(id, kicker, partner, supporter){
+  function fillDuo(id, kicker, left, right){
     var el=document.getElementById(id); if(!el) return;
-    var a=tile(partner,false), b=tile(supporter,false);
+    var a=tile(left,false), b=tile(right,false);
     var inner=(a||b) ? ('<div class="pbsp-duo">'+a+b+'</div>') : '';
     el.innerHTML = inner ? ('<div class="pbsp-kicker">'+kicker+'</div>'+inner) : '';
+  }
+  function pushWeighted(list, rows, weight){
+    var w=Math.max(parseInt(weight,10)||0,0);
+    for(var i=0;i<w;i++) rows.forEach(function(c){ list.push(c); });
+  }
+  function sortPremiumLeft(pair){
+    if(pair[1] && pair[1].tier==='premium' && !(pair[0] && pair[0].tier==='premium')){
+      return [pair[1], pair[0]];
+    }
+    return pair;
   }
   async function loadSponsorsDisplay(){
     try{
@@ -11008,12 +11050,23 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       // Splash: Premium exklusiv.
       if(prem.length) fill('pbSplashSponsor', 'Präsentiert von unserem Premium-Partner', prem[0], true);
 
-      // Gewichtete Reihum-Liste 3:1 (Partner 3x, Regional 1x je Logo).
-      // Spiegelt app_settings.app_weight_partner/regional (dort im Admin änderbar).
-      var wP=3, wR=1, maxw=Math.max(wP,wR), playlist=[];
-      for(var pass=1; pass<=maxw; pass++){
-        if(pass<=wP) part.forEach(function(c){ playlist.push(c); });
-        if(pass<=wR) reg.forEach(function(c){  playlist.push(c); });
+      // Gewichtete Reihum-Liste 15:3:1 (= 5:1:0,33 je Unternehmen).
+      var wM=15, wP=3, wR=1, playlist=[];
+      try{
+        var cfg = await sb.from('app_settings')
+          .select('app_weight_premium,app_weight_partner,app_weight_regional').eq('id', true).single();
+        if(cfg && cfg.data){
+          wM = Number(cfg.data.app_weight_premium) || 15;
+          wP = Number(cfg.data.app_weight_partner) || 3;
+          wR = Number(cfg.data.app_weight_regional) || 1;
+        }
+      }catch(e){}
+      pushWeighted(playlist, prem, wM);
+      pushWeighted(playlist, part, wP);
+      pushWeighted(playlist, reg,  wR);
+      if(!playlist.length){
+        pushWeighted(playlist, part, 3);
+        pushWeighted(playlist, reg,  1);
       }
       var N=playlist.length;
       // Zwei verschiedene Logos ab Position base; rotiert pro Seitenaufruf über idx.
@@ -11022,8 +11075,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         if(N===1) return [playlist[0], null];
         var m=function(i){ return playlist[((i%N)+N)%N]; };
         var a=m(base), b=m(base+1);
-        if(b===a) b=m(base+2);
-        return [a,b];
+        for(var step=2; b===a && step<N+2; step++) b=m(base+step);
+        if(b===a) b=null;
+        return sortPremiumLeft([a,b]);
       }
       if(N){
         var q=Math.floor(N/4)||1, base=idx*2;
