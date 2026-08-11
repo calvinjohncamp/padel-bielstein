@@ -627,7 +627,7 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .play-card-title { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray); margin-bottom: 14px; }
 .play-booking-item { display: flex; flex-direction: column; align-items: stretch; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .play-booking-item:last-child { border-bottom: none; }
-.play-booking-head { display: flex; align-items: center; justify-content: space-between; }
+.play-booking-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; row-gap: 10px; }
 .play-booking-info { display: flex; flex-direction: column; gap: 3px; }
 .play-booking-court { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 800; font-size: 1rem; color: var(--gold); }
 .play-booking-time { font-size: 0.82rem; color: #b0b0b0; }
@@ -4693,9 +4693,9 @@ async function renderMyBookingsLists() {
           <div class="upcoming-item-date">${dateStr} · ${timeStr} Uhr</div>
           <div class="upcoming-item-note">Court #${item.court}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
         </div>
+        ${informButtonHtml(item.court, item.date, item.hour_start, item.duration, isAbo ? 'abo' : 'single')}
         <span class="upcoming-kind">${isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>
       </div>
-      ${informButtonHtml(item.court, item.date, item.hour_start, item.duration, isAbo ? 'abo' : 'single')}
     </div>`;
   }).join('');
 }
@@ -5232,9 +5232,9 @@ async function renderPlaySection() {
             <div class="play-booking-court">Court #${b.court}${aboTag}</div>
             <div class="play-booking-time">${h1} – ${h2} Uhr</div>
           </div>
+          ${informButtonHtml(b.court, dISO, b.hour_start, b.duration, b.isAbo ? 'abo' : 'single')}
           <span class="${badgeCls}">${badgeTxt}</span>
         </div>
-        ${informButtonHtml(b.court, dISO, b.hour_start, b.duration, b.isAbo ? 'abo' : 'single')}
       </div>`;
   }).join('');
   }
@@ -10274,7 +10274,8 @@ body.bielstein-theme #upcomingBookingsCard {
   background: #F6F1E7; color: #1C1A17;
 }
 .upcoming-item-head {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap; row-gap: 10px;
 }
 .upcoming-item-main { min-width: 0; }
 .upcoming-item-date {
@@ -10289,13 +10290,14 @@ body.bielstein-theme #upcomingBookingsCard {
   font: 700 10.5px/1 "Space Grotesk",sans-serif; letter-spacing: .04em;
   text-transform: uppercase;
 }
-/* „Spieler informieren" – identisch in Heute- und Demnächst-Kachel. */
+/* „Spieler informieren" – kompakter Button (nur textbreit), in der Kopfzeile
+   zwischen Datum links und Badge rechts. */
 .inform-btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%; margin-top: 12px; padding: 10px 12px;
-  border: 1.5px solid #FF5A36; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  flex: 0 0 auto; white-space: nowrap; padding: 8px 14px;
+  border: 1.5px solid #FF5A36; border-radius: 999px;
   background: #FFFFFF; color: #FF5A36;
-  font: 700 12.5px/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .03em;
+  font: 700 12px/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .03em;
   cursor: pointer; -webkit-tap-highlight-color: transparent;
   transition: background .15s, color .15s;
 }
