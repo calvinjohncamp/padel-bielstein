@@ -715,6 +715,22 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .scroll-top-btn { position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; width: 48px; height: 48px; border-radius: 50%; border: none; background: #FF5A36; color: #1C1A17; font-family: "Space Grotesk","Arial Narrow",sans-serif; font-size: 1.7rem; font-weight: 900; line-height: 1; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.28); opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .22s ease, transform .22s ease, background .18s; display: flex; align-items: center; justify-content: center; }
 .scroll-top-btn.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 .scroll-top-btn:hover { background: #ff4a22; }
+/* ── Exklusiv-Frühbucher-Kachel (Abo-Seite), App-CI, dezenter Rahmen ── */
+.eb-banner { display:none; position:relative; overflow:hidden; margin:0 0 22px; padding:22px 24px 18px; border-radius:16px; background:#1C1A17; color:#F6F1E7; border:1.5px solid #3A352E; box-shadow:0 12px 34px rgba(28,26,23,.18); }
+.eb-banner.show { display:block; animation:fadeUp .25s ease; }
+.eb-banner::before { content:""; position:absolute; left:0; top:18px; bottom:18px; width:3px; border-radius:0 3px 3px 0; background:#FF5A36; }
+.eb-kicker { display:block; font-family:"Space Grotesk","Arial Narrow",sans-serif; font-weight:800; font-size:.7rem; letter-spacing:.2em; text-transform:uppercase; color:#FF5A36; margin:0 0 9px; }
+.eb-title { font-family:"Space Grotesk","Arial Narrow",sans-serif; font-weight:900; font-size:1.32rem; line-height:1.1; letter-spacing:.01em; color:#F6F1E7; margin:0 0 11px; }
+.eb-body { font-family:"Manrope","Arial",sans-serif; font-weight:500; font-size:.92rem; line-height:1.55; color:#CBC3B6; margin:0 0 16px; }
+.eb-body strong { color:#F6F1E7; font-weight:700; }
+.eb-body .eb-hi { color:#FF5A36; font-weight:800; white-space:nowrap; }
+.eb-meta { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 15px; }
+.eb-meta-item { flex:1 1 150px; background:#242019; border:1px solid #332F27; border-radius:11px; padding:11px 14px; }
+.eb-meta-lbl { display:block; font:700 .6rem/1 "Space Grotesk",sans-serif; letter-spacing:.13em; text-transform:uppercase; color:#8A867E; margin-bottom:6px; }
+.eb-meta-val { font:800 1.02rem/1 "Space Grotesk",sans-serif; color:#F6F1E7; }
+.eb-foot { font-family:"Manrope","Arial",sans-serif; font-weight:500; font-size:.76rem; line-height:1.5; color:#8A867E; border-top:1px solid #2A2723; padding-top:12px; }
+.eb-adm-lbl { display:block; font:700 11px "Space Grotesk",sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#7A7368; margin-bottom:6px; }
+.eb-adm-inp { width:100%; padding:9px 11px; border:1.5px solid #E2DACB; border-radius:8px; font:500 14px "Manrope",sans-serif; background:#fff; color:#1C1A17; box-sizing:border-box; }
 /* ── PARTNER-SEITE (Galerie im Look der Eingangs-Displays) ── */
 .pbp-board { background:#1C1A17; border-radius:18px; color:#F6F1E7; padding:clamp(18px,3.5vw,40px) clamp(16px,3.5vw,36px) clamp(24px,4vw,44px); }
 .pbp-head { display:flex; align-items:center; gap:clamp(21px,4.5vw,45px); padding:2px 0 clamp(12px,1.9vw,20px); }
@@ -1276,6 +1292,11 @@ main {
       <button type="button" class="pb-splash-cta" id="pbSplashCta"><span>Jetzt loslegen</span><span aria-hidden="true">→</span></button>
       <p class="pb-splash-foot">Ab Frühjahr 2027 in Bielstein</p>
       <div id="pbSplashSponsor"></div>
+      <!-- Dezenter Frühbucher-Hinweis (nur bei aktiver Phase/Vorschau sichtbar) -->
+      <div class="pb-splash-early" id="pbSplashEarly">
+        <div class="kick">Exklusiv · Frühbucherphase</div>
+        <div class="txt">Jetzt <strong>2 Jahre</strong> deinen festen Court sichern — <span class="hi">25&nbsp;% Sonder-Rabatt</span>. Nur für <strong>TFB-Mitglieder &amp; Partner</strong>, bis <span id="pbSplashEbUntil">—</span>.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1613,6 +1634,17 @@ main {
 
   <!-- ABO MODE -->
   <div id="modeAbo" style="display:none;">
+    <!-- Exklusiv-Frühbucherphase: nur sichtbar, wenn im Admin aktiv + im Zeitfenster -->
+    <div class="eb-banner" id="earlybirdBanner">
+      <span class="eb-kicker">Exklusiv · Frühbucherphase</span>
+      <div class="eb-title">Sichere dir 2 Jahre deinen festen Court</div>
+      <div class="eb-body">Nur für <strong>TFB-Mitglieder &amp; Partner</strong>: jetzt vorab die begehrtesten wöchentlich festen Spielzeiten für <strong>2 Jahre</strong> reservieren — mit einmaligem <span class="eb-hi">25&nbsp;% Sonder-Start-Rabatt</span> statt der regulären 10&nbsp;%.</div>
+      <div class="eb-meta">
+        <div class="eb-meta-item"><span class="eb-meta-lbl">Aktion läuft bis</span><span class="eb-meta-val" id="ebUntil">—</span></div>
+        <div class="eb-meta-item"><span class="eb-meta-lbl">Saisonstart</span><span class="eb-meta-val" id="ebStart">—</span></div>
+      </div>
+      <div class="eb-foot">Wer zuerst bucht, sichert sich die besten Zeiten. Ab 2027 gilt der reguläre 10&nbsp;%-Mitgliederrabatt.</div>
+    </div>
     <div class="step-row"><div class="step-num">1</div><div class="step-lbl">Wochentag wählen</div></div>
     <div class="weekday-row gap">
       <button class="wd-btn" onclick="setWd(1)" id="wd1">Mo</button>
@@ -2236,6 +2268,39 @@ main {
 
     <!-- ── SPONSOREN (Skript 24: sponsors + admin_* Funktionen) ── -->
     <div id="adminSponsors" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-title">⏱ Exklusiv-Frühbucherphase (2-Jahres-Abos)</div>
+        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
+          Befristetes Fenster, in dem <strong>nur TFB-Mitglieder + Partner</strong> ein <strong>2-Jahres-Abo</strong> mit Sonder-Rabatt abschließen können (Einmalzahlung vorab). Solange „Aus", ändert sich für Nutzer nichts. Die Frühbucher-Kachel erscheint automatisch nur im eingestellten Zeitraum.
+        </div>
+        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label class="eb-adm-lbl">Start der Phase</label><input type="datetime-local" id="ebAdmStart" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl">Ende der Phase</label><input type="datetime-local" id="ebAdmEnd" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl">Sonder-Rabatt (%)</label><input type="number" id="ebAdmDiscount" min="0" max="100" step="1" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl">Laufzeit (Monate)</label><input type="number" id="ebAdmTerm" min="1" step="1" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl">Saisonstart (Abo-Beginn)</label><input type="date" id="ebAdmAboStart" class="eb-adm-inp"></div>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:14px;">
+            <div style="flex:0 0 auto;"><label class="eb-adm-lbl">Phase</label>
+              <div class="seg-toggle">
+                <button type="button" id="ebAdmOff" class="seg-btn seg-active" onclick="setEarlybirdEnabled(false)">Aus</button>
+                <button type="button" id="ebAdmOn" class="seg-btn" onclick="setEarlybirdEnabled(true)">An</button>
+              </div>
+            </div>
+            <button type="button" class="admin-save-btn" onclick="saveEarlybird()" style="margin-left:auto;">Speichern</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #EFE9DC;">
+            <div style="flex:1 1 220px;font-size:0.78rem;color:#7A7368;line-height:1.45;">
+              <strong>Vorschau (für Präsentation):</strong> zeigt die Kachel <em>sofort</em> an – unabhängig vom Zeitraum, ohne Kauf-Funktion. Wirkt ohne „Speichern". Danach wieder ausschalten.
+            </div>
+            <div class="seg-toggle">
+              <button type="button" id="ebPrevOff" class="seg-btn seg-active" onclick="setEarlybirdPreview(false)">Aus</button>
+              <button type="button" id="ebPrevOn"  class="seg-btn" onclick="setEarlybirdPreview(true)">Kachel zeigen</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="admin-section">
         <div class="admin-section-title">Partner-Seite (5. Tab)</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -10491,6 +10556,15 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pb-splash-foot {
   font-family: "Manrope",sans-serif; text-align: center; font-size: 13px; color: #7A7368; margin: 16px 0 0;
 }
+/* Dezente Frühbucher-Karte auf dem Splash: unten, auf großen Screens rechts –
+   verdeckt bewusst nicht das Logo/Branding oben. Nur bei aktiver Phase/Vorschau. */
+.pb-splash-early { display: none; margin: 18px 0 0; padding: 13px 16px; border: 1px solid #3A352E; border-radius: 12px; background: rgba(246,241,231,.04); }
+.pb-splash-early.show { display: block; }
+.pb-splash-early .kick { font: 800 .6rem/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .18em; text-transform: uppercase; color: #FF5A36; margin-bottom: 6px; }
+.pb-splash-early .txt { font: 500 .82rem/1.45 "Manrope","Arial",sans-serif; color: #B8B0A2; }
+.pb-splash-early .txt strong { color: #F6F1E7; font-weight: 700; }
+.pb-splash-early .txt .hi { color: #FF5A36; font-weight: 800; white-space: nowrap; }
+@media (min-width: 700px) { .pb-splash-early { max-width: 360px; margin-left: auto; } }
 </style>
 
 <!-- Redesign 2027 · Navigation, Account-Steuerung und Splash-Ablauf.
@@ -10775,6 +10849,92 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     }catch(e){
       alert('Umschalten fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler'));
     }
+  };
+
+  /* Exklusiv-Frühbucherphase: Konfig aus app_flags lesen und die Kachel auf der
+     Abo-Seite schalten. Defensiv: fehlt Skript 41 (Spalten), passiert nichts. */
+  window.__earlybird = { active:false, discount:25, termMonths:24 };
+  window.ebFmtDate = function(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return '—'; } };
+  window.loadEarlybird = async function(){
+    try{
+      if(typeof sb==='undefined' || !sb) return;
+      var r=await sb.from('app_flags').select('earlybird_active,earlybird_enabled,earlybird_preview,earlybird_start,earlybird_end,earlybird_abo_start,earlybird_discount_pct,earlybird_term_months').maybeSingle();
+      if(r.error || !r.data) return;
+      var d=r.data;
+      window.__earlybird = {
+        active: !!d.earlybird_active, enabled: !!d.earlybird_enabled, preview: !!d.earlybird_preview,
+        start: d.earlybird_start, end: d.earlybird_end, aboStart: d.earlybird_abo_start,
+        discount: Number(d.earlybird_discount_pct)||25, termMonths: Number(d.earlybird_term_months)||24
+      };
+      var b=document.getElementById('earlybirdBanner');
+      if(b){
+        // Kachel zeigen, wenn die Phase aktiv ist ODER die manuelle Vorschau an ist.
+        b.classList.toggle('show', window.__earlybird.active || window.__earlybird.preview);
+        var u=document.getElementById('ebUntil'); if(u) u.textContent=window.ebFmtDate(window.__earlybird.end);
+        var s=document.getElementById('ebStart'); if(s) s.textContent=window.ebFmtDate(window.__earlybird.aboStart);
+      }
+      // Dezente Frühbucher-Karte auf der Splash-Seite (unten/rechts).
+      var sp=document.getElementById('pbSplashEarly');
+      if(sp){
+        sp.classList.toggle('show', window.__earlybird.active || window.__earlybird.preview);
+        var su=document.getElementById('pbSplashEbUntil'); if(su) su.textContent=window.ebFmtDate(window.__earlybird.end);
+      }
+      if(typeof window.fillEarlybirdAdmin==='function') window.fillEarlybirdAdmin();
+    }catch(e){}
+  };
+
+  // ── Admin-Konfiguration der Frühbucherphase ──
+  window.__ebAdmEnabled = false;
+  window.refreshEbToggle = function(on){
+    var off=document.getElementById('ebAdmOff'), onb=document.getElementById('ebAdmOn');
+    if(!off||!onb) return;
+    off.classList.toggle('seg-active', !on); onb.classList.toggle('seg-active', !!on);
+  };
+  window.setEarlybirdEnabled = function(on){ window.__ebAdmEnabled=!!on; window.refreshEbToggle(!!on); };
+  window.fillEarlybirdAdmin = function(){
+    var eb=window.__earlybird||{};
+    var p=function(n){ return String(n).padStart(2,'0'); };
+    var toLocal=function(iso){ if(!iso) return ''; var d=new Date(iso); if(isNaN(d.getTime())) return ''; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes()); };
+    var set=function(id,v){ var el=document.getElementById(id); if(el) el.value=v; };
+    set('ebAdmStart', toLocal(eb.start));
+    set('ebAdmEnd', toLocal(eb.end));
+    set('ebAdmDiscount', eb.discount!=null?eb.discount:25);
+    set('ebAdmTerm', eb.termMonths!=null?eb.termMonths:24);
+    set('ebAdmAboStart', eb.aboStart? String(eb.aboStart).slice(0,10):'');
+    window.__ebAdmEnabled=!!eb.enabled; window.refreshEbToggle(!!eb.enabled);
+    if(typeof window.refreshEbPreviewToggle==='function') window.refreshEbPreviewToggle(!!eb.preview);
+  };
+  window.saveEarlybird = async function(){
+    try{
+      var g=function(id){ var el=document.getElementById(id); return el?el.value:''; };
+      var sv=g('ebAdmStart'), ev=g('ebAdmEnd');
+      var r=await sb.rpc('admin_set_earlybird', {
+        p_enabled: !!window.__ebAdmEnabled,
+        p_start: sv? new Date(sv).toISOString() : null,
+        p_end:   ev? new Date(ev).toISOString() : null,
+        p_discount_pct: Number(g('ebAdmDiscount'))||null,
+        p_abo_start: g('ebAdmAboStart')||null,
+        p_term_months: Number(g('ebAdmTerm'))||null
+      });
+      if(r.error) throw r.error;
+      if(typeof showToast==='function') showToast('Frühbucherphase gespeichert.');
+      if(typeof loadEarlybird==='function') await loadEarlybird();
+    }catch(e){ alert('Speichern fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
+  };
+  window.refreshEbPreviewToggle = function(on){
+    var off=document.getElementById('ebPrevOff'), onb=document.getElementById('ebPrevOn');
+    if(!off||!onb) return;
+    off.classList.toggle('seg-active', !on); onb.classList.toggle('seg-active', !!on);
+  };
+  // Ein-Klick: Kachel sofort zeigen/ausblenden (ohne Speichern), für Präsentation.
+  window.setEarlybirdPreview = async function(on){
+    on=!!on; window.refreshEbPreviewToggle(on);
+    try{
+      var r=await sb.rpc('admin_set_earlybird_preview', { p_on: on });
+      if(r.error) throw r.error;
+      if(typeof showToast==='function') showToast(on ? 'Vorschau an – die Kachel wird jetzt gezeigt.' : 'Vorschau aus.');
+      if(typeof loadEarlybird==='function') await loadEarlybird();
+    }catch(e){ window.refreshEbPreviewToggle(!on); alert('Vorschau schalten fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
   };
 
   function initials(name){
@@ -11106,7 +11266,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
     }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
   }
-  function initSponsorArea(){ loadSponsorsDisplay(); if(typeof loadPartnerFlag==='function') loadPartnerFlag(); if(typeof loadShareCardTheme==='function') loadShareCardTheme(); }
+  function initSponsorArea(){ loadSponsorsDisplay(); if(typeof loadPartnerFlag==='function') loadPartnerFlag(); if(typeof loadShareCardTheme==='function') loadShareCardTheme(); if(typeof loadEarlybird==='function') loadEarlybird(); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initSponsorArea);
   else initSponsorArea();
 })();
