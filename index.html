@@ -729,18 +729,23 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .pbp-lbl { flex:0 0 auto; font-family:"Space Grotesk","Arial Narrow",sans-serif; font-weight:800; color:#FF5A36; text-transform:uppercase; letter-spacing:.16em; font-size:clamp(12px,1.6vw,16px); white-space:nowrap; }
 .pbp-thanks .pbp-lbl { font-weight:700; letter-spacing:.13em; font-size:clamp(11px,1.5vw,15px); text-align:center; }
 .pbp-premwrap { margin-bottom:2px; }
-.pbp-tile { background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,.28); }
+.pbp-tile { background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,.28); max-width:100%; box-sizing:border-box; }
 .pbp-tile img { max-width:82%; max-height:66%; width:auto; height:auto; object-fit:contain; display:block; }
-.pbp-tile-prem { aspect-ratio:7.4/1; min-height:92px; }
+/* width:100% pinnt die Breite -> aspect-ratio darf daraus NICHT (Safari-Bug)
+   eine zu große Breite ableiten und rechts aus dem Board ragen. */
+.pbp-tile-prem { aspect-ratio:7.4/1; min-height:92px; width:100%; }
 .pbp-tile-prem img { max-width:34%; max-height:58%; }
 .pbp-grid { display:grid; gap:clamp(9px,1.3vw,15px); }
-.pbp-grid .pbp-tile { aspect-ratio:2.32/1; box-sizing:border-box; padding:11% 14%; }
-/* Robust in JEDEM Browser (auch Safari/iPad): Logo füllt die inset Kachelfläche
-   per object-fit statt Prozent-max-height gegen eine aspect-ratio-Höhe. */
-.pbp-grid .pbp-tile img { max-width:none; max-height:none; width:100%; height:100%; object-fit:contain; }
+/* Feste Kachelhöhe je Spalten-Layout (statt aspect-ratio). Nur so lösen sich
+   die Prozent-max-Werte des Logos sauber auf – auch in Safari/iPad (der Bug
+   betrifft NUR %-max-height gegen eine aspect-ratio-Höhe, nicht gegen eine
+   feste Höhe). Dadurch werden QUADRATISCHE Logos (per max-height) UND BREITE
+   Logos (per max-width) ausgewogen begrenzt – wie in den Buchungs-Kacheln. */
+.pbp-grid .pbp-tile { height:clamp(66px,6.4vw,108px); box-sizing:border-box; padding:0; }
+.pbp-grid .pbp-tile img { max-width:80%; max-height:62%; width:auto; height:auto; object-fit:contain; }
 .pbp-grid-partner, .pbp-grid-regional { grid-template-columns:repeat(6,1fr); }
-@media (max-width:820px){ .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(3,1fr); } .pbp-tile-prem img { max-width:52%; } .pbp-wtop { white-space:normal; } }
-@media (max-width:520px){ .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(2,1fr); } .pbp-tile-prem img { max-width:64%; } .pbp-tile-prem { aspect-ratio:4.6/1; } .pbp-head { gap:14px; } }
+@media (max-width:820px){ .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(3,1fr); } .pbp-grid .pbp-tile { height:96px; } .pbp-tile-prem img { max-width:52%; } .pbp-wtop { white-space:normal; } }
+@media (max-width:520px){ .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(2,1fr); } .pbp-grid .pbp-tile { height:66px; } .pbp-tile-prem img { max-width:64%; } .pbp-tile-prem { aspect-ratio:4.6/1; } .pbp-head { gap:14px; } }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
 .door-log-icon { font-size: 1rem; }
