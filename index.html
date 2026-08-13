@@ -724,10 +724,12 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .eb-body { font-family:"Manrope","Arial",sans-serif; font-weight:500; font-size:.92rem; line-height:1.55; color:#CBC3B6; margin:0 0 16px; }
 .eb-body strong { color:#F6F1E7; font-weight:700; }
 .eb-body .eb-hi { color:#FF5A36; font-weight:800; white-space:nowrap; }
-.eb-meta { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 15px; }
+.eb-body-2 { margin-top:-6px; }
+.eb-meta { display:flex; flex-wrap:wrap; align-items:stretch; gap:10px; margin:0 0 4px; }
 .eb-meta-item { flex:1 1 150px; background:#242019; border:1px solid #332F27; border-radius:11px; padding:11px 14px; }
 .eb-meta-lbl { display:block; font:700 .6rem/1 "Space Grotesk",sans-serif; letter-spacing:.13em; text-transform:uppercase; color:#8A867E; margin-bottom:6px; }
 .eb-meta-val { font:800 1.02rem/1 "Space Grotesk",sans-serif; color:#F6F1E7; }
+.eb-meta-note { flex:1 1 190px; align-self:center; font:500 .76rem/1.42 "Manrope","Arial",sans-serif; color:#8A867E; }
 .eb-foot { font-family:"Manrope","Arial",sans-serif; font-weight:500; font-size:.76rem; line-height:1.5; color:#8A867E; border-top:1px solid #2A2723; padding-top:12px; }
 .eb-adm-lbl { display:block; font:700 11px "Space Grotesk",sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#7A7368; margin-bottom:6px; }
 .eb-adm-inp { width:100%; padding:9px 11px; border:1.5px solid #E2DACB; border-radius:8px; font:500 14px "Manrope",sans-serif; background:#fff; color:#1C1A17; box-sizing:border-box; }
@@ -1291,11 +1293,14 @@ main {
     <div>
       <button type="button" class="pb-splash-cta" id="pbSplashCta"><span>Jetzt loslegen</span><span aria-hidden="true">→</span></button>
       <p class="pb-splash-foot">Ab Frühjahr 2027 in Bielstein</p>
-      <div id="pbSplashSponsor"></div>
-      <!-- Dezenter Frühbucher-Hinweis (nur bei aktiver Phase/Vorschau sichtbar) -->
-      <div class="pb-splash-early" id="pbSplashEarly">
-        <div class="kick">Exklusiv · Frühbucherphase</div>
-        <div class="txt">Jetzt <strong>2 Jahre</strong> deinen festen Court sichern — <span class="hi">25&nbsp;% Sonder-Rabatt</span>. Nur für <strong>TFB-Mitglieder &amp; Partner</strong>, bis <span id="pbSplashEbUntil">—</span>.</div>
+      <!-- Premium-Partner + Frühbucher-Kachel nebeneinander (gleiche Größe).
+           Die Frühbucher-Kachel erscheint nur bei aktiver Phase/Vorschau. -->
+      <div class="pb-splash-duo">
+        <div id="pbSplashSponsor"></div>
+        <div class="pb-splash-early" id="pbSplashEarly">
+          <div class="kick">Exklusiv · Frühbucherphase</div>
+          <div class="txt">Jetzt <strong>2 Jahre</strong> deinen festen Platz sichern — <span class="hi">25&nbsp;% Start-Rabatt</span>. Nur für <strong>TFB-Mitglieder &amp; Partner</strong>, bis <span id="pbSplashEbUntil">—</span>.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1637,13 +1642,14 @@ main {
     <!-- Exklusiv-Frühbucherphase: nur sichtbar, wenn im Admin aktiv + im Zeitfenster -->
     <div class="eb-banner" id="earlybirdBanner">
       <span class="eb-kicker">Exklusiv · Frühbucherphase</span>
-      <div class="eb-title">Sichere dir 2 Jahre deinen festen Court</div>
-      <div class="eb-body">Nur für <strong>TFB-Mitglieder &amp; Partner</strong>: jetzt vorab die begehrtesten wöchentlich festen Spielzeiten für <strong>2 Jahre</strong> reservieren — mit einmaligem <span class="eb-hi">25&nbsp;% Sonder-Start-Rabatt</span> statt der regulären 10&nbsp;%.</div>
+      <div class="eb-title">Sichere dir für 2 Jahre deinen festen Platz</div>
+      <div class="eb-body">Nur für <strong>TFB-Mitglieder &amp; Partner</strong>: jetzt vorab die begehrtesten Spielzeiten reservieren — mit dem einmaligen <span class="eb-hi">25&nbsp;% Start-Rabatt</span> anstatt der regulären 10&nbsp;%.</div>
+      <div class="eb-body eb-body-2"><strong>Dieser Court gehört für 2 Jahre</strong> an den von dir gebuchten Tagen und zu den von dir gebuchten Stunden <strong>allein dir.</strong></div>
       <div class="eb-meta">
         <div class="eb-meta-item"><span class="eb-meta-lbl">Aktion läuft bis</span><span class="eb-meta-val" id="ebUntil">—</span></div>
-        <div class="eb-meta-item"><span class="eb-meta-lbl">Saisonstart</span><span class="eb-meta-val" id="ebStart">—</span></div>
+        <div class="eb-meta-item"><span class="eb-meta-lbl">Saisonstart (voraussichtlich)</span><span class="eb-meta-val" id="ebStart">—</span></div>
+        <div class="eb-meta-note">Dein Abo startet automatisch am Eröffnungstag unserer neuen Anlage.</div>
       </div>
-      <div class="eb-foot">Wer zuerst bucht, sichert sich die besten Zeiten. Ab 2027 gilt der reguläre 10&nbsp;%-Mitgliederrabatt.</div>
     </div>
     <div class="step-row"><div class="step-num">1</div><div class="step-lbl">Wochentag wählen</div></div>
     <div class="weekday-row gap">
@@ -10556,15 +10562,21 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pb-splash-foot {
   font-family: "Manrope",sans-serif; text-align: center; font-size: 13px; color: #7A7368; margin: 16px 0 0;
 }
-/* Dezente Frühbucher-Karte auf dem Splash: unten, auf großen Screens rechts –
-   verdeckt bewusst nicht das Logo/Branding oben. Nur bei aktiver Phase/Vorschau. */
-.pb-splash-early { display: none; margin: 18px 0 0; padding: 13px 16px; border: 1px solid #3A352E; border-radius: 12px; background: rgba(246,241,231,.04); }
-.pb-splash-early.show { display: block; }
-.pb-splash-early .kick { font: 800 .6rem/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .18em; text-transform: uppercase; color: #FF5A36; margin-bottom: 6px; }
-.pb-splash-early .txt { font: 500 .82rem/1.45 "Manrope","Arial",sans-serif; color: #B8B0A2; }
+/* Premium-Partner + Frühbucher NEBENEINANDER (gleiche Größe), App-CI-Look.
+   Rahmen/Abstand liegt am Duo, nicht mehr am Sponsor. Frühbucher nur bei Phase/Vorschau. */
+.pb-splash-duo { display: flex; gap: 14px; align-items: stretch; border-top: 1px solid #3A362F; margin-top: 38px; padding-top: 26px; }
+.pb-splash-duo > #pbSplashSponsor { border-top: 0; margin-top: 0; padding-top: 0; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.pb-splash-duo > .pb-splash-early { flex: 1 1 0; min-width: 0; }
+/* Nur wenn die Frühbucher-Kachel sichtbar ist: Premium-Tile füllt seine Spalte
+   (dann sind beide gleich groß). Sonst bleibt die Premium-Kachel natürlich. */
+.pb-splash-duo:has(.pb-splash-early.show) #pbSplashSponsor .pbsp-tile.pbsp-prem { width: 100%; height: auto; flex: 1 1 auto; }
+.pb-splash-early { display: none; flex-direction: column; justify-content: center; padding: 14px 16px; border: 1px solid #3A352E; border-radius: 14px; background: rgba(246,241,231,.04); }
+.pb-splash-early.show { display: flex; }
+.pb-splash-early .kick { font: 800 .6rem/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #FF5A36; margin-bottom: 7px; }
+.pb-splash-early .txt { font: 500 .8rem/1.45 "Manrope","Arial",sans-serif; color: #B8B0A2; }
 .pb-splash-early .txt strong { color: #F6F1E7; font-weight: 700; }
 .pb-splash-early .txt .hi { color: #FF5A36; font-weight: 800; white-space: nowrap; }
-@media (min-width: 700px) { .pb-splash-early { max-width: 360px; margin-left: auto; } }
+@media (max-width: 560px) { .pb-splash-duo { flex-direction: column; } }
 </style>
 
 <!-- Redesign 2027 · Navigation, Account-Steuerung und Splash-Ablauf.
