@@ -2351,6 +2351,45 @@ main {
           </div>
         </div>
       </div>
+      <div class="admin-section">
+        <div class="admin-section-title">📋 „Jahresabo sichern"-Seite – Kachel oben</div>
+        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
+          Die große Frühbucher-Kachel oben auf „Jahresabo sichern". Alle Texte einzeln editierbar, Farben aus der Marken-Palette. Die <strong>Datumswerte</strong> (Aktion läuft bis / Saisonstart) kommen automatisch aus der Frühbucher-Konfiguration oben.
+        </div>
+        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:16px;">
+          <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
+            <div><label class="eb-adm-lbl">Erste Überschrift</label><input type="text" id="abKicker" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe</label><select id="abKickerColor" class="eb-adm-inp"></select></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
+            <div><label class="eb-adm-lbl">Zweite Überschrift</label><input type="text" id="abTitle" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe</label><select id="abTitleColor" class="eb-adm-inp"></select></div>
+          </div>
+          <div>
+            <label class="eb-adm-lbl" style="font-size:10px;">Fließtext &nbsp;·&nbsp; Hervorhebung mit *Sternchen*, Leerzeile = neuer Absatz</label>
+            <textarea id="abBody" rows="4" class="eb-adm-inp" style="resize:vertical;line-height:1.5;"></textarea>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Text</label><select id="abBodyColor" class="eb-adm-inp"></select></div>
+              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Hervorhebung</label><select id="abHiColor" class="eb-adm-inp"></select></div>
+            </div>
+          </div>
+          <div style="border-top:1px solid #EFE9DC;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Kachel 1 – Beschriftung</label><input type="text" id="abBox1" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Kachel 2 – Beschriftung</label><input type="text" id="abBox2" class="eb-adm-inp"></div>
+          </div>
+          <div>
+            <label class="eb-adm-lbl" style="font-size:10px;">Text neben Kachel 2</label>
+            <input type="text" id="abNote" class="eb-adm-inp">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Beschriftungen</label><select id="abLabelColor" class="eb-adm-inp"></select></div>
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Datumswerte</label><select id="abValueColor" class="eb-adm-inp"></select></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;">
+            <button type="button" class="admin-save-btn" onclick="saveAboBanner()">Jahresabo-Seite speichern</button>
+          </div>
+        </div>
+      </div>
     </div><!-- /adminAktionen -->
 
     <div id="adminSponsors" style="display:none;">
@@ -6626,6 +6665,7 @@ function setAdminTab(tab) {
   if (tab==='aktionen') {
     if (typeof loadEarlybird==='function') loadEarlybird();
     if (typeof loadSplash==='function')    loadSplash();
+    if (typeof loadAboBanner==='function') loadAboBanner();
   }
   // Wetterausfälle laden bei JEDEM Öffnen neu - hier ändern sich Zustände
   // durch Entscheidungen, ein veralteter Stand wäre irreführend.
@@ -11046,7 +11086,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   /* Editierbare Splash-Texte (Claim, Zeile unter „Jetzt loslegen", Frühbucher-
      Kachel) aus app_flags lesen und einsetzen. Defensiv: fehlt Skript 42, bleibt
      der fest verdrahtete Text stehen. Farben kommen als Paletten-Schlüssel. */
-  window.__splashPalette = { coral:'#FF5A36', cream:'#F6F1E7', beige:'#B8B0A2', ink:'#1C1A17', white:'#FFFFFF' };
+  window.__splashPalette = { coral:'#FF5A36', cream:'#F6F1E7', stone:'#CBC3B6', beige:'#B8B0A2', ash:'#8A867E', ink:'#1C1A17', white:'#FFFFFF' };
   window.pbPaletteColor = function(key, fallback){ return window.__splashPalette[key] || fallback || window.__splashPalette.beige; };
   function pbEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   // Text mit *Hervorhebung* und {bis}-Platzhalter -> sicheres HTML.
@@ -11093,7 +11133,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   };
 
   // ── Admin-Editor: Splash-Texte ──
-  window.__splashPaletteLabels = [['coral','Coral'],['cream','Cremeweiß'],['beige','Beige (gedämpft)'],['ink','Schwarz'],['white','Weiß']];
+  window.__splashPaletteLabels = [['coral','Coral'],['cream','Cremeweiß'],['stone','Hellgrau'],['beige','Beige'],['ash','Grau'],['ink','Schwarz'],['white','Weiß']];
   window.__spSubVisible = true;
   window.setSublineVisible = function(on){
     window.__spSubVisible = !!on;
@@ -11135,6 +11175,83 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(r.error) throw r.error;
       if(typeof showToast==='function') showToast('Splash-Texte gespeichert.');
       if(typeof loadSplash==='function') await loadSplash();
+    }catch(e){ alert('Speichern fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
+  };
+
+  /* Editierbare Texte der großen „Jahresabo sichern"-Kachel (#earlybirdBanner)
+     aus app_flags lesen und einsetzen. Datumswerte bleiben dynamisch (loadEarlybird).
+     Defensiv: fehlt Skript 43, bleibt der fest verdrahtete Text stehen. */
+  window.__abobanner = {};
+  window.loadAboBanner = async function(){
+    try{
+      if(typeof sb==='undefined' || !sb) return;
+      var r = await sb.from('app_flags').select('ab_kicker,ab_kicker_color,ab_title,ab_title_color,ab_body,ab_body_color,ab_hi_color,ab_box1_label,ab_box2_label,ab_note,ab_label_color,ab_value_color').maybeSingle();
+      if(r.error || !r.data) return;
+      var d = r.data; window.__abobanner = d;
+      var col = window.pbPaletteColor;
+      var q = function(sel){ return document.querySelector(sel); };
+      var k = q('#earlybirdBanner .eb-kicker');
+      if(k){ if(d.ab_kicker!=null) k.textContent=d.ab_kicker; k.style.color=col(d.ab_kicker_color,'coral'); }
+      var t = q('#earlybirdBanner .eb-title');
+      if(t){ if(d.ab_title!=null) t.textContent=d.ab_title; t.style.color=col(d.ab_title_color,'cream'); }
+      var b1 = q('#earlybirdBanner .eb-body:not(.eb-body-2)');
+      var b2 = q('#earlybirdBanner .eb-body-2');
+      if(b1){
+        var bc = col(d.ab_body_color,'stone'); var hc = col(d.ab_hi_color,'coral');
+        b1.style.color = bc;
+        b1.innerHTML = window.pbRenderMarked(d.ab_body, hc, '').replace(/\n/g,'<br>');
+      }
+      if(b2){ b2.style.display='none'; }   // 2. Absatz steckt jetzt im Fließtext-Feld
+      var lbls = document.querySelectorAll('#earlybirdBanner .eb-meta-item .eb-meta-lbl');
+      if(lbls[0] && d.ab_box1_label!=null) lbls[0].textContent=d.ab_box1_label;
+      if(lbls[1] && d.ab_box2_label!=null) lbls[1].textContent=d.ab_box2_label;
+      var note = q('#earlybirdBanner .eb-meta-note');
+      if(note && d.ab_note!=null) note.textContent=d.ab_note;
+      var lc = col(d.ab_label_color,'ash');
+      document.querySelectorAll('#earlybirdBanner .eb-meta-lbl').forEach(function(el){ el.style.color=lc; });
+      if(note) note.style.color=lc;
+      var vc = col(d.ab_value_color,'cream');
+      document.querySelectorAll('#earlybirdBanner .eb-meta-val').forEach(function(el){ el.style.color=vc; });
+      if(typeof window.fillAboBannerAdmin==='function') window.fillAboBannerAdmin();
+    }catch(e){}
+  };
+
+  // ── Admin-Editor: „Jahresabo sichern"-Kachel ──
+  window.fillAboBannerAdmin = function(){
+    var d = window.__abobanner || {};
+    ['abKickerColor','abTitleColor','abBodyColor','abHiColor','abLabelColor','abValueColor'].forEach(function(id){
+      var sel=document.getElementById(id);
+      if(sel && !sel.options.length){
+        window.__splashPaletteLabels.forEach(function(p){ var o=document.createElement('option'); o.value=p[0]; o.textContent=p[1]; sel.appendChild(o); });
+      }
+    });
+    var setv=function(id,v){ var el=document.getElementById(id); if(el && v!=null) el.value=v; };
+    setv('abKicker', d.ab_kicker);
+    setv('abTitle', d.ab_title);
+    setv('abBody', d.ab_body);
+    setv('abBox1', d.ab_box1_label);
+    setv('abBox2', d.ab_box2_label);
+    setv('abNote', d.ab_note);
+    setv('abKickerColor', d.ab_kicker_color || 'coral');
+    setv('abTitleColor', d.ab_title_color || 'cream');
+    setv('abBodyColor', d.ab_body_color || 'stone');
+    setv('abHiColor', d.ab_hi_color || 'coral');
+    setv('abLabelColor', d.ab_label_color || 'ash');
+    setv('abValueColor', d.ab_value_color || 'cream');
+  };
+  window.saveAboBanner = async function(){
+    try{
+      var g=function(id){ var el=document.getElementById(id); return el?el.value:''; };
+      var r=await sb.rpc('admin_set_abobanner', {
+        p_kicker: g('abKicker'),       p_kicker_color: g('abKickerColor'),
+        p_title:  g('abTitle'),        p_title_color:  g('abTitleColor'),
+        p_body:   g('abBody'),         p_body_color:   g('abBodyColor'),   p_hi_color: g('abHiColor'),
+        p_box1:   g('abBox1'),         p_box2:         g('abBox2'),        p_note:     g('abNote'),
+        p_label_color: g('abLabelColor'), p_value_color: g('abValueColor')
+      });
+      if(r.error) throw r.error;
+      if(typeof showToast==='function') showToast('Jahresabo-Seite gespeichert.');
+      if(typeof loadAboBanner==='function') await loadAboBanner();
     }catch(e){ alert('Speichern fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
   };
 
@@ -11527,7 +11644,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
     }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
   }
-  function initSponsorArea(){ loadSponsorsDisplay(); if(typeof loadPartnerFlag==='function') loadPartnerFlag(); if(typeof loadShareCardTheme==='function') loadShareCardTheme(); if(typeof loadEarlybird==='function') loadEarlybird(); if(typeof loadSplash==='function') loadSplash(); }
+  function initSponsorArea(){ loadSponsorsDisplay(); if(typeof loadPartnerFlag==='function') loadPartnerFlag(); if(typeof loadShareCardTheme==='function') loadShareCardTheme(); if(typeof loadEarlybird==='function') loadEarlybird(); if(typeof loadSplash==='function') loadSplash(); if(typeof loadAboBanner==='function') loadAboBanner(); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initSponsorArea);
   else initSponsorArea();
 })();
