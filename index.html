@@ -1943,11 +1943,12 @@ main {
       <div class="admin-tab"        id="atab-prices"    onclick="setAdminTab('prices')">💰 Preise</div>
       <div class="admin-tab"        id="atab-internal"  onclick="setAdminTab('internal')">📋 Interne Buchungen</div>
       <div class="admin-tab"        id="atab-bookings"  onclick="setAdminTab('bookings')">📅 Buchungsübersicht</div>
-      <div class="admin-tab"        id="atab-weather"   onclick="setAdminTab('weather')">🌧 Wetterausfälle</div>
+      <div class="admin-tab"        id="atab-aktionen"  onclick="setAdminTab('aktionen')">🎯 Aktionen</div>
       <div class="admin-tab"        id="atab-sponsors"  onclick="setAdminTab('sponsors')">🤝 Sponsoren</div>
       <div class="admin-tab"        id="atab-mis"       onclick="setAdminTab('mis')">📊 MIS</div>
       <div class="admin-tab"        id="atab-users"     onclick="setAdminTab('users')">👤 Nutzer</div>
       <div class="admin-tab"        id="atab-infos"     onclick="setAdminTab('infos')">📝 Infotexte</div>
+      <div class="admin-tab"        id="atab-weather"   onclick="setAdminTab('weather')">🌧 Wetterausfälle</div>
       <div class="admin-tab"        id="atab-wipe"      onclick="setAdminTab('wipe')" style="display:none;">🧹 Platte putzen</div>
     </div>
 
@@ -2275,7 +2276,7 @@ main {
     </div><!-- /adminWeather -->
 
     <!-- ── SPONSOREN (Skript 24: sponsors + admin_* Funktionen) ── -->
-    <div id="adminSponsors" style="display:none;">
+    <div id="adminAktionen" style="display:none;">
       <div class="admin-section">
         <div class="admin-section-title">⏱ Exklusiv-Frühbucherphase (2-Jahres-Abos)</div>
         <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
@@ -2309,6 +2310,50 @@ main {
           </div>
         </div>
       </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">🖼 Splash-Startseite – Texte</div>
+        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
+          Der Kopf (Logo, „PADEL BIELSTEIN", TFB) bleibt fest. Hier bearbeitest du die Texte darunter. <strong>Speichern</strong> wirkt sofort für alle Besucher – kein Code-Upload nötig.
+        </div>
+        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <label class="eb-adm-lbl">Claim (Text unter dem Titel – bis 4 Zeilen)</label>
+            <textarea id="spClaim" rows="4" class="eb-adm-inp" style="resize:vertical;line-height:1.5;"></textarea>
+          </div>
+          <div>
+            <label class="eb-adm-lbl">Zeile unter „Jetzt loslegen" (einzeilig)</label>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+              <input type="text" id="spSubline" class="eb-adm-inp" style="flex:1 1 240px;">
+              <div class="seg-toggle" style="flex:0 0 auto;">
+                <button type="button" id="spSubOff" class="seg-btn" onclick="setSublineVisible(false)">Unsichtbar</button>
+                <button type="button" id="spSubOn" class="seg-btn seg-active" onclick="setSublineVisible(true)">Sichtbar</button>
+              </div>
+            </div>
+          </div>
+          <div style="border-top:1px solid #EFE9DC;padding-top:14px;">
+            <label class="eb-adm-lbl" style="margin-bottom:10px;">Frühbucher-Kachel (unten rechts)</label>
+            <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
+              <div><label class="eb-adm-lbl" style="font-size:10px;">Überschrift</label><input type="text" id="spEbKicker" class="eb-adm-inp"></div>
+              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Überschrift</label><select id="spEbKickerColor" class="eb-adm-inp"></select></div>
+            </div>
+            <div style="margin-top:10px;">
+              <label class="eb-adm-lbl" style="font-size:10px;">Text &nbsp;·&nbsp; Hervorhebung mit *Sternchen*, <code>{bis}</code> = Enddatum der Phase</label>
+              <textarea id="spEbText" rows="3" class="eb-adm-inp" style="resize:vertical;line-height:1.5;"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Text</label><select id="spEbTextColor" class="eb-adm-inp"></select></div>
+              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Hervorhebung</label><select id="spEbHiColor" class="eb-adm-inp"></select></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;">
+            <button type="button" class="admin-save-btn" onclick="saveSplash()">Splash speichern</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /adminAktionen -->
+
+    <div id="adminSponsors" style="display:none;">
       <div class="admin-section">
         <div class="admin-section-title">Partner-Seite (5. Tab)</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -6567,15 +6612,21 @@ function setAdminTab(tab) {
   document.getElementById('adminPrices').style.display    = tab==='prices'   ? 'block' : 'none';
   document.getElementById('adminInternal').style.display  = tab==='internal' ? 'block' : 'none';
   document.getElementById('adminBookings').style.display  = tab==='bookings' ? 'block' : 'none';
+  document.getElementById('adminAktionen').style.display  = tab==='aktionen' ? 'block' : 'none';
   document.getElementById('adminWeather').style.display   = tab==='weather'  ? 'block' : 'none';
   document.getElementById('adminSponsors').style.display  = tab==='sponsors' ? 'block' : 'none';
   document.getElementById('adminMis').style.display       = tab==='mis'      ? 'block' : 'none';
   document.getElementById('adminUsers').style.display     = tab==='users'    ? 'block' : 'none';
   document.getElementById('adminInfos').style.display     = tab==='infos'    ? 'block' : 'none';
   document.getElementById('adminWipe').style.display      = tab==='wipe'     ? 'block' : 'none';
-  ['freibad','prices','internal','bookings','weather','sponsors','mis','users','infos','wipe'].forEach(t =>
+  ['freibad','prices','internal','bookings','aktionen','weather','sponsors','mis','users','infos','wipe'].forEach(t =>
     document.getElementById('atab-'+t).classList.toggle('active', t===tab)
   );
+  // Aktionen: Frühbucher-Konfig + Splash-Texte frisch in die Formulare laden.
+  if (tab==='aktionen') {
+    if (typeof loadEarlybird==='function') loadEarlybird();
+    if (typeof loadSplash==='function')    loadSplash();
+  }
   // Wetterausfälle laden bei JEDEM Öffnen neu - hier ändern sich Zustände
   // durch Entscheidungen, ein veralteter Stand wäre irreführend.
   if (tab==='weather') { loadAdminWeather(); }
@@ -10669,8 +10720,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pb-splash-duo:has(.pb-splash-early.show) #pbSplashSponsor .pbsp-tile.pbsp-prem { width: 100%; height: auto; flex: 1 1 auto; }
 .pb-splash-early { display: none; flex-direction: column; justify-content: center; padding: 12px 15px; border: 1px solid #3A352E; border-radius: 13px; background: rgba(246,241,231,.04); }
 .pb-splash-early.show { display: flex; }
-.pb-splash-early .kick { font: 800 .56rem/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #FF5A36; margin-bottom: 6px; }
-.pb-splash-early .txt { font: 500 .76rem/1.42 "Manrope","Arial",sans-serif; color: #B8B0A2; }
+.pb-splash-early .kick { font: 800 .84rem/1.2 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #FF5A36; margin-bottom: 8px; }
+.pb-splash-early .txt { font: 500 .86rem/1.5 "Manrope","Arial",sans-serif; color: #B8B0A2; }
 .pb-splash-early .txt strong { color: #F6F1E7; font-weight: 700; }
 .pb-splash-early .txt .hi { color: #FF5A36; font-weight: 800; white-space: nowrap; }
 @media (max-width: 560px) { .pb-splash-duo { flex-direction: column; } }
@@ -10990,6 +11041,101 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
       if(typeof window.fillEarlybirdAdmin==='function') window.fillEarlybirdAdmin();
     }catch(e){}
+  };
+
+  /* Editierbare Splash-Texte (Claim, Zeile unter „Jetzt loslegen", Frühbucher-
+     Kachel) aus app_flags lesen und einsetzen. Defensiv: fehlt Skript 42, bleibt
+     der fest verdrahtete Text stehen. Farben kommen als Paletten-Schlüssel. */
+  window.__splashPalette = { coral:'#FF5A36', cream:'#F6F1E7', beige:'#B8B0A2', ink:'#1C1A17', white:'#FFFFFF' };
+  window.pbPaletteColor = function(key, fallback){ return window.__splashPalette[key] || fallback || window.__splashPalette.beige; };
+  function pbEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  // Text mit *Hervorhebung* und {bis}-Platzhalter -> sicheres HTML.
+  window.pbRenderMarked = function(raw, hiColor, bisDate){
+    var s = pbEsc(raw);
+    s = s.replace(/\{bis\}/g, pbEsc(bisDate||''));
+    s = s.replace(/\*([^*]+)\*/g, function(_m, inner){
+      return '<strong style="color:'+hiColor+';font-weight:700;">'+inner+'</strong>';
+    });
+    return s;
+  };
+  window.__splash = {};
+  window.loadSplash = async function(){
+    try{
+      if(typeof sb==='undefined' || !sb) return;
+      var r = await sb.from('app_flags').select('splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,earlybird_end').maybeSingle();
+      if(r.error || !r.data) return;
+      var d = r.data; window.__splash = d;
+      // 1) Claim (bis 4 Zeilen; Umbrüche des Editors übernehmen)
+      var claim = document.querySelector('.pb-splash-claim');
+      if(claim && d.splash_claim!=null){ claim.innerHTML = pbEsc(d.splash_claim).replace(/\n/g,'<br>'); }
+      // 2) Zeile unter „Jetzt loslegen" + Sichtbarkeit
+      var foot = document.querySelector('.pb-splash-foot');
+      if(foot){
+        if(d.splash_subline!=null) foot.textContent = d.splash_subline;
+        foot.style.display = (d.splash_subline_visible===false) ? 'none' : '';
+      }
+      // 3) Frühbucher-Kachel: Überschrift + Text + Farben
+      var kick = document.querySelector('#pbSplashEarly .kick');
+      if(kick){
+        if(d.splash_eb_kicker!=null) kick.textContent = d.splash_eb_kicker;
+        kick.style.color = window.pbPaletteColor(d.splash_eb_kicker_color,'coral');
+      }
+      var txt = document.querySelector('#pbSplashEarly .txt');
+      if(txt){
+        var bis = window.ebFmtDate ? window.ebFmtDate(d.earlybird_end) : '';
+        var tc = window.pbPaletteColor(d.splash_eb_text_color,'beige');
+        var hc = window.pbPaletteColor(d.splash_eb_hi_color,'coral');
+        txt.style.color = tc;
+        txt.innerHTML = window.pbRenderMarked(d.splash_eb_text, hc, bis);
+      }
+      if(typeof window.fillSplashAdmin==='function') window.fillSplashAdmin();
+    }catch(e){}
+  };
+
+  // ── Admin-Editor: Splash-Texte ──
+  window.__splashPaletteLabels = [['coral','Coral'],['cream','Cremeweiß'],['beige','Beige (gedämpft)'],['ink','Schwarz'],['white','Weiß']];
+  window.__spSubVisible = true;
+  window.setSublineVisible = function(on){
+    window.__spSubVisible = !!on;
+    var off=document.getElementById('spSubOff'), onb=document.getElementById('spSubOn');
+    if(off&&onb){ off.classList.toggle('seg-active', !on); onb.classList.toggle('seg-active', !!on); }
+  };
+  window.fillSplashAdmin = function(){
+    var d = window.__splash || {};
+    // Farb-Auswahllisten einmalig befüllen
+    ['spEbKickerColor','spEbTextColor','spEbHiColor'].forEach(function(id){
+      var sel=document.getElementById(id);
+      if(sel && !sel.options.length){
+        window.__splashPaletteLabels.forEach(function(p){ var o=document.createElement('option'); o.value=p[0]; o.textContent=p[1]; sel.appendChild(o); });
+      }
+    });
+    var setv=function(id,v){ var el=document.getElementById(id); if(el && v!=null) el.value=v; };
+    setv('spClaim', d.splash_claim);
+    setv('spSubline', d.splash_subline);
+    setv('spEbKicker', d.splash_eb_kicker);
+    setv('spEbText', d.splash_eb_text);
+    setv('spEbKickerColor', d.splash_eb_kicker_color || 'coral');
+    setv('spEbTextColor', d.splash_eb_text_color || 'beige');
+    setv('spEbHiColor', d.splash_eb_hi_color || 'coral');
+    window.setSublineVisible(d.splash_subline_visible!==false);
+  };
+  window.saveSplash = async function(){
+    try{
+      var g=function(id){ var el=document.getElementById(id); return el?el.value:''; };
+      var r=await sb.rpc('admin_set_splash', {
+        p_claim: g('spClaim'),
+        p_subline: g('spSubline'),
+        p_subline_visible: !!window.__spSubVisible,
+        p_eb_kicker: g('spEbKicker'),
+        p_eb_kicker_color: g('spEbKickerColor'),
+        p_eb_text: g('spEbText'),
+        p_eb_text_color: g('spEbTextColor'),
+        p_eb_hi_color: g('spEbHiColor')
+      });
+      if(r.error) throw r.error;
+      if(typeof showToast==='function') showToast('Splash-Texte gespeichert.');
+      if(typeof loadSplash==='function') await loadSplash();
+    }catch(e){ alert('Speichern fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
   };
 
   // ── Admin-Konfiguration der Frühbucherphase ──
@@ -11381,7 +11527,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
     }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
   }
-  function initSponsorArea(){ loadSponsorsDisplay(); if(typeof loadPartnerFlag==='function') loadPartnerFlag(); if(typeof loadShareCardTheme==='function') loadShareCardTheme(); if(typeof loadEarlybird==='function') loadEarlybird(); }
+  function initSponsorArea(){ loadSponsorsDisplay(); if(typeof loadPartnerFlag==='function') loadPartnerFlag(); if(typeof loadShareCardTheme==='function') loadShareCardTheme(); if(typeof loadEarlybird==='function') loadEarlybird(); if(typeof loadSplash==='function') loadSplash(); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initSponsorArea);
   else initSponsorArea();
 })();
