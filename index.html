@@ -1663,6 +1663,12 @@ main {
       <div class="sum-row"><span class="sl">Dauer</span><span class="sv" id="sDur">—</span></div>
       <div class="sum-row" id="discRow" style="display:none;"><span class="sl">Rabatt <span class="disc-badge" id="discBadge"></span></span><span class="sv" id="sDisc" style="color:#4ade80">—</span></div>
       <div class="sum-row total"><span class="sl">Gesamt</span><span class="sv" id="sTotal">—</span></div>
+      <div class="abo-calc" id="sb-calc" style="margin-top:14px;"></div>
+      <div class="abo-benefits" id="sb-benefits" style="margin-top:12px;">
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz.</div>
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="sb-hours">—</span></div>
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="sb-rabatt">—</span></div>
+      </div>
     </div>
     <button class="book-btn" id="bookBtn" onclick="confirmBooking()">Jetzt buchen &amp; bezahlen →</button>
 
@@ -1759,9 +1765,10 @@ main {
       <div class="abo-benefits">
         <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-52">52 Wochen exklusiv für dich reserviert – du zahlst davon nur 30 Wochen.</span></div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz – keine Konkurrenz um freie Slots.</div>
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-hours">Deine Buchung setzt sich aus deinem Einzelstundenpreis zusammen.</span></div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-rabatt">Dein Rabatt bei dieser Buchung beträgt 10 %.</span></div>
       </div>
-      <div class="abo-weather">Dein Slot gehört dir – gespielt wird, wenn das Wetter es zulässt.</div>
+      <div class="abo-weather">Dein Slot gehört dir – gespielt wird, wenn das Wetter es zulässt.<br>Keine Schlechtwetter-Gutschriften bei Abos.</div>
       <button class="abo-cta" onclick="submitAbo(false)">■ Jahresabo sichern</button>
     </div>
 
@@ -4067,6 +4074,48 @@ function updateSummary() {
     document.getElementById("discBadge").textContent = `${Math.round(member.discount*100)}% Mitgliederrabatt`;
     document.getElementById("sDisc").textContent = `−${disc} €`;
   } else { dr.style.display = "none"; }
+
+  // Transparenz-Rechenweg + Aufzählung (wie im Abo, aber für die Einzelbuchung).
+  const pmap = prices(selDate);
+  const perHour = selDur > 0 ? Math.round(rp / selDur) : rp;
+  const sbHours = document.getElementById('sb-hours');
+  if (sbHours) {
+    if (selDur === 1) {
+      sbHours.textContent = `Deine Buchung setzt sich zusammen aus einem Einzelstundenpreis in Höhe von ${fmt(rp)}.`;
+    } else {
+      const list = [];
+      for (let i = 0; i < selDur; i++) list.push(fmt(pmap[h + i] || 0));
+      const zahl = selDur === 2 ? 'den beiden ' : 'den ';
+      sbHours.textContent = `Deine Buchung setzt sich zusammen aus ${zahl}Einzelstundenpreisen in Höhe von ${list.join(' und ')}.`;
+    }
+  }
+  const sbRab = document.getElementById('sb-rabatt');
+  if (sbRab) {
+    sbRab.textContent = (member && member.discount > 0)
+      ? `Dein Rabatt bei dieser Buchung beträgt ${Math.round(member.discount * 100)} %.`
+      : 'Als Mitglied oder Partner sparst du 10 % – dafür anmelden.';
+  }
+  const sbCalc = document.getElementById('sb-calc');
+  if (sbCalc) {
+    const crow = (pos, mid, betrag, desc, cls) =>
+      `<tr class="${cls || ''}"><td class="pos">${pos}</td><td class="mid">${mid || ''}</td>`
+      + `<td>${fmt(Math.round(betrag))}</td><td>${fmt(Math.round(betrag / 4))}</td><td class="desc">${desc || ''}</td></tr>`;
+    const durTxt = `${selDur} Stunde${selDur > 1 ? 'n' : ''} ×`;
+    let body = crow(durTxt, `${perHour} € / Stunde`, rp, 'Preis deiner Buchung');
+    let note = '';
+    if (member && disc > 0) {
+      body += crow('Mitgliederrabatt', `${Math.round(member.discount * 100)} %`, disc, 'Das ist dein heutiger Rabatt')
+            + crow('Dein Buchungspreis', '', p, 'Dein Rechnungspreis', 'tot');
+    } else {
+      body += crow('Dein Buchungspreis', '', p, 'Dein Rechnungspreis', 'tot');
+      note = '<div class="abo-calc-note">Als Mitglied oder Partner sparst du 10 % – einfach anmelden.</div>';
+    }
+    sbCalc.innerHTML =
+      '<div class="abo-calc-h">Transparenz – So setzt sich dein Buchungspreis zusammen</div>'
+      + '<div class="abo-calc-wrap"><table><thead><tr><th></th><th>Preis/h · Rabatt</th><th>Buchung</th><th>pro Spieler</th><th></th></tr></thead><tbody>'
+      + body + '</tbody></table></div>' + note;
+  }
+
   card.classList.add("visible");
   btn.classList.add("visible");
 }
@@ -6270,9 +6319,10 @@ function updateAboSummary() {
     if (sumTitleEl) sumTitleEl.textContent = `Dein Frühbucher-Abo (${yearsTxt})`;
     if (abo52El)    abo52El.textContent = `${yearsTxt} lang jede Woche exklusiv für dich reserviert.`;
     if (rabattEl)   rabattEl.textContent = `Dein Rabatt bei dieser Buchung beträgt ${Math.round(disc*100)} %.`;
-    document.getElementById("as-reg").textContent   = `statt ${fmt(regTerm)} regulär`;
+    const einzelTerm = pricePerWeek * 52 * years;   // Einzelbuchung über die volle Laufzeit
+    document.getElementById("as-reg").textContent   = `statt ${fmt(einzelTerm)} Einzelbuchung`;
     document.getElementById("as-total").textContent = fmt(ebTotal);
-    document.getElementById("as-save").textContent  = `${Math.round(disc*100)} % Frühbucher-Rabatt · du sparst ${fmt(ebSaved)}`;
+    document.getElementById("as-save").textContent  = `Du sparst ${fmt(einzelTerm - ebTotal)}`;
     document.getElementById("as-perperson").textContent = fmt(Math.round(ebTotal/4));
     if (ctaEl) ctaEl.textContent = '■ Frühbucher-Abo sichern (Einmalzahlung)';
   } else {
@@ -6284,6 +6334,21 @@ function updateAboSummary() {
     document.getElementById("as-save").textContent  = `Du sparst ${fmt(saved)}`;
     document.getElementById("as-perperson").textContent = fmt(Math.round(totalAbo/4));
     if (ctaEl) ctaEl.textContent = '■ Jahresabo sichern';
+  }
+
+  // Einzelstundenpreis(e) der gewählten Stunden – dynamisch (auch bei 2 Std. mit
+  // unterschiedlichen Preisen).
+  const hoursEl = document.getElementById('as-hours');
+  if (hoursEl) {
+    const hourPrices = [];
+    for (let i = 0; i < aboDur; i++) hourPrices.push(priceMap[h + i] || 0);
+    if (hourPrices.length === 1) {
+      hoursEl.textContent = `Deine Buchung setzt sich zusammen aus einem Einzelstundenpreis in Höhe von ${fmt(hourPrices[0])}.`;
+    } else {
+      const list = hourPrices.map(p => fmt(p)).join(' und ');
+      const zahl = hourPrices.length === 2 ? 'den beiden ' : 'den ';
+      hoursEl.textContent = `Deine Buchung setzt sich zusammen aus ${zahl}Einzelstundenpreisen in Höhe von ${list}.`;
+    }
   }
 
   // Rechenweg (Excel-Vorlage Jörn): Position · Preis/h·Rabatt · Buchung · pro Spieler ·
@@ -6324,7 +6389,7 @@ function updateAboSummary() {
       note = '<div class="abo-calc-note">Mitglieder &amp; Partner erhalten an der Kasse zusätzlich 10&nbsp;% Rabatt.</div>';
     }
     calcEl.innerHTML =
-      '<div class="abo-calc-h">So setzt sich dein Preis zusammen</div>'
+      '<div class="abo-calc-h">Transparenz – So setzt sich dein Abopreis zusammen</div>'
       + '<div class="abo-calc-wrap"><table><thead><tr><th></th><th>Preis/h · Rabatt</th><th>Buchung</th><th>pro Spieler</th><th></th></tr></thead><tbody>'
       + body + '</tbody></table></div>' + note;
   }
