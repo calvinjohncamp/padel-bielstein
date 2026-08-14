@@ -286,17 +286,17 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 
 /* --- Redesign Abo-Zusammenfassung: kompakter, größer, markanter --- */
 .abo-summary { padding: 16px 20px; }
-.abo-sum-hdr { margin-bottom: 12px; align-items: center; }
+.abo-sum-hdr { margin-bottom: 12px; align-items: baseline; }
 .abo-sum-sq { width: 11px; height: 11px; border-radius: 3px; background: #FF5A36; flex: 0 0 auto; }
-.abo-sum-title { font-size: 1.05rem; line-height: 1; }
+.abo-sum-title { font-size: 1.05rem; line-height: 1.05; }
 .abo-details { gap: 2px; margin-bottom: 10px; }
 .abo-detail-row { padding: 7px 0; }
 .abo-detail-row .dl { font-size: 0.92rem; }
 .abo-detail-row .dv { font-size: 1.06rem; }
 .abo-52 { font-size: 0.8rem; margin: 0 0 12px; }
-.abo-benefits { gap: 6px; margin-bottom: 10px; }
-.abo-benefit { font-size: 0.9rem; }
-.abo-benefit-dot { width: 6px; height: 6px; }
+.abo-benefits { gap: 7px; margin-bottom: 10px; }
+.abo-benefit { font-size: 0.9rem; align-items: flex-start; line-height: 1.4; }
+.abo-benefit-dot { width: 6px; height: 6px; margin-top: 6px; }
 .abo-weather { font-size: 0.86rem; margin-bottom: 12px; }
 /* Preisblock = die Kaufentscheidung */
 .abo-priceblock { margin: 2px 0 10px; padding: 12px 0 2px; border-top: 1px solid rgba(255,255,255,.1); }
@@ -314,6 +314,26 @@ body.bielstein-theme .abo-pb-reg,
 body.bielstein-theme .abo-pb-per-lbl { color: #9A9384 !important; }
 body.bielstein-theme .abo-pb-per-amt { color: #1C1A17 !important; }
 body.bielstein-theme .abo-pb-save { color: #0F7A38 !important; background: #E4F5EA !important; }
+/* Rechenweg-Tabelle (nach Jörns Excel): Position · Preis/h·Rabatt · Buchung · pro Spieler · Beschreibung */
+.abo-calc { margin: 0 0 12px; border: 1px solid #EFE6D5; border-radius: 11px; background: #FBF8F1; }
+.abo-calc:empty { display: none; }
+.abo-calc-h { font: 800 .64rem/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .11em; text-transform: uppercase; color: #9A9384; padding: 11px 13px 5px; }
+.abo-calc-wrap { overflow-x: auto; }
+.abo-calc table { width: 100%; border-collapse: collapse; }
+.abo-calc th, .abo-calc td { padding: 6px 12px; white-space: nowrap; }
+.abo-calc thead th { font: 700 .55rem/1.1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .05em; text-transform: uppercase; color: #9A9384; text-align: right; padding-bottom: 5px; }
+.abo-calc thead th:first-child { text-align: left; }
+.abo-calc td { font: 700 .9rem/1.2 "Space Grotesk","Arial Narrow",sans-serif; color: #1C1A17; text-align: right; font-variant-numeric: tabular-nums; border-top: 1px solid #EFE6D5; }
+.abo-calc td.pos { text-align: left; font: 600 .84rem/1.25 "Manrope","Arial",sans-serif; color: #1C1A17; }
+.abo-calc td.mid { font: 500 .82rem/1.2 "Manrope","Arial",sans-serif; color: #7A7368; }
+.abo-calc td.desc { text-align: left; white-space: normal; min-width: 150px; font: 500 .78rem/1.3 "Manrope","Arial",sans-serif; color: #8A8276; }
+.abo-calc tr.spacer td { padding: 0; height: 7px; border-top: none; }
+.abo-calc tr.res td { border-top: 1.5px solid #E2D7C2; }
+.abo-calc tr.res td.pos { font-weight: 800; }
+.abo-calc tr.tot td { border-top: 1.5px solid #E2D7C2; color: #FF5A36; font-size: .98rem; }
+.abo-calc tr.tot td.pos { color: #1C1A17; font-weight: 800; }
+.abo-calc tr.tot td.mid, .abo-calc tr.tot td.desc { color: #8A8276; }
+.abo-calc-note { padding: 4px 13px 11px; font: 500 .76rem/1.4 "Manrope","Arial",sans-serif; color: #8A8276; }
 
 /* ■■ AUTH MODAL ■■ */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -1681,7 +1701,7 @@ main {
       <div class="eb-body eb-body-2"><strong>Dieser Court gehört für 2 Jahre</strong> an den von dir gebuchten Tagen und zu den von dir gebuchten Stunden <strong>allein dir.</strong></div>
       <div class="eb-meta">
         <div class="eb-meta-boxes">
-          <div class="eb-meta-item"><span class="eb-meta-lbl">Aktion läuft bis</span><span class="eb-meta-val" id="ebUntil">—</span></div>
+          <div class="eb-meta-item"><span class="eb-meta-lbl">Start der Aktion</span><span class="eb-meta-val" id="ebUntil">—</span></div>
           <div class="eb-meta-item"><span class="eb-meta-lbl">Saisonstart (voraussichtlich)</span><span class="eb-meta-val" id="ebStart">—</span></div>
         </div>
         <div class="eb-meta-note">Dein Abo startet automatisch am Eröffnungstag unserer neuen Anlage.</div>
@@ -1735,11 +1755,11 @@ main {
         </div>
         <div class="abo-pb-save" id="as-save">Du sparst —</div>
       </div>
+      <div class="abo-calc" id="as-calc"></div>
       <div class="abo-benefits">
-        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-52">52 Wochen exklusiv für dich reserviert</span></div>
-        <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz</div>
-        <div class="abo-benefit"><div class="abo-benefit-dot"></div>Keine Konkurrenz um freie Slots</div>
-        <div class="abo-benefit"><div class="abo-benefit-dot"></div>22 Wochen gratis gegenüber Einzelbuchung</div>
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-52">52 Wochen exklusiv für dich reserviert – du zahlst davon nur 30 Wochen.</span></div>
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz – keine Konkurrenz um freie Slots.</div>
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-rabatt">Dein Rabatt bei dieser Buchung beträgt 10 %.</span></div>
       </div>
       <div class="abo-weather">Dein Slot gehört dir – gespielt wird, wenn das Wetter es zulässt.</div>
       <button class="abo-cta" onclick="submitAbo(false)">■ Jahresabo sichern</button>
@@ -3553,6 +3573,28 @@ function sumHourlyPrices(priceMap, hour, duration) {
 }
 function rawP(h, d) { return sumHourlyPrices(prices(d), h, selDur); }
 function mP(p) { return member ? Math.round(p * (1 - member.discount)) : p; }
+
+// Günstigster Wochenpreis für eine Abo-Dauer (über alle Tage/Zeiten hinweg):
+// kleinste Summe von `dur` aufeinanderfolgenden Stunden in PW und PE.
+function cheapestAboWeek(dur) {
+  let best = Infinity;
+  for (const map of [PW, PE]) {
+    const hours = Object.keys(map).map(Number).sort((a, b) => a - b);
+    for (const h of hours) {
+      let sum = 0, ok = true;
+      for (let i = 0; i < dur; i++) { if (map[h + i] == null) { ok = false; break; } sum += map[h + i]; }
+      if (ok) best = Math.min(best, sum);
+    }
+  }
+  return best === Infinity ? 0 : best;
+}
+// Beschriftung der beiden Abo-Dauer-Buttons auf den echten günstigsten Preis setzen.
+function updateAboDurPrices() {
+  const b1 = document.querySelector('#adur1 .dprice');
+  const b2 = document.querySelector('#adur2 .dprice');
+  if (b1) b1.textContent = `ab ${cheapestAboWeek(1)} €/Woche`;
+  if (b2) b2.textContent = `ab ${cheapestAboWeek(2)} €/Woche`;
+}
 function showLoader(on) { document.getElementById('loadingBar').classList.toggle('active', on); }
 
 
@@ -3816,7 +3858,7 @@ async function init() {
   } else {
     loadBookings(selDate).then(() => renderSlots());
   }
-  loadPrices().then(() => { updDurPrices(); renderSlots(); });
+  loadPrices().then(() => { updDurPrices(); updateAboDurPrices(); renderSlots(); });
 }
 
 // ============================================================
@@ -3837,7 +3879,7 @@ function setMode(m) {
   document.getElementById('tabPartner').classList.toggle('active', m==='partner');
   const adminFooter = document.getElementById('adminFooterBtn');
   if (adminFooter) adminFooter.style.fontWeight = m==='admin' ? '900' : '700';
-  if (m==='abo')  { aboWd=null; aboSlot=null; renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
+  if (m==='abo')  { aboWd=null; aboSlot=null; updateAboDurPrices(); renderAboWeekdays(); renderAboSlots(); updateAboSummary(); }
   if (m==='play') { renderPlaySection(); }
   if (m==='gutscheine') { renderCardSizeGrid(); loadMyCards(); renderAboCard();
     var gc=document.getElementById('giftCard'); if(gc) gc.style.display = currentUser ? 'block' : 'none'; }
@@ -6214,6 +6256,7 @@ function updateAboSummary() {
   const eb = window.__earlybird || {};
   const sumTitleEl = card.querySelector('.abo-sum-title');
   const abo52El    = document.getElementById('as-52');
+  const rabattEl   = document.getElementById('as-rabatt');
   const ctaEl      = card.querySelector('.abo-cta');
 
   if (eb.active) {
@@ -6225,7 +6268,8 @@ function updateAboSummary() {
     const ebSaved = regTerm - ebTotal;
     const yearsTxt = Number.isInteger(years) ? `${years} Jahre` : `${eb.termMonths} Monate`;
     if (sumTitleEl) sumTitleEl.textContent = `Dein Frühbucher-Abo (${yearsTxt})`;
-    if (abo52El)    abo52El.textContent = `${yearsTxt} lang jede Woche exklusiv für dich reserviert`;
+    if (abo52El)    abo52El.textContent = `${yearsTxt} lang jede Woche exklusiv für dich reserviert.`;
+    if (rabattEl)   rabattEl.textContent = `Dein Rabatt bei dieser Buchung beträgt ${Math.round(disc*100)} %.`;
     document.getElementById("as-reg").textContent   = `statt ${fmt(regTerm)} regulär`;
     document.getElementById("as-total").textContent = fmt(ebTotal);
     document.getElementById("as-save").textContent  = `${Math.round(disc*100)} % Frühbucher-Rabatt · du sparst ${fmt(ebSaved)}`;
@@ -6233,13 +6277,58 @@ function updateAboSummary() {
     if (ctaEl) ctaEl.textContent = '■ Frühbucher-Abo sichern (Einmalzahlung)';
   } else {
     if (sumTitleEl) sumTitleEl.textContent = 'Dein Jahresabo';
-    if (abo52El)    abo52El.textContent = '52 Wochen exklusiv für dich reserviert';
+    if (abo52El)    abo52El.textContent = '52 Wochen exklusiv für dich reserviert – du zahlst davon nur 30 Wochen.';
+    if (rabattEl)   rabattEl.textContent = 'Dein Rabatt bei dieser Buchung beträgt 10 %.';
     document.getElementById("as-reg").textContent   = `statt ${fmt(totalReg)} Einzelbuchung`;
     document.getElementById("as-total").textContent = fmt(totalAbo);
     document.getElementById("as-save").textContent  = `Du sparst ${fmt(saved)}`;
     document.getElementById("as-perperson").textContent = fmt(Math.round(totalAbo/4));
     if (ctaEl) ctaEl.textContent = '■ Jahresabo sichern';
   }
+
+  // Rechenweg (Excel-Vorlage Jörn): Position · Preis/h·Rabatt · Buchung · pro Spieler ·
+  // Beschreibung. Alle Zahlen dynamisch aus dem Wochenpreis der gewählten Stunden.
+  const calcEl = document.getElementById('as-calc');
+  if (calcEl) {
+    const pw = pricePerWeek;                              // Wochenpreis der gebuchten Zeit
+    const abo30 = pw * 30;
+    // Mittelspalte: für 1 Std. „x €/Stunde", für Mehr-Stunden-Buchungen „x €/Woche".
+    const midPrice = aboDur === 1 ? `${pw} € / Stunde` : `${pw} € / Woche`;
+    // Eine Tabellenzeile mit 5 Spalten (Buchung = Gesamt, pro Spieler = ÷4).
+    const crow = (pos, mid, betrag, desc, cls) =>
+      `<tr class="${cls || ''}">`
+      + `<td class="pos">${pos}</td>`
+      + `<td class="mid">${mid || ''}</td>`
+      + `<td>${fmt(Math.round(betrag))}</td>`
+      + `<td>${fmt(Math.round(betrag / 4))}</td>`
+      + `<td class="desc">${desc || ''}</td></tr>`;
+    let body, note = '';
+    if (eb.active) {
+      const years2 = (Number(eb.termMonths) || 24) / 12;
+      const disc2  = (Number(eb.discount)   || 25) / 100;
+      const rab    = Math.round(abo30 * disc2);
+      const paJahr = abo30 - rab;
+      const twoYr  = paJahr * years2;
+      const sy = eb.aboStart ? new Date(eb.aboStart).getFullYear() : (new Date().getFullYear() + 1);
+      const ey = sy + Math.max(1, Math.round(years2)) - 1;
+      body = crow('52 Wochen ×', midPrice, pw * 52, 'Preis bei 52 Einzelbuchungen')
+           + crow('30 Wochen ×', midPrice, abo30, 'Du bezahlst im Abo nur 30 Wochen')
+           + crow('Rabatt', `${Math.round(disc2 * 100)} %`, rab, 'Das ist dein heutiger Rabatt')
+           + crow('Dein Abo-Preis p.a.', '', paJahr, 'Dein Rechnungspreis', 'res')
+           + '<tr class="spacer"><td colspan="5"></td></tr>'
+           + crow('2-Jahres-Abo', '', twoYr, `Dein Preis für das Frühbucher-Abo ${sy}/${ey}`, 'tot');
+    } else {
+      body = crow('52 Wochen ×', midPrice, pw * 52, 'Preis bei 52 Einzelbuchungen')
+           + crow('30 Wochen ×', midPrice, abo30, 'Du bezahlst im Abo nur 30 Wochen')
+           + crow('Dein Abo-Preis p.a.', '', abo30, 'Dein Rechnungspreis', 'tot');
+      note = '<div class="abo-calc-note">Mitglieder &amp; Partner erhalten an der Kasse zusätzlich 10&nbsp;% Rabatt.</div>';
+    }
+    calcEl.innerHTML =
+      '<div class="abo-calc-h">So setzt sich dein Preis zusammen</div>'
+      + '<div class="abo-calc-wrap"><table><thead><tr><th></th><th>Preis/h · Rabatt</th><th>Buchung</th><th>pro Spieler</th><th></th></tr></thead><tbody>'
+      + body + '</tbody></table></div>' + note;
+  }
+
   card.classList.add("visible");
 }
 
@@ -11111,7 +11200,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(b){
         // Kachel zeigen, wenn die Phase aktiv ist ODER die manuelle Vorschau an ist.
         b.classList.toggle('show', window.__earlybird.active || window.__earlybird.preview);
-        var u=document.getElementById('ebUntil'); if(u) u.textContent=window.ebFmtDate(window.__earlybird.end);
+        var u=document.getElementById('ebUntil'); if(u) u.textContent=window.ebFmtDate(window.__earlybird.start);
         var s=document.getElementById('ebStart'); if(s) s.textContent=window.ebFmtDate(window.__earlybird.aboStart);
       }
       // Dezente Frühbucher-Karte auf der Splash-Seite (unten/rechts).
