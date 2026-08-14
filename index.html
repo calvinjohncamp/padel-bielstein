@@ -2462,6 +2462,18 @@ main {
 
     <div id="adminSponsors" style="display:none;">
       <div class="admin-section">
+        <div class="admin-section-title">📣 Werbung / Partner-Anzeige (global)</div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
+            Master-Schalter für <strong>alle</strong> Partner-/Sponsoren-Anzeigen in der ganzen App (Startseite, Buchen, Abo, Jetzt spielen, Guthaben und der Partner-Tab). Auf <strong>„Aus"</strong> läuft das Buchungssystem komplett werbefrei – die Abstände passen sich automatisch an.
+          </div>
+          <div class="seg-toggle" style="flex:0 0 auto;">
+            <button type="button" id="adsOff" class="seg-btn" onclick="setSponsorsEnabled(false)">Aus</button>
+            <button type="button" id="adsOn" class="seg-btn seg-active" onclick="setSponsorsEnabled(true)">Ein</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-section">
         <div class="admin-section-title">Partner-Seite (5. Tab)</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
           <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
@@ -6865,7 +6877,7 @@ function setAdminTab(tab) {
   // Wetterausfälle laden bei JEDEM Öffnen neu - hier ändern sich Zustände
   // durch Entscheidungen, ein veralteter Stand wäre irreführend.
   if (tab==='weather') { loadAdminWeather(); }
-  if (tab==='sponsors') { loadAdminSponsors(); }
+  if (tab==='sponsors') { loadAdminSponsors(); if(typeof fillSponsorsEnabledAdmin==='function') fillSponsorsEnabledAdmin(); }
   if (tab==='freibad'  && !adminTabLoaded.freibad)  { loadAdminFreibad();  adminTabLoaded.freibad=true; }
   if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
   if (tab==='internal' && !adminTabLoaded.internal) { loadInternalBookings(); adminTabLoaded.internal=true; }
@@ -11179,9 +11191,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   window.__partnerTabOn = false;
   window.applyPartnerTabVisibility = function(on){
     window.__partnerTabOn = !!on;
+    // Effektiv nur sichtbar, wenn die Partner-Seite an IST und der globale
+    // Werbe-Master-Schalter nicht auf „aus" steht.
+    var eff = !!on && (window.__sponsorsEnabled !== false);
     var t=document.getElementById('tabPartner');
-    if(t) t.style.display = on ? '' : 'none';
-    if(!on && typeof curMode!=='undefined' && curMode==='partner'){
+    if(t) t.style.display = eff ? '' : 'none';
+    if(!eff && typeof curMode!=='undefined' && curMode==='partner'){
       try{ setMode('book'); }catch(e){}
     }
   };
@@ -11212,6 +11227,43 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     }catch(e){
       alert('Umschalten fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler'));
     }finally{ if(btn) btn.disabled=false; }
+  };
+
+  /* Globaler Werbe-/Partner-Master-Schalter: blendet ALLE Sponsoren-Anzeigen +
+     den Partner-Tab app-weit ein/aus. Flag app_settings.sponsors_enabled
+     (Skript 44), lesbar über app_flags. Fehlt das Skript, bleibt Werbung an. */
+  window.__sponsorsEnabled = true;
+  window.applySponsorVisibility = function(on){
+    window.__sponsorsEnabled = (on !== false);
+    ['pbSplashSponsor','pbSponsorBook','pbSponsorAbo','pbSponsorPlay','pbSponsorGuthaben'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el) el.style.display = window.__sponsorsEnabled ? '' : 'none';
+    });
+    // Partner-Tab an der (gemerkten) Absicht + Master-Schalter ausrichten.
+    if(typeof window.applyPartnerTabVisibility==='function') window.applyPartnerTabVisibility(window.__partnerTabOn);
+    if(typeof window.fillSponsorsEnabledAdmin==='function') window.fillSponsorsEnabledAdmin();
+  };
+  window.fillSponsorsEnabledAdmin = function(){
+    var on = window.__sponsorsEnabled !== false;
+    var off=document.getElementById('adsOff'), onb=document.getElementById('adsOn');
+    if(off&&onb){ off.classList.toggle('seg-active', !on); onb.classList.toggle('seg-active', on); }
+  };
+  window.loadSponsorsEnabled = async function(){
+    try{
+      if(typeof sb==='undefined' || !sb) return;
+      var r=await sb.from('app_flags').select('sponsors_enabled').maybeSingle();
+      if(r.error || !r.data) return;   // ohne Skript 44 bleibt Werbung an
+      window.applySponsorVisibility(r.data.sponsors_enabled !== false);
+    }catch(e){}
+  };
+  window.setSponsorsEnabled = async function(on){
+    on=!!on;
+    try{
+      var r=await sb.rpc('admin_set_sponsors_enabled', { p_enabled: on });
+      if(r.error) throw r.error;
+      window.applySponsorVisibility(on);
+      if(typeof showToast==='function') showToast(on ? 'Partner-Anzeige ist aktiv.' : 'Partner-Anzeige komplett ausgeblendet.');
+    }catch(e){ alert('Umschalten fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
   };
 
   /* Bildkarte „Spieler informieren": hell (Standard) / dunkel. Flag steht in
@@ -11839,7 +11891,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
     }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
   }
-  function initSponsorArea(){ loadSponsorsDisplay(); if(typeof loadPartnerFlag==='function') loadPartnerFlag(); if(typeof loadShareCardTheme==='function') loadShareCardTheme(); if(typeof loadEarlybird==='function') loadEarlybird(); if(typeof loadSplash==='function') loadSplash(); if(typeof loadAboBanner==='function') loadAboBanner(); }
+  function initSponsorArea(){ loadSponsorsDisplay(); if(typeof loadPartnerFlag==='function') loadPartnerFlag(); if(typeof loadSponsorsEnabled==='function') loadSponsorsEnabled(); if(typeof loadShareCardTheme==='function') loadShareCardTheme(); if(typeof loadEarlybird==='function') loadEarlybird(); if(typeof loadSplash==='function') loadSplash(); if(typeof loadAboBanner==='function') loadAboBanner(); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initSponsorArea);
   else initSponsorArea();
 })();
