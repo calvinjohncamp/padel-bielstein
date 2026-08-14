@@ -11253,6 +11253,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     document.body.style.overflow = 'hidden';
     var cta = document.getElementById('pbSplashCta');
     if(cta) cta.addEventListener('click', function(){ leave(splash); });
+    // Frühbucher-Kachel verlinkt direkt auf die „Jahresabo sichern"-Seite.
+    var ebTile = document.getElementById('pbSplashEarly');
+    if(ebTile){
+      ebTile.style.cursor = 'pointer';
+      ebTile.addEventListener('click', function(){ try{ setMode('abo'); }catch(e){} leave(splash); });
+    }
     document.addEventListener('keydown', function esc(e){
       if(e.key === 'Escape'){ leave(splash); document.removeEventListener('keydown', esc); }
     });
