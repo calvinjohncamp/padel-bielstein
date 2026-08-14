@@ -219,8 +219,10 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 /* ■■ COURTS ■■ */
 .courts-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .court-col { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--blue); }
-.court-hdr { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; background: #000; border-bottom: 1px solid var(--blue); }
+.court-hdr { padding: 10px 16px; display: flex; align-items: baseline; justify-content: flex-start; flex-wrap: wrap; column-gap: 12px; row-gap: 2px; background: #000; border-bottom: 1px solid var(--blue); }
 .court-name { font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
+/* Kleiner Lage-Hinweis rechts neben der Court-Überschrift, im Legenden-Schriftstil. */
+.court-sub { font-family: "Manrope","Arial",sans-serif; font-weight: 500; font-size: 0.68rem; line-height: 1.3; letter-spacing: 0; text-transform: none; color: #7A7368; text-align: left; }
 .slots-grid { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
 .slot { border-radius: 8px; padding: 10px 13px; cursor: pointer; transition: all 0.13s; display: flex; align-items: center; justify-content: space-between; border: 1.5px solid transparent; }
 .slot.free { background: #272727; border-color: #333; }
@@ -1591,8 +1593,8 @@ main {
     </div>
 
     <div class="courts-wrap gap">
-      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #1</div></div><div class="slots-grid" id="slots1"></div></div>
-      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #2</div></div><div class="slots-grid" id="slots2"></div></div>
+      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #1</div><div class="court-sub">Linker Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="slots1"></div></div>
+      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #2</div><div class="court-sub">Rechter Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="slots2"></div></div>
     </div>
 
     <div class="freibad-note">
@@ -1675,8 +1677,8 @@ main {
       <div class="legend-item"><div class="ldot" style="background:#1C1A17"></div> Abo vergeben</div>
     </div>
     <div class="courts-wrap gap">
-      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #1</div></div><div class="slots-grid" id="aboSlots1"></div></div>
-      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #2</div></div><div class="slots-grid" id="aboSlots2"></div></div>
+      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #1</div><div class="court-sub">Linker Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="aboSlots1"></div></div>
+      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #2</div><div class="court-sub">Rechter Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="aboSlots2"></div></div>
     </div>
     <div class="abo-summary" id="aboSummary">
       <div class="abo-sum-hdr"><span style="font-size:1.1rem">■</span><span class="abo-sum-title">Dein Jahresabo</span></div>
@@ -5821,6 +5823,71 @@ async function submitAbo(skipAuthCheck) {
     return;
   }
 
+  // Frühbucher-Phase aktiv? Dann läuft „Abo sichern" als 2-Jahres-Abo mit
+  // Einmalzahlung (mode:payment). Preis, Laufzeit, Startdatum und die
+  // Mitglieder-/Partner-Prüfung macht ausschließlich der Server; hier wird nur
+  // umgeschaltet. (Die Vorschau zählt bewusst nicht – nur die echte Phase.)
+  const eb = window.__earlybird || {};
+  if (eb.active) {
+    const pendingEb = {
+      booking_type: 'earlybird_abo',
+      is_earlybird: true,
+      court,
+      weekday: aboWd,
+      weekday_name: WDNAMES[aboWd],
+      hour_start: hour,
+      duration: aboDur,
+      term_months: Number(eb.termMonths) || 24,
+      user_id: userId,
+      auth_user_id: currentUser.id,
+      customer_type: custType,
+      email,
+      full_name: fullName,
+      ui_theme: emailTheme.key,
+      email_theme: emailTheme,
+      email_theme_key: emailTheme.key
+    };
+    storePendingAboCheckout(pendingEb);
+    showToast('Weiter zu Stripe …');
+    try {
+      const res = await fetch(
+        'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout',
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            booking_type: 'earlybird_abo',
+            court,
+            weekday: aboWd,
+            hour_start: hour,
+            duration: aboDur,
+            user_id: userId,
+            auth_user_id: currentUser.id,
+            email,
+            full_name: fullName,
+            ui_theme: emailTheme.key
+          }),
+        }
+      );
+      const data = await res.json();
+      if (data.url) {
+        if (data.starts_on) pendingEb.starts_on = data.starts_on;
+        if (data.ends_on)   pendingEb.ends_on   = data.ends_on;
+        storePendingAboCheckout(pendingEb);
+        window.location.href = data.url;
+      } else {
+        // Gating-/Fenster-Hinweis kommt als Klartext-Meldung vom Server
+        // (z. B. „nur für Mitglieder und Partner").
+        showToast(data.error || 'Frühbucher-Abo ist derzeit nicht möglich.');
+        console.error('Earlybird checkout error:', data);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('Netzwerkfehler – bitte erneut versuchen.');
+    }
+    return;
+  }
+
   const pendingAbo = {
     booking_type: 'abo',
     court,
@@ -6014,10 +6081,40 @@ function updateAboSummary() {
   document.getElementById("as-day").textContent   = WDNAMES[aboWd];
   document.getElementById("as-time").textContent  = `${String(h).padStart(2,"0")}:00 – ${String(h+aboDur).padStart(2,"0")}:00 Uhr`;
   document.getElementById("as-dur").textContent   = `${aboDur} Stunde${aboDur>1?'n':''}`;
-  document.getElementById("as-reg").textContent   = `Einzelbuchung: 52 × ${fmt(pricePerWeek)} = ${fmt(totalReg)}`;
-  document.getElementById("as-total").textContent = fmt(totalAbo);
-  document.getElementById("as-save").textContent  = `Du sparst ${fmt(saved)}`;
-  document.getElementById("as-perperson").textContent = fmt(Math.round(totalAbo/4));
+
+  // Titel, Text und Preis richten sich nach dem Modus: In der aktiven
+  // Frühbucherphase ist es ein 2-Jahres-Abo (Einmalzahlung) mit Frühbucher-
+  // Rabatt statt des regulären Jahresabos. Basis ist derselbe App-Abopreis
+  // (pricePerWeek × 30) pro Jahr – der Server rechnet identisch.
+  const eb = window.__earlybird || {};
+  const sumTitleEl = card.querySelector('.abo-sum-title');
+  const abo52El    = card.querySelector('.abo-52');
+  const ctaEl      = card.querySelector('.abo-cta');
+
+  if (eb.active) {
+    const years   = (Number(eb.termMonths) || 24) / 12;
+    const disc    = (Number(eb.discount)   || 25) / 100;
+    const aboYear = totalAbo;                       // App-Abopreis / Jahr
+    const regTerm = aboYear * years;               // ohne Frühbucher-Rabatt
+    const ebTotal = Math.round(aboYear * years * (1 - disc));
+    const ebSaved = regTerm - ebTotal;
+    const yearsTxt = Number.isInteger(years) ? `${years} Jahre` : `${eb.termMonths} Monate`;
+    if (sumTitleEl) sumTitleEl.textContent = `Dein Frühbucher-Abo (${yearsTxt})`;
+    if (abo52El)    abo52El.textContent = `${yearsTxt} lang jede Woche exklusiv für dich reserviert`;
+    document.getElementById("as-reg").textContent   = `Regulär: ${years} × ${fmt(aboYear)} = ${fmt(regTerm)}`;
+    document.getElementById("as-total").textContent = fmt(ebTotal);
+    document.getElementById("as-save").textContent  = `${Math.round(disc*100)} % Frühbucher-Rabatt – du sparst ${fmt(ebSaved)}`;
+    document.getElementById("as-perperson").textContent = fmt(Math.round(ebTotal/4));
+    if (ctaEl) ctaEl.textContent = '■ Frühbucher-Abo sichern (Einmalzahlung)';
+  } else {
+    if (sumTitleEl) sumTitleEl.textContent = 'Dein Jahresabo';
+    if (abo52El)    abo52El.textContent = '52 Wochen exklusiv für dich reserviert';
+    document.getElementById("as-reg").textContent   = `Einzelbuchung: 52 × ${fmt(pricePerWeek)} = ${fmt(totalReg)}`;
+    document.getElementById("as-total").textContent = fmt(totalAbo);
+    document.getElementById("as-save").textContent  = `Du sparst ${fmt(saved)}`;
+    document.getElementById("as-perperson").textContent = fmt(Math.round(totalAbo/4));
+    if (ctaEl) ctaEl.textContent = '■ Jahresabo sichern';
+  }
   card.classList.add("visible");
 }
 
@@ -10564,16 +10661,16 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 }
 /* Premium-Partner + Frühbucher NEBENEINANDER (gleiche Größe), App-CI-Look.
    Rahmen/Abstand liegt am Duo, nicht mehr am Sponsor. Frühbucher nur bei Phase/Vorschau. */
-.pb-splash-duo { display: flex; gap: 14px; align-items: stretch; border-top: 1px solid #3A362F; margin-top: 38px; padding-top: 26px; }
-.pb-splash-duo > #pbSplashSponsor { border-top: 0; margin-top: 0; padding-top: 0; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.pb-splash-duo { display: flex; gap: 30px; align-items: stretch; border-top: 1px solid #3A362F; margin-top: 38px; padding-top: 26px; }
+.pb-splash-duo > #pbSplashSponsor { border-top: 0; margin-top: 0; padding-top: 0; flex: 1.4 1 0; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
 .pb-splash-duo > .pb-splash-early { flex: 1 1 0; min-width: 0; }
 /* Nur wenn die Frühbucher-Kachel sichtbar ist: Premium-Tile füllt seine Spalte
    (dann sind beide gleich groß). Sonst bleibt die Premium-Kachel natürlich. */
 .pb-splash-duo:has(.pb-splash-early.show) #pbSplashSponsor .pbsp-tile.pbsp-prem { width: 100%; height: auto; flex: 1 1 auto; }
-.pb-splash-early { display: none; flex-direction: column; justify-content: center; padding: 14px 16px; border: 1px solid #3A352E; border-radius: 14px; background: rgba(246,241,231,.04); }
+.pb-splash-early { display: none; flex-direction: column; justify-content: center; padding: 12px 15px; border: 1px solid #3A352E; border-radius: 13px; background: rgba(246,241,231,.04); }
 .pb-splash-early.show { display: flex; }
-.pb-splash-early .kick { font: 800 .6rem/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #FF5A36; margin-bottom: 7px; }
-.pb-splash-early .txt { font: 500 .8rem/1.45 "Manrope","Arial",sans-serif; color: #B8B0A2; }
+.pb-splash-early .kick { font: 800 .56rem/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #FF5A36; margin-bottom: 6px; }
+.pb-splash-early .txt { font: 500 .76rem/1.42 "Manrope","Arial",sans-serif; color: #B8B0A2; }
 .pb-splash-early .txt strong { color: #F6F1E7; font-weight: 700; }
 .pb-splash-early .txt .hi { color: #FF5A36; font-weight: 800; white-space: nowrap; }
 @media (max-width: 560px) { .pb-splash-duo { flex-direction: column; } }
