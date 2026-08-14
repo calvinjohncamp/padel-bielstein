@@ -284,6 +284,37 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .abo-cta { width: 100%; height: 60px; background: var(--gold); color: #0a0a0a; border: none; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 28px rgba(246,246,246,0.2); }
 .abo-cta:hover { background: var(--gold-dk); transform: translateY(-2px); }
 
+/* --- Redesign Abo-Zusammenfassung: kompakter, größer, markanter --- */
+.abo-summary { padding: 16px 20px; }
+.abo-sum-hdr { margin-bottom: 12px; align-items: center; }
+.abo-sum-sq { width: 11px; height: 11px; border-radius: 3px; background: #FF5A36; flex: 0 0 auto; }
+.abo-sum-title { font-size: 1.05rem; line-height: 1; }
+.abo-details { gap: 2px; margin-bottom: 10px; }
+.abo-detail-row { padding: 7px 0; }
+.abo-detail-row .dl { font-size: 0.92rem; }
+.abo-detail-row .dv { font-size: 1.06rem; }
+.abo-52 { font-size: 0.8rem; margin: 0 0 12px; }
+.abo-benefits { gap: 6px; margin-bottom: 10px; }
+.abo-benefit { font-size: 0.9rem; }
+.abo-benefit-dot { width: 6px; height: 6px; }
+.abo-weather { font-size: 0.86rem; margin-bottom: 12px; }
+/* Preisblock = die Kaufentscheidung */
+.abo-priceblock { margin: 2px 0 10px; padding: 12px 0 2px; border-top: 1px solid rgba(255,255,255,.1); }
+.abo-pb-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.abo-pb-total-wrap { display: flex; flex-direction: column; min-width: 0; }
+.abo-pb-total { font-family: "Space Grotesk","Arial Narrow",sans-serif; font-weight: 900; font-size: 2.5rem; line-height: .92; color: #FF5A36; }
+.abo-pb-reg { font-size: 0.82rem; color: #8f8f8f; margin-top: 7px; }
+.abo-pb-per { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.abo-pb-per-amt { font-family: "Space Grotesk","Arial Narrow",sans-serif; font-weight: 900; font-size: 2.3rem; line-height: .92; color: #F6F1E7; }
+.abo-pb-per-lbl { font-size: 0.68rem; letter-spacing: .07em; text-transform: uppercase; font-weight: 800; color: #8f8f8f; margin-top: 6px; }
+.abo-pb-save { margin-top: 13px; display: inline-block; font-weight: 800; font-size: 0.98rem; padding: 7px 14px; border-radius: 9px; color: #4ade80; background: rgba(74,222,128,.15); }
+/* Helles Bielstein-Theme (weiße Karte) */
+body.bielstein-theme .abo-priceblock { border-top-color: #EFE6D5 !important; }
+body.bielstein-theme .abo-pb-reg,
+body.bielstein-theme .abo-pb-per-lbl { color: #9A9384 !important; }
+body.bielstein-theme .abo-pb-per-amt { color: #1C1A17 !important; }
+body.bielstein-theme .abo-pb-save { color: #0F7A38 !important; background: #E4F5EA !important; }
+
 /* ■■ AUTH MODAL ■■ */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 .modal-overlay.open { opacity: 1; pointer-events: all; }
@@ -727,11 +758,12 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .eb-body strong { color:#F6F1E7; font-weight:700; }
 .eb-body .eb-hi { color:#FF5A36; font-weight:800; white-space:nowrap; }
 .eb-body-2 { margin-top:-6px; }
-.eb-meta { display:flex; flex-wrap:wrap; align-items:stretch; gap:10px; margin:0 0 4px; }
-.eb-meta-item { flex:1 1 150px; background:#242019; border:1px solid #332F27; border-radius:11px; padding:11px 14px; }
-.eb-meta-lbl { display:block; font:700 .6rem/1 "Space Grotesk",sans-serif; letter-spacing:.13em; text-transform:uppercase; color:#8A867E; margin-bottom:6px; }
+.eb-meta { display:flex; flex-wrap:wrap; align-items:center; gap:16px; margin:0 0 4px; }
+.eb-meta-boxes { display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:0 1 auto; }
+.eb-meta-item { background:#242019; border:1px solid #332F27; border-radius:11px; padding:10px 14px; }
+.eb-meta-lbl { display:block; font:700 .6rem/1.15 "Space Grotesk",sans-serif; letter-spacing:.11em; text-transform:uppercase; color:#8A867E; margin-bottom:6px; }
 .eb-meta-val { font:800 1.02rem/1 "Space Grotesk",sans-serif; color:#F6F1E7; }
-.eb-meta-note { flex:1 1 190px; align-self:center; font:500 .76rem/1.42 "Manrope","Arial",sans-serif; color:#8A867E; }
+.eb-meta-note { flex:1 1 200px; font:500 .92rem/1.5 "Manrope","Arial",sans-serif; color:#8A867E; }
 .eb-foot { font-family:"Manrope","Arial",sans-serif; font-weight:500; font-size:.76rem; line-height:1.5; color:#8A867E; border-top:1px solid #2A2723; padding-top:12px; }
 .eb-adm-lbl { display:block; font:700 11px "Space Grotesk",sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#7A7368; margin-bottom:6px; }
 .eb-adm-inp { width:100%; padding:9px 11px; border:1.5px solid #E2DACB; border-radius:8px; font:500 14px "Manrope",sans-serif; background:#fff; color:#1C1A17; box-sizing:border-box; }
@@ -1648,8 +1680,10 @@ main {
       <div class="eb-body">Nur für <strong>TFB-Mitglieder &amp; Partner</strong>: jetzt vorab die begehrtesten Spielzeiten reservieren — mit dem einmaligen <span class="eb-hi">25&nbsp;% Start-Rabatt</span> anstatt der regulären 10&nbsp;%.</div>
       <div class="eb-body eb-body-2"><strong>Dieser Court gehört für 2 Jahre</strong> an den von dir gebuchten Tagen und zu den von dir gebuchten Stunden <strong>allein dir.</strong></div>
       <div class="eb-meta">
-        <div class="eb-meta-item"><span class="eb-meta-lbl">Aktion läuft bis</span><span class="eb-meta-val" id="ebUntil">—</span></div>
-        <div class="eb-meta-item"><span class="eb-meta-lbl">Saisonstart (voraussichtlich)</span><span class="eb-meta-val" id="ebStart">—</span></div>
+        <div class="eb-meta-boxes">
+          <div class="eb-meta-item"><span class="eb-meta-lbl">Aktion läuft bis</span><span class="eb-meta-val" id="ebUntil">—</span></div>
+          <div class="eb-meta-item"><span class="eb-meta-lbl">Saisonstart (voraussichtlich)</span><span class="eb-meta-val" id="ebStart">—</span></div>
+        </div>
         <div class="eb-meta-note">Dein Abo startet automatisch am Eröffnungstag unserer neuen Anlage.</div>
       </div>
     </div>
@@ -1681,24 +1715,31 @@ main {
       <div class="court-col"><div class="court-hdr"><div class="court-name">Court #2</div><div class="court-sub">Rechter Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="aboSlots2"></div></div>
     </div>
     <div class="abo-summary" id="aboSummary">
-      <div class="abo-sum-hdr"><span style="font-size:1.1rem">■</span><span class="abo-sum-title">Dein Jahresabo</span></div>
+      <div class="abo-sum-hdr"><span class="abo-sum-sq" aria-hidden="true"></span><span class="abo-sum-title">Dein Jahresabo</span></div>
       <div class="abo-details">
         <div class="abo-detail-row"><span class="dl">Platz</span><span class="dv" id="as-court">—</span></div>
         <div class="abo-detail-row"><span class="dl">Wochentag</span><span class="dv" id="as-day">—</span></div>
         <div class="abo-detail-row"><span class="dl">Uhrzeit</span><span class="dv" id="as-time">—</span></div>
         <div class="abo-detail-row"><span class="dl">Dauer</span><span class="dv" id="as-dur">—</span></div>
       </div>
-      <div class="abo-52">52 Wochen exklusiv für dich reserviert</div>
-      <div class="abo-pricing">
-        <div class="abo-price-reg" id="as-reg">Einzelbuchung: 52 × — € = — €</div>
-        <div class="abo-price-total" id="as-total">— €</div>
-        <div class="abo-price-save" id="as-save">Du sparst — €</div>
+      <div class="abo-priceblock">
+        <div class="abo-pb-top">
+          <div class="abo-pb-total-wrap">
+            <span class="abo-pb-total" id="as-total">— €</span>
+            <span class="abo-pb-reg" id="as-reg">—</span>
+          </div>
+          <div class="abo-pb-per">
+            <span class="abo-pb-per-amt" id="as-perperson">—</span>
+            <span class="abo-pb-per-lbl">pro Spieler</span>
+          </div>
+        </div>
+        <div class="abo-pb-save" id="as-save">Du sparst —</div>
       </div>
       <div class="abo-benefits">
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-52">52 Wochen exklusiv für dich reserviert</span></div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz</div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>Keine Konkurrenz um freie Slots</div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>22 Wochen gratis gegenüber Einzelbuchung</div>
-        <div class="abo-benefit"><div class="abo-benefit-dot"></div>Ihr spielt zu viert – jeder zahlt somit nur <strong id="as-perperson" style="color:var(--gold)">—</strong></div>
       </div>
       <div class="abo-weather">Dein Slot gehört dir – gespielt wird, wenn das Wetter es zulässt.</div>
       <button class="abo-cta" onclick="submitAbo(false)">■ Jahresabo sichern</button>
@@ -6172,7 +6213,7 @@ function updateAboSummary() {
   // (pricePerWeek × 30) pro Jahr – der Server rechnet identisch.
   const eb = window.__earlybird || {};
   const sumTitleEl = card.querySelector('.abo-sum-title');
-  const abo52El    = card.querySelector('.abo-52');
+  const abo52El    = document.getElementById('as-52');
   const ctaEl      = card.querySelector('.abo-cta');
 
   if (eb.active) {
@@ -6185,15 +6226,15 @@ function updateAboSummary() {
     const yearsTxt = Number.isInteger(years) ? `${years} Jahre` : `${eb.termMonths} Monate`;
     if (sumTitleEl) sumTitleEl.textContent = `Dein Frühbucher-Abo (${yearsTxt})`;
     if (abo52El)    abo52El.textContent = `${yearsTxt} lang jede Woche exklusiv für dich reserviert`;
-    document.getElementById("as-reg").textContent   = `Regulär: ${years} × ${fmt(aboYear)} = ${fmt(regTerm)}`;
+    document.getElementById("as-reg").textContent   = `statt ${fmt(regTerm)} regulär`;
     document.getElementById("as-total").textContent = fmt(ebTotal);
-    document.getElementById("as-save").textContent  = `${Math.round(disc*100)} % Frühbucher-Rabatt – du sparst ${fmt(ebSaved)}`;
+    document.getElementById("as-save").textContent  = `${Math.round(disc*100)} % Frühbucher-Rabatt · du sparst ${fmt(ebSaved)}`;
     document.getElementById("as-perperson").textContent = fmt(Math.round(ebTotal/4));
     if (ctaEl) ctaEl.textContent = '■ Frühbucher-Abo sichern (Einmalzahlung)';
   } else {
     if (sumTitleEl) sumTitleEl.textContent = 'Dein Jahresabo';
     if (abo52El)    abo52El.textContent = '52 Wochen exklusiv für dich reserviert';
-    document.getElementById("as-reg").textContent   = `Einzelbuchung: 52 × ${fmt(pricePerWeek)} = ${fmt(totalReg)}`;
+    document.getElementById("as-reg").textContent   = `statt ${fmt(totalReg)} Einzelbuchung`;
     document.getElementById("as-total").textContent = fmt(totalAbo);
     document.getElementById("as-save").textContent  = `Du sparst ${fmt(saved)}`;
     document.getElementById("as-perperson").textContent = fmt(Math.round(totalAbo/4));
