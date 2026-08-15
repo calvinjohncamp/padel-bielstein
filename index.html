@@ -176,7 +176,9 @@ main { max-width: 960px; margin: 0 auto; padding: 2px 16px 80px; }
 .gap { margin-bottom: 22px; }
 
 /* ■■ DATE SCROLL ■■ */
-.date-scroll-wrap { position: relative; }
+/* Der Datums-Scroll hat unten bereits 20px Reserve für die Monats-Fahne –
+   daher hier weniger Außenabstand, sonst wird der Abstand zu „Spieldauer" zu groß. */
+.date-scroll-wrap { position: relative; margin-bottom: 6px; }
 .date-scroll { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 6px; padding-left: 38px; padding-right: 38px; scrollbar-width: none; }
 .date-scroll::-webkit-scrollbar { display: none; }
 .scroll-btn { position: absolute; top: 50%; transform: translateY(-60%); z-index: 10; background: var(--blue); border: none; color: #fff; font-size: 1.1rem; width: 28px; height: 40px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -4136,9 +4138,9 @@ function updateSummary() {
     let note = '';
     if (member && disc > 0) {
       body += crow('Mitgliederrabatt', `${Math.round(member.discount * 100)} %`, disc, 'Das ist dein heutiger Rabatt')
-            + crow('Dein Buchungspreis', '', p, 'Dein Rechnungspreis', 'tot');
+            + crow('Dein Buchungspreis', '', p, '','tot');
     } else {
-      body += crow('Dein Buchungspreis', '', p, 'Dein Rechnungspreis', 'tot');
+      body += crow('Dein Buchungspreis', '', p, '','tot');
     }
     sbCalc.innerHTML =
       '<div class="abo-calc-h">Transparenz – So setzt sich dein Buchungspreis zusammen</div>'
@@ -6362,7 +6364,7 @@ function updateAboSummary() {
     if (sumTitleEl) sumTitleEl.textContent = 'Dein Jahresabo';
     if (abo52El)    abo52El.textContent = '52 Wochen exklusiv für dich reserviert – du zahlst davon nur 30 Wochen.';
     if (rabattEl)   rabattEl.textContent = 'Dein Rabatt bei dieser Buchung beträgt 10 %.';
-    document.getElementById("as-reg").textContent   = `statt ${fmt(totalReg)} Einzelbuchung`;
+    document.getElementById("as-reg").textContent   = `anstatt ${fmt(totalReg)} bei Einzelbuchung von theoretisch 52 Wochen`;
     document.getElementById("as-total").textContent = fmt(totalAbo);
     document.getElementById("as-save").textContent  = `Du sparst ${fmt(saved)}`;
     document.getElementById("as-perperson").textContent = fmt(Math.round(totalAbo/4));
@@ -6412,13 +6414,13 @@ function updateAboSummary() {
       body = crow('52 Wochen ×', midPrice, pw * 52, 'Preis bei 52 Einzelbuchungen')
            + crow('30 Wochen ×', midPrice, abo30, 'Du bezahlst im Abo nur 30 Wochen')
            + crow('Rabatt', `${Math.round(disc2 * 100)} %`, rab, 'Das ist dein heutiger Rabatt')
-           + crow('Dein Abo-Preis p.a.', '', paJahr, 'Dein Rechnungspreis', 'res')
+           + crow('Dein Abo-Preis p.a.', '', paJahr, '','res')
            + '<tr class="spacer"><td colspan="5"></td></tr>'
            + crow('2-Jahres-Abo', '', twoYr, `Dein Preis für das Frühbucher-Abo ${sy}/${ey}`, 'tot');
     } else {
       body = crow('52 Wochen ×', midPrice, pw * 52, 'Preis bei 52 Einzelbuchungen')
            + crow('30 Wochen ×', midPrice, abo30, 'Du bezahlst im Abo nur 30 Wochen')
-           + crow('Dein Abo-Preis p.a.', '', abo30, 'Dein Rechnungspreis', 'tot');
+           + crow('Dein Abo-Preis p.a.', '', abo30, '','tot');
       note = '<div class="abo-calc-note">Mitglieder &amp; Partner erhalten an der Kasse zusätzlich 10&nbsp;% Rabatt.</div>';
     }
     calcEl.innerHTML =
