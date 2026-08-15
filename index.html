@@ -1662,8 +1662,19 @@ main {
       <div class="sum-row"><span class="sl">Platz</span><span class="sv" id="sCourt">—</span></div>
       <div class="sum-row"><span class="sl">Zeit</span><span class="sv" id="sTime">—</span></div>
       <div class="sum-row"><span class="sl">Dauer</span><span class="sv" id="sDur">—</span></div>
-      <div class="sum-row" id="discRow" style="display:none;"><span class="sl">Rabatt <span class="disc-badge" id="discBadge"></span></span><span class="sv" id="sDisc" style="color:#4ade80">—</span></div>
-      <div class="sum-row total"><span class="sl">Gesamt</span><span class="sv" id="sTotal">—</span></div>
+      <div class="abo-priceblock" style="margin-top:14px;">
+        <div class="abo-pb-top">
+          <div class="abo-pb-total-wrap">
+            <span class="abo-pb-total" id="sTotal">— €</span>
+            <span class="abo-pb-reg" id="sReg"></span>
+          </div>
+          <div class="abo-pb-per">
+            <span class="abo-pb-per-amt" id="sPer">—</span>
+            <span class="abo-pb-per-lbl">pro Spieler</span>
+          </div>
+        </div>
+        <div class="abo-pb-save" id="sSave" style="display:none;"></div>
+      </div>
       <div class="abo-calc" id="sb-calc" style="margin-top:14px;"></div>
       <div class="abo-benefits" id="sb-benefits" style="margin-top:12px;">
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz.</div>
@@ -4080,13 +4091,18 @@ function updateSummary() {
   document.getElementById("sCourt").textContent = `Court #${ct}`;
   document.getElementById("sTime").textContent  = `${String(h).padStart(2,"0")}:00 – ${String(end).padStart(2,"0")}:00 Uhr`;
   document.getElementById("sDur").textContent   = `${selDur} Stunde${selDur>1?'n':''}`;
-  document.getElementById("sTotal").textContent = `${p} €`;
-  const dr = document.getElementById("discRow");
+  // Preisblock wie beim Abo: fette Summe links (Orange), große dunkle Pro-Spieler-Zahl rechts.
+  document.getElementById("sTotal").textContent = fmt(p);
+  document.getElementById("sPer").textContent   = fmt(Math.round(p / 4));
+  const sReg = document.getElementById("sReg");
+  const sSave = document.getElementById("sSave");
   if (member && disc > 0) {
-    dr.style.display = "flex";
-    document.getElementById("discBadge").textContent = `${Math.round(member.discount*100)}% Mitgliederrabatt`;
-    document.getElementById("sDisc").textContent = `−${disc} €`;
-  } else { dr.style.display = "none"; }
+    if (sReg)  sReg.textContent = `statt ${fmt(rp)} regulär`;
+    if (sSave) { sSave.textContent = `Du sparst ${fmt(disc)}`; sSave.style.display = ''; }
+  } else {
+    if (sReg)  sReg.textContent = '';
+    if (sSave) sSave.style.display = 'none';
+  }
 
   // Transparenz-Rechenweg + Aufzählung (wie im Abo, aber für die Einzelbuchung).
   const pmap = prices(selDate);
@@ -4104,9 +4120,11 @@ function updateSummary() {
   }
   const sbRab = document.getElementById('sb-rabatt');
   if (sbRab) {
-    sbRab.textContent = (member && member.discount > 0)
-      ? `Dein Rabatt bei dieser Buchung beträgt ${Math.round(member.discount * 100)} %.`
-      : 'Als Mitglied oder Partner sparst du 10 % – dafür anmelden.';
+    if (member && member.discount > 0) {
+      sbRab.textContent = `Dein Rabatt bei dieser Buchung beträgt ${Math.round(member.discount * 100)} %.`;
+    } else {
+      sbRab.innerHTML = 'Als Mitglied oder Partner sparst du 10 % – <a href="https://www.tfbielstein.de/anmeldformular/" target="_blank" rel="noopener" style="color:#FF5A36;text-decoration:underline;font-weight:600;">jetzt Mitglied werden</a>.';
+    }
   }
   const sbCalc = document.getElementById('sb-calc');
   if (sbCalc) {
@@ -4121,11 +4139,10 @@ function updateSummary() {
             + crow('Dein Buchungspreis', '', p, 'Dein Rechnungspreis', 'tot');
     } else {
       body += crow('Dein Buchungspreis', '', p, 'Dein Rechnungspreis', 'tot');
-      note = '<div class="abo-calc-note">Als Mitglied oder Partner sparst du 10 % – einfach anmelden.</div>';
     }
     sbCalc.innerHTML =
       '<div class="abo-calc-h">Transparenz – So setzt sich dein Buchungspreis zusammen</div>'
-      + '<div class="abo-calc-wrap"><table><thead><tr><th></th><th>Preis/h · Rabatt</th><th>Buchung</th><th>pro Spieler</th><th></th></tr></thead><tbody>'
+      + '<div class="abo-calc-wrap"><table><thead><tr><th></th><th>Preis · Rabatt</th><th>Buchung</th><th>pro Spieler</th><th></th></tr></thead><tbody>'
       + body + '</tbody></table></div>' + note;
   }
 
@@ -6332,8 +6349,11 @@ function updateAboSummary() {
     if (sumTitleEl) sumTitleEl.textContent = `Dein Frühbucher-Abo (${yearsTxt})`;
     if (abo52El)    abo52El.textContent = `${yearsTxt} lang jede Woche exklusiv für dich reserviert.`;
     if (rabattEl)   rabattEl.textContent = `Dein Rabatt bei dieser Buchung beträgt ${Math.round(disc*100)} %.`;
-    const einzelTerm = pricePerWeek * 52 * years;   // Einzelbuchung über die volle Laufzeit
-    document.getElementById("as-reg").textContent   = `statt ${fmt(einzelTerm)} Einzelbuchung`;
+    // Wochen über die volle Abo-Laufzeit: 52 pro Jahr → 2 Jahre = 104. Die Zahl
+    // ergibt sich aus der Laufzeit, nicht aus 1/2 Stunden (bei 2 Jahren immer 104).
+    const weeks = 52 * years;
+    const einzelTerm = pricePerWeek * weeks;         // Einzelbuchung über die volle Laufzeit
+    document.getElementById("as-reg").textContent   = `anstatt ${fmt(einzelTerm)} bei Einzelbuchung von theoretisch ${weeks} Wochen`;
     document.getElementById("as-total").textContent = fmt(ebTotal);
     document.getElementById("as-save").textContent  = `Du sparst ${fmt(einzelTerm - ebTotal)}`;
     document.getElementById("as-perperson").textContent = fmt(Math.round(ebTotal/4));
@@ -6403,7 +6423,7 @@ function updateAboSummary() {
     }
     calcEl.innerHTML =
       '<div class="abo-calc-h">Transparenz – So setzt sich dein Abopreis zusammen</div>'
-      + '<div class="abo-calc-wrap"><table><thead><tr><th></th><th>Preis/h · Rabatt</th><th>Buchung</th><th>pro Spieler</th><th></th></tr></thead><tbody>'
+      + '<div class="abo-calc-wrap"><table><thead><tr><th></th><th>Preis · Rabatt</th><th>Buchung</th><th>pro Spieler</th><th></th></tr></thead><tbody>'
       + body + '</tbody></table></div>' + note;
   }
 
