@@ -6363,7 +6363,15 @@ function updateAboSummary() {
   } else {
     if (sumTitleEl) sumTitleEl.textContent = 'Dein Jahresabo';
     if (abo52El)    abo52El.textContent = '52 Wochen exklusiv für dich reserviert – du zahlst davon nur 30 Wochen.';
-    if (rabattEl)   rabattEl.textContent = 'Dein Rabatt bei dieser Buchung beträgt 10 %.';
+    if (rabattEl) {
+      // Außerhalb des Aktionszeitraums (Normalabo): Mitglieder sehen ihren 10 %-Rabatt,
+      // Nicht-Mitglieder den Hinweis mit Link zum Mitglied-werden.
+      if (typeof member !== 'undefined' && member && member.discount > 0) {
+        rabattEl.textContent = `Dein Rabatt bei dieser Buchung beträgt ${Math.round(member.discount * 100)} %.`;
+      } else {
+        rabattEl.innerHTML = 'Als Mitglied oder Partner sparst du 10 % – <a href="https://www.tfbielstein.de/anmeldformular/" target="_blank" rel="noopener" style="color:#FF5A36;text-decoration:underline;font-weight:600;">jetzt Mitglied werden</a>.';
+      }
+    }
     document.getElementById("as-reg").textContent   = `anstatt ${fmt(totalReg)} bei Einzelbuchung von theoretisch 52 Wochen`;
     document.getElementById("as-total").textContent = fmt(totalAbo);
     document.getElementById("as-save").textContent  = `Du sparst ${fmt(saved)}`;
