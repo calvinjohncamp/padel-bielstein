@@ -4453,6 +4453,24 @@ function showAuthOk(msg) {
   document.getElementById('authErr').classList.remove('show');
 }
 
+// Begrüßung nach dem Login. Erkannte Mitglieder/Partner bekommen einen aktiven
+// Hinweis auf ihren 10 %-Vorteil. Läuft bewusst erst NACH dem Login (Quelle:
+// my_membership()/my_partner() via loadMemberDiscount) – nicht beim bloßen
+// E-Mail-Eintippen, sonst ließe sich fremde Mitgliedschaft ausspähen.
+function welcomeBackMessage() {
+  const srcs = Array.isArray(myMemberSources) ? myMemberSources : [];
+  if (myPartner) {
+    return 'Willkommen zurück! Dein Partner-Vorteil (10 %) ist aktiv. 🎾';
+  }
+  if (srcs.includes('tfb')) {
+    return 'Willkommen zurück! Wir haben dich als Mitglied der Tennisfreunde Bielstein erkannt – dein 10 %-Vorteil ist aktiv. 🎾';
+  }
+  if (srcs.includes('freibad')) {
+    return 'Willkommen zurück! Deine Freibad-Dauerkarte ist erkannt – dein 10 %-Vorteil ist aktiv. 🎾';
+  }
+  return 'Willkommen zurück! 🎾';
+}
+
 // ============================================================
 //  LOGIN
 // ============================================================
@@ -4472,7 +4490,7 @@ async function doLogin() {
     await loadProfile(data.user.id);
     updateUserBar();
     closeModal();
-    showToast('Willkommen zurück! 🎾');
+    showToast(welcomeBackMessage());
     if (pendingAction === 'book')    confirmBooking(true);
     if (pendingAction === 'abo')     submitAbo(true);
     if (pendingAction === 'card')    confirmCardPurchase(true);
