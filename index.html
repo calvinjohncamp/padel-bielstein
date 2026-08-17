@@ -809,7 +809,7 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 /* width:100% pinnt die Breite -> aspect-ratio darf daraus NICHT (Safari-Bug)
    eine zu große Breite ableiten und rechts aus dem Board ragen. */
 .pbp-tile-prem { aspect-ratio:7.4/1; min-height:92px; width:100%; }
-.pbp-tile-prem img { max-width:34%; max-height:58%; }
+.pbp-tile-prem img { max-width:44%; max-height:74%; }
 .pbp-grid { display:grid; gap:clamp(9px,1.3vw,15px); }
 /* Feste Kachelhöhe je Spalten-Layout (statt aspect-ratio). Nur so lösen sich
    die Prozent-max-Werte des Logos sauber auf – auch in Safari/iPad (der Bug
@@ -11233,7 +11233,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pb-splash-duo > .pb-splash-early { flex: 1 1 0; min-width: 0; }
 /* Nur wenn die Frühbucher-Kachel sichtbar ist: Premium-Tile füllt seine Spalte
    (dann sind beide gleich groß). Sonst bleibt die Premium-Kachel natürlich. */
-.pb-splash-duo:has(.pb-splash-early.show) #pbSplashSponsor .pbsp-tile.pbsp-prem { width: 100%; height: auto; flex: 1 1 auto; }
+.pb-splash-duo:has(.pb-splash-early.show) #pbSplashSponsor .pbsp-tile.pbsp-prem { width: 100%; height: auto; flex: 1 1 auto; padding: 22px 22px; box-sizing: border-box; }
 .pb-splash-early { display: none; flex-direction: column; justify-content: center; padding: 12px 15px; border: 1px solid #3A352E; border-radius: 13px; background: rgba(246,241,231,.04); }
 .pb-splash-early.show { display: flex; }
 .pb-splash-early .kick { font: 800 .84rem/1.2 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #FF5A36; margin-bottom: 8px; }
