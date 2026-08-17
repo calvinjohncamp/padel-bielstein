@@ -1335,6 +1335,26 @@ main {
   </div>
 </div>
 
+<!-- Vorschau vor dem Aktualisieren der TFB-Mitgliederliste (Admin) -->
+<div class="modal-overlay" id="memberSyncModal">
+  <div class="modal payment-choice-modal">
+    <div class="modal-title">Mitgliederliste aktualisieren?</div>
+    <div class="modal-sub" id="memberSyncSub">Bitte prüfe die Änderungen, bevor sie gespeichert werden. Es wird nichts gelöscht – Ausgetretene werden nur auf „inaktiv“ gesetzt.</div>
+    <div class="cc-lines">
+      <div class="cc-line"><span>In der Datei</span><span id="msTotal">—</span></div>
+      <div class="cc-line"><span>Neu anlegen</span><span id="msNeu">—</span></div>
+      <div class="cc-line"><span>Reaktivieren</span><span id="msReakt">—</span></div>
+      <div class="cc-line"><span>Deaktivieren (ausgetreten)</span><span id="msDeakt">—</span></div>
+    </div>
+    <div id="msDeaktNames" style="font-size:0.78rem;color:#B8402C;line-height:1.5;margin:2px 2px 6px;display:none;"></div>
+    <button class="modal-btn cc-option cc-stripe" id="memberSyncOk">
+      <span class="cc-option-copy"><strong>Jetzt speichern</strong><small>Änderungen übernehmen</small></span>
+      <span class="cc-option-mark" aria-hidden="true">→</span>
+    </button>
+    <button class="modal-btn cc-cancel" id="memberSyncCancel">Abbrechen</button>
+  </div>
+</div>
+
 <div class="pb-splash" id="pbSplash" hidden>
   <div class="pb-splash-inner">
     <div class="pb-splash-top">
@@ -3232,6 +3252,27 @@ body.bielstein-theme #tabPlay:not(.active) {
 
     <!-- ── NUTZERVERWALTUNG ── -->
     <div id="adminUsers" style="display:none;">
+
+      <!-- Mitglieder-/Dauerkartenliste aktualisieren (Monats-Import) -->
+      <div class="admin-section">
+        <div class="admin-section-title">🎾 Mitglieder-/Dauerkartenliste aktualisieren</div>
+        <div class="admin-card">
+          <div style="font-size:0.82rem;color:#7A7368;line-height:1.55;margin-bottom:12px;">
+            Aktuelle Liste als <strong>Excel (.xlsx)</strong> oder CSV hochladen. Spalten wie gewohnt:
+            <em>Nr., Name, Vorname, Handy, E-Mail</em>. Abgeglichen wird über die Mitglieds-/Kartennummer:
+            Vorhandene werden aktualisiert, neue angelegt, Fehlende auf <em>inaktiv</em> gesetzt (nie gelöscht),
+            Wiedereingetretene reaktiviert. Du siehst vorher eine Vorschau und musst bestätigen.
+          </div>
+          <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Welche Liste?</label>
+          <select id="memberSyncSource" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;margin-bottom:12px;">
+            <option value="tfb">Tennisfreunde Bielstein (Mitglieder)</option>
+            <option value="freibad">Freibad Bielstein (Dauerkarten)</option>
+          </select>
+          <input type="file" id="memberCsvInput" accept=".xlsx,.xlsm,.xls,.csv,text/csv" style="display:none" onchange="handleMemberFile(this)">
+          <button class="book-btn visible" style="width:100%;position:static;" onclick="document.getElementById('memberCsvInput').click()">Excel- oder CSV-Datei auswählen …</button>
+          <div id="memberSyncMsg" style="margin-top:10px;font-size:0.82rem;color:#7A7368;"></div>
+        </div>
+      </div>
 
       <!-- Nutzerliste -->
       <div class="admin-section">
@@ -6965,6 +7006,185 @@ document.getElementById('adminWeather').style.display   = 'none';
 document.getElementById('adminMis').style.display       = 'none';
 document.getElementById('adminUsers').style.display     = 'none';
 
+// ============================================================
+//  ADMIN – TFB-Mitgliederliste aus CSV aktualisieren (Monats-Import)
+//  Backend: admin_sync_club_members_preview / _apply (Skript 46).
+//  Der Browser liest die CSV, normalisiert genau wie beim Erstimport
+//  (Skript 45; erste gültige E-Mail, "-alt"-Zeile für Zweitadresse) und
+//  schickt nur saubere Zeilen. Geschrieben wird ausschließlich
+//  serverseitig – und erst nach Bestätigung der Vorschau.
+// ============================================================
+let memberSyncRows = null;     // gemerkte, normalisierte Zeilen für den Apply-Schritt
+let memberSyncSource = 'tfb';  // gewählte Liste: 'tfb' (Verein) oder 'freibad' (Dauerkarten)
+
+// Excel-Leser (SheetJS) NUR bei Bedarf nachladen – gleiches Muster wie Chart.js
+// im MIS-Tab. Fällt das CDN aus, bleibt der CSV-Weg als Alternative.
+function ensureXlsxLib() {
+  return new Promise((resolve, reject) => {
+    if (typeof XLSX !== 'undefined') { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Excel-Leser konnte nicht geladen werden (Internet/CDN). Du kannst die Datei alternativ als CSV hochladen.'));
+    document.head.appendChild(s);
+  });
+}
+
+// Robuster CSV-Parser (RFC-4180-artig): erkennt das Trennzeichen (; oder ,),
+// respektiert Anführungszeichen inkl. eingebetteter Trenner/Zeilenumbrüche
+// (wichtig für die E-Mail-Zellen mit Semikolon aus deutschem Excel).
+function parseCsv(text) {
+  text = text.replace(/^﻿/, '');                 // BOM weg
+  const nl = text.search(/\r?\n/);
+  const firstLine = nl >= 0 ? text.slice(0, nl) : text;
+  const delim = (firstLine.split(';').length > firstLine.split(',').length) ? ';' : ',';
+  const rows = []; let row = [], field = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"') { if (text[i+1] === '"') { field += '"'; i++; } else inQ = false; }
+      else field += c;
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === delim) { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c === '\r') { /* ignorieren */ }
+      else field += c;
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(x => (x || '').trim() !== ''));
+}
+
+// Aus den geparsten Zeilen die Mitglieds-Datensätze bauen (Spalten per Kopfzeile).
+function buildMemberRows(matrix) {
+  if (!matrix.length) throw new Error('Die Datei ist leer.');
+  const head = matrix[0].map(h => (h || '').trim().toLowerCase());
+  const iNr    = head.findIndex(h => /^nr|nummer|karte|ausweis/.test(h));
+  const iName  = head.findIndex(h => h === 'name' || /nachname/.test(h));
+  const iVor   = head.findIndex(h => /vorname/.test(h));
+  const iPhone = head.findIndex(h => /handy|telefon|mobil/.test(h));
+  const mailCols = head.map((h, idx) => /mail/.test(h) ? idx : -1).filter(idx => idx >= 0);
+  if (iNr < 0 || iName < 0 || mailCols.length === 0)
+    throw new Error('Spalten nicht erkannt. Erwartet werden: Nr., Name, Vorname, Handy, E-Mail.');
+
+  const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  const firstMail = (cell) => {
+    for (const p of String(cell || '').replace(/,/g, ';').split(';')) {
+      const e = p.trim().toLowerCase();
+      if (EMAIL.test(e)) return e;
+    }
+    return '';
+  };
+
+  const rows = [];
+  for (let r = 1; r < matrix.length; r++) {
+    const cells = matrix[r];
+    const nr = (cells[iNr] || '').trim();
+    if (!nr) continue;
+    const name  = ((iVor >= 0 ? (cells[iVor] || '').trim() : '') + ' ' + (cells[iName] || '').trim()).trim();
+    const phone = iPhone >= 0 ? ((cells[iPhone] || '').trim() || null) : null;
+    const primary = firstMail(cells[mailCols[0]]);
+    rows.push({ member_number: nr, full_name: name, email: primary || null, phone });
+    if (mailCols.length > 1) {
+      const second = firstMail(cells[mailCols[1]]);
+      if (second && second !== primary)
+        rows.push({ member_number: nr + '-alt', full_name: name, email: second, phone });
+    }
+  }
+  if (!rows.length) throw new Error('Keine Mitglieder mit Mitgliedsnummer gefunden.');
+  return rows;
+}
+
+async function handleMemberFile(input) {
+  const msg = document.getElementById('memberSyncMsg');
+  const file = input.files && input.files[0];
+  input.value = '';                                   // erneutes Wählen derselben Datei erlauben
+  if (!file) return;
+  const srcSel = document.getElementById('memberSyncSource');
+  memberSyncSource = (srcSel && srcSel.value) || 'tfb';
+  msg.style.color = '#7A7368';
+  msg.textContent = 'Datei wird gelesen …';
+  try {
+    let matrix;
+    if (/\.(xlsx|xlsm|xls)$/i.test(file.name)) {
+      msg.textContent = 'Excel wird gelesen …';
+      await ensureXlsxLib();
+      const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      // header:1 => Array-of-Arrays (Kopfzeile zuerst), raw:false => formatierte Texte
+      matrix = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+    } else {
+      matrix = parseCsv(await file.text());
+    }
+    const rows = buildMemberRows(matrix);
+    memberSyncRows = rows;
+    const { data, error } = await sb.rpc('admin_sync_club_members_preview',
+      { p_source: memberSyncSource, p_rows: rows });
+    if (error) throw error;
+    msg.textContent = '';
+    openMemberSyncModal(data);
+  } catch (e) {
+    memberSyncRows = null;
+    msg.style.color = '#B8402C';
+    msg.textContent = 'Fehler: ' + (e.message || e);
+  }
+}
+
+function openMemberSyncModal(p) {
+  const overlay = document.getElementById('memberSyncModal');
+  const g = (id) => document.getElementById(id);
+  const label = memberSyncSource === 'freibad'
+    ? 'Freibad Bielstein (Dauerkarten)' : 'Tennisfreunde Bielstein (Mitglieder)';
+  const sub = g('memberSyncSub');
+  if (sub) sub.textContent = 'Liste: ' + label + '. Bitte prüfe die Änderungen – es wird nichts gelöscht, Ausgetretene werden nur auf „inaktiv“ gesetzt.';
+  g('msTotal').textContent = String(p.hochgeladen ?? 0) + (p.ohne_email ? '  (' + p.ohne_email + ' ohne E-Mail)' : '');
+  g('msNeu').textContent   = String(p.neu ?? 0);
+  g('msReakt').textContent = String(p.reaktivieren ?? 0);
+  g('msDeakt').textContent = String(p.deaktivieren ?? 0);
+  const names = Array.isArray(p.deaktivieren_namen) ? p.deaktivieren_namen : [];
+  const nEl = g('msDeaktNames');
+  if (names.length) {
+    nEl.textContent = 'Werden deaktiviert: ' + names.slice(0, 12).join(', ') +
+      (names.length > 12 ? ' … (+' + (names.length - 12) + ' weitere)' : '');
+    nEl.style.display = 'block';
+  } else { nEl.textContent = ''; nEl.style.display = 'none'; }
+
+  const ok = g('memberSyncOk'), cancel = g('memberSyncCancel');
+  const close = () => {
+    overlay.classList.remove('open');
+    ok.removeEventListener('click', onOk);
+    cancel.removeEventListener('click', onCancel);
+    overlay.removeEventListener('click', onBackdrop);
+  };
+  const onOk = async () => { ok.disabled = true; await applyMemberSync(); ok.disabled = false; close(); };
+  const onCancel = () => { memberSyncRows = null; close(); };
+  const onBackdrop = (e) => { if (e.target === overlay) onCancel(); };
+  ok.addEventListener('click', onOk);
+  cancel.addEventListener('click', onCancel);
+  overlay.addEventListener('click', onBackdrop);
+  overlay.classList.add('open');
+}
+
+async function applyMemberSync() {
+  const msg = document.getElementById('memberSyncMsg');
+  if (!memberSyncRows) return;
+  try {
+    const { data, error } = await sb.rpc('admin_sync_club_members_apply', { p_source: memberSyncSource || 'tfb', p_rows: memberSyncRows });
+    if (error) throw error;
+    showToast('🎾 Mitgliederliste aktualisiert: ' + (data.neu || 0) + ' neu · ' + (data.aktualisiert || 0) +
+      ' aktualisiert · ' + (data.reaktiviert || 0) + ' reaktiviert · ' + (data.deaktiviert || 0) + ' deaktiviert.');
+    msg.style.color = '#1F8A5F';
+    msg.textContent = 'Fertig – ' + (data.aktiv_gesamt || 0) + ' aktive Mitglieder.';
+    if (typeof loadAdminUsers === 'function') { try { adminTabLoaded.users = false; loadAdminUsers(); } catch (_e) {} }
+  } catch (e) {
+    msg.style.color = '#B8402C';
+    msg.textContent = 'Fehler beim Speichern: ' + (e.message || e);
+  } finally {
+    memberSyncRows = null;
+  }
+}
+
 async function initAdmin() {
   if (!adminTabLoaded.freibad) { loadAdminFreibad(); adminTabLoaded.freibad = true; }
 }
@@ -10075,57 +10295,57 @@ body.bielstein-theme #adminWipe .wipe-result.ok   { color: #1F8A5F; font-weight:
 body.bielstein-theme #adminWipe .wipe-result.warn { color: #B8402C; font-weight: 600; }
 
 /* ── GUTHABEN-BESTÄTIGUNG ── */
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-lines {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-lines {
   margin: 20px 0 22px; padding: 4px 14px;
   border: 1px solid #E2DACB; border-radius: 12px; background: #FFFFFF;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-line {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-line {
   display: flex; justify-content: space-between; align-items: baseline;
   padding: 11px 0; border-bottom: 1px solid #E2DACB;
   font-size: 14px; color: #7A7368;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-line:last-child { border-bottom: 0; }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-line span:last-child {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-line:last-child { border-bottom: 0; }
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-line span:last-child {
   font-family: "Space Grotesk","Arial Narrow",sans-serif;
   font-weight: 700; color: #1C1A17;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-cancel {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-cancel {
   width: auto !important; display: block; margin: 13px auto 0 !important; padding: 6px 12px !important;
   background: transparent !important; color: #7A7368 !important;
   border: 0 !important; box-shadow: none !important; font-size: 12.5px !important;
   text-transform: none !important; letter-spacing: .02em !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-cancel:hover { color: #1C1A17 !important; text-decoration: underline; }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-choice-label {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-cancel:hover { color: #1C1A17 !important; text-decoration: underline; }
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-choice-label {
   margin-bottom: 8px; color: #7A7368;
   font: 700 10.5px/1 "Space Grotesk",sans-serif; letter-spacing: .12em; text-transform: uppercase;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-option {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-option {
   min-height: 68px; margin: 0 0 9px !important; padding: 13px 16px !important;
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
   border-radius: 13px !important; box-shadow: none !important; text-align: left;
   text-transform: none !important; letter-spacing: 0 !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-credit {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-credit {
   background: #FCE9E2 !important; color: #1C1A17 !important; border: 1.5px solid #F1C8B9 !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-stripe {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-stripe {
   background: #FFFFFF !important; color: #1C1A17 !important; border: 1.5px solid #D9CFBF !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-credit:hover,
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-credit:focus-visible,
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-stripe:hover,
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-stripe:focus-visible {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-credit:hover,
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-credit:focus-visible,
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-stripe:hover,
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-stripe:focus-visible {
   background: #FCE9E2 !important; border-color: #FF5A36 !important; outline: none;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-option-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-option-copy strong {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-option-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-option-copy strong {
   color: inherit; font: 700 15px/1.2 "Space Grotesk",sans-serif;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-option-copy small {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-option-copy small {
   color: inherit; opacity: .72; font: 600 11.5px/1.35 "Manrope",sans-serif;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal) .cc-option-mark {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #memberSyncModal) .cc-option-mark {
   flex: 0 0 auto; color: inherit; font: 600 20px/1 "Space Grotesk",sans-serif;
 }
 
