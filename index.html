@@ -331,11 +331,14 @@ body.bielstein-theme .abo-pb-save { color: #0F7A38 !important; background: #E4F5
 .abo-calc td.mid { font: 500 .82rem/1.2 "Manrope","Arial",sans-serif; color: #7A7368; }
 .abo-calc td.desc { text-align: left; white-space: normal; min-width: 150px; font: 500 .78rem/1.3 "Manrope","Arial",sans-serif; color: #8A8276; }
 .abo-calc tr.spacer td { padding: 0; height: 7px; border-top: none; }
-.abo-calc tr.res td { border-top: 1.5px solid #E2D7C2; }
+.abo-calc tr.res td { border-top: 1.5px solid #E2D7C2; font-size: .98rem; }
 .abo-calc tr.res td.pos { font-weight: 800; }
 .abo-calc tr.tot td { border-top: 1.5px solid #E2D7C2; color: #FF5A36; font-size: .98rem; }
 .abo-calc tr.tot td.pos { color: #1C1A17; font-weight: 800; }
 .abo-calc tr.tot td.mid, .abo-calc tr.tot td.desc { color: #8A8276; }
+/* „(2 Jahre)" / „(1 Jahr)" im Kachel-Titel groß + fett + schwarz hervorheben (Stil der pro-Spieler-Zahl). */
+.abo-sum-years { font-size: 2.1rem; font-weight: 900; color: #1C1A17; letter-spacing: 0.01em; line-height: .85; margin-left: 4px; }
+body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 .abo-calc-note { padding: 4px 13px 11px; font: 500 .76rem/1.4 "Manrope","Arial",sans-serif; color: #8A8276; }
 
 /* ■■ AUTH MODAL ■■ */
@@ -6407,7 +6410,7 @@ function updateAboSummary() {
     const ebTotal = Math.round(aboYear * years * (1 - disc));
     const ebSaved = regTerm - ebTotal;
     const yearsTxt = Number.isInteger(years) ? `${years} Jahre` : `${eb.termMonths} Monate`;
-    if (sumTitleEl) sumTitleEl.textContent = `Dein Frühbucher-Abo (${yearsTxt})`;
+    if (sumTitleEl) sumTitleEl.innerHTML = `Dein Frühbucher-Abo <span class="abo-sum-years">(${yearsTxt})</span>`;
     if (abo52El)    abo52El.textContent = `${yearsTxt} lang jede Woche exklusiv für dich reserviert.`;
     if (rabattEl)   rabattEl.textContent = `Dein Rabatt bei dieser Buchung beträgt ${Math.round(disc*100)} %.`;
     // Wochen über die volle Abo-Laufzeit: 52 pro Jahr → 2 Jahre = 104. Die Zahl
@@ -6420,7 +6423,7 @@ function updateAboSummary() {
     document.getElementById("as-perperson").textContent = fmt(Math.round(ebTotal/4));
     if (ctaEl) ctaEl.textContent = '■ Frühbucher-Abo sichern (Einmalzahlung)';
   } else {
-    if (sumTitleEl) sumTitleEl.textContent = 'Dein Jahresabo';
+    if (sumTitleEl) sumTitleEl.innerHTML = 'Dein Jahresabo <span class="abo-sum-years">(1 Jahr)</span>';
     if (abo52El)    abo52El.textContent = '52 Wochen exklusiv für dich reserviert – du zahlst davon nur 30 Wochen.';
     if (rabattEl) {
       // Außerhalb des Aktionszeitraums (Normalabo): Mitglieder sehen ihren 10 %-Rabatt,
