@@ -1708,6 +1708,7 @@ main {
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz.</div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="sb-hours">—</span></div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="sb-rabatt">—</span></div>
+        <div class="abo-benefit" id="sb-bonus" style="display:none;"><div class="abo-benefit-dot"></div><span><strong>Bonus:</strong> Während der Freibad-Öffnungszeiten ist deine Buchung gleichzeitig Eintrittskarte für das Freibad (4 Spieler).</span></div>
       </div>
     </div>
     <button class="book-btn" id="bookBtn" onclick="confirmBooking()">Jetzt buchen &amp; bezahlen →</button>
@@ -1807,6 +1808,7 @@ main {
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz – keine Konkurrenz um freie Slots.</div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-hours">Deine Buchung setzt sich aus deinem Einzelstundenpreis zusammen.</span></div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-rabatt">Dein Rabatt bei dieser Buchung beträgt 10 %.</span></div>
+        <div class="abo-benefit" id="as-bonus" style="display:none;"><div class="abo-benefit-dot"></div><span><strong>Bonus:</strong> Während der Freibad-Öffnungszeiten ist jeder Abo-Termin gleichzeitig Eintrittskarte für das Freibad (4 Spieler).</span></div>
       </div>
       <div class="abo-weather">Dein Slot gehört dir – gespielt wird, wenn das Wetter es zulässt.<br>Keine Schlechtwetter-Gutschriften bei Abos.</div>
       <button class="abo-cta" onclick="submitAbo(false)">■ Jahresabo sichern</button>
@@ -4269,6 +4271,14 @@ function updateSummary() {
       sbRab.innerHTML = 'Als Mitglied oder Partner sparst du 10 % – <a href="https://www.tfbielstein.de/anmeldformular/" target="_blank" rel="noopener" style="color:#FF5A36;text-decoration:underline;font-weight:600;">jetzt Mitglied werden</a>.';
     }
   }
+  // Freibad-Bonus: nur zeigen, wenn die Buchung wirklich in die Freibad-Öffnungszeit
+  // fällt (mind. eine Stunde mit Aufschlag) – sonst wäre der Eintrittskarten-Hinweis falsch.
+  const sbBonus = document.getElementById('sb-bonus');
+  if (sbBonus) {
+    let bonus = false;
+    for (let i = 0; i < selDur; i++) if (freibadSurchargeEur(h + i, selDate, false) > 0) bonus = true;
+    sbBonus.style.display = bonus ? '' : 'none';
+  }
   const sbCalc = document.getElementById('sb-calc');
   if (sbCalc) {
     const crow = (pos, mid, betrag, desc, cls) =>
@@ -6551,6 +6561,14 @@ function updateAboSummary() {
       const zahl = hourPrices.length === 2 ? 'den beiden ' : 'den ';
       hoursEl.textContent = `Deine Buchung setzt sich zusammen aus ${zahl}Einzelstundenpreisen in Höhe von ${list}.`;
     }
+  }
+
+  // Freibad-Bonus: nur zeigen, wenn der Abo-Termin in die Freibad-Öffnungsstunden fällt.
+  const asBonus = document.getElementById('as-bonus');
+  if (asBonus) {
+    let bonus = false;
+    for (let i = 0; i < aboDur; i++) if (freibadSurchargeEur(h + i, null, true) > 0) bonus = true;
+    asBonus.style.display = bonus ? '' : 'none';
   }
 
   // Rechenweg (Excel-Vorlage Jörn): Position · Preis/h·Rabatt · Buchung · pro Spieler ·
