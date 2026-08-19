@@ -2063,6 +2063,45 @@ main {
     <!-- ── FREIBAD & ANLAGE ── -->
     <div id="adminFreibad">
 
+      <!-- Preis-Aufschlag (Freibad-Beteiligung) -->
+      <div class="admin-section">
+        <div class="admin-section-title">Preis-Aufschlag (Freibad-Beteiligung)</div>
+        <div class="admin-card">
+          <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
+            Solange das Freibad geöffnet ist (Saison + Öffnungszeiten unten, inkl. Schließtagen),
+            kommt pro Court-Stunde ein Aufschlag auf den Basispreis: bei Einzelbuchungen der volle
+            Betrag, beim Abo der halbe (Jahresmittel). Der Basispreis unter „Preise" bleibt euer
+            Wettbewerbspreis – ist ein Mitbewerber günstiger, senkt ihr dort die Basispreise, der
+            Freibad-Aufschlag bleibt davon unberührt. Die 6-%-Umsatzbeteiligung ans Freibad läuft
+            separat über die Buchhaltung.
+          </div>
+          <label class="admin-row" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;">
+            <input type="checkbox" id="fbEnabled">
+            <span style="font-size:0.9rem;">Freibad-Aufschlag aktiv</span>
+          </label>
+          <div class="admin-row" style="flex-wrap:wrap;gap:18px;">
+            <div>
+              <div style="font-size:0.72rem;color:#999;margin-bottom:6px;">Aufschlag Einzelbuchung (€ / Std.)</div>
+              <input class="admin-input" type="number" min="0" step="0.50" id="fbSurcharge" style="max-width:110px;">
+            </div>
+            <div>
+              <div style="font-size:0.72rem;color:#999;margin-bottom:6px;">Aufschlag Abo (€ / Std.)</div>
+              <input class="admin-input" type="number" min="0" step="0.50" id="fbAboSurcharge" style="max-width:110px;">
+            </div>
+          </div>
+          <div style="font-size:0.72rem;color:#888;margin-top:12px;line-height:1.5;">
+            Das „Wann" (Saison, Öffnungszeiten, Schließtage, Ausnahmetage) steuert ihr in den
+            Abschnitten darunter – es gilt automatisch auch für diesen Aufschlag. An einem
+            Schließtag entfällt der Aufschlag von selbst (dann kein Freibad-Eintritt).
+          </div>
+          <div class="admin-row" style="margin-top:16px;">
+            <button class="admin-save-btn gold" onclick="saveFreibadPricing()">Aufschlag speichern</button>
+          </div>
+          <div class="admin-ok"  id="fbOk"></div>
+          <div class="admin-err" id="fbErr"></div>
+        </div>
+      </div>
+
       <!-- Saison -->
       <div class="admin-section">
         <div class="admin-section-title">Freibad-Saison</div>
@@ -3640,6 +3679,55 @@ function isSlotExpired(dateStr, hour) {
 }
 function isWE(d) { const x = new Date(d+'T12:00:00'); return x.getDay()===0||x.getDay()===6; }
 function prices(d) { return isWE(d) ? PE : PW; }
+
+// ============================================================
+//  Freibad-Beteiligung (nur ANZEIGE) – 1:1 gespiegelt aus dem Backend.
+//  Basispreis in PW/PE = "übrige Zeiten". Während das Freibad offen ist, kommt
+//  obendrauf: Einzelbuchung +surchargeEur, Abo +aboSurchargeEur (Jahresmittel).
+//  WANN das Freibad offen ist, liefert das bestehende isFreibadOpen()/freibadConfig
+//  (Admin-Tab „Freibad & Padel-Anlage"). Hier stehen NUR die Beträge + der Schalter.
+//  Maßgeblich rechnet der Server (create-checkout); dies dient nur der Anzeige.
+// ============================================================
+let FREIBAD_PRICE = { enabled:false, surchargeEur:4, aboSurchargeEur:2 };
+
+async function loadFreibadPricing() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/app_flags?select=freibad_price_enabled,freibad_surcharge_cents,freibad_abo_surcharge_cents`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return;
+    const data = await res.json();
+    const r = Array.isArray(data) ? data[0] : data;
+    if (!r) return;
+    FREIBAD_PRICE = {
+      enabled:         r.freibad_price_enabled === true,
+      surchargeEur:    Number(r.freibad_surcharge_cents ?? 400) / 100,
+      aboSurchargeEur: Number(r.freibad_abo_surcharge_cents ?? 200) / 100,
+    };
+  } catch(e) { /* Aufschlag bleibt aus – es wird der Basispreis angezeigt */ }
+}
+
+// Aufschlag pro Stunde in Euro. Nutzt das bestehende Freibad-System für das „wann".
+//  · Einzelbuchung (date gesetzt): genau wann das Freibad an dem Tag offen ist.
+//  · Abo (date = null): Jahresmittel → Standard-Öffnungsstunden bei aktiver Saison
+//    (bewusst ohne Datum/Schließtag/Ausnahme, da das Abo ganzjährig läuft).
+function freibadSurchargeEur(hour, dateOrNull, isAbo) {
+  const f = FREIBAD_PRICE;
+  if (!f.enabled) return 0;
+  if (isAbo) {
+    if (typeof freibadConfig === 'undefined' || !freibadConfig.season_active) return 0;
+    return (hour >= freibadConfig.open_hour && hour < freibadConfig.close_hour) ? f.aboSurchargeEur : 0;
+  }
+  if (!dateOrNull) return 0;
+  return (typeof isFreibadOpen === 'function' && isFreibadOpen(dateOrNull, hour)) ? f.surchargeEur : 0;
+}
+
+// Preis EINER Stunde inkl. Freibad-Aufschlag.
+function hourP(priceMap, hour, dateOrNull, isAbo) {
+  return (priceMap[hour] || 0) + freibadSurchargeEur(hour, dateOrNull, isAbo);
+}
+
 // Preis für [hour, hour+duration) durch Aufsummieren der EINZELNEN Stundenpreise -
 // nicht einfach Startstunden-Preis × Dauer, denn der Stundenpreis kann sich
 // innerhalb einer Buchung ändern (z.B. Wechsel 13→14 Uhr oder 15→16 Uhr).
@@ -3651,7 +3739,13 @@ function sumHourlyPrices(priceMap, hour, duration) {
   }
   return total;
 }
-function rawP(h, d) { return sumHourlyPrices(prices(d), h, selDur); }
+// Wie sumHourlyPrices, aber inkl. Freibad-Aufschlag (dateOrNull + isAbo).
+function sumHourlyFb(priceMap, hour, duration, dateOrNull, isAbo) {
+  let total = 0;
+  for (let i = 0; i < duration; i++) total += hourP(priceMap, hour + i, dateOrNull, isAbo);
+  return total;
+}
+function rawP(h, d) { return sumHourlyFb(prices(d), h, selDur, d, false); }
 function mP(p) { return member ? Math.round(p * (1 - member.discount)) : p; }
 
 // Günstigster Wochenpreis für eine Abo-Dauer (über alle Tage/Zeiten hinweg):
@@ -3662,7 +3756,7 @@ function cheapestAboWeek(dur) {
     const hours = Object.keys(map).map(Number).sort((a, b) => a - b);
     for (const h of hours) {
       let sum = 0, ok = true;
-      for (let i = 0; i < dur; i++) { if (map[h + i] == null) { ok = false; break; } sum += map[h + i]; }
+      for (let i = 0; i < dur; i++) { if (map[h + i] == null) { ok = false; break; } sum += map[h + i] + freibadSurchargeEur(h + i, null, true); }
       if (ok) best = Math.min(best, sum);
     }
   }
@@ -3938,7 +4032,7 @@ async function init() {
   } else {
     loadBookings(selDate).then(() => renderSlots());
   }
-  loadPrices().then(() => { updDurPrices(); updateAboDurPrices(); renderSlots(); });
+  Promise.all([loadPrices(), loadFreibadPricing(), loadFreibadConfig()]).then(() => { updDurPrices(); updateAboDurPrices(); renderSlots(); });
 }
 
 // ============================================================
@@ -4082,7 +4176,7 @@ function renderSlots() {
       // nur weil irgendeine spätere Stunde ebenfalls belegt ist.
       const spillover = !bk && !isSel && !isSec && selDur===2 && booked[ct].has(k2);
       const rp = rawP(h, selDate), p = mP(rp), isMp = member && p < rp;
-      const rp1h = (prices(selDate)[h] || 0), p1h = mP(rp1h), isMp1h = member && p1h < rp1h;
+      const rp1h = hourP(prices(selDate), h, selDate, false), p1h = mP(rp1h), isMp1h = member && p1h < rp1h;
       const h1 = `${String(h).padStart(2,"0")}:00`;
       const h2 = `${String(h+1).padStart(2,"0")}:00`;
       const sl = document.createElement("div");
@@ -4162,7 +4256,7 @@ function updateSummary() {
       sbHours.textContent = `Deine Buchung setzt sich zusammen aus einem Einzelstundenpreis in Höhe von ${fmt(rp)}.`;
     } else {
       const list = [];
-      for (let i = 0; i < selDur; i++) list.push(fmt(pmap[h + i] || 0));
+      for (let i = 0; i < selDur; i++) list.push(fmt(hourP(pmap, h + i, selDate, false)));
       const zahl = selDur === 2 ? 'den beiden ' : 'den ';
       sbHours.textContent = `Deine Buchung setzt sich zusammen aus ${zahl}Einzelstundenpreisen in Höhe von ${list.join(' und ')}.`;
     }
@@ -5212,7 +5306,7 @@ function weatherBookingValueCents(b) {
   const start = Number(b.hour_start || 0);
   const dur = Number(b.duration || 1);
   const map = prices(b.date);
-  return Math.round(sumHourlyPrices(map, start, dur) * 100);
+  return Math.round(sumHourlyFb(map, start, dur, b.date, false) * 100);
 }
 
 function renderWeatherDoorEvidence(b) {
@@ -6120,7 +6214,7 @@ async function submitAbo(skipAuthCheck) {
   }
   const { court, hour } = aboSlot;
   const priceMap = (aboWd===0 || aboWd===6) ? PE : PW;
-  const pricePerWeek = sumHourlyPrices(priceMap, hour, aboDur);
+  const pricePerWeek = sumHourlyFb(priceMap, hour, aboDur, null, true);
   const totalAbo = pricePerWeek * 30;
   const totalPriceCents = Math.round(totalAbo * 100);
 
@@ -6344,8 +6438,8 @@ function renderAboSlots() {
       // würde die zweite Stunde einer gültigen Auswahl fälschlich wieder als
       // "frei/unausgewählt" markiert.
       const conflictsWithNextHour = aboDur === 2 && !isOccupiedHour && !isSel && !isSec && aboBooked[ct].has(abKey2);
-      const p = sumHourlyPrices(priceMap, h, aboDur);
-      const p1h = (priceMap[h] || 0);
+      const p = sumHourlyFb(priceMap, h, aboDur, null, true);
+      const p1h = hourP(priceMap, h, null, true);
       const h1 = `${String(h).padStart(2,"0")}:00`;
       const h2 = `${String(h+1).padStart(2,"0")}:00`;
       const sl = document.createElement("div");
@@ -6388,7 +6482,7 @@ function updateAboSummary() {
   if (!aboSlot || aboWd===null) { card.classList.remove("visible"); return; }
   const {court:ct, hour:h} = aboSlot;
   const priceMap = (aboWd===0||aboWd===6) ? PE : PW;
-  const pricePerWeek = sumHourlyPrices(priceMap, h, aboDur);
+  const pricePerWeek = sumHourlyFb(priceMap, h, aboDur, null, true);
   const totalReg = pricePerWeek * 52, totalAbo = pricePerWeek * 30, saved = totalReg - totalAbo;
   document.getElementById("as-court").textContent = `Court #${ct}`;
   document.getElementById("as-day").textContent   = WDNAMES[aboWd];
@@ -6449,7 +6543,7 @@ function updateAboSummary() {
   const hoursEl = document.getElementById('as-hours');
   if (hoursEl) {
     const hourPrices = [];
-    for (let i = 0; i < aboDur; i++) hourPrices.push(priceMap[h + i] || 0);
+    for (let i = 0; i < aboDur; i++) hourPrices.push(hourP(priceMap, h + i, null, true));
     if (hourPrices.length === 1) {
       hoursEl.textContent = `Deine Buchung setzt sich zusammen aus einem Einzelstundenpreis in Höhe von ${fmt(hourPrices[0])}.`;
     } else {
@@ -7207,6 +7301,7 @@ async function loadAdminFreibad() {
   document.getElementById('cfgCloseH').value = freibadConfig.close_hour;
   await loadClosureList();
   renderExceptionList();
+  loadFreibadPricingAdmin();
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
 }
@@ -7799,6 +7894,48 @@ async function savePrices() {
     showAdminMsg('pricesOk', '✓ Preise gespeichert — sofort live');
   } catch(e) {
     showAdminMsg('pricesErr', 'Fehler: ' + e.message);
+  }
+}
+
+// ============================================================
+//  ADMIN – Freibad-Aufschlag (Beträge + Schalter; „wann" = Freibad-Saison/Zeiten)
+// ============================================================
+async function loadFreibadPricingAdmin() {
+  await loadFreibadPricing();              // frischt die globale FREIBAD_PRICE-Config
+  const f = FREIBAD_PRICE;
+  const cb = document.getElementById('fbEnabled'); if (cb) cb.checked = !!f.enabled;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  set('fbSurcharge',    f.surchargeEur);
+  set('fbAboSurcharge', f.aboSurchargeEur);
+}
+
+async function saveFreibadPricing() {
+  const okEl = document.getElementById('fbOk'), errEl = document.getElementById('fbErr');
+  okEl.textContent = ''; errEl.textContent = '';
+  const enabled = document.getElementById('fbEnabled').checked;
+  const surEur  = parseFloat(document.getElementById('fbSurcharge').value);
+  const aboEur  = parseFloat(document.getElementById('fbAboSurcharge').value);
+  if (isNaN(surEur) || surEur < 0 || isNaN(aboEur) || aboEur < 0) {
+    errEl.textContent = 'Aufschläge dürfen nicht negativ sein.'; return;
+  }
+  try {
+    const headers = await authHeaders();
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_set_freibad`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        p_enabled: enabled,
+        p_surcharge_cents: Math.round(surEur * 100),
+        p_abo_surcharge_cents: Math.round(aboEur * 100),
+      }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    // Anzeige sofort mitziehen: Beträge neu laden und Slots/Abos neu rechnen.
+    await loadFreibadPricing();
+    updDurPrices(); updateAboDurPrices(); renderSlots();
+    okEl.textContent = '✓ Gespeichert — sofort live';
+  } catch(e) {
+    errEl.textContent = 'Fehler: ' + e.message;
   }
 }
 
