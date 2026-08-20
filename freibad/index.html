@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Freibad Bielstein · Eintrittskarten</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="/freibad/manifest.webmanifest">
+<meta name="theme-color" content="#161616">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Freibad">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#161616; --card:#1E1E1E; --card2:#232320;
+    --coral:#FF5A36; --coral-dk:#E24A28;
+    --text:#F6F1E7; --white:#ffffff; --muted:#9A948A;
+    --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.16);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Manrope',system-ui,sans-serif; color:var(--text);
+    background:var(--bg); min-height:100dvh;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:22px 16px 52px}
+  h1,h2,h3,.mono,.time,.code,.headline,.court{font-family:'Space Grotesk',sans-serif}
+
+  /* ---------- LOGIN (dunkel, sportlich) ---------- */
+  #loginView{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;max-width:460px;margin:0 auto;padding:32px 22px}
+  .wordmark{font-family:'Space Grotesk';font-weight:700;letter-spacing:.02em;font-size:1rem;text-transform:uppercase;text-align:center;margin:0 0 26px}
+  .wordmark .p{color:var(--text)} .wordmark .b{color:var(--coral)}
+  .fb-logo{display:block;margin:0 auto 22px;height:120px;width:auto;max-width:78%}
+  .kicker{font-family:'Space Grotesk';text-transform:uppercase;letter-spacing:.22em;font-size:.7rem;color:var(--muted);text-align:center;margin:0}
+  .headline{font-weight:700;font-size:2.1rem;line-height:1.05;text-align:center;margin:8px 0 6px;letter-spacing:-.01em}
+  .headline .hl{color:var(--coral)}
+  .subdate{text-align:center;color:var(--muted);font-size:.95rem;margin:0 0 26px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+  label{display:block;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 7px;font-weight:600}
+  input[type=text],input[type=password],input[type=tel]{
+    width:100%;padding:14px 15px;border:1px solid var(--line2);border-radius:12px;
+    font-size:1rem;font-family:inherit;background:#121212;color:var(--text)
+  }
+  input::placeholder{color:#5f5b54}
+  input:focus{outline:none;border-color:var(--coral)}
+  .pin{letter-spacing:.5em;font-family:'Space Grotesk';text-align:center;font-size:1.35rem}
+  .btn{
+    display:block;width:100%;border:none;border-radius:12px;padding:15px;margin-top:16px;
+    background:var(--coral);color:#fff;font-family:'Space Grotesk';font-weight:600;font-size:1.02rem;cursor:pointer;transition:background .15s
+  }
+  .btn:hover{background:var(--coral-dk)}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line2)}
+  .btn.ghost:hover{background:rgba(255,255,255,.05)}
+  .btn.small{width:auto;padding:9px 15px;font-size:.85rem;margin:0}
+  .err{color:#ff7a5c;font-size:.88rem;margin-top:13px;min-height:1em;text-align:center}
+  .ok{color:#5fce9b;font-size:.85rem;margin-top:8px;text-align:center}
+  .foot{text-align:center;color:var(--muted);font-size:.76rem;margin-top:22px}
+
+  /* ---------- APP (heute/morgen) ---------- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+  .topbar .who{font-size:.85rem;color:var(--muted)}
+  .topbar .who b{color:var(--text)}
+  .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:5px;margin-bottom:10px}
+  .seg button{flex:1;border:none;background:transparent;padding:12px;border-radius:10px;font-family:'Space Grotesk';font-weight:600;color:var(--muted);cursor:pointer;font-size:.98rem;transition:all .15s}
+  .seg button.on{background:var(--coral);color:#fff}
+  .daydate{text-align:center;color:var(--muted);font-size:.9rem;margin:0 0 16px;font-weight:500}
+
+  .entry{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 16px 10px;margin-bottom:14px}
+  .entry-head{display:flex;align-items:center;gap:9px;font-weight:600;font-size:1.08rem;margin-bottom:12px;color:var(--text)}
+  .entry-head .court{color:var(--coral)}
+  .badge{font-family:'Manrope';font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--coral);border:1px solid var(--coral);border-radius:20px;padding:2px 9px}
+  .ticket{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+  .ticket:first-of-type{border-top:none}
+  .tno{width:18px;text-align:center;color:var(--muted);font-family:'Space Grotesk';font-weight:600;font-size:.9rem}
+  .code{flex:1;background:#fff;border-radius:10px;padding:11px 10px;color:#1C1A17;font-weight:600;letter-spacing:.2em;font-size:1.08rem;text-align:center}
+  .code.done{background:#3a3a37;color:#8f8a80;text-decoration:line-through;letter-spacing:.14em}
+  .chk{width:42px;height:42px;flex:none;border:2px solid var(--line2);border-radius:12px;background:transparent;cursor:pointer;font-size:1.35rem;line-height:1;color:transparent;display:flex;align-items:center;justify-content:center;transition:all .12s}
+  .chk:hover{border-color:var(--muted)}
+  .chk.done{background:var(--coral);border-color:var(--coral);color:#fff}
+  .chk.busy{opacity:.45}
+
+  .empty{text-align:center;color:var(--muted);padding:30px 12px;font-size:.95rem}
+  .refresh{font-size:.76rem;color:#6b665e;text-align:center;margin-top:2px}
+
+  /* Mitarbeiter: kleiner Link, klappt Kachel auf */
+  .stafflink{display:block;margin:26px auto 0;background:none;border:none;color:var(--muted);font-family:'Space Grotesk';font-weight:600;font-size:.86rem;cursor:pointer;letter-spacing:.02em}
+  .stafflink:hover{color:var(--coral)}
+  .section-title{font-family:'Space Grotesk';font-weight:700;font-size:1.02rem;margin:0 0 12px;color:var(--text)}
+  .section-sub{font-family:'Space Grotesk';font-weight:600;font-size:.86rem;margin:18px 0 10px;color:var(--muted)}
+  .staff-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .staff-row .nm{flex:1;font-weight:600;color:var(--text)}
+  .staff-row .adm{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--coral)}
+  .row2{display:flex;gap:10px}
+  .row2>*{flex:1}
+  .chkline{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:.9rem;color:var(--muted);cursor:pointer}
+  .chkline input{width:18px;height:18px;accent-color:var(--coral)}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ LOGIN ============ -->
+  <div id="loginView">
+    <p class="wordmark"><span class="p">Padel</span> <span class="b">Bielstein</span></p>
+    <img class="fb-logo" src="https://padel-bielstein.de/sponsors/Freibad%20Bielstein%20-%20Logo.png" alt="Freibad Bielstein">
+    <p class="kicker">Freibad Bielstein</p>
+    <h1 class="headline">Eintrittskarten <span class="hl">heute</span></h1>
+    <p class="subdate" id="loginDate">—</p>
+
+    <div class="card">
+      <label for="inName">Name</label>
+      <input id="inName" type="text" autocomplete="username" autocapitalize="words" placeholder="z. B. Freibad">
+      <div style="height:14px"></div>
+      <label for="inPin">Kennwort (6-stellig)</label>
+      <input id="inPin" class="pin" type="tel" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="••••••">
+      <button class="btn" id="btnLogin">Anmelden</button>
+      <div class="err" id="loginErr"></div>
+    </div>
+    <p class="foot">Zugang nur für Mitarbeiter des Freibads Bielstein.</p>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div id="appView" class="hidden">
+    <div class="topbar">
+      <div class="who">Angemeldet: <b id="whoName">—</b></div>
+      <button class="btn ghost small" id="btnLogout">Abmelden</button>
+    </div>
+    <div class="seg">
+      <button id="segToday" class="on" data-which="today">Heute</button>
+      <button id="segTomorrow" data-which="tomorrow">Morgen</button>
+    </div>
+    <p class="daydate" id="dayDate">—</p>
+
+    <div id="entries"></div>
+    <p class="refresh" id="refreshNote"></p>
+
+    <!-- Freibad-Admin: kleiner Link, öffnet die Kachel -->
+    <div id="adminBox" class="hidden">
+      <button class="stafflink" id="staffToggle">Mitarbeiter verwalten ›</button>
+      <div id="staffCard" class="card hidden" style="margin-top:14px">
+        <div class="section-title">Mitarbeiter verwalten</div>
+        <div id="staffList"></div>
+        <div class="section-sub">Neuen Zugang anlegen / Kennwort ändern</div>
+        <div class="row2">
+          <div>
+            <label>Name</label>
+            <input id="stName" type="text" autocapitalize="words" placeholder="Name">
+          </div>
+          <div>
+            <label>Kennwort (6-stellig)</label>
+            <input id="stPin" class="pin" type="tel" inputmode="numeric" maxlength="6" placeholder="••••••">
+          </div>
+        </div>
+        <label class="chkline"><input id="stAdmin" type="checkbox"> darf ebenfalls Mitarbeiter verwalten</label>
+        <button class="btn small" id="btnStaffSave" style="margin-top:14px">Speichern</button>
+        <div class="ok" id="staffMsg"></div>
+        <div class="err" id="staffErr"></div>
+      </div>
+    </div>
+
+    <p class="foot">Padel Bielstein · Freibad-Eintrittskarten · nur heute &amp; morgen</p>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL  = 'https://hioaqcwqzeqcvvikollq.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7';
+
+const $ = s => document.querySelector(s);
+let TOKEN = localStorage.getItem('fb_token') || '';
+let WHO   = localStorage.getItem('fb_name')  || '';
+let IS_ADMIN = localStorage.getItem('fb_admin') === '1';
+let WHICH = 'today';
+let refreshTimer = null;
+
+function berlinDateLabel(offset){
+  const d = new Date(Date.now() + (offset||0)*86400000);
+  return d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric',timeZone:'Europe/Berlin'});
+}
+
+async function rpc(fn, body){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`,{
+    method:'POST',
+    headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json'},
+    body:JSON.stringify(body||{})
+  });
+  const text = await res.text();
+  let data = null; try{ data = text ? JSON.parse(text) : null; }catch(_){ data = text; }
+  if(!res.ok){
+    const msg = (data && (data.message || data.error_description || data.error)) || 'Fehler';
+    throw new Error(msg);
+  }
+  return data;
+}
+
+// -------- Login --------
+$('#loginDate').textContent = berlinDateLabel(0);
+$('#btnLogin').onclick = doLogin;
+$('#inPin').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+async function doLogin(){
+  const name = $('#inName').value.trim();
+  const pin  = $('#inPin').value.trim();
+  $('#loginErr').textContent = '';
+  if(!name || !pin){ $('#loginErr').textContent = 'Bitte Name und Kennwort eingeben.'; return; }
+  $('#btnLogin').disabled = true;
+  try{
+    const r = await rpc('freibad_login',{p_name:name, p_pin:pin});
+    TOKEN = r.token; WHO = r.name; IS_ADMIN = !!r.is_admin;
+    localStorage.setItem('fb_token',TOKEN);
+    localStorage.setItem('fb_name',WHO);
+    localStorage.setItem('fb_admin',IS_ADMIN?'1':'0');
+    $('#inPin').value='';
+    showApp();
+  }catch(e){
+    $('#loginErr').textContent = e.message;
+  }finally{
+    $('#btnLogin').disabled = false;
+  }
+}
+
+$('#btnLogout').onclick = () => {
+  TOKEN=''; localStorage.removeItem('fb_token');
+  if(refreshTimer) clearInterval(refreshTimer);
+  $('#appView').classList.add('hidden');
+  $('#loginView').classList.remove('hidden');
+};
+
+// -------- Heute/Morgen --------
+document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
+  WHICH = b.dataset.which;
+  $('#segToday').classList.toggle('on', WHICH==='today');
+  $('#segTomorrow').classList.toggle('on', WHICH==='tomorrow');
+  loadView();
+});
+
+function showApp(){
+  $('#loginView').classList.add('hidden');
+  $('#appView').classList.remove('hidden');
+  $('#whoName').textContent = WHO;
+  $('#adminBox').classList.toggle('hidden', !IS_ADMIN);
+  loadView();
+  if(refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(()=>loadView(true), 30000);
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+async function loadView(silent){
+  if(!TOKEN) return;
+  if(!silent) $('#entries').innerHTML = '<p class="empty">Wird geladen …</p>';
+  try{
+    const r = await rpc('freibad_view',{p_token:TOKEN, p_which:WHICH});
+    $('#dayDate').textContent = (WHICH==='today'?'Heute':'Morgen') + ' · ' + berlinDateLabel(WHICH==='today'?0:1);
+    renderEntries(r.entries || []);
+    $('#refreshNote').textContent = 'Aktualisiert ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    if(String(e.message).match(/angemeldet|abgelaufen/i)){ $('#btnLogout').click(); return; }
+    $('#entries').innerHTML = '<p class="empty">Fehler: '+esc(e.message)+'</p>';
+  }
+}
+
+function renderEntries(entries){
+  const el = $('#entries');
+  if(!entries.length){ el.innerHTML = '<p class="empty">Keine Freibad-Buchungen für diesen Tag.</p>'; return; }
+  el.innerHTML = entries.map(en => {
+    const tickets = (en.tickets||[]).map(t => {
+      const done = t.redeemed;
+      return `<div class="ticket">
+        <span class="tno">${t.ticket_no}</span>
+        <span class="code${done?' done':''}">${esc(t.code)}</span>
+        <button class="chk${done?' done':''}" data-code="${esc(t.code)}" aria-label="abhaken">✓</button>
+      </div>`;
+    }).join('');
+    const badge = en.source_type==='abo' ? '<span class="badge">Abo</span>' : '';
+    return `<div class="entry">
+      <div class="entry-head"><span class="court">Court ${en.court}</span> · <span class="time">${esc(en.time_label)}</span> ${badge}</div>
+      ${tickets}
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.chk').forEach(b => b.onclick = () => toggleCode(b));
+}
+
+async function toggleCode(btn){
+  if(btn.classList.contains('busy')) return;
+  btn.classList.add('busy');
+  try{
+    const r = await rpc('freibad_toggle',{p_token:TOKEN, p_code:btn.dataset.code});
+    const code = btn.previousElementSibling;
+    btn.classList.toggle('done', r.redeemed);
+    if(code) code.classList.toggle('done', r.redeemed);
+  }catch(e){
+    alert(e.message);
+  }finally{
+    btn.classList.remove('busy');
+  }
+}
+
+// -------- Mitarbeiterverwaltung (kleiner Link -> Kachel) --------
+let staffLoaded = false;
+$('#staffToggle').onclick = () => {
+  const card = $('#staffCard');
+  const open = card.classList.toggle('hidden');
+  $('#staffToggle').textContent = open ? 'Mitarbeiter verwalten ›' : 'Mitarbeiter verwalten ✕';
+  if(!open && !staffLoaded){ loadStaff(); staffLoaded = true; }
+};
+
+async function loadStaff(){
+  try{
+    const list = await rpc('freibad_staff_list',{p_token:TOKEN});
+    $('#staffList').innerHTML = (list||[]).map(s => `
+      <div class="staff-row">
+        <span class="nm">${esc(s.name)}</span>
+        ${s.is_admin?'<span class="adm">Admin</span>':''}
+        <button class="btn ghost small" data-name="${esc(s.name)}">Entfernen</button>
+      </div>`).join('') || '<p class="empty">Keine Mitarbeiter.</p>';
+    $('#staffList').querySelectorAll('button[data-name]').forEach(b => b.onclick = () => removeStaff(b.dataset.name));
+  }catch(e){ $('#staffList').innerHTML = '<p class="empty">'+esc(e.message)+'</p>'; }
+}
+
+$('#btnStaffSave').onclick = async () => {
+  const name = $('#stName').value.trim();
+  const pin  = $('#stPin').value.trim();
+  const adm  = $('#stAdmin').checked;
+  $('#staffMsg').textContent=''; $('#staffErr').textContent='';
+  if(!name){ $('#staffErr').textContent='Bitte einen Namen eingeben.'; return; }
+  if(pin && !/^\d{4,6}$/.test(pin)){ $('#staffErr').textContent='Kennwort: 4–6 Ziffern.'; return; }
+  try{
+    await rpc('freibad_staff_save',{p_token:TOKEN, p_name:name, p_pin:pin||null, p_is_admin:adm});
+    $('#staffMsg').textContent='✓ Gespeichert';
+    $('#stName').value=''; $('#stPin').value=''; $('#stAdmin').checked=false;
+    loadStaff();
+  }catch(e){ $('#staffErr').textContent=e.message; }
+};
+
+async function removeStaff(name){
+  if(!confirm('Zugang „'+name+'" wirklich entfernen?')) return;
+  try{ await rpc('freibad_staff_remove',{p_token:TOKEN, p_name:name}); loadStaff(); }
+  catch(e){ alert(e.message); }
+}
+
+// -------- Start --------
+if(TOKEN){ showApp(); }
+</script>
+</body>
+</html>
