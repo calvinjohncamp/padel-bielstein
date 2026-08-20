@@ -101,9 +101,12 @@
   .stafflink:hover{color:var(--coral)}
   .section-title{font-family:'Space Grotesk';font-weight:700;font-size:1.02rem;margin:0 0 12px;color:var(--text)}
   .section-sub{font-family:'Space Grotesk';font-weight:600;font-size:.86rem;margin:18px 0 10px;color:var(--muted)}
-  .staff-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .staff-row{padding:10px 0;border-bottom:1px solid var(--line)}
+  .staff-main{display:flex;align-items:center;gap:10px}
   .staff-row .nm{flex:1;font-weight:600;color:var(--text)}
   .staff-row .adm{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--coral)}
+  .staff-panel{margin-top:12px;padding:12px 12px 6px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px}
+  .staff-actions{display:flex;gap:8px;margin-top:12px}
   .row2{display:flex;gap:10px}
   .row2>*{flex:1}
   .chkline{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:.9rem;color:var(--muted);cursor:pointer}
@@ -156,7 +159,7 @@
       <div id="staffCard" class="card hidden" style="margin-top:14px">
         <div class="section-title">Mitarbeiter verwalten</div>
         <div id="staffList"></div>
-        <div class="section-sub">Neuen Zugang anlegen / Kennwort ändern</div>
+        <div class="section-sub">Neuen Zugang anlegen</div>
         <div class="row2">
           <div>
             <label>Name</label>
@@ -168,7 +171,7 @@
           </div>
         </div>
         <label class="chkline"><input id="stAdmin" type="checkbox"> darf ebenfalls Mitarbeiter verwalten</label>
-        <button class="btn small" id="btnStaffSave" style="margin-top:14px">Speichern</button>
+        <button class="btn small" id="btnStaffSave" style="margin-top:14px">Anlegen</button>
         <div class="ok" id="staffMsg"></div>
         <div class="err" id="staffErr"></div>
       </div>
@@ -341,13 +344,44 @@ $('#staffToggle').onclick = () => {
 async function loadStaff(){
   try{
     const list = await rpc('freibad_staff_list',{p_token:TOKEN});
-    $('#staffList').innerHTML = (list||[]).map(s => `
-      <div class="staff-row">
-        <span class="nm">${esc(s.name)}</span>
-        ${s.is_admin?'<span class="adm">Admin</span>':''}
-        <button class="btn ghost small" data-name="${esc(s.name)}">Entfernen</button>
+    const box = $('#staffList');
+    box.innerHTML = (list||[]).map(s => `
+      <div class="staff-row" data-name="${esc(s.name)}">
+        <div class="staff-main">
+          <span class="nm">${esc(s.name)}</span>
+          ${s.is_admin?'<span class="adm">Admin</span>':''}
+          <button class="btn ghost small edit" type="button">Bearbeiten</button>
+        </div>
+        <div class="staff-panel hidden">
+          <label>Neues Kennwort (leer = unverändert)</label>
+          <input class="pin editpin" type="tel" inputmode="numeric" maxlength="6" placeholder="••••••">
+          <label class="chkline"><input type="checkbox" class="editadmin" ${s.is_admin?'checked':''}> darf Mitarbeiter verwalten (Admin)</label>
+          <div class="staff-actions">
+            <button class="btn small save" type="button">Speichern</button>
+            <button class="btn ghost small del" type="button">Entfernen</button>
+          </div>
+          <div class="ok rowmsg"></div>
+          <div class="err rowerr"></div>
+        </div>
       </div>`).join('') || '<p class="empty">Keine Mitarbeiter.</p>';
-    $('#staffList').querySelectorAll('button[data-name]').forEach(b => b.onclick = () => removeStaff(b.dataset.name));
+
+    box.querySelectorAll('.staff-row').forEach(row => {
+      const name  = row.dataset.name;
+      const panel = row.querySelector('.staff-panel');
+      row.querySelector('.edit').onclick = () => panel.classList.toggle('hidden');
+      row.querySelector('.save').onclick = async () => {
+        const pin = row.querySelector('.editpin').value.trim();
+        const adm = row.querySelector('.editadmin').checked;
+        const okEl = row.querySelector('.rowmsg'), erEl = row.querySelector('.rowerr');
+        okEl.textContent=''; erEl.textContent='';
+        if(pin && !/^\d{4,6}$/.test(pin)){ erEl.textContent='Kennwort: 4–6 Ziffern (oder leer lassen).'; return; }
+        try{
+          await rpc('freibad_staff_save',{p_token:TOKEN, p_name:name, p_pin:pin||null, p_is_admin:adm});
+          loadStaff();
+        }catch(e){ erEl.textContent = e.message; }
+      };
+      row.querySelector('.del').onclick = () => removeStaff(name);
+    });
   }catch(e){ $('#staffList').innerHTML = '<p class="empty">'+esc(e.message)+'</p>'; }
 }
 
