@@ -33,9 +33,8 @@
 
   /* ---------- LOGIN (dunkel, sportlich) ---------- */
   #loginView{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;max-width:460px;margin:0 auto;padding:32px 22px}
-  .wordmark{font-family:'Space Grotesk';font-weight:700;letter-spacing:.02em;font-size:1rem;text-transform:uppercase;text-align:center;margin:0 0 26px}
-  .wordmark .p{color:var(--text)} .wordmark .b{color:var(--coral)}
-  .fb-logo{display:block;margin:0 auto 22px;height:120px;width:auto;max-width:78%}
+  .padel-logo{display:block;margin:2px auto 24px;width:250px;max-width:66%;height:auto}
+  .fb-logo{display:block;margin:0 auto 22px;height:134px;width:auto;max-width:80%}
   .kicker{font-family:'Space Grotesk';text-transform:uppercase;letter-spacing:.22em;font-size:.7rem;color:var(--muted);text-align:center;margin:0}
   .headline{font-weight:700;font-size:2.1rem;line-height:1.05;text-align:center;margin:8px 0 6px;letter-spacing:-.01em}
   .headline .hl{color:var(--coral)}
@@ -81,9 +80,11 @@
   .tno{width:18px;text-align:center;color:var(--muted);font-family:'Space Grotesk';font-weight:600;font-size:.9rem}
   .code{flex:1;background:#fff;border-radius:10px;padding:11px 10px;color:#1C1A17;font-weight:600;letter-spacing:.2em;font-size:1.08rem;text-align:center}
   .code.done{background:#3a3a37;color:#8f8a80;text-decoration:line-through;letter-spacing:.14em}
-  .chk{width:42px;height:42px;flex:none;border:2px solid var(--line2);border-radius:12px;background:transparent;cursor:pointer;font-size:1.35rem;line-height:1;color:transparent;display:flex;align-items:center;justify-content:center;transition:all .12s}
+  .chk{width:46px;height:46px;flex:none;border:2px solid var(--line2);border-radius:13px;background:transparent;cursor:pointer;color:transparent;display:flex;align-items:center;justify-content:center;transition:all .14s;padding:0}
+  .chk svg{width:32px;height:32px;display:block}
+  .chk svg path{stroke:currentColor}
   .chk:hover{border-color:var(--muted)}
-  .chk.done{background:var(--coral);border-color:var(--coral);color:#fff}
+  .chk.done{border-color:transparent;color:var(--coral)}
   .chk.busy{opacity:.45}
 
   .empty{text-align:center;color:var(--muted);padding:30px 12px;font-size:.95rem}
@@ -109,7 +110,7 @@
 
   <!-- ============ LOGIN ============ -->
   <div id="loginView">
-    <p class="wordmark"><span class="p">Padel</span> <span class="b">Bielstein</span></p>
+    <img class="padel-logo" src="https://padel-bielstein.de/sponsors/brand-padel-bielstein.png" alt="Padel Bielstein">
     <img class="fb-logo" src="https://padel-bielstein.de/sponsors/Freibad%20Bielstein%20-%20Logo.png" alt="Freibad Bielstein">
     <p class="kicker">Freibad Bielstein</p>
     <h1 class="headline">Eintrittskarten <span class="hl">heute</span></h1>
@@ -277,7 +278,7 @@ function renderEntries(entries){
       return `<div class="ticket">
         <span class="tno">${t.ticket_no}</span>
         <span class="code${done?' done':''}">${esc(t.code)}</span>
-        <button class="chk${done?' done':''}" data-code="${esc(t.code)}" aria-label="abhaken">✓</button>
+        <button class="chk${done?' done':''}" data-code="${esc(t.code)}" aria-label="abhaken"><svg viewBox="0 0 32 32" fill="none"><path d="M5 17.5 L13 25 L27 7" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>`;
     }).join('');
     const badge = en.source_type==='abo' ? '<span class="badge">Abo</span>' : '';
