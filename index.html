@@ -5183,10 +5183,11 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
 
   // Bilder + Fonts vorbereiten.
   const sponsors = await pickCardSponsors(`${court}-${dateISO}-${hourStart}`);
-  const [logo, spA, spB] = await Promise.all([
+  const [logo, spA, spB, fbLogo] = await Promise.all([
     loadImageSafe('assets/icons/logo-mark-2027-dark.png?v=20260721b', false),
     loadImageSafe(sponsors[0] && /^https?:/i.test(sponsors[0].logo_url || '') ? sponsors[0].logo_url : null, true),
     loadImageSafe(sponsors[1] && /^https?:/i.test(sponsors[1].logo_url || '') ? sponsors[1].logo_url : null, true),
+    loadImageSafe('sponsors/Freibad%20Bielstein%20-%20Logo.png', false),
   ]);
   try {
     await Promise.all([
@@ -5204,7 +5205,7 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
   const hasCodes = Array.isArray(fbCodes) && fbCodes.length === 4;
 
   // Kartenhöhe dynamisch: Footer rückt bei vorhandenen Codes nach unten.
-  const FB_BLOCK_H = 348;
+  const FB_BLOCK_H = 546;   // Freibad-Kacheln im Mail-Look (Logo + „Eintrittskarte" + Code + gültig)
   const footerTop = hasCodes ? (addrY + 50 + FB_BLOCK_H) : (boxY + boxH + 96);
   const H = footerTop + 284;              // Platz für Sponsoren-Footer + Rand
 
@@ -5266,29 +5267,53 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
   ctx.textAlign = 'right'; ctx.fillStyle = P.accent; ctx.font = '700 26px "Space Grotesk", sans-serif';
   ctx.fillText('padel-bielstein.de', W - PAD, addrY);
 
-  // Freibad-Eintrittskarten: 2×2 Chips mit denselben Codes wie in der Mail.
+  // Freibad-Eintrittskarten im Look der Bestätigungsmail (Logo + „Eintrittskarte"
+  // + Code im weißen Feld + „gültig am …"). Dieselben Codes wie in der Mail.
   if (hasCodes) {
     let fy = addrY + 50;
-    ctx.fillStyle = P.divider; ctx.fillRect(PAD, fy, innerW, 2); fy += 30;
+    ctx.fillStyle = P.divider; ctx.fillRect(PAD, fy, innerW, 2); fy += 28;
     ctx.textAlign = 'left'; ctx.textBaseline = 'top';
     ctx.fillStyle = P.text; ctx.font = '800 34px "Space Grotesk", sans-serif';
-    ctx.fillText('🏊 Freibad-Eintritt inklusive', PAD, fy); fy += 46;
-    ctx.fillStyle = P.muted; ctx.font = '500 26px "Manrope", sans-serif';
-    ctx.fillText('Je Spieler ein Code – am Eingang mit dieser Karte zeigen.', PAD, fy); fy += 44;
-    const chipW = (innerW - 20) / 2, chipH = 96, gapX = 20, gapY = 16;
+    ctx.fillText('Dein Freibad-Tag ist inklusive 🏊', PAD, fy); fy += 44;
+    ctx.fillStyle = P.muted; ctx.font = '500 24px "Manrope", sans-serif';
+    ctx.fillText('Für jeden der 4 Spieler eine Eintrittskarte ins Freibad Bielstein.', PAD, fy); fy += 32;
+    ctx.fillText('Am Eingang mit dieser Karte zeigen · jeder Code gilt für 1 Person, einmal.', PAD, fy); fy += 34;
+
+    const TILE_H = 186, TILE_GAP_Y = 18, TILE_GAP_X = 24;
+    const tw = (innerW - TILE_GAP_X) / 2;
     fbCodes.slice(0, 4).forEach((c, i) => {
-      const cx = PAD + (i % 2) * (chipW + gapX);
-      const cy = fy + Math.floor(i / 2) * (chipH + gapY);
-      ctx.fillStyle = '#98A3BC'; ccRoundRect(ctx, cx, cy, chipW, chipH, 14); ctx.fill();
-      ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = '#1C1A17';
-      ctx.font = '700 19px "Space Grotesk", sans-serif';
-      if ('letterSpacing' in ctx) ctx.letterSpacing = '1px';
-      ctx.fillText('EINTRITTSKARTE NR. ' + c.ticket_no, cx + 22, cy + 15);
-      ctx.font = '800 40px "Space Grotesk", sans-serif';
-      if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
-      ctx.fillText(String(c.code || ''), cx + 22, cy + 43);
+      const tx = PAD + (i % 2) * (tw + TILE_GAP_X);
+      const ty = fy + Math.floor(i / 2) * (TILE_H + TILE_GAP_Y);
+      // Kachel-Grund
+      ctx.fillStyle = '#98A3BC'; ccRoundRect(ctx, tx, ty, tw, TILE_H, 16); ctx.fill();
+      // Freibad-Logo (weiß) mittig oben
+      if (fbLogo) {
+        const lh = 30, lw = fbLogo.width * (lh / fbLogo.height);
+        ctx.drawImage(fbLogo, tx + tw / 2 - lw / 2, ty + 16, lw, lh);
+      }
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      // „Eintrittskarte" – elegant (Serif, kursiv), weiß
+      ctx.fillStyle = '#ffffff'; ctx.font = 'italic 700 24px Georgia, "Times New Roman", serif';
+      ctx.fillText('Eintrittskarte', tx + tw / 2, ty + 52);
+      // „FREIBAD BIELSTEIN · NR. n"
+      ctx.fillStyle = '#1C1A17'; ctx.font = '700 13px "Space Grotesk", sans-serif';
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '1.5px';
+      ctx.fillText('FREIBAD BIELSTEIN · NR. ' + c.ticket_no, tx + tw / 2, ty + 82);
       if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+      // Code im weißen Feld
+      const bx = tx + 22, bw = tw - 44, by = ty + 104, bh = 46;
+      ctx.fillStyle = '#ffffff'; ccRoundRect(ctx, bx, by, bw, bh, 8); ctx.fill();
+      ctx.fillStyle = '#1C1A17'; ctx.font = '800 34px "Space Grotesk", sans-serif';
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '4px';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(c.code || ''), tx + tw / 2, by + bh / 2 + 1);
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+      ctx.textBaseline = 'top';
+      // Gültigkeit
+      ctx.fillStyle = '#1C1A17'; ctx.font = '500 13px "Manrope", sans-serif';
+      ctx.fillText('gültig am ' + dayLabel + ' · 1 Person · nur einmal', tx + tw / 2, by + bh + 12);
     });
+    ctx.textAlign = 'left';
   }
 
   // Footer: Kicker + zwei Partner-Kacheln (footerTop ist oben berechnet)
