@@ -5143,8 +5143,25 @@ async function pickCardSponsors(seedStr) {
 // Erzeugt die Buchungs-Grafik (PNG-Blob) im App-CI. Gibt null zurück, wenn das
 // Zeichnen scheitert (z. B. lokale file://-Vorschau: Bild-Export ist dort
 // gesperrt – auf der Live-Seite funktioniert es).
+// Freibad-Codes der EIGENEN Buchung (Server prüft Eigentum). Liefert [] wenn
+// kein Login, nicht der Bucher, oder Buchung außerhalb der Freibadzeit.
+async function fetchMyFreibadCodes(court, dateISO, hourStart, duration) {
+  try {
+    const headers = await authHeaders();
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/freibad_my_codes`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ p_date: dateISO, p_court: Number(court), p_hour: Number(hourStart), p_duration: Number(duration) }),
+    });
+    if (!res.ok) return [];
+    const d = await res.json();
+    return Array.isArray(d) ? d : [];
+  } catch (_) { return []; }
+}
+
 async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
-  const W = 1080, PAD = 64, innerW = W - 2 * PAD, H = 1050;
+  const W = 1080, PAD = 64, innerW = W - 2 * PAD;
+  const boxY = 400, boxH = 270;          // Detail-Box
+  const addrY = boxY + boxH + 34;         // Adresszeile
   // Zwei Farbvarianten. HELL (Look der Bestätigungsmail) ist Standard; der Admin
   // kann per app_flags.share_card_dark auf DUNKEL umstellen. Layout/Schriften/
   // Texte bleiben identisch – nur die Farben unterscheiden sich.
@@ -5180,11 +5197,21 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
     await document.fonts.ready;
   } catch (e) { /* Fallback-Fonts sind ok */ }
 
+  // Freibad-Eintrittskarten: dieselben 4 Codes wie in der Bestätigungsmail –
+  // nur für den Bucher seiner eigenen Buchung (Server prüft), und nur wenn die
+  // Buchung in die Freibad-Öffnungszeit fällt. Sonst leeres Array = kein Block.
+  const fbCodes = await fetchMyFreibadCodes(court, dateISO, hourStart, duration);
+  const hasCodes = Array.isArray(fbCodes) && fbCodes.length === 4;
+
+  // Kartenhöhe dynamisch: Footer rückt bei vorhandenen Codes nach unten.
+  const FB_BLOCK_H = 348;
+  const footerTop = hasCodes ? (addrY + 50 + FB_BLOCK_H) : (boxY + boxH + 96);
+  const H = footerTop + 284;              // Platz für Sponsoren-Footer + Rand
+
   // Hoch auflösen -> scharfer Text + scharfes Logo auf großen Displays. Alle
   // Koordinaten bleiben „logisch" (ctx.scale übernimmt den Rest).
   // 3× ist das Maximum, das iOS-Safari SICHER verarbeitet (hartes Canvas-Limit
-  // ~16 MP bzw. 4096 px Kante) – 4× würde am iPhone/iPad reißen. 3240×3150
-  // liegt sicher darunter.
+  // ~16 MP bzw. 4096 px Kante) – 4× würde am iPhone/iPad reißen.
   const S = 3;
   const cv = document.createElement('canvas');
   cv.width = W * S; cv.height = H * S;
@@ -5213,8 +5240,7 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
   ctx.fillStyle = P.muted; ctx.font = '500 30px "Manrope", sans-serif';
   ctx.fillText(kind === 'abo' ? 'Ich habe ein Padel-Jahresabo gebucht:' : 'Ich habe einen Padel-Court gebucht:', PAD, 344);
 
-  // Detail-Box
-  const boxY = 400, boxH = 270;
+  // Detail-Box (boxY/boxH sind oben definiert)
   ctx.fillStyle = P.box; ccRoundRect(ctx, PAD, boxY, innerW, boxH, 22); ctx.fill();
   ctx.strokeStyle = P.boxBorder; ctx.lineWidth = 1.5; ccRoundRect(ctx, PAD, boxY, innerW, boxH, 22); ctx.stroke();
   const rows = [['Platz', 'Court #' + court, false], ['Tag', dayLabel, false], ['Uhrzeit', h1 + ' – ' + h2 + ' Uhr', true]];
@@ -5234,14 +5260,39 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
   // Adresse (links) + Website als sichtbarer „Link" (rechts, Akzentfarbe).
   // Ein Bild kann keinen echten Hyperlink tragen – die URL steht deshalb als
   // Text auf der Karte, damit der separate Begleittext entfallen kann.
-  const addrY = boxY + boxH + 34;
+  // (addrY ist oben definiert.)
   ctx.textAlign = 'left'; ctx.fillStyle = P.dim; ctx.font = '500 26px "Manrope", sans-serif';
   ctx.fillText('📍 Padel Bielstein · Jahnstraße 13, Bielstein', PAD, addrY);
   ctx.textAlign = 'right'; ctx.fillStyle = P.accent; ctx.font = '700 26px "Space Grotesk", sans-serif';
   ctx.fillText('padel-bielstein.de', W - PAD, addrY);
 
-  // Footer: Kicker + zwei Partner-Kacheln
-  const divY = boxY + boxH + 96;
+  // Freibad-Eintrittskarten: 2×2 Chips mit denselben Codes wie in der Mail.
+  if (hasCodes) {
+    let fy = addrY + 50;
+    ctx.fillStyle = P.divider; ctx.fillRect(PAD, fy, innerW, 2); fy += 30;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillStyle = P.text; ctx.font = '800 34px "Space Grotesk", sans-serif';
+    ctx.fillText('🏊 Freibad-Eintritt inklusive', PAD, fy); fy += 46;
+    ctx.fillStyle = P.muted; ctx.font = '500 26px "Manrope", sans-serif';
+    ctx.fillText('Je Spieler ein Code – am Eingang mit dieser Karte zeigen.', PAD, fy); fy += 44;
+    const chipW = (innerW - 20) / 2, chipH = 96, gapX = 20, gapY = 16;
+    fbCodes.slice(0, 4).forEach((c, i) => {
+      const cx = PAD + (i % 2) * (chipW + gapX);
+      const cy = fy + Math.floor(i / 2) * (chipH + gapY);
+      ctx.fillStyle = '#98A3BC'; ccRoundRect(ctx, cx, cy, chipW, chipH, 14); ctx.fill();
+      ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = '#1C1A17';
+      ctx.font = '700 19px "Space Grotesk", sans-serif';
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '1px';
+      ctx.fillText('EINTRITTSKARTE NR. ' + c.ticket_no, cx + 22, cy + 15);
+      ctx.font = '800 40px "Space Grotesk", sans-serif';
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
+      ctx.fillText(String(c.code || ''), cx + 22, cy + 43);
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+    });
+  }
+
+  // Footer: Kicker + zwei Partner-Kacheln (footerTop ist oben berechnet)
+  const divY = footerTop;
   ctx.fillStyle = P.divider; ctx.fillRect(PAD, divY, innerW, 2);
   ctx.textAlign = 'left'; ctx.fillStyle = P.dim; ctx.font = '700 20px "Space Grotesk", sans-serif';
   if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
@@ -11560,6 +11611,22 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   .pb-splash-inner {
     padding: clamp(48px, 6.5vh, 90px) 40px clamp(38px, 4.8vh, 74px);
   }
+}
+/* iPad HOCHFORMAT: harmonischer – gleichmäßige, etwas breitere Abstände ÜBERALL
+   (oben über dem Logo, zwischen Logo/Titel/Button und unten unter den Partnern
+   alle gleich). Logo bleibt oben, rutscht nur etwas tiefer; Partner rutschen
+   etwas hoch; Titel rückt etwas näher – aber nicht dicht ans Logo.
+   Querformat (min-700 ohne portrait) bleibt unberührt. */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .pb-splash-inner {
+    justify-content: space-evenly;
+    padding-top: 34px;
+    padding-bottom: 24px;
+  }
+  /* Partner-/Werbeblock etwas tiefer und mit mehr Luft zum „Jetzt loslegen"-Button,
+     sodass der Abstand unter Müller Textil ~ dem über dem Logo entspricht.
+     Höhere Spezifität, damit es die Basisregel (.pb-splash-duo margin-top:38) schlägt. */
+  .pb-splash-inner .pb-splash-duo { margin-top: clamp(48px, 6vh, 84px); }
 }
 .pb-splash-top { display: flex; align-items: flex-start; justify-content: space-between; }
 .pb-splash-logobox {
