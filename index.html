@@ -5178,6 +5178,7 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
 
   const d = new Date(dateISO + 'T12:00:00');
   const dayLabel = d.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' });
+  const dayLabelLong = d.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   const h1 = String(Number(hourStart)).padStart(2, '0') + ':00';
   const h2 = String(Number(hourStart) + Number(duration)).padStart(2, '0') + ':00';
 
@@ -5205,7 +5206,7 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
   const hasCodes = Array.isArray(fbCodes) && fbCodes.length === 4;
 
   // Kartenhöhe dynamisch: Footer rückt bei vorhandenen Codes nach unten.
-  const FB_BLOCK_H = 546;   // Freibad-Kacheln im Mail-Look (Logo + „Eintrittskarte" + Code + gültig)
+  const FB_BLOCK_H = 578;   // Freibad-Kacheln 1:1 im Mail-Look (Logo + „Eintrittskarte" + Code + gültig)
   const footerTop = hasCodes ? (addrY + 50 + FB_BLOCK_H) : (boxY + boxH + 96);
   const H = footerTop + 284;              // Platz für Sponsoren-Footer + Rand
 
@@ -5272,46 +5273,50 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
   if (hasCodes) {
     let fy = addrY + 50;
     ctx.fillStyle = P.divider; ctx.fillRect(PAD, fy, innerW, 2); fy += 28;
-    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    ctx.fillStyle = P.text; ctx.font = '800 34px "Space Grotesk", sans-serif';
-    ctx.fillText('Dein Freibad-Tag ist inklusive 🏊', PAD, fy); fy += 44;
-    ctx.fillStyle = P.muted; ctx.font = '500 24px "Manrope", sans-serif';
-    ctx.fillText('Für jeden der 4 Spieler eine Eintrittskarte ins Freibad Bielstein.', PAD, fy); fy += 32;
-    ctx.fillText('Am Eingang zeigen · jeder Code gilt für 1 Person, einmal.', PAD, fy); fy += 34;
+    const cxMid = W / 2;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    // Überschrift + Erklärung – wie in der Mail: zentriert, leicht, nicht extra-fett.
+    ctx.fillStyle = P.text; ctx.font = '700 30px "Space Grotesk", sans-serif';
+    ctx.fillText('Dein Freibad-Tag ist inklusive 🏊', cxMid, fy); fy += 42;
+    ctx.fillStyle = P.muted; ctx.font = '400 22px "Manrope", sans-serif';
+    ctx.fillText('Für jeden der 4 Spieler eine Eintrittskarte ins Freibad Bielstein.', cxMid, fy); fy += 30;
+    ctx.fillText('Am Eingang zeigen · jeder Code gilt für eine Person und nur einmal.', cxMid, fy); fy += 32;
 
-    const TILE_H = 186, TILE_GAP_Y = 18, TILE_GAP_X = 24;
+    const TILE_H = 206, TILE_GAP_Y = 18, TILE_GAP_X = 24;
     const tw = (innerW - TILE_GAP_X) / 2;
     fbCodes.slice(0, 4).forEach((c, i) => {
       const tx = PAD + (i % 2) * (tw + TILE_GAP_X);
       const ty = fy + Math.floor(i / 2) * (TILE_H + TILE_GAP_Y);
+      const tcx = tx + tw / 2;
       // Kachel-Grund
       ctx.fillStyle = '#98A3BC'; ccRoundRect(ctx, tx, ty, tw, TILE_H, 16); ctx.fill();
-      // Freibad-Logo (weiß) mittig oben
+      // Freibad-Logo (weiß) – etwas größer, mittig oben
       if (fbLogo) {
-        const lh = 30, lw = fbLogo.width * (lh / fbLogo.height);
-        ctx.drawImage(fbLogo, tx + tw / 2 - lw / 2, ty + 16, lw, lh);
+        const lh = 40, lw = fbLogo.width * (lh / fbLogo.height);
+        ctx.drawImage(fbLogo, tcx - lw / 2, ty + 16, lw, lh);
       }
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      // „Eintrittskarte" – elegant (Serif, kursiv), weiß
-      ctx.fillStyle = '#ffffff'; ctx.font = 'italic 700 24px Georgia, "Times New Roman", serif';
-      ctx.fillText('Eintrittskarte', tx + tw / 2, ty + 52);
+      // „Eintrittskarte" – Serif, kursiv, NICHT fett (wie Mail)
+      ctx.fillStyle = '#ffffff'; ctx.font = 'italic 26px Georgia, "Times New Roman", serif';
+      ctx.fillText('Eintrittskarte', tcx, ty + 60);
       // „FREIBAD BIELSTEIN · NR. n"
-      ctx.fillStyle = '#1C1A17'; ctx.font = '700 13px "Space Grotesk", sans-serif';
+      ctx.fillStyle = '#1C1A17'; ctx.font = '600 13px "Space Grotesk", sans-serif';
       if ('letterSpacing' in ctx) ctx.letterSpacing = '1.5px';
-      ctx.fillText('FREIBAD BIELSTEIN · NR. ' + c.ticket_no, tx + tw / 2, ty + 82);
+      ctx.fillText('FREIBAD BIELSTEIN · NR. ' + c.ticket_no, tcx, ty + 92);
       if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-      // Code im weißen Feld
-      const bx = tx + 22, bw = tw - 44, by = ty + 104, bh = 46;
+      // Code im weißen Feld – Monospace wie Mail
+      const bx = tx + 24, bw = tw - 48, by = ty + 116, bh = 46;
       ctx.fillStyle = '#ffffff'; ccRoundRect(ctx, bx, by, bw, bh, 8); ctx.fill();
-      ctx.fillStyle = '#1C1A17'; ctx.font = '800 34px "Space Grotesk", sans-serif';
-      if ('letterSpacing' in ctx) ctx.letterSpacing = '4px';
+      ctx.fillStyle = '#1C1A17'; ctx.font = '700 30px "Courier New", monospace';
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
       ctx.textBaseline = 'middle';
-      ctx.fillText(String(c.code || ''), tx + tw / 2, by + bh / 2 + 1);
+      ctx.fillText(String(c.code || ''), tcx, by + bh / 2 + 1);
       if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
       ctx.textBaseline = 'top';
-      // Gültigkeit
-      ctx.fillStyle = '#1C1A17'; ctx.font = '500 13px "Manrope", sans-serif';
-      ctx.fillText('gültig am ' + dayLabel + ' · 1 Person · nur einmal', tx + tw / 2, by + bh + 12);
+      // Gültigkeit – 2 Zeilen mit langem Datum (wie Mail)
+      ctx.fillStyle = '#1C1A17'; ctx.font = '400 13px "Manrope", sans-serif';
+      ctx.fillText('gültig am ' + dayLabelLong, tcx, by + bh + 10);
+      ctx.fillText('1 Person · nur einmal', tcx, by + bh + 28);
     });
     ctx.textAlign = 'left';
   }
