@@ -11617,9 +11617,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
    alle gleich). Logo bleibt oben, rutscht nur etwas tiefer; Partner rutschen
    etwas hoch; Titel rückt etwas näher – aber nicht dicht ans Logo.
    Querformat (min-700 ohne portrait) bleibt unberührt. */
-@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+@media (min-width: 768px) and (orientation: portrait) {
   /* Höhere Spezifität (.pb-splash > .pb-splash-inner), damit diese Regel die
-     spätere globale Regel „.pb-splash-inner { padding-bottom: clamp(...) }" schlägt. */
+     spätere globale Regel „.pb-splash-inner { padding-bottom: clamp(...) }" schlägt.
+     Ohne max-width, damit es auf JEDEM iPad-Hochformat greift (auch iPad Pro 12,9"
+     mit 1024 px). Querformat (orientation: landscape) bleibt unberührt. */
   .pb-splash > .pb-splash-inner {
     justify-content: space-evenly;
     padding: 34px 40px 24px;
