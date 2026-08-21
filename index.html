@@ -11618,15 +11618,15 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
    etwas hoch; Titel rückt etwas näher – aber nicht dicht ans Logo.
    Querformat (min-700 ohne portrait) bleibt unberührt. */
 @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
-  .pb-splash-inner {
+  /* Höhere Spezifität (.pb-splash > .pb-splash-inner), damit diese Regel die
+     spätere globale Regel „.pb-splash-inner { padding-bottom: clamp(...) }" schlägt. */
+  .pb-splash > .pb-splash-inner {
     justify-content: space-evenly;
-    padding-top: 34px;
-    padding-bottom: 24px;
+    padding: 34px 40px 24px;
   }
   /* Partner-/Werbeblock etwas tiefer und mit mehr Luft zum „Jetzt loslegen"-Button,
-     sodass der Abstand unter Müller Textil ~ dem über dem Logo entspricht.
-     Höhere Spezifität, damit es die Basisregel (.pb-splash-duo margin-top:38) schlägt. */
-  .pb-splash-inner .pb-splash-duo { margin-top: clamp(48px, 6vh, 84px); }
+     sodass der Abstand unter Müller Textil ~ dem über dem Logo entspricht. */
+  .pb-splash > .pb-splash-inner .pb-splash-duo { margin-top: clamp(48px, 6vh, 84px); }
 }
 .pb-splash-top { display: flex; align-items: flex-start; justify-content: space-between; }
 .pb-splash-logobox {
