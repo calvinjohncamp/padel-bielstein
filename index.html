@@ -810,6 +810,8 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .pbp-premwrap { margin-bottom:2px; }
 .pbp-tile { background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,.28); max-width:100%; box-sizing:border-box; }
 .pbp-tile img { max-width:82%; max-height:66%; width:auto; height:auto; object-fit:contain; display:block; }
+a.pbp-tile { text-decoration:none; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; }
+a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0,.34); }
 /* width:100% pinnt die Breite -> aspect-ratio darf daraus NICHT (Safari-Bug)
    eine zu große Breite ableiten und rechts aus dem Board ragen. */
 /* Definite Höhe (nicht nur aspect-ratio): sonst löst Safari/iPad die %-max-height
@@ -2675,6 +2677,12 @@ main {
           <div style="margin-bottom:12px;">
             <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Name</label>
             <input id="spName" type="text" placeholder="z. B. Sparkasse Gummersbach" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Website</label>
+            <input id="spWebsite" type="url" inputmode="url" placeholder="z. B. muellertextil.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+            <div style="font-size:0.72rem;color:#7A7368;line-height:1.5;margin-top:5px;">Nur nötig, wenn das Logo auf der <strong>Partner-Seite</strong> anklickbar zur Firmen-Website führen soll. Auf den normalen Buchungsseiten wird nicht verlinkt. „https://“ darf fehlen – wird automatisch ergänzt.</div>
           </div>
 
           <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
@@ -7078,6 +7086,7 @@ async function loadAdminSponsors() {
         <div style="flex:0 1 auto;min-width:0;">
           <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
           <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;">${tierLabel[s.tier] || s.tier} · Reihenfolge ${s.sort_order} · ${active}</div>
+          ${s.website_url ? `<div style="font-size:0.74rem;color:#5C564C;margin-top:2px;word-break:break-all;">🔗 ${esc(s.website_url)}</div>` : ''}
         </div>
         ${contactBlock}
         <div style="display:flex;gap:6px;flex:none;margin-left:auto;">
@@ -7116,6 +7125,7 @@ function editSponsor(id) {
   document.getElementById('spLogoUrl').value  = s.logo_url || '';
   document.getElementById('spTier').value     = s.tier;
   document.getElementById('spName').value     = s.name;
+  document.getElementById('spWebsite').value  = s.website_url || '';
   document.getElementById('spSort').value     = s.sort_order;
   document.getElementById('spActive').checked = !!s.active;
   document.getElementById('spContactName').value  = s.contact_name  || '';
@@ -7134,6 +7144,7 @@ function resetSponsorForm() {
   document.getElementById('spLogoUrl').value  = '';
   document.getElementById('spTier').value     = 'partner';
   document.getElementById('spName').value     = '';
+  document.getElementById('spWebsite').value  = '';
   document.getElementById('spSort').value     = '0';
   document.getElementById('spActive').checked = true;
   document.getElementById('spContactName').value  = '';
@@ -7156,6 +7167,7 @@ async function saveSponsor() {
   const contactName  = document.getElementById('spContactName').value.trim();
   const contactEmail = document.getElementById('spContactEmail').value.trim();
   const contactPhone = document.getElementById('spContactPhone').value.trim();
+  const website      = document.getElementById('spWebsite').value.trim();
 
   if (!name) { alert('Bitte einen Namen angeben.'); return; }
   if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
@@ -7173,7 +7185,8 @@ async function saveSponsor() {
     }
     const { error } = await sb.rpc('admin_upsert_sponsor', {
       p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort,
-      p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null
+      p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
+      p_website_url: website || null
     });
     if (error) throw error;
     showToast('Sponsor gespeichert.');
@@ -11893,13 +11906,20 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var esc=function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
     var BRAND='https://padel-bielstein.de/sponsors/brand-padel-bielstein.png';
-    var tile=function(s,cls){ return '<div class="pbp-tile'+(cls?(' '+cls):'')+'">'
-      +'<img src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy"></div>'; };
+    var normUrl=function(u){ u=String(u==null?'':u).trim(); if(!u) return '';
+      if(!/^https?:\/\//i.test(u)) u='https://'+u; return u; };
+    var tile=function(s,cls){
+      var cl='pbp-tile'+(cls?(' '+cls):'');
+      var img='<img src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy">';
+      var url=normUrl(s.website_url);
+      // Nur auf der Partner-Seite: Logo verlinkt auf die Firmen-Website (neuer Tab).
+      if(url) return '<a class="'+cl+'" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer nofollow" title="'+esc(s.name)+'">'+img+'</a>';
+      return '<div class="'+cl+'">'+img+'</div>'; };
     var label=function(t){ return '<div class="pbp-seclabel"><span class="pbp-line"></span>'
       +'<span class="pbp-lbl">'+t+'</span><span class="pbp-line"></span></div>'; };
     try{
       if(typeof sb==='undefined' || !sb){ host.innerHTML=''; return; }
-      var res=await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
+      var res=await sb.from('sponsors_public').select('tier,name,logo_url,sort_order,website_url');
       if(res.error) throw res.error;
       var rows=res.data||[];
       var by=function(a,b){ return (a.sort_order||0)-(b.sort_order||0); };
