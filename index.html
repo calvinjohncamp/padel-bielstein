@@ -2670,8 +2670,7 @@ main {
               </select>
             </div>
             <div>
-              <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Reihenfolge</label>
-              <input id="spSort" type="number" value="0" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              <input id="spSort" type="hidden" value="0">
             </div>
           </div>
           <div style="margin-bottom:12px;">
@@ -7064,36 +7063,66 @@ async function loadAdminSponsors() {
     box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:24px;">Noch keine Sponsoren angelegt.</div>';
     return;
   }
+
+  // Sponsoren nach Tier gruppieren und nummerieren
+  const byTier = { premium: [], partner: [], regional: [] };
+  rows.forEach(s => {
+    if (s.tier in byTier) byTier[s.tier].push(s);
+  });
+
   const tierLabel = { premium:'Premium', partner:'Partner', regional:'Regional', supporter:'Supporter' };
-  box.innerHTML = rows.map(s => {
-    const logo = s.logo_url
-      ? `<img src="${esc(s.logo_url)}" alt="" style="max-height:38px;max-width:104px;object-fit:contain;display:block;">`
-      : '<span style="color:#B8402C;font-size:0.7rem;text-align:center;line-height:1.2;">kein<br>Logo</span>';
-    const active = s.active
-      ? '<span style="color:#1F8A5F;font-weight:800;">● aktiv</span>'
-      : '<span style="color:#7A7368;font-weight:800;">○ inaktiv</span>';
-    const hasContact = s.contact_name || s.contact_email || s.contact_phone;
-    const contactBlock = hasContact
-      ? `<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;line-height:1.4;max-width:40%;">
-           ${s.contact_name  ? `<div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.contact_name)}</div>` : ''}
-           ${s.contact_email ? `<div style="font:500 13px 'Manrope',sans-serif;color:#5C564C;word-break:break-word;">${esc(s.contact_email)}</div>` : ''}
-           ${s.contact_phone ? `<div style="font:500 13px 'Manrope',sans-serif;color:#5C564C;">${esc(s.contact_phone)}</div>` : ''}
-         </div>`
-      : '';
-    return `
-      <div style="position:relative;display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid #E2DACB;border-radius:12px;padding:12px 14px;margin-bottom:10px;">
-        <div style="width:118px;height:58px;flex:none;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;">${logo}</div>
-        <div style="flex:0 1 auto;min-width:0;">
-          <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
-          <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;">${tierLabel[s.tier] || s.tier} · Reihenfolge ${s.sort_order} · ${active}</div>
-          ${s.website_url ? `<div style="font-size:0.74rem;color:#5C564C;margin-top:2px;word-break:break-all;">🔗 ${esc(s.website_url)}</div>` : ''}
-        </div>
-        ${contactBlock}
-        <div style="display:flex;gap:6px;flex:none;margin-left:auto;">
-          <button onclick="editSponsor('${s.id}')" style="padding:8px 12px;border:1.5px solid #E2DACB;border-radius:8px;background:transparent;color:#1C1A17;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Bearbeiten</button>
-          <button onclick="deleteSponsor('${s.id}')" style="padding:8px 12px;border:1.5px solid #E2DACB;border-radius:8px;background:transparent;color:#B8402C;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Löschen</button>
-        </div>
-      </div>`;
+  const tierCounts = { premium: byTier.premium.length, partner: byTier.partner.length, regional: byTier.regional.length };
+
+  // Nummerierungshelfer
+  const getNum = (sponsor, index, tier) => {
+    if (tier === 'premium') return 'PP';
+    if (tier === 'partner') return `P${index + 1}`;
+    if (tier === 'regional') return `RP${index + 1}`;
+    return '?';
+  };
+
+  box.innerHTML = Object.entries(byTier).flatMap(([tier, tierRows]) => {
+    if (!tierRows.length) return [];
+    return tierRows.map((s, idx) => {
+      const logo = s.logo_url
+        ? `<img src="${esc(s.logo_url)}" alt="" style="max-height:38px;max-width:104px;object-fit:contain;display:block;">`
+        : '<span style="color:#B8402C;font-size:0.7rem;text-align:center;line-height:1.2;">kein<br>Logo</span>';
+      const active = s.active
+        ? '<span style="color:#1F8A5F;font-weight:800;">● aktiv</span>'
+        : '<span style="color:#7A7368;font-weight:800;">○ inaktiv</span>';
+      const hasContact = s.contact_name || s.contact_email || s.contact_phone;
+      const contactBlock = hasContact
+        ? `<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;line-height:1.4;max-width:40%;">
+             ${s.contact_name  ? `<div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.contact_name)}</div>` : ''}
+             ${s.contact_email ? `<div style="font:500 13px 'Manrope',sans-serif;color:#5C564C;word-break:break-word;">${esc(s.contact_email)}</div>` : ''}
+             ${s.contact_phone ? `<div style="font:500 13px 'Manrope',sans-serif;color:#5C564C;">${esc(s.contact_phone)}</div>` : ''}
+           </div>`
+        : '';
+      const num = getNum(s, idx, tier);
+      const canMoveUp = idx > 0;
+      const canMoveDown = idx < tierRows.length - 1;
+
+      return `
+        <div style="position:relative;display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid #E2DACB;border-radius:12px;padding:12px 14px;margin-bottom:10px;">
+          <div style="width:118px;height:58px;flex:none;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;">${logo}</div>
+          <div style="flex:0 1 auto;min-width:0;">
+            <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
+            <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;"><strong>${num}</strong> · ${tierLabel[s.tier] || s.tier} · ${active}</div>
+            ${s.website_url ? `<div style="font-size:0.74rem;color:#5C564C;margin-top:2px;word-break:break-all;">🔗 ${esc(s.website_url)}</div>` : ''}
+          </div>
+          ${contactBlock}
+          <div style="display:flex;gap:6px;flex:none;margin-left:auto;flex-direction:column;">
+            <div style="display:flex;gap:3px;">
+              <button onclick="moveSponsor('${s.id}', 'up')" ${canMoveUp ? '' : 'disabled'} style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:${canMoveUp ? '#fff' : '#f5f5f5'};color:#1C1A17;font:700 12px 'Space Grotesk',sans-serif;cursor:${canMoveUp ? 'pointer' : 'not-allowed'};opacity:${canMoveUp ? '1' : '0.5'};">↑</button>
+              <button onclick="moveSponsor('${s.id}', 'down')" ${canMoveDown ? '' : 'disabled'} style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:${canMoveDown ? '#fff' : '#f5f5f5'};color:#1C1A17;font:700 12px 'Space Grotesk',sans-serif;cursor:${canMoveDown ? 'pointer' : 'not-allowed'};opacity:${canMoveDown ? '1' : '0.5'};">↓</button>
+            </div>
+            <div style="display:flex;gap:3px;">
+              <button onclick="editSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#1C1A17;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Ändern</button>
+              <button onclick="deleteSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#B8402C;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Löschen</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
   }).join('');
 }
 
@@ -7202,7 +7231,7 @@ async function saveSponsor() {
 
 async function deleteSponsor(id) {
   const s = (window.__sponsorRows || []).find(r => r.id === id);
-  if (!confirm(`Sponsor „${s ? s.name : ''}“ wirklich löschen?`)) return;
+  if (!confirm(`Sponsor „${s ? s.name : ''}” wirklich löschen?`)) return;
   try {
     const { error } = await sb.rpc('admin_delete_sponsor', { p_id: id });
     if (error) throw error;
@@ -7210,6 +7239,16 @@ async function deleteSponsor(id) {
     loadAdminSponsors();
   } catch(e) {
     alert('Löschen fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
+  }
+}
+
+async function moveSponsor(id, direction) {
+  try {
+    const { error } = await sb.rpc('admin_move_sponsor', { p_id: id, p_direction: direction });
+    if (error) throw error;
+    loadAdminSponsors();
+  } catch(e) {
+    alert('Verschieben fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
   }
 }
 
