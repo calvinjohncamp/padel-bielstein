@@ -11969,7 +11969,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         +'<header class="pbp-head"><img class="pbp-brand" src="'+BRAND+'" alt="Padel Bielstein">'
         +'<div class="pbp-rule"></div><div class="pbp-welcome">'
         +'<div class="pbp-wtop">Aus der Region, für die Region</div>'
-        +'<div class="pbp-wsub">Unsere starken Partner vor Ort</div></div></header>';
+        +'<div class="pbp-wsub">Unsere starken Partner vor Ort</div></div></header>'
+        +'<div style="background:#FFF3E0;border-left:4px solid #FF5A36;padding:16px 18px;margin:20px 18px 0;border-radius:8px;font:500 14px \'Manrope\',sans-serif;line-height:1.5;color:#1C1A17;">'
+        +'<div style="font-weight:700;margin-bottom:6px;">⚠️ Testphase: Beispielfirmen</div>'
+        +'<div>Die aktuell in unserer Buchungsapp angezeigten Partner dienen nur zu Demonstrationszwecken in der Entwicklungsphase. Die tatsächlichen Partner werden wir vor dem offiziellen Start vorstellen.</div>'
+        +'</div>';
       if(prem.length) h+=label('Premium-Partner')+'<div class="pbp-premwrap">'+tile(prem[0],'pbp-tile-prem')+'</div>';
       if(part.length) h+=label('Partner')+'<div class="pbp-grid pbp-grid-partner">'+part.map(function(s){return tile(s);}).join('')+'</div>';
       if(reg.length)  h+=label('Regionale Partner')+'<div class="pbp-grid pbp-grid-regional">'+reg.map(function(s){return tile(s);}).join('')+'</div>';
