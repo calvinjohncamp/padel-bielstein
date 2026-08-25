@@ -829,8 +829,12 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .pbp-grid-partner, .pbp-grid-regional { grid-template-columns:repeat(6,1fr); }
 @media (max-width:820px){ .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(3,1fr); } .pbp-grid .pbp-tile { height:96px; } .pbp-tile-prem img { max-width:52%; } .pbp-wtop { white-space:normal; } }
 @media (max-width:520px){ .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(2,1fr); } .pbp-grid .pbp-tile { height:66px; } .pbp-tile-prem img { max-width:64%; } .pbp-tile-prem { height:116px; } .pbp-head { gap:14px; } }
-/* Partner-Aktion: Hover-Effekt zwischen zwei Logos */
-.pbp-tile { position:relative; }
+/* Partner-Aktion: Hover-Effekt NUR für Kacheln mit zweitem Logo */
+.pbp-tile-action { position:relative; }
+.pbp-tile-action .pbp-logo, .pbp-tile-action .pbp-action { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; transition:opacity 0.2s ease; }
+.pbp-tile-action .pbp-action { opacity:0; }
+.pbp-tile-action:hover .pbp-logo { opacity:0; }
+.pbp-tile-action:hover .pbp-action { opacity:1; }
 .pbp-tile .pbp-logo { position:absolute; inset:0; opacity:1; transition:opacity 0.2s ease; }
 .pbp-tile .pbp-action { position:absolute; inset:0; opacity:0; transition:opacity 0.2s ease; }
 .pbp-tile:hover .pbp-logo { opacity:0; }
@@ -12014,6 +12018,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(!/^https?:\/\//i.test(u)) u='https://'+u; return u; };
     var tile=function(s,cls){
       var cl='pbp-tile'+(cls?(' '+cls):'');
+      // NUR bei aktiviertem Action-Logo die Special-Klasse hinzufügen
+      if(s.has_action_logo) cl+=' pbp-tile-action';
       var img='<img class="pbp-logo" src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy">';
       // Aktion-Logo falls aktiviert: Dateiname aus logo_url ableiten
       // z.B. partner-tapetenshop.png → partner-tapetenshop-aktion.png
@@ -12036,6 +12042,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       var res=await sb.from('sponsors_public').select('tier,name,logo_url,sort_order,website_url');
       if(res.error) throw res.error;
       var rows=res.data||[];
+      // Initialisiere has_action_logo auf false (wird nur true wenn manuell aktiviert)
+      rows.forEach(function(r){ r.has_action_logo=false; });
       var by=function(a,b){ return (a.sort_order||0)-(b.sort_order||0); };
       // Initialisiere has_action_logo falls nicht vorhanden
       rows.forEach(function(r){ if(!('has_action_logo' in r)) r.has_action_logo=false; });
