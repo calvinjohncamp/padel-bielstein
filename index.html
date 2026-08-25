@@ -2717,15 +2717,20 @@ main {
             <div id="spPreview" style="margin-top:10px;"></div>
           </div>
           <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
-            <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Aktionslogo fuer Hover auf der Partner-Seite</div>
+            <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Aktionslogo</div>
             <div style="font-size:0.76rem;color:#7A7368;line-height:1.5;margin-bottom:10px;">
-              Optionales zweites Logo. Es wird nur auf der Partner-Seite beim Hovern angezeigt, wenn unten "Aktion aktiv" eingeschaltet ist.
+              Optionales zweites Logo. Der Modus steuert, ob es nur beim Hover auf der Partner-Seite oder direkt ueberall in der App erscheint.
             </div>
             <input id="spActionFile" type="file" accept="image/*" onchange="sponsorPreviewActionFile()" style="width:100%;font:500 13px 'Manrope',sans-serif;color:#1C1A17;">
             <div id="spActionPreview" style="margin-top:10px;"></div>
-            <label style="display:flex;align-items:center;gap:8px;font:600 14px 'Manrope',sans-serif;color:#1C1A17;margin-top:10px;cursor:pointer;">
-              <input id="spHasActionLogo" type="checkbox" style="width:18px;height:18px;"> Aktion aktiv
-            </label>
+            <div style="margin-top:10px;">
+              <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Logo-Anzeige</label>
+              <select id="spActionLogoMode" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+                <option value="off">Standardlogo</option>
+                <option value="hover">Aktionslogo bei Hover auf der Partner-Seite</option>
+                <option value="replace">Aktionslogo direkt ueberall anzeigen</option>
+              </select>
+            </div>
           </div>
           <label style="display:flex;align-items:center;gap:8px;font:600 14px 'Manrope',sans-serif;color:#1C1A17;margin-bottom:14px;cursor:pointer;">
             <input id="spActive" type="checkbox" checked style="width:18px;height:18px;"> aktiv (wird angezeigt)
@@ -5119,10 +5124,17 @@ function ccDrawContain(ctx, img, x, y, w, h) {
 // Zwei Partner für die Karte: gemeinsame Rotation Premium / Partner / Regional
 // mit 15:3:1 (= 5:1:0,33), stabil pro Buchung (per Hash). Wenn Premium
 // auftaucht, steht er links – wie in App und Mail.
+function sponsorDisplayLogoUrl(s) {
+  if (!s) return '';
+  return (s.action_logo_mode === 'replace' && s.action_logo_url) ? s.action_logo_url : s.logo_url;
+}
+
 async function pickCardSponsors(seedStr) {
   try {
     if (typeof sb === 'undefined' || !sb) return [];
-    const res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
+    let res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order');
+    if (res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order');
+    if (res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
     if (res.error) return [];
     const rows = res.data || [];
     const bySort = (a, b) => (a.sort_order || 0) - (b.sort_order || 0);
@@ -5210,8 +5222,8 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
   const sponsors = await pickCardSponsors(`${court}-${dateISO}-${hourStart}`);
   const [logo, spA, spB, fbLogo] = await Promise.all([
     loadImageSafe('assets/icons/logo-mark-2027-dark.png?v=20260721b', false),
-    loadImageSafe(sponsors[0] && /^https?:/i.test(sponsors[0].logo_url || '') ? sponsors[0].logo_url : null, true),
-    loadImageSafe(sponsors[1] && /^https?:/i.test(sponsors[1].logo_url || '') ? sponsors[1].logo_url : null, true),
+    loadImageSafe(sponsors[0] && /^https?:/i.test(sponsorDisplayLogoUrl(sponsors[0]) || '') ? sponsorDisplayLogoUrl(sponsors[0]) : null, true),
+    loadImageSafe(sponsors[1] && /^https?:/i.test(sponsorDisplayLogoUrl(sponsors[1]) || '') ? sponsorDisplayLogoUrl(sponsors[1]) : null, true),
     loadImageSafe('sponsors/Freibad%20Bielstein%20-%20Logo.png', false),
   ]);
   try {
@@ -7107,8 +7119,10 @@ async function loadAdminSponsors() {
       const active = s.active
         ? '<span style="color:#1F8A5F;font-weight:800;">● aktiv</span>'
         : '<span style="color:#7A7368;font-weight:800;">○ inaktiv</span>';
-      const action = (s.has_action_logo && s.action_logo_url)
-        ? '<span style="color:#FF5A36;font-weight:800;"> · Aktion aktiv</span>'
+      const actionMode = s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
+      const actionLabel = actionMode === 'replace' ? 'Aktionslogo ueberall' : (actionMode === 'hover' ? 'Hover-Aktion' : '');
+      const action = (actionLabel && s.action_logo_url)
+        ? `<span style="color:#FF5A36;font-weight:800;"> · ${actionLabel}</span>`
         : '';
       const hasContact = s.contact_name || s.contact_email || s.contact_phone;
       const contactBlock = hasContact
@@ -7203,7 +7217,7 @@ function editSponsor(id) {
   document.getElementById('spContactPhone').value = s.contact_phone || '';
   document.getElementById('spFile').value     = '';
   document.getElementById('spActionFile').value = '';
-  document.getElementById('spHasActionLogo').checked = !!s.has_action_logo;
+  document.getElementById('spActionLogoMode').value = s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
   document.getElementById('spPreview').innerHTML = s.logo_url
     ? sponsorPreviewBox(esc(s.logo_url), 'Aktuelles Logo (nur ersetzt, wenn Du eine neue Datei waehlst):')
     : '';
@@ -7228,7 +7242,7 @@ function resetSponsorForm() {
   document.getElementById('spContactPhone').value = '';
   document.getElementById('spFile').value     = '';
   document.getElementById('spActionFile').value = '';
-  document.getElementById('spHasActionLogo').checked = false;
+  document.getElementById('spActionLogoMode').value = 'off';
   document.getElementById('spPreview').innerHTML = '';
   document.getElementById('spActionPreview').innerHTML = '';
   document.getElementById('spSaveBtn').textContent = 'Speichern';
@@ -7245,7 +7259,8 @@ async function saveSponsor() {
   let   actionLogoUrl = document.getElementById('spActionLogoUrl').value || null;
   const file   = document.getElementById('spFile').files[0];
   const actionFile = document.getElementById('spActionFile').files[0];
-  const hasActionLogo = document.getElementById('spHasActionLogo').checked;
+  const actionLogoMode = document.getElementById('spActionLogoMode').value || 'off';
+  const hasActionLogo = actionLogoMode !== 'off';
   const contactName  = document.getElementById('spContactName').value.trim();
   const contactEmail = document.getElementById('spContactEmail').value.trim();
   const contactPhone = document.getElementById('spContactPhone').value.trim();
@@ -7264,10 +7279,11 @@ async function saveSponsor() {
       p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
       p_website_url: website || null,
       p_action_logo_url: actionLogoUrl,
-      p_has_action_logo: hasActionLogo
+      p_has_action_logo: hasActionLogo,
+      p_action_logo_mode: actionLogoMode
     };
     let { error } = await sb.rpc('admin_upsert_sponsor', payload);
-    if (error && !actionLogoUrl && !hasActionLogo) {
+    if (error && !actionLogoUrl && !hasActionLogo && actionLogoMode === 'off') {
       const legacyPayload = {
         p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort,
         p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
@@ -12006,11 +12022,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var normUrl=function(u){ u=String(u==null?'':u).trim(); if(!u) return '';
       if(!/^https?:\/\//i.test(u)) u='https://'+u; return u; };
     var tile=function(s,cls){
-      var hasAction=!!(s.has_action_logo && s.action_logo_url);
-      var cl='pbp-tile'+(hasAction?' pbp-tile-action':'')+(cls?(' '+cls):'');
-      var img=hasAction
+      var mode=s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
+      var showActionDirect=(mode==='replace' && s.action_logo_url);
+      var hasHoverAction=(mode==='hover' && s.action_logo_url);
+      var displayLogo=showActionDirect ? s.action_logo_url : s.logo_url;
+      var cl='pbp-tile'+(hasHoverAction?' pbp-tile-action':'')+(cls?(' '+cls):'');
+      var img=hasHoverAction
         ? '<img class="pbp-logo-main" src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy"><img class="pbp-logo-action" src="'+esc(s.action_logo_url)+'" alt="'+esc(s.name)+' Aktion" loading="lazy">'
-        : '<img src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy">';
+        : '<img src="'+esc(displayLogo)+'" alt="'+esc(s.name)+'" loading="lazy">';
       var url=normUrl(s.website_url);
       // Nur auf der Partner-Seite: Logo verlinkt auf die Firmen-Website (neuer Tab).
       if(url) return '<a class="'+cl+'" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer nofollow" title="'+esc(s.name)+'">'+img+'</a>';
@@ -12019,7 +12038,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       +'<span class="pbp-lbl">'+t+'</span><span class="pbp-line"></span></div>'; };
     try{
       if(typeof sb==='undefined' || !sb){ host.innerHTML=''; return; }
-      var res=await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
+      var res=await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,has_action_logo,sort_order,website_url');
+      if(res.error){
+        res=await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
+      }
       if(res.error){
         res=await sb.from('sponsors_public').select('tier,name,logo_url,sort_order,website_url');
       }
@@ -12674,9 +12696,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 (function(){
   var ROT_KEY='pbSponsorRot';
   function esc(s){ return String(s==null?'':s).replace(/"/g,'&quot;'); }
+  function displayLogoUrl(s){
+    if(!s) return '';
+    return (s.action_logo_mode === 'replace' && s.action_logo_url) ? s.action_logo_url : s.logo_url;
+  }
   function tile(s, prem){
-    if(!s || !s.logo_url) return '';
-    return '<div class="pbsp-tile'+(prem?' pbsp-prem':'')+'"><img src="'+s.logo_url+'" alt="'+esc(s.name)+'"></div>';
+    var logo=displayLogoUrl(s);
+    if(!s || !logo) return '';
+    return '<div class="pbsp-tile'+(prem?' pbsp-prem':'')+'"><img src="'+logo+'" alt="'+esc(s.name)+'"></div>';
   }
   function fill(id, kicker, s, prem){
     var el=document.getElementById(id); if(!el) return;
@@ -12702,7 +12729,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   async function loadSponsorsDisplay(){
     try{
       if(typeof sb==='undefined' || !sb) return;
-      var res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
+      var res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order');
+      if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order');
+      if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
       if(res.error) throw res.error;
       var rows = res.data || [];
       var pick = function(t){ return rows.filter(function(r){return r.tier===t;})
