@@ -810,6 +810,11 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .pbp-premwrap { margin-bottom:2px; }
 .pbp-tile { background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,.28); max-width:100%; box-sizing:border-box; }
 .pbp-tile img { max-width:82%; max-height:66%; width:auto; height:auto; object-fit:contain; display:block; }
+.pbp-tile-action { position:relative; }
+.pbp-tile-action img { transition:opacity .16s ease; }
+.pbp-tile-action .pbp-logo-action { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); opacity:0; }
+.pbp-tile-action:hover .pbp-logo-main { opacity:0; }
+.pbp-tile-action:hover .pbp-logo-action { opacity:1; }
 a.pbp-tile { text-decoration:none; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; }
 a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0,.34); }
 /* width:100% pinnt die Breite -> aspect-ratio darf daraus NICHT (Safari-Bug)
@@ -2660,6 +2665,7 @@ main {
         <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
           <input type="hidden" id="spEditId">
           <input type="hidden" id="spLogoUrl">
+          <input type="hidden" id="spActionLogoUrl">
           <div style="display:grid;grid-template-columns:1fr 120px;gap:12px;margin-bottom:12px;">
             <div>
               <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Stufe</label>
@@ -2709,6 +2715,17 @@ main {
             <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Logo (Bilddatei)</label>
             <input id="spFile" type="file" accept="image/*" onchange="sponsorPreviewFile()" style="width:100%;font:500 13px 'Manrope',sans-serif;color:#1C1A17;">
             <div id="spPreview" style="margin-top:10px;"></div>
+          </div>
+          <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
+            <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Aktionslogo fuer Hover auf der Partner-Seite</div>
+            <div style="font-size:0.76rem;color:#7A7368;line-height:1.5;margin-bottom:10px;">
+              Optionales zweites Logo. Es wird nur auf der Partner-Seite beim Hovern angezeigt, wenn unten "Aktion aktiv" eingeschaltet ist.
+            </div>
+            <input id="spActionFile" type="file" accept="image/*" onchange="sponsorPreviewActionFile()" style="width:100%;font:500 13px 'Manrope',sans-serif;color:#1C1A17;">
+            <div id="spActionPreview" style="margin-top:10px;"></div>
+            <label style="display:flex;align-items:center;gap:8px;font:600 14px 'Manrope',sans-serif;color:#1C1A17;margin-top:10px;cursor:pointer;">
+              <input id="spHasActionLogo" type="checkbox" style="width:18px;height:18px;"> Aktion aktiv
+            </label>
           </div>
           <label style="display:flex;align-items:center;gap:8px;font:600 14px 'Manrope',sans-serif;color:#1C1A17;margin-bottom:14px;cursor:pointer;">
             <input id="spActive" type="checkbox" checked style="width:18px;height:18px;"> aktiv (wird angezeigt)
@@ -7090,6 +7107,9 @@ async function loadAdminSponsors() {
       const active = s.active
         ? '<span style="color:#1F8A5F;font-weight:800;">● aktiv</span>'
         : '<span style="color:#7A7368;font-weight:800;">○ inaktiv</span>';
+      const action = (s.has_action_logo && s.action_logo_url)
+        ? '<span style="color:#FF5A36;font-weight:800;"> · Aktion aktiv</span>'
+        : '';
       const hasContact = s.contact_name || s.contact_email || s.contact_phone;
       const contactBlock = hasContact
         ? `<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;line-height:1.4;max-width:40%;">
@@ -7107,7 +7127,7 @@ async function loadAdminSponsors() {
           <div style="width:118px;height:58px;flex:none;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;">${logo}</div>
           <div style="flex:0 1 auto;min-width:0;">
             <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
-            <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;"><strong>${num}</strong> · ${tierLabel[s.tier] || s.tier} · ${active}</div>
+            <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;"><strong>${num}</strong> · ${tierLabel[s.tier] || s.tier} · ${active}${action}</div>
             ${s.website_url ? `<div style="font-size:0.74rem;color:#5C564C;margin-top:2px;word-break:break-all;">🔗 ${esc(s.website_url)}</div>` : ''}
           </div>
           ${contactBlock}
@@ -7139,12 +7159,32 @@ async function loadSponsorWeights() {
   } catch(e) { /* Standardwerte 15 / 3 / 1 bleiben stehen */ }
 }
 
+function sponsorPreviewBox(url, label) {
+  const cap = label ? `<div style="font-size:0.72rem;color:#7A7368;margin-bottom:6px;">${label}</div>` : '';
+  return `${cap}<div style="display:inline-flex;align-items:center;justify-content:center;width:140px;height:64px;background:#fff;border:1.5px solid #E2DACB;border-radius:10px;"><img src="${url}" style="max-height:50px;max-width:116px;object-fit:contain;"></div>`;
+}
+
 function sponsorPreviewFile() {
   const f = document.getElementById('spFile').files[0];
   const box = document.getElementById('spPreview');
   if (!f) { box.innerHTML = ''; return; }
-  const url = URL.createObjectURL(f);
-  box.innerHTML = `<div style="display:inline-flex;align-items:center;justify-content:center;width:140px;height:64px;background:#fff;border:1.5px solid #E2DACB;border-radius:10px;"><img src="${url}" style="max-height:50px;max-width:116px;object-fit:contain;"></div>`;
+  box.innerHTML = sponsorPreviewBox(URL.createObjectURL(f));
+}
+
+function sponsorPreviewActionFile() {
+  const f = document.getElementById('spActionFile').files[0];
+  const box = document.getElementById('spActionPreview');
+  if (!f) { box.innerHTML = ''; return; }
+  box.innerHTML = sponsorPreviewBox(URL.createObjectURL(f));
+}
+
+async function uploadSponsorLogo(file, prefix) {
+  const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g,'') || 'png';
+  const uid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2));
+  const path = `${prefix}-${uid}.${ext}`;
+  const { error: upErr } = await sb.storage.from('sponsor-logos').upload(path, file, { upsert:true, cacheControl:'3600' });
+  if (upErr) throw upErr;
+  return sb.storage.from('sponsor-logos').getPublicUrl(path).data.publicUrl;
 }
 
 function editSponsor(id) {
@@ -7152,6 +7192,7 @@ function editSponsor(id) {
   if (!s) return;
   document.getElementById('spEditId').value   = s.id;
   document.getElementById('spLogoUrl').value  = s.logo_url || '';
+  document.getElementById('spActionLogoUrl').value = s.action_logo_url || '';
   document.getElementById('spTier').value     = s.tier;
   document.getElementById('spName').value     = s.name;
   document.getElementById('spWebsite').value  = s.website_url || '';
@@ -7161,8 +7202,13 @@ function editSponsor(id) {
   document.getElementById('spContactEmail').value = s.contact_email || '';
   document.getElementById('spContactPhone').value = s.contact_phone || '';
   document.getElementById('spFile').value     = '';
+  document.getElementById('spActionFile').value = '';
+  document.getElementById('spHasActionLogo').checked = !!s.has_action_logo;
   document.getElementById('spPreview').innerHTML = s.logo_url
-    ? `<div style="font-size:0.72rem;color:#7A7368;margin-bottom:6px;">Aktuelles Logo (nur ersetzt, wenn Du eine neue Datei wählst):</div><div style="display:inline-flex;align-items:center;justify-content:center;width:140px;height:64px;background:#fff;border:1.5px solid #E2DACB;border-radius:10px;"><img src="${esc(s.logo_url)}" style="max-height:50px;max-width:116px;object-fit:contain;"></div>`
+    ? sponsorPreviewBox(esc(s.logo_url), 'Aktuelles Logo (nur ersetzt, wenn Du eine neue Datei waehlst):')
+    : '';
+  document.getElementById('spActionPreview').innerHTML = s.action_logo_url
+    ? sponsorPreviewBox(esc(s.action_logo_url), 'Aktuelles Aktionslogo (nur ersetzt, wenn Du eine neue Datei waehlst):')
     : '';
   document.getElementById('spSaveBtn').textContent = 'Änderung speichern';
   document.getElementById('adminSponsors').scrollIntoView({ behavior:'smooth', block:'start' });
@@ -7171,6 +7217,7 @@ function editSponsor(id) {
 function resetSponsorForm() {
   document.getElementById('spEditId').value   = '';
   document.getElementById('spLogoUrl').value  = '';
+  document.getElementById('spActionLogoUrl').value = '';
   document.getElementById('spTier').value     = 'partner';
   document.getElementById('spName').value     = '';
   document.getElementById('spWebsite').value  = '';
@@ -7180,7 +7227,10 @@ function resetSponsorForm() {
   document.getElementById('spContactEmail').value = '';
   document.getElementById('spContactPhone').value = '';
   document.getElementById('spFile').value     = '';
+  document.getElementById('spActionFile').value = '';
+  document.getElementById('spHasActionLogo').checked = false;
   document.getElementById('spPreview').innerHTML = '';
+  document.getElementById('spActionPreview').innerHTML = '';
   document.getElementById('spSaveBtn').textContent = 'Speichern';
 }
 
@@ -7192,7 +7242,10 @@ async function saveSponsor() {
   const sort   = parseInt(document.getElementById('spSort').value) || 0;
   const active = document.getElementById('spActive').checked;
   let   logoUrl = document.getElementById('spLogoUrl').value || null;
+  let   actionLogoUrl = document.getElementById('spActionLogoUrl').value || null;
   const file   = document.getElementById('spFile').files[0];
+  const actionFile = document.getElementById('spActionFile').files[0];
+  const hasActionLogo = document.getElementById('spHasActionLogo').checked;
   const contactName  = document.getElementById('spContactName').value.trim();
   const contactEmail = document.getElementById('spContactEmail').value.trim();
   const contactPhone = document.getElementById('spContactPhone').value.trim();
@@ -7204,19 +7257,24 @@ async function saveSponsor() {
   const prev = btn.textContent;
   btn.disabled = true; btn.textContent = 'Speichert …';
   try {
-    if (file) {
-      const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g,'') || 'png';
-      const uid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2));
-      const path = `logo-${uid}.${ext}`;
-      const { error: upErr } = await sb.storage.from('sponsor-logos').upload(path, file, { upsert:true, cacheControl:'3600' });
-      if (upErr) throw upErr;
-      logoUrl = sb.storage.from('sponsor-logos').getPublicUrl(path).data.publicUrl;
-    }
-    const { error } = await sb.rpc('admin_upsert_sponsor', {
+    if (file) logoUrl = await uploadSponsorLogo(file, 'logo');
+    if (actionFile) actionLogoUrl = await uploadSponsorLogo(actionFile, 'action-logo');
+    const payload = {
       p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort,
       p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
-      p_website_url: website || null
-    });
+      p_website_url: website || null,
+      p_action_logo_url: actionLogoUrl,
+      p_has_action_logo: hasActionLogo
+    };
+    let { error } = await sb.rpc('admin_upsert_sponsor', payload);
+    if (error && !actionLogoUrl && !hasActionLogo) {
+      const legacyPayload = {
+        p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort,
+        p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
+        p_website_url: website || null
+      };
+      ({ error } = await sb.rpc('admin_upsert_sponsor', legacyPayload));
+    }
     if (error) throw error;
     showToast('Sponsor gespeichert.');
     resetSponsorForm();
@@ -11948,8 +12006,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var normUrl=function(u){ u=String(u==null?'':u).trim(); if(!u) return '';
       if(!/^https?:\/\//i.test(u)) u='https://'+u; return u; };
     var tile=function(s,cls){
-      var cl='pbp-tile'+(cls?(' '+cls):'');
-      var img='<img src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy">';
+      var hasAction=!!(s.has_action_logo && s.action_logo_url);
+      var cl='pbp-tile'+(hasAction?' pbp-tile-action':'')+(cls?(' '+cls):'');
+      var img=hasAction
+        ? '<img class="pbp-logo-main" src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy"><img class="pbp-logo-action" src="'+esc(s.action_logo_url)+'" alt="'+esc(s.name)+' Aktion" loading="lazy">'
+        : '<img src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy">';
       var url=normUrl(s.website_url);
       // Nur auf der Partner-Seite: Logo verlinkt auf die Firmen-Website (neuer Tab).
       if(url) return '<a class="'+cl+'" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer nofollow" title="'+esc(s.name)+'">'+img+'</a>';
@@ -11958,7 +12019,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       +'<span class="pbp-lbl">'+t+'</span><span class="pbp-line"></span></div>'; };
     try{
       if(typeof sb==='undefined' || !sb){ host.innerHTML=''; return; }
-      var res=await sb.from('sponsors_public').select('tier,name,logo_url,sort_order,website_url');
+      var res=await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
+      if(res.error){
+        res=await sb.from('sponsors_public').select('tier,name,logo_url,sort_order,website_url');
+      }
       if(res.error) throw res.error;
       var rows=res.data||[];
       var by=function(a,b){ return (a.sort_order||0)-(b.sort_order||0); };
