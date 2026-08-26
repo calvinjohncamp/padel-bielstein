@@ -12,7 +12,7 @@
   ============================================================================
 -->
 <!-- Padel Bielstein v0.29 – Original restored + Bielstein theme color fix -->
-<html lang="de">
+<html lang="de" class="pb-boot">
 <head>
 <meta charset="UTF-8">
 <script>
@@ -21,6 +21,14 @@
    spaeter auf ("/"), danach ist die Information unwiederbringlich weg -
    und die Startseite erschiene faelschlich direkt nach einer Zahlung. */
 window.__pbFromStripe = /[?&]booking=(success|cancelled)/.test(location.search);
+window.__pbReleaseBoot = function(){
+  document.documentElement.classList.remove('pb-boot');
+};
+window.addEventListener('load', function(){
+  setTimeout(function(){
+    if(document.documentElement.classList.contains('pb-boot')) window.__pbReleaseBoot();
+  }, 1500);
+});
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -51,6 +59,9 @@ window.__pbFromStripe = /[?&]booking=(success|cancelled)/.test(location.search);
   --gray-lt: #E4E2E3;
   --white: #F6F6F6;
 }
+
+html.pb-boot { background: #1C1A17; }
+html.pb-boot body { visibility: hidden; background: #1C1A17; }
 
 /* Unsichtbare Klick-Zone über dem schwarzen Punkt im Cararra-Header
    (kein eigenes Bild mehr - simuliert den im Artwork gezeichneten Ball) */
@@ -12784,13 +12795,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   function start(){
     var splash = document.getElementById('pbSplash');
-    if(!splash) return;
+    if(!splash){ if(window.__pbReleaseBoot) window.__pbReleaseBoot(); return; }
     // Rueckkehr von Stripe: Wer gerade bezahlt hat, will das Ergebnis sehen
     // und nicht wieder auf der Startseite anfangen.
-    if(FROM_STRIPE) return;
+    if(FROM_STRIPE){ if(window.__pbReleaseBoot) window.__pbReleaseBoot(); return; }
     splash.removeAttribute('hidden');
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
+    if(window.__pbReleaseBoot) window.__pbReleaseBoot();
     var cta = document.getElementById('pbSplashCta');
     if(cta) cta.addEventListener('click', function(){ leave(splash); });
     // Frühbucher-Kachel verlinkt direkt auf die „Jahresabo sichern"-Seite.
