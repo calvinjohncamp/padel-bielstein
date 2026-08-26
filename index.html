@@ -38,8 +38,6 @@ window.__pbFromStripe = /[?&]booking=(success|cancelled)/.test(location.search);
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap">
-<!-- Flash-Prevention: Body-Hintergrund sofort weiß setzen, bevor CSS lädt -->
-<style>body { background: #F6F1E7 !important; }</style>
 <style>
 :root {
   --bg: #161616;
@@ -106,7 +104,7 @@ window.__pbFromStripe = /[?&]booking=(success|cancelled)/.test(location.search);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: "Manrope","Arial","Helvetica",sans-serif; background: #F6F1E7; color: var(--white); min-height: 100vh; overflow-x: hidden; }
+body { font-family: "Manrope","Arial","Helvetica",sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
 
 /* ■■ HEADER ■■ */
 .hero { margin-bottom: 18px; border-bottom: 1px solid var(--border); background: #000; overflow: hidden; }
@@ -711,40 +709,6 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 /* Klick-Demo: sichtbares Feedback ohne echte Aktion. */
 .door-btn.is-opening { animation: doorPulse 0.65s ease; }
 @keyframes doorPulse { 0%,100% { transform: scale(1); } 45% { transform: scale(0.965); filter: brightness(1.08); } }
-
-/* Slideshow-Animation für Logo-Überblendung */
-/* Main-Logo: fade-out, Action-Logo: fade-in */
-@keyframes logoMain2s {
-  0%   { opacity: 1; }
-  40%  { opacity: 1; }
-  50%  { opacity: 0; }
-  100% { opacity: 0; }
-}
-@keyframes logoAction2s {
-  0%   { opacity: 0; }
-  50%  { opacity: 0; }
-  60%  { opacity: 1; }
-  100% { opacity: 1; }
-}
-@keyframes logoMain4s {
-  0%   { opacity: 1; }
-  40%  { opacity: 1; }
-  50%  { opacity: 0; }
-  100% { opacity: 0; }
-}
-@keyframes logoAction4s {
-  0%   { opacity: 0; }
-  50%  { opacity: 0; }
-  60%  { opacity: 1; }
-  100% { opacity: 1; }
-}
-.pbp-logo-main-slideshow { position: absolute; inset: 0; opacity: 1; display: flex; align-items: center; justify-content: center; }
-.pbp-logo-action-slideshow { position: absolute; inset: 0; opacity: 0; display: flex; align-items: center; justify-content: center; }
-.pbp-logo-main-slideshow.pbp-logo-slideshow-2s { animation: logoMain2s 2s ease-in-out infinite; }
-.pbp-logo-action-slideshow.pbp-logo-slideshow-2s { animation: logoAction2s 2s ease-in-out infinite; }
-.pbp-logo-main-slideshow.pbp-logo-slideshow-4s { animation: logoMain4s 4s ease-in-out infinite; }
-.pbp-logo-action-slideshow.pbp-logo-slideshow-4s { animation: logoAction4s 4s ease-in-out infinite; }
-
 .door-btn.is-open { transform: translateY(-2px); }
 .door-note { font-size: 0.9rem; color: #57534D; line-height: 1.6; text-align: center; margin: 14px 4px 20px; }
 
@@ -2786,8 +2750,7 @@ main {
             <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:8px;">Aktionslogo-Anzeige</div>
             <select id="spActionLogoMode" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
               <option value="off">Aus – nur Firmenlogo</option>
-              <option value="hover">Hover – Aktionslogo nur auf Partner-Seite beim Hover (Desktop)</option>
-              <option value="slideshow">Diashow – automatisches Überblenden zwischen Logos</option>
+              <option value="hover">Hover – Aktionslogo nur auf Partner-Seite beim Hover</option>
               <option value="replace">Aktiv – Aktionslogo überall direkt anzeigen</option>
             </select>
           </div>
@@ -11928,10 +11891,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 /* ── SPLASH / EINSTIEGSSEITE (Werte 1:1 aus der Vorlage) ── */
 .pb-splash {
   position: fixed; inset: 0; z-index: 9999;
-  background: #F6F1E7 !important; color: #F6F1E7;
+  background: #1C1A17; color: #F6F1E7;
   display: flex; justify-content: center; overflow-y: auto;
 }
-.pb-splash-inner { background: #1C1A17; }
 .pb-splash[hidden] { display: none !important; }
 .pb-splash-inner {
   width: 100%; max-width: 720px; min-height: 100vh;
@@ -12199,27 +12161,15 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var BRAND='https://padel-bielstein.de/sponsors/brand-padel-bielstein.png';
     var normUrl=function(u){ u=String(u==null?'':u).trim(); if(!u) return '';
       if(!/^https?:\/\//i.test(u)) u='https://'+u; return u; };
-    var isMobile=function(){ return /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent); };
     var tile=function(s,cls){
       var mode=s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
-      // Mobile-Auto-Switch: hover → slideshow auf Mobilgeräten
-      if(mode==='hover' && isMobile()) mode='slideshow';
       var showActionDirect=(mode==='replace' && s.action_logo_url);
       var hasHoverAction=(mode==='hover' && s.action_logo_url);
-      var hasSlideshow=(mode==='slideshow' && s.action_logo_url);
       var displayLogo=showActionDirect ? s.action_logo_url : s.logo_url;
-      var cl='pbp-tile'+(hasHoverAction?' pbp-tile-action':'')+(showActionDirect?' pbp-tile-action-direct':'')+(hasSlideshow?' pbp-tile-slideshow':'')+(cls?(' '+cls):'');
-      var img='';
-      if(hasSlideshow){
-        img='<div style="position:relative;width:100%;height:100%;">'
-          +'<div class="pbp-logo-main-slideshow pbp-logo-slideshow-2s"><img src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy" style="max-width:100%;max-height:100%;object-fit:contain;"></div>'
-          +'<div class="pbp-logo-action-slideshow pbp-logo-slideshow-2s"><img class="pbp-action-motif" src="'+esc(s.action_logo_url)+'" alt="'+esc(s.name)+' Aktion" loading="lazy" style="max-width:100%;max-height:100%;object-fit:contain;"></div>'
-          +'</div>';
-      } else if(hasHoverAction){
-        img='<img class="pbp-logo-main" src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy"><span class="pbp-logo-action"><img class="pbp-action-motif" src="'+esc(s.action_logo_url)+'" alt="'+esc(s.name)+' Aktion" loading="lazy"></span>';
-      } else {
-        img='<img'+(showActionDirect?' class="pbp-action-motif"':'')+' src="'+esc(displayLogo)+'" alt="'+esc(s.name)+'" loading="lazy">';
-      }
+      var cl='pbp-tile'+(hasHoverAction?' pbp-tile-action':'')+(showActionDirect?' pbp-tile-action-direct':'')+(cls?(' '+cls):'');
+      var img=hasHoverAction
+        ? '<img class="pbp-logo-main" src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy"><span class="pbp-logo-action"><img class="pbp-action-motif" src="'+esc(s.action_logo_url)+'" alt="'+esc(s.name)+' Aktion" loading="lazy"></span>'
+        : '<img'+(showActionDirect?' class="pbp-action-motif"':'')+' src="'+esc(displayLogo)+'" alt="'+esc(s.name)+'" loading="lazy">';
       var url=normUrl(s.website_url);
       // Nur auf der Partner-Seite: Logo verlinkt auf die Firmen-Website (neuer Tab).
       if(url) return '<a class="'+cl+'" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer nofollow" title="'+esc(s.name)+'">'+img+'</a>';
@@ -12888,30 +12838,15 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 (function(){
   var ROT_KEY='pbSponsorRot';
   function esc(s){ return String(s==null?'':s).replace(/"/g,'&quot;'); }
-  function isMobile(){ return /iPhone|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent); }
   function displayLogoUrl(s){
     if(!s) return '';
     return (s.action_logo_mode === 'replace' && s.action_logo_url) ? s.action_logo_url : s.logo_url;
   }
   function tile(s, prem){
-    if(!s || !s.logo_url) return '';
-    var mode=s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
-    // Mobile-Auto-Switch: hover → slideshow auf Mobilgeräten
-    if(mode==='hover' && isMobile()) mode='slideshow';
-    var direct=(mode === 'replace' && s.action_logo_url);
-    var slideshow=(mode === 'slideshow' && s.action_logo_url);
-    var logo=slideshow ? s.logo_url : displayLogoUrl(s);
-    var html='<div class="pbsp-tile'+(prem?' pbsp-prem':'')+(direct?' pbsp-tile-action-direct':'')+(slideshow?' pbsp-tile-slideshow':'')+'">';
-    if(slideshow){
-      html+='<div style="position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">'
-        +'<img src="'+logo+'" alt="'+esc(s.name)+'" style="max-height:70px;max-width:88%;width:auto;height:auto;object-fit:contain;" class="pbsp-logo-main-slideshow pbsp-logo-slideshow-4s">'
-        +'<img src="'+s.action_logo_url+'" alt="'+esc(s.name)+' Aktion" style="max-height:70px;max-width:88%;width:auto;height:auto;object-fit:contain;position:absolute;" class="pbsp-logo-action-slideshow pbsp-logo-slideshow-4s">'
-        +'</div>';
-    } else {
-      html+='<img src="'+logo+'" alt="'+esc(s.name)+'" style="max-height:70px;max-width:'+(direct?'100%':'88%')+';width:auto;height:auto;object-fit:contain;">';
-    }
-    html+='</div>';
-    return html;
+    var logo=displayLogoUrl(s);
+    if(!s || !logo) return '';
+    var direct=(s.action_logo_mode === 'replace' && s.action_logo_url);
+    return '<div class="pbsp-tile'+(prem?' pbsp-prem':'')+(direct?' pbsp-tile-action-direct':'')+'"><img src="'+logo+'" alt="'+esc(s.name)+'"></div>';
   }
   function fill(id, kicker, s, prem){
     var el=document.getElementById(id); if(!el) return;
