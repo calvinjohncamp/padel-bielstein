@@ -1417,7 +1417,7 @@ main {
   </button>
 </header>
 
-<div class="court-rules-overlay" id="courtRulesOverlay" aria-hidden="true">
+<div class="court-rules-overlay" id="courtRulesOverlay" aria-hidden="true" hidden>
   <article class="court-rules-card" role="dialog" aria-modal="true" aria-labelledby="courtRulesTitle">
     <button class="court-rules-close" id="courtRulesClose" type="button" aria-label="Court-Regeln schließen">×</button>
     <div class="court-rules-kicker" id="courtRulesTitle">Infos</div>
@@ -1596,7 +1596,7 @@ main {
 
 <!-- Wetterausfall-Dialog: gleiche Optik wie die Court-Regeln-Karte.
      Geöffnet über die Karte „Letzte Buchung" im Bereich „Jetzt spielen". -->
-<div class="court-rules-overlay" id="weatherOverlay" aria-hidden="true">
+<div class="court-rules-overlay" id="weatherOverlay" aria-hidden="true" hidden>
   <article class="court-rules-card weather-card" role="dialog" aria-modal="true" aria-labelledby="weatherOverlayTitle">
     <button class="court-rules-close" id="weatherOverlayClose" type="button" aria-label="Meldung schließen" onclick="closeWeatherReport()">×</button>
     <div class="court-rules-kicker" id="weatherOverlayTitle" style="font-size:29px;">Wetterausfall melden</div>
@@ -5730,6 +5730,8 @@ function openWeatherReport() {
   btn.disabled = true;
   btn.textContent = 'Meldung absenden';
   const ov = document.getElementById('weatherOverlay');
+  if (!ov) return;
+  ov.removeAttribute('hidden');
   ov.classList.add('open');
   ov.setAttribute('aria-hidden', 'false');
   document.documentElement.style.overflow = 'hidden';
@@ -5747,6 +5749,7 @@ function closeWeatherReport() {
   if (!ov) return;
   ov.classList.remove('open');
   ov.setAttribute('aria-hidden', 'true');
+  ov.setAttribute('hidden', '');
   document.documentElement.style.removeProperty('overflow');
 }
 
@@ -11662,6 +11665,7 @@ body.bielstein-theme .court-rules-glyph::after {
   opacity: 0; visibility: hidden; pointer-events: none;
   transition: opacity .22s ease, visibility .22s ease;
 }
+.court-rules-overlay[hidden] { display: none !important; }
 .court-rules-overlay.open { opacity: 1; visibility: visible; pointer-events: auto; }
 .court-rules-card {
   position: relative; width: min(760px,100%); max-height: min(86vh,920px);
@@ -12008,6 +12012,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(!rulesOverlay) return;
     rulesPreviousFocus = document.activeElement;
     window.setCourtRulesTab(tab || 'rules');
+    rulesOverlay.removeAttribute('hidden');
     rulesOverlay.classList.add('open');
     rulesOverlay.setAttribute('aria-hidden','false');
     document.documentElement.style.overflow = 'hidden';
@@ -12017,6 +12022,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(!rulesOverlay) return;
     rulesOverlay.classList.remove('open');
     rulesOverlay.setAttribute('aria-hidden','true');
+    rulesOverlay.setAttribute('hidden','');
     document.documentElement.style.removeProperty('overflow');
     if(rulesPreviousFocus && rulesPreviousFocus.focus) rulesPreviousFocus.focus();
     else if(rulesTrigger) rulesTrigger.focus();
