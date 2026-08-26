@@ -830,8 +830,8 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .pbp-tile-action:hover .pbp-logo-action { opacity:1; }
 .pbp-tile-slideshow { position:relative; }
 .pbp-tile-slideshow .pbp-logo-main,
-.pbp-tile-slideshow .pbp-logo-action { animation: pbLogoFadePartner 4s ease-in-out infinite; }
-.pbp-tile-slideshow .pbp-logo-action { position:absolute; inset:0; opacity:0; padding:0; box-sizing:border-box; display:flex; align-items:center; justify-content:center; animation-delay:-2s; }
+.pbp-tile-slideshow .pbp-logo-action { animation: pbLogoFadePartner var(--pbp-slide-cycle, 4s) ease-in-out infinite; }
+.pbp-tile-slideshow .pbp-logo-action { position:absolute; inset:0; opacity:0; padding:0; box-sizing:border-box; display:flex; align-items:center; justify-content:center; animation-delay:var(--pbp-slide-half, -2s); }
 @keyframes pbLogoFadePartner {
   0%, 42% { opacity:1; }
   50%, 92% { opacity:0; }
@@ -2674,6 +2674,25 @@ main {
           <div class="seg-toggle" style="flex:0 0 auto;">
             <button id="cardThemeLight" type="button" class="seg-btn seg-active" onclick="setShareCardTheme(false)">☀︎ Hell</button>
             <button id="cardThemeDark" type="button" class="seg-btn" onclick="setShareCardTheme(true)">☾ Dunkel</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Diashow-Zeiten Aktionslogos</div>
+        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
+          Steuert den automatischen Wechsel im Modus <strong>Diashow</strong>. Die Werte gelten jeweils pro Logo: Bei „4" bleibt Firmenlogo 4 Sekunden sichtbar, danach Aktionslogo 4 Sekunden.
+        </div>
+        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;">
+            <div>
+              <label class="eb-adm-lbl">Partner-Seite (Sekunden je Logo)</label>
+              <input id="slidePartnerSeconds" type="number" min="1" max="20" step="1" value="2" class="eb-adm-inp">
+            </div>
+            <div>
+              <label class="eb-adm-lbl">Übrige Seiten (Sekunden je Logo)</label>
+              <input id="slideAppSeconds" type="number" min="1" max="20" step="1" value="4" class="eb-adm-inp">
+            </div>
+            <button id="slideSaveBtn" type="button" class="admin-save-btn" onclick="saveActionLogoSlideshowSettings()">Speichern</button>
           </div>
         </div>
       </div>
@@ -7532,7 +7551,7 @@ function setAdminTab(tab) {
   // Wetterausfälle laden bei JEDEM Öffnen neu - hier ändern sich Zustände
   // durch Entscheidungen, ein veralteter Stand wäre irreführend.
   if (tab==='weather') { loadAdminWeather(); }
-  if (tab==='sponsors') { loadAdminSponsors(); if(typeof fillSponsorsEnabledAdmin==='function') fillSponsorsEnabledAdmin(); }
+  if (tab==='sponsors') { loadAdminSponsors(); if(typeof fillSponsorsEnabledAdmin==='function') fillSponsorsEnabledAdmin(); if(typeof loadActionLogoSlideshowSettings==='function') loadActionLogoSlideshowSettings(); }
   if (tab==='freibad'  && !adminTabLoaded.freibad)  { loadAdminFreibad();  adminTabLoaded.freibad=true; }
   if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
   if (tab==='internal' && !adminTabLoaded.internal) { loadInternalBookings(); adminTabLoaded.internal=true; }
@@ -12183,6 +12202,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
      Reine Anzeige – Fehler nie an die App weiterreichen. */
   window.renderPartnerBoard = async function(){
     var host=document.getElementById('partnerBoard'); if(!host) return;
+    if(typeof window.loadActionLogoSlideshowSettings === 'function') await window.loadActionLogoSlideshowSettings();
     var esc=function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
     var BRAND='https://padel-bielstein.de/sponsors/brand-padel-bielstein.png';
@@ -12347,6 +12367,65 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(typeof showToast==='function') showToast(dark ? 'Bildkarte: Dunkel' : 'Bildkarte: Hell');
     }catch(e){
       alert('Umschalten fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler'));
+    }
+  };
+
+  /* Aktionslogo-Diashow: getrennte Anzeigezeit je Logo für Partner-Seite und
+     übrige Sponsorflächen. Werte kommen aus app_flags; ohne Skript 63 bleiben
+     die Defaults 2 s / 4 s aktiv. */
+  window.__actionLogoSlideshow = { partnerSeconds:2, appSeconds:4 };
+  window.pbClampSlideSeconds = function(v, fallback){
+    v = parseInt(v, 10);
+    if(!Number.isFinite(v)) v = fallback;
+    return Math.max(1, Math.min(20, v || fallback));
+  };
+  window.applyActionLogoSlideshowSettings = function(partnerSeconds, appSeconds){
+    var p = window.pbClampSlideSeconds(partnerSeconds, 2);
+    var a = window.pbClampSlideSeconds(appSeconds, 4);
+    window.__actionLogoSlideshow = { partnerSeconds:p, appSeconds:a };
+    document.documentElement.style.setProperty('--pbp-slide-cycle', (p * 2) + 's');
+    document.documentElement.style.setProperty('--pbp-slide-half', '-' + p + 's');
+    document.documentElement.style.setProperty('--pbsp-slide-cycle', (a * 2) + 's');
+    document.documentElement.style.setProperty('--pbsp-slide-half', '-' + a + 's');
+    if(typeof window.fillActionLogoSlideshowAdmin === 'function') window.fillActionLogoSlideshowAdmin();
+  };
+  window.fillActionLogoSlideshowAdmin = function(){
+    var cfg = window.__actionLogoSlideshow || { partnerSeconds:2, appSeconds:4 };
+    var p=document.getElementById('slidePartnerSeconds'), a=document.getElementById('slideAppSeconds');
+    if(p) p.value = cfg.partnerSeconds;
+    if(a) a.value = cfg.appSeconds;
+  };
+  window.loadActionLogoSlideshowSettings = async function(){
+    try{
+      if(typeof sb==='undefined' || !sb){
+        window.applyActionLogoSlideshowSettings(2, 4);
+        return;
+      }
+      var r=await sb.from('app_flags').select('action_logo_partner_seconds,action_logo_app_seconds').maybeSingle();
+      if(r.error || !r.data){
+        window.applyActionLogoSlideshowSettings(2, 4);
+        return;
+      }
+      window.applyActionLogoSlideshowSettings(r.data.action_logo_partner_seconds, r.data.action_logo_app_seconds);
+    }catch(e){
+      window.applyActionLogoSlideshowSettings(2, 4);
+    }
+  };
+  window.saveActionLogoSlideshowSettings = async function(){
+    var btn=document.getElementById('slideSaveBtn');
+    var p=window.pbClampSlideSeconds(document.getElementById('slidePartnerSeconds')?.value, 2);
+    var a=window.pbClampSlideSeconds(document.getElementById('slideAppSeconds')?.value, 4);
+    var old=btn ? btn.textContent : '';
+    try{
+      if(btn){ btn.disabled=true; btn.textContent='Speichert …'; }
+      var r=await sb.rpc('admin_set_action_logo_slideshow', { p_partner_seconds:p, p_app_seconds:a });
+      if(r.error) throw r.error;
+      window.applyActionLogoSlideshowSettings(p, a);
+      if(typeof showToast==='function') showToast('Diashow-Zeiten gespeichert.');
+    }catch(e){
+      alert('Speichern fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler'));
+    }finally{
+      if(btn){ btn.disabled=false; btn.textContent=old || 'Speichern'; }
     }
   };
 
@@ -12856,14 +12935,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pbsp-tile-action-direct img{width:100%;height:100%;object-fit:contain;transform:scale(1.3);}
 .pbsp-tile-slideshow{position:relative;overflow:hidden;}
 .pbsp-tile-slideshow .pbsp-logo-main,
-.pbsp-tile-slideshow .pbsp-logo-action{animation:pbLogoFadeApp 8s ease-in-out infinite;}
-.pbsp-tile-slideshow .pbsp-logo-action{position:absolute;inset:0;opacity:0;display:flex;align-items:center;justify-content:center;animation-delay:-4s;}
-.pbsp-tile-slideshow .pbsp-action-motif{max-height:70px;max-width:196px;width:auto;height:auto;object-fit:contain;display:block;transform:none;}
+.pbsp-tile-slideshow .pbsp-logo-action{animation:pbLogoFadeApp var(--pbsp-slide-cycle, 8s) ease-in-out infinite;}
+.pbsp-tile-slideshow .pbsp-logo-action{position:absolute;inset:0;opacity:0;display:flex;align-items:center;justify-content:center;animation-delay:var(--pbsp-slide-half, -4s);}
+.pbsp-tile-slideshow .pbsp-action-motif{width:100%;height:100%;object-fit:contain;display:block;transform:scale(1.3);max-width:none;max-height:none;}
 @keyframes pbLogoFadeApp{0%,44%{opacity:1;}50%,94%{opacity:0;}100%{opacity:1;}}
 .pbsp-duo{display:flex;gap:12px;align-items:stretch;max-width:560px;}
 .pbsp-duo .pbsp-tile{flex:1 1 0;min-width:0;width:auto;height:123px;padding:0 16px;}
 .pbsp-duo .pbsp-tile img{max-height:70px;max-width:88%;}
-.pbsp-duo .pbsp-tile-slideshow .pbsp-action-motif{max-width:88%;}
+.pbsp-duo .pbsp-tile-slideshow .pbsp-action-motif{max-width:none;max-height:none;width:100%;height:100%;}
 #pbSplashSponsor{border-top:1px solid #3A362F;margin-top:38px;padding-top:26px;}
 #pbSplashSponsor .pbsp-kicker{color:#8A8276;letter-spacing:0.2em;font-weight:600;margin-bottom:16px;}
 .pb-splash-inner{padding-bottom:clamp(40px,4.5vh,60px);}
@@ -12977,7 +13056,16 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
     }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
   }
-  function initSponsorArea(){ loadSponsorsDisplay(); if(typeof loadPartnerFlag==='function') loadPartnerFlag(); if(typeof loadSponsorsEnabled==='function') loadSponsorsEnabled(); if(typeof loadShareCardTheme==='function') loadShareCardTheme(); if(typeof loadEarlybird==='function') loadEarlybird(); if(typeof loadSplash==='function') loadSplash(); if(typeof loadAboBanner==='function') loadAboBanner(); }
+  function initSponsorArea(){
+    if(typeof loadActionLogoSlideshowSettings==='function') loadActionLogoSlideshowSettings().then(loadSponsorsDisplay);
+    else loadSponsorsDisplay();
+    if(typeof loadPartnerFlag==='function') loadPartnerFlag();
+    if(typeof loadSponsorsEnabled==='function') loadSponsorsEnabled();
+    if(typeof loadShareCardTheme==='function') loadShareCardTheme();
+    if(typeof loadEarlybird==='function') loadEarlybird();
+    if(typeof loadSplash==='function') loadSplash();
+    if(typeof loadAboBanner==='function') loadAboBanner();
+  }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initSponsorArea);
   else initSponsorArea();
 })();
