@@ -812,7 +812,15 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .pbp-tile img { max-width:82%; max-height:66%; width:auto; height:auto; object-fit:contain; display:block; }
 .pbp-tile-action { position:relative; }
 .pbp-tile-action img { transition:opacity .16s ease; }
-.pbp-tile-action .pbp-logo-action { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); opacity:0; }
+.pbp-action-bg-white { background:#FFFFFF; }
+.pbp-action-bg-cream { background:#F6F1E7; }
+.pbp-action-bg-sage { background:#C7D4C8; }
+.pbp-action-bg-grey { background:#ECEBE7; }
+.pbp-action-bg-blue { background:#DCE7EF; }
+.pbp-action-bg-yellow { background:#F4E8B8; }
+.pbp-tile .pbp-action-motif { width:100%; height:100%; max-width:none; max-height:none; object-fit:contain; display:block; }
+.pbp-tile-action .pbp-logo-action { position:absolute; inset:0; opacity:0; padding:0; box-sizing:border-box; }
+.pbp-tile-action-direct { padding:0; }
 .pbp-tile-action:hover .pbp-logo-main { opacity:0; }
 .pbp-tile-action:hover .pbp-logo-action { opacity:1; }
 a.pbp-tile { text-decoration:none; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; }
@@ -2723,13 +2731,26 @@ main {
             </div>
             <input id="spActionFile" type="file" accept="image/*" onchange="sponsorPreviewActionFile()" style="width:100%;font:500 13px 'Manrope',sans-serif;color:#1C1A17;">
             <div id="spActionPreview" style="margin-top:10px;"></div>
-            <div style="margin-top:10px;">
-              <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Logo-Anzeige</label>
-              <select id="spActionLogoMode" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
-                <option value="off">Standardlogo</option>
-                <option value="hover">Aktionslogo bei Hover auf der Partner-Seite</option>
-                <option value="replace">Aktionslogo direkt ueberall anzeigen</option>
-              </select>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+              <div>
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Logo-Anzeige</label>
+                <select id="spActionLogoMode" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+                  <option value="off">Standardlogo</option>
+                  <option value="hover">Aktionslogo bei Hover auf der Partner-Seite</option>
+                  <option value="replace">Aktionslogo direkt ueberall anzeigen</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Hintergrund</label>
+                <select id="spActionLogoBg" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+                  <option value="white">Weiss</option>
+                  <option value="cream">Creme</option>
+                  <option value="sage">Salbei</option>
+                  <option value="grey">Hellgrau</option>
+                  <option value="blue">Hellblau</option>
+                  <option value="yellow">Hellgelb</option>
+                </select>
+              </div>
             </div>
           </div>
           <label style="display:flex;align-items:center;gap:8px;font:600 14px 'Manrope',sans-serif;color:#1C1A17;margin-bottom:14px;cursor:pointer;">
@@ -5121,6 +5142,11 @@ function ccDrawContain(ctx, img, x, y, w, h) {
   const dw = img.width * s, dh = img.height * s;
   ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
 }
+function ccDrawCover(ctx, img, x, y, w, h) {
+  const s = Math.max(w / img.width, h / img.height);
+  const dw = img.width * s, dh = img.height * s;
+  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+}
 // Zwei Partner für die Karte: gemeinsame Rotation Premium / Partner / Regional
 // mit 15:3:1 (= 5:1:0,33), stabil pro Buchung (per Hash). Wenn Premium
 // auftaucht, steht er links – wie in App und Mail.
@@ -5128,11 +5154,25 @@ function sponsorDisplayLogoUrl(s) {
   if (!s) return '';
   return (s.action_logo_mode === 'replace' && s.action_logo_url) ? s.action_logo_url : s.logo_url;
 }
+function sponsorActionBgKey(s) {
+  const v = String((s && s.action_logo_bg) || 'white').toLowerCase();
+  return ['white','cream','sage','grey','blue','yellow'].includes(v) ? v : 'white';
+}
+function sponsorActionBgColor(s) {
+  return ({
+    white:'#FFFFFF',
+    cream:'#F6F1E7',
+    sage:'#C7D4C8',
+    grey:'#ECEBE7',
+    blue:'#DCE7EF',
+    yellow:'#F4E8B8'
+  })[sponsorActionBgKey(s)] || '#FFFFFF';
+}
 
 async function pickCardSponsors(seedStr) {
   try {
     if (typeof sb === 'undefined' || !sb) return [];
-    let res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order');
+    let res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,action_logo_bg,sort_order');
     if (res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order');
     if (res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
     if (res.error) return [];
@@ -5367,12 +5407,18 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
 
   const tilesY = divY + 74, tileH = 150, tileW = (innerW - 24) / 2;
   [[PAD, sponsors[0], spA], [PAD + tileW + 24, sponsors[1], spB]].forEach(([tx, sp, img]) => {
-    // Kacheln bleiben weiß (wie in der Mail); auf hellem Grund mit feiner Umrandung.
-    ctx.fillStyle = '#FFFFFF'; ccRoundRect(ctx, tx, tilesY, tileW, tileH, 18); ctx.fill();
-    if (P.tileBorder) { ctx.strokeStyle = P.tileBorder; ctx.lineWidth = 1.5; ccRoundRect(ctx, tx, tilesY, tileW, tileH, 18); ctx.stroke(); }
+    const directAction = !!(sp && sp.action_logo_mode === 'replace' && sp.action_logo_url);
+    ctx.fillStyle = directAction ? sponsorActionBgColor(sp) : '#FFFFFF';
+    ccRoundRect(ctx, tx, tilesY, tileW, tileH, 18); ctx.fill();
     if (img) {
-      ccDrawContain(ctx, img, tx + 30, tilesY + 26, tileW - 60, tileH - 52);
-    } else if (sp && sp.name) {
+      if (directAction) {
+        ctx.save(); ccRoundRect(ctx, tx, tilesY, tileW, tileH, 18); ctx.clip(); ccDrawContain(ctx, img, tx, tilesY, tileW, tileH); ctx.restore();
+      } else {
+        ccDrawContain(ctx, img, tx + 30, tilesY + 26, tileW - 60, tileH - 52);
+      }
+    }
+    if (P.tileBorder) { ctx.strokeStyle = P.tileBorder; ctx.lineWidth = 1.5; ccRoundRect(ctx, tx, tilesY, tileW, tileH, 18); ctx.stroke(); }
+    if (!img && sp && sp.name) {
       ctx.fillStyle = P.tileName; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.font = '700 26px "Space Grotesk", sans-serif';
       ctx.fillText(sp.name, tx + tileW / 2, tilesY + tileH / 2);
@@ -7120,6 +7166,7 @@ async function loadAdminSponsors() {
         ? '<span style="color:#1F8A5F;font-weight:800;">● aktiv</span>'
         : '<span style="color:#7A7368;font-weight:800;">○ inaktiv</span>';
       const actionMode = s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
+      const actionBg = s.action_logo_bg || 'white';
       const actionLabel = actionMode === 'replace' ? 'Aktionslogo ueberall' : (actionMode === 'hover' ? 'Hover-Aktion' : '');
       const action = (actionLabel && s.action_logo_url)
         ? `<span style="color:#FF5A36;font-weight:800;"> · ${actionLabel}</span>`
@@ -7141,7 +7188,7 @@ async function loadAdminSponsors() {
           <div style="width:118px;height:58px;flex:none;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;">${logo}</div>
           <div style="flex:0 1 auto;min-width:0;">
             <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
-            <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;"><strong>${num}</strong> · ${tierLabel[s.tier] || s.tier} · ${active}${action}</div>
+            <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;"><strong>${num}</strong> · ${tierLabel[s.tier] || s.tier} · ${active}${action}${action ? ` · BG ${esc(actionBg)}` : ''}</div>
             ${s.website_url ? `<div style="font-size:0.74rem;color:#5C564C;margin-top:2px;word-break:break-all;">🔗 ${esc(s.website_url)}</div>` : ''}
           </div>
           ${contactBlock}
@@ -7218,6 +7265,7 @@ function editSponsor(id) {
   document.getElementById('spFile').value     = '';
   document.getElementById('spActionFile').value = '';
   document.getElementById('spActionLogoMode').value = s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
+  document.getElementById('spActionLogoBg').value = s.action_logo_bg || 'white';
   document.getElementById('spPreview').innerHTML = s.logo_url
     ? sponsorPreviewBox(esc(s.logo_url), 'Aktuelles Logo (nur ersetzt, wenn Du eine neue Datei waehlst):')
     : '';
@@ -7243,6 +7291,7 @@ function resetSponsorForm() {
   document.getElementById('spFile').value     = '';
   document.getElementById('spActionFile').value = '';
   document.getElementById('spActionLogoMode').value = 'off';
+  document.getElementById('spActionLogoBg').value = 'white';
   document.getElementById('spPreview').innerHTML = '';
   document.getElementById('spActionPreview').innerHTML = '';
   document.getElementById('spSaveBtn').textContent = 'Speichern';
@@ -7260,6 +7309,7 @@ async function saveSponsor() {
   const file   = document.getElementById('spFile').files[0];
   const actionFile = document.getElementById('spActionFile').files[0];
   const actionLogoMode = document.getElementById('spActionLogoMode').value || 'off';
+  const actionLogoBg = document.getElementById('spActionLogoBg').value || 'white';
   const hasActionLogo = actionLogoMode !== 'off';
   const contactName  = document.getElementById('spContactName').value.trim();
   const contactEmail = document.getElementById('spContactEmail').value.trim();
@@ -7280,7 +7330,8 @@ async function saveSponsor() {
       p_website_url: website || null,
       p_action_logo_url: actionLogoUrl,
       p_has_action_logo: hasActionLogo,
-      p_action_logo_mode: actionLogoMode
+      p_action_logo_mode: actionLogoMode,
+      p_action_logo_bg: actionLogoBg
     };
     let { error } = await sb.rpc('admin_upsert_sponsor', payload);
     if (error && !actionLogoUrl && !hasActionLogo && actionLogoMode === 'off') {
@@ -12021,15 +12072,18 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var BRAND='https://padel-bielstein.de/sponsors/brand-padel-bielstein.png';
     var normUrl=function(u){ u=String(u==null?'':u).trim(); if(!u) return '';
       if(!/^https?:\/\//i.test(u)) u='https://'+u; return u; };
+    var actionBg=function(s){ var v=String((s&&s.action_logo_bg)||'white').toLowerCase();
+      return /^(white|cream|sage|grey|blue|yellow)$/.test(v) ? v : 'white'; };
     var tile=function(s,cls){
       var mode=s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
       var showActionDirect=(mode==='replace' && s.action_logo_url);
       var hasHoverAction=(mode==='hover' && s.action_logo_url);
       var displayLogo=showActionDirect ? s.action_logo_url : s.logo_url;
-      var cl='pbp-tile'+(hasHoverAction?' pbp-tile-action':'')+(cls?(' '+cls):'');
+      var bgClass='pbp-action-bg-'+actionBg(s);
+      var cl='pbp-tile'+(hasHoverAction?' pbp-tile-action':'')+(showActionDirect?' pbp-tile-action-direct '+bgClass:'')+(cls?(' '+cls):'');
       var img=hasHoverAction
-        ? '<img class="pbp-logo-main" src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy"><img class="pbp-logo-action" src="'+esc(s.action_logo_url)+'" alt="'+esc(s.name)+' Aktion" loading="lazy">'
-        : '<img src="'+esc(displayLogo)+'" alt="'+esc(s.name)+'" loading="lazy">';
+        ? '<img class="pbp-logo-main" src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy"><span class="pbp-logo-action '+bgClass+'"><img class="pbp-action-motif" src="'+esc(s.action_logo_url)+'" alt="'+esc(s.name)+' Aktion" loading="lazy"></span>'
+        : '<img'+(showActionDirect?' class="pbp-action-motif"':'')+' src="'+esc(displayLogo)+'" alt="'+esc(s.name)+'" loading="lazy">';
       var url=normUrl(s.website_url);
       // Nur auf der Partner-Seite: Logo verlinkt auf die Firmen-Website (neuer Tab).
       if(url) return '<a class="'+cl+'" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer nofollow" title="'+esc(s.name)+'">'+img+'</a>';
@@ -12038,7 +12092,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       +'<span class="pbp-lbl">'+t+'</span><span class="pbp-line"></span></div>'; };
     try{
       if(typeof sb==='undefined' || !sb){ host.innerHTML=''; return; }
-      var res=await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,has_action_logo,sort_order,website_url');
+      var res=await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,action_logo_bg,has_action_logo,sort_order,website_url');
       if(res.error){
         res=await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
       }
@@ -12683,6 +12737,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pbsp-kicker{font-family:"Space Grotesk","Arial Narrow","Impact",sans-serif;font-weight:700;font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:#7A7368;margin:0 0 8px 2px;}
 .pbsp-tile{display:inline-flex;align-items:center;justify-content:center;width:270px;height:123px;padding:0 22px;background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:14px;}
 .pbsp-tile img{max-height:70px;max-width:196px;width:auto;height:auto;object-fit:contain;display:block;}
+.pbsp-action-bg-white { background:#FFFFFF; }
+.pbsp-action-bg-cream { background:#F6F1E7; }
+.pbsp-action-bg-sage { background:#C7D4C8; }
+.pbsp-action-bg-grey { background:#ECEBE7; }
+.pbsp-action-bg-blue { background:#DCE7EF; }
+.pbsp-action-bg-yellow { background:#F4E8B8; }
+.pbsp-tile-action-direct{padding:0;overflow:hidden;}
+.pbsp-tile-action-direct img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;}
 .pbsp-duo{display:flex;gap:12px;align-items:stretch;max-width:560px;}
 .pbsp-duo .pbsp-tile{flex:1 1 0;min-width:0;width:auto;height:123px;padding:0 16px;}
 .pbsp-duo .pbsp-tile img{max-height:70px;max-width:88%;}
@@ -12700,10 +12762,15 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(!s) return '';
     return (s.action_logo_mode === 'replace' && s.action_logo_url) ? s.action_logo_url : s.logo_url;
   }
+  function actionBg(s){
+    var v=String((s&&s.action_logo_bg)||'white').toLowerCase();
+    return /^(white|cream|sage|grey|blue|yellow)$/.test(v) ? v : 'white';
+  }
   function tile(s, prem){
     var logo=displayLogoUrl(s);
     if(!s || !logo) return '';
-    return '<div class="pbsp-tile'+(prem?' pbsp-prem':'')+'"><img src="'+logo+'" alt="'+esc(s.name)+'"></div>';
+    var direct=(s.action_logo_mode === 'replace' && s.action_logo_url);
+    return '<div class="pbsp-tile'+(prem?' pbsp-prem':'')+(direct?' pbsp-tile-action-direct pbsp-action-bg-'+actionBg(s):'')+'"><img src="'+logo+'" alt="'+esc(s.name)+'"></div>';
   }
   function fill(id, kicker, s, prem){
     var el=document.getElementById(id); if(!el) return;
@@ -12729,7 +12796,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   async function loadSponsorsDisplay(){
     try{
       if(typeof sb==='undefined' || !sb) return;
-      var res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order');
+      var res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,action_logo_bg,sort_order');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
       if(res.error) throw res.error;
