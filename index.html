@@ -2713,25 +2713,46 @@ main {
             </div>
           </div>
 
-          <div style="margin-bottom:12px;">
-            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Logo (Bilddatei)</label>
-            <input id="spFile" type="file" accept="image/*" onchange="sponsorPreviewFile()" style="width:100%;font:500 13px 'Manrope',sans-serif;color:#1C1A17;">
+          <!-- DATEI-ANFORDERUNGEN -->
+          <div style="margin-bottom:14px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
+            <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:10px;">📋 Datei-Anforderungen (Firmenlogo & Aktionslogo)</div>
+            <div style="font-size:0.82rem;color:#1C1A17;line-height:1.6;margin-bottom:10px;">
+              <div><strong>Format:</strong> PNG (RGBA – transparent)</div>
+              <div><strong>Größe:</strong> 720×324px (4x der Displaygröße)</div>
+              <div><strong>DPI:</strong> 72 DPI (Web-Standard)</div>
+              <div><strong>Max. Dateigröße:</strong> &lt; 2 MB</div>
+              <div style="margin-top:6px;"><strong style="color:#1F8A5F;">✓ Akzeptiert:</strong> Transparenter Hintergrund oder Weiß (#FFFFFF)</div>
+              <div><strong style="color:#B8402C;">✗ Nicht akzeptiert:</strong> Bunte/farbige Hintergründe</div>
+            </div>
+            <button onclick="downloadPartnerGuide()" style="padding:8px 12px;border:1.5px solid #FF5A36;border-radius:6px;background:#FF5A36;color:#fff;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;width:fit-content;">⬇️ Anforderungen als Bild herunterladen</button>
+          </div>
+
+          <!-- LOGO & AKTIONSLOGO - Box links (größer), Label+Input rechts -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:12px;">
+            <!-- Firmenlogo: Box links, Label+Input rechts -->
+            <div style="display:flex;gap:12px;align-items:flex-end;">
+              <div id="spLogoPreview" style="width:180px;height:81px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;border:1.5px solid #E2DACB;border-radius:8px;overflow:hidden;"><span style="font:700 9px Manrope,sans-serif;color:#A59D92;">nicht gesetzt</span></div>
+              <div style="flex:1;">
+                <div style="font:700 10px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Firmenlogo</div>
+                <input id="spFile" type="file" accept="image/*" onchange="sponsorPreviewFile()" style="width:100%;font:500 12px 'Manrope',sans-serif;color:#1C1A17;">
+              </div>
+            </div>
+            <!-- Aktionslogo: Box links, Label+Input rechts -->
+            <div style="display:flex;gap:12px;align-items:flex-end;">
+              <div id="spActionLogoPreview" style="width:180px;height:81px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;border:1.5px solid #E2DACB;border-radius:8px;overflow:hidden;"><span style="font:700 9px Manrope,sans-serif;color:#A59D92;">nicht gesetzt</span></div>
+              <div style="flex:1;">
+                <div style="font:700 10px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Aktionslogo</div>
+                <input id="spActionFile" type="file" accept="image/*" onchange="sponsorPreviewActionFile()" style="width:100%;font:500 12px 'Manrope',sans-serif;color:#1C1A17;">
+              </div>
+            </div>
           </div>
           <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
-            <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Aktionslogo</div>
-            <div style="font-size:0.76rem;color:#7A7368;line-height:1.5;margin-bottom:10px;">
-              Optionales zweites Logo als transparentes PNG. Die App setzt es automatisch gross und zentriert auf die weisse Partnerkachel.
-            </div>
-            <input id="spActionFile" type="file" accept="image/*" onchange="sponsorPreviewActionFile()" style="width:100%;font:500 13px 'Manrope',sans-serif;color:#1C1A17;">
-            <div id="spLogoPairPreview" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;"></div>
-            <div style="margin-top:10px;">
-              <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Logo-Anzeige</label>
-              <select id="spActionLogoMode" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
-                <option value="off">Standardlogo</option>
-                <option value="hover">Aktionslogo bei Hover auf der Partner-Seite</option>
-                <option value="replace">Aktionslogo direkt ueberall anzeigen</option>
-              </select>
-            </div>
+            <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:8px;">Aktionslogo-Anzeige</div>
+            <select id="spActionLogoMode" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              <option value="off">Aus – nur Firmenlogo</option>
+              <option value="hover">Hover – Aktionslogo nur auf Partner-Seite beim Hover</option>
+              <option value="replace">Aktiv – Aktionslogo überall direkt anzeigen</option>
+            </select>
           </div>
           <label style="display:flex;align-items:center;gap:8px;font:600 14px 'Manrope',sans-serif;color:#1C1A17;margin-bottom:14px;cursor:pointer;">
             <input id="spActive" type="checkbox" checked style="width:18px;height:18px;"> aktiv (wird angezeigt)
@@ -7130,17 +7151,14 @@ async function loadAdminSponsors() {
   box.innerHTML = Object.entries(byTier).flatMap(([tier, tierRows]) => {
     if (!tierRows.length) return [];
     return tierRows.map((s, idx) => {
-      // Firmenlogo
+      // Firmenlogo (180×81px wie in Admin-Form)
       const mainLogo = s.logo_url
-        ? `<img src="${esc(s.logo_url)}" alt="" style="max-height:38px;max-width:104px;object-fit:contain;display:block;">`
-        : '<span style="color:#B8402C;font-size:0.7rem;text-align:center;line-height:1.2;">kein<br>Logo</span>';
-      // Aktionslogo daneben (wenn vorhanden)
+        ? `<img src="${esc(s.logo_url)}" alt="" style="max-height:75px;max-width:170px;width:auto;height:auto;object-fit:contain;display:block;margin:auto;">`
+        : '<span style="color:#B8402C;font-size:0.75rem;text-align:center;">kein<br>Logo</span>';
+      // Aktionslogo (180×81px, oder leere Kachel)
       const actionLogo = (s.action_logo_url && s.action_logo_mode && s.action_logo_mode !== 'off')
-        ? `<img src="${esc(s.action_logo_url)}" alt="" style="max-height:38px;max-width:104px;object-fit:contain;display:block;">`
+        ? `<img src="${esc(s.action_logo_url)}" alt="" style="max-height:75px;max-width:170px;width:auto;height:auto;object-fit:contain;display:block;margin:auto;">`
         : '';
-      const logo = actionLogo
-        ? `<div style="display:flex;gap:8px;align-items:center;height:58px;"><div style="flex:1;display:flex;align-items:center;justify-content:center;">${mainLogo}</div><div style="width:1px;background:#E2DACB;height:40px;"></div><div style="flex:1;display:flex;align-items:center;justify-content:center;">${actionLogo}</div></div>`
-        : `<div style="display:flex;align-items:center;justify-content:center;height:58px;">${mainLogo}</div>`;
 
       const active = s.active
         ? '<span style="color:#1F8A5F;font-weight:800;">● aktiv</span>'
@@ -7151,35 +7169,45 @@ async function loadAdminSponsors() {
         ? `<span style="color:#FF5A36;font-weight:800;"> · ${actionLabel}</span>`
         : '';
       const hasContact = s.contact_name || s.contact_email || s.contact_phone;
-      const contactBlock = hasContact
-        ? `<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;line-height:1.4;max-width:40%;">
-             ${s.contact_name  ? `<div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.contact_name)}</div>` : ''}
-             ${s.contact_email ? `<div style="font:500 13px 'Manrope',sans-serif;color:#5C564C;word-break:break-word;">${esc(s.contact_email)}</div>` : ''}
-             ${s.contact_phone ? `<div style="font:500 13px 'Manrope',sans-serif;color:#5C564C;">${esc(s.contact_phone)}</div>` : ''}
-           </div>`
-        : '';
       const num = getNum(s, idx, tier);
       const canMoveUp = idx > 0;
       const canMoveDown = idx < tierRows.length - 1;
 
       return `
-        <div style="position:relative;display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid #E2DACB;border-radius:12px;padding:12px 14px;margin-bottom:10px;">
-          <div style="width:230px;height:58px;flex:none;background:#fff;border:1px solid #E2DACB;border-radius:8px;">${logo}</div>
-          <div style="flex:0 1 auto;min-width:0;">
-            <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
-            <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;"><strong>${num}</strong> · ${tierLabel[s.tier] || s.tier} · ${active}${action}</div>
-            ${s.website_url ? `<div style="font-size:0.74rem;color:#5C564C;margin-top:2px;word-break:break-all;">🔗 ${esc(s.website_url)}</div>` : ''}
+        <div style="display:grid;grid-template-columns:180px 180px 1fr auto;gap:14px;align-items:center;background:#fff;border:1.5px solid #E2DACB;border-radius:12px;padding:14px;margin-bottom:10px;">
+          <!-- Linke Kachel: Firmenlogo (vertikal zentriert) -->
+          <div style="display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;min-height:81px;">${mainLogo}</div>
+
+          <!-- Rechte Kachel: Aktionslogo (vertikal zentriert) -->
+          <div style="display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;min-height:81px;">${actionLogo}</div>
+
+          <!-- Firmen-Info + Kontakt nebeneinander (linksbündig, vertikal zentriert) -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;">
+            <!-- Firmen-Info (linksbündig, vertikal zentriert) -->
+            <div style="text-align:left;">
+              <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
+              <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;"><strong>${num}</strong> · ${tierLabel[s.tier] || s.tier} · ${active}${action}</div>
+              ${s.website_url ? `<div style="font-size:0.74rem;color:#5C564C;margin-top:3px;word-break:break-all;">🔗 ${esc(s.website_url)}</div>` : ''}
+            </div>
+
+            <!-- Kontaktdaten (linksbündig, vertikal zentriert, 10% größer) -->
+            <div style="text-align:left;">
+              ${hasContact ? `
+                ${s.contact_name ? `<div style="font:600 13.2px 'Manrope',sans-serif;color:#1C1A17;line-height:1.3;">${esc(s.contact_name)}</div>` : ''}
+                ${s.contact_email ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;word-break:break-all;">${esc(s.contact_email)}</div>` : ''}
+                ${s.contact_phone ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;">${esc(s.contact_phone)}</div>` : ''}
+              ` : ''}
+            </div>
           </div>
-          ${contactBlock}
-          <div style="display:flex;gap:6px;flex:none;margin-left:auto;flex-direction:column;">
+
+          <!-- Buttons rechts -->
+          <div style="display:flex;flex-direction:column;gap:6px;flex:none;">
             <div style="display:flex;gap:3px;">
               <button onclick="moveSponsor('${s.id}', 'up')" ${canMoveUp ? '' : 'disabled'} style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:${canMoveUp ? '#fff' : '#f5f5f5'};color:#1C1A17;font:700 12px 'Space Grotesk',sans-serif;cursor:${canMoveUp ? 'pointer' : 'not-allowed'};opacity:${canMoveUp ? '1' : '0.5'};">↑</button>
               <button onclick="moveSponsor('${s.id}', 'down')" ${canMoveDown ? '' : 'disabled'} style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:${canMoveDown ? '#fff' : '#f5f5f5'};color:#1C1A17;font:700 12px 'Space Grotesk',sans-serif;cursor:${canMoveDown ? 'pointer' : 'not-allowed'};opacity:${canMoveDown ? '1' : '0.5'};">↓</button>
             </div>
-            <div style="display:flex;gap:3px;">
-              <button onclick="editSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#1C1A17;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Ändern</button>
-              <button onclick="deleteSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#B8402C;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Löschen</button>
-            </div>
+            <button onclick="editSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#1C1A17;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Ändern</button>
+            <button onclick="deleteSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#B8402C;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Löschen</button>
           </div>
         </div>`;
     }).join('');
@@ -7199,36 +7227,24 @@ async function loadSponsorWeights() {
   } catch(e) { /* Standardwerte 15 / 3 / 1 bleiben stehen */ }
 }
 
-function sponsorPairPreviewBox(url, label, isAction) {
-  const img = url
-    ? `<img src="${url}" style="max-height:160px;max-width:95%;width:auto;height:auto;object-fit:contain;display:block;margin:auto;">`
-    : '<span style="font:700 12px Manrope,sans-serif;color:#A59D92;">nicht gesetzt</span>';
-  return `<div>
-    <div style="font:800 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">${label}</div>
-    <div style="height:160px;display:flex;align-items:center;justify-content:center;background:#fff;border:1.5px solid #E2DACB;border-radius:10px;overflow:hidden;">${img}</div>
-  </div>`;
-}
-
-function renderSponsorLogoPairPreview(logoUrl, actionLogoUrl) {
-  const box = document.getElementById('spLogoPairPreview');
+function renderLogoPreview(url, elementId) {
+  const box = document.getElementById(elementId);
   if (!box) return;
-  box.innerHTML = sponsorPairPreviewBox(logoUrl, 'Firmenlogo', false) + sponsorPairPreviewBox(actionLogoUrl, 'Aktionslogo', true);
+  box.innerHTML = url
+    ? `<img src="${url}" style="max-height:75px;max-width:170px;width:auto;height:auto;object-fit:contain;display:block;margin:auto;">`
+    : '<span style="font:700 9px Manrope,sans-serif;color:#A59D92;">nicht gesetzt</span>';
 }
 
 function sponsorPreviewFile() {
   const f = document.getElementById('spFile').files[0];
   const logoUrl = f ? URL.createObjectURL(f) : (document.getElementById('spLogoUrl').value || '');
-  const actionFile = document.getElementById('spActionFile').files[0];
-  const actionUrl = actionFile ? URL.createObjectURL(actionFile) : (document.getElementById('spActionLogoUrl').value || '');
-  renderSponsorLogoPairPreview(logoUrl, actionUrl);
+  renderLogoPreview(logoUrl, 'spLogoPreview');
 }
 
 function sponsorPreviewActionFile() {
   const f = document.getElementById('spActionFile').files[0];
-  const logoFile = document.getElementById('spFile').files[0];
-  const logoUrl = logoFile ? URL.createObjectURL(logoFile) : (document.getElementById('spLogoUrl').value || '');
   const actionUrl = f ? URL.createObjectURL(f) : (document.getElementById('spActionLogoUrl').value || '');
-  renderSponsorLogoPairPreview(logoUrl, actionUrl);
+  renderLogoPreview(actionUrl, 'spActionLogoPreview');
 }
 
 async function uploadSponsorLogo(file, prefix) {
@@ -7257,7 +7273,8 @@ function editSponsor(id) {
   document.getElementById('spFile').value     = '';
   document.getElementById('spActionFile').value = '';
   document.getElementById('spActionLogoMode').value = s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
-  renderSponsorLogoPairPreview(esc(s.logo_url || ''), esc(s.action_logo_url || ''));
+  renderLogoPreview(esc(s.logo_url || ''), 'spLogoPreview');
+  renderLogoPreview(esc(s.action_logo_url || ''), 'spActionLogoPreview');
   document.getElementById('spSaveBtn').textContent = 'Änderung speichern';
   document.getElementById('adminSponsors').scrollIntoView({ behavior:'smooth', block:'start' });
 }
@@ -7277,8 +7294,98 @@ function resetSponsorForm() {
   document.getElementById('spFile').value     = '';
   document.getElementById('spActionFile').value = '';
   document.getElementById('spActionLogoMode').value = 'off';
-  renderSponsorLogoPairPreview('', '');
+  renderLogoPreview('', 'spLogoPreview');
+  renderLogoPreview('', 'spActionLogoPreview');
   document.getElementById('spSaveBtn').textContent = 'Speichern';
+}
+
+function downloadPartnerGuide() {
+  const dpr = 2; // 2x Retina für Schärfe
+  const canvas = document.createElement('canvas');
+  canvas.width = 1000 * dpr;
+  canvas.height = 500 * dpr;
+  canvas.style.width = '1000px';
+  canvas.style.height = '500px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // Farben (wie im Design)
+  const bg = '#FBF9F4';
+  const text = '#1C1A17';
+  const textLight = '#7A7368';
+  const border = '#E2DACB';
+  const good = '#1F8A5F';
+  const bad = '#B8402C';
+
+  // Hintergrund
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 1000, 500);
+
+  // Titel
+  ctx.fillStyle = text;
+  ctx.font = 'bold 32px Arial';
+  ctx.fillText('📋 Datei-Anforderungen', 40, 50);
+
+  ctx.fillStyle = textLight;
+  ctx.font = '14px Arial';
+  ctx.fillText('Firmenlogo & Aktionslogo', 40, 72);
+
+  // Tabelle
+  const data = [
+    { label: 'Format', value: 'PNG (RGBA – transparent)' },
+    { label: 'Größe', value: '720×324px (4x Anzeigegröße)' },
+    { label: 'DPI', value: '72 DPI (Web-Standard)' },
+    { label: 'Max. Dateigröße', value: '< 2 MB' },
+  ];
+
+  let y = 110;
+  const rowHeight = 50;
+  const colLabel = 40;
+  const colValue = 250;
+
+  data.forEach((row, idx) => {
+    // Zeilenauswahl (alternierend)
+    ctx.fillStyle = idx % 2 === 0 ? '#FFFFFF' : '#f9f8f6';
+    ctx.fillRect(40, y, 920, rowHeight);
+
+    // Border
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(40, y, 920, rowHeight);
+
+    // Label (fett)
+    ctx.fillStyle = text;
+    ctx.font = 'bold 16px Arial';
+    ctx.fillText(row.label + ':', colLabel + 10, y + 33);
+
+    // Value
+    ctx.fillStyle = text;
+    ctx.font = '16px Arial';
+    ctx.fillText(row.value, colValue, y + 33);
+
+    y += rowHeight;
+  });
+
+  // Akzeptiert / Nicht akzeptiert (mit Abstand wie oben)
+  y += 40;
+  ctx.fillStyle = good;
+  ctx.font = 'bold 16px Arial';
+  ctx.fillText('✓ Akzeptiert: Transparenter Hintergrund oder Weiß (#FFFFFF)', 60, y);
+
+  y += 35;
+  ctx.fillStyle = bad;
+  ctx.font = 'bold 16px Arial';
+  ctx.fillText('✗ Nicht akzeptiert: Bunte/farbige Hintergründe', 60, y);
+
+  // Download
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Padel-Bielstein-Logo-Anforderungen.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
 }
 
 async function saveSponsor() {
