@@ -12858,13 +12858,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pbsp-tile-slideshow .pbsp-logo-main,
 .pbsp-tile-slideshow .pbsp-logo-action{animation:pbLogoFadeApp 8s ease-in-out infinite;}
 .pbsp-tile-slideshow .pbsp-logo-action{position:absolute;inset:0;opacity:0;display:flex;align-items:center;justify-content:center;animation-delay:-4s;}
-.pbsp-tile-slideshow .pbsp-action-motif{width:100%;height:100%;object-fit:contain;display:block;transform:scale(1.3);max-width:none;max-height:none;}
+.pbsp-tile-slideshow .pbsp-action-motif{max-height:70px;max-width:196px;width:auto;height:auto;object-fit:contain;display:block;transform:none;}
 @keyframes pbLogoFadeApp{0%,44%{opacity:1;}50%,94%{opacity:0;}100%{opacity:1;}}
 .pbsp-duo{display:flex;gap:12px;align-items:stretch;max-width:560px;}
 .pbsp-duo .pbsp-tile{flex:1 1 0;min-width:0;width:auto;height:123px;padding:0 16px;}
 .pbsp-duo .pbsp-tile img{max-height:70px;max-width:88%;}
-.pbsp-duo .pbsp-tile-slideshow .pbsp-action-motif,
-.pbsp-tile-slideshow.pbsp-prem .pbsp-action-motif{max-width:none;max-height:none;width:100%;height:100%;}
+.pbsp-duo .pbsp-tile-slideshow .pbsp-action-motif{max-width:88%;}
 #pbSplashSponsor{border-top:1px solid #3A362F;margin-top:38px;padding-top:26px;}
 #pbSplashSponsor .pbsp-kicker{color:#8A8276;letter-spacing:0.2em;font-weight:600;margin-bottom:16px;}
 .pb-splash-inner{padding-bottom:clamp(40px,4.5vh,60px);}
@@ -12946,19 +12945,31 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         pushWeighted(playlist, reg,  1);
       }
       var N=playlist.length;
-      // Zwei verschiedene Logos ab Position base; rotiert pro Seitenaufruf über idx.
-      function pair(base){
-        if(N===0) return [null,null];
-        if(N===1) return [playlist[0], null];
+      function sponsorKey(s){
+        return s ? String(s.id || s.name || s.logo_url || '') : '';
+      }
+      function nextUnique(start, used){
+        if(N===0) return null;
         var m=function(i){ return playlist[((i%N)+N)%N]; };
-        var a=m(base), b=m(base+1);
-        for(var step=2; b===a && step<N+2; step++) b=m(base+step);
-        if(b===a) b=null;
+        for(var step=0; step<N; step++){
+          var s=m(start+step), key=sponsorKey(s);
+          if(key && !used[key]){
+            used[key]=true;
+            return s;
+          }
+        }
+        return null;
+      }
+      // Pro Seitenaufruf moeglichst keine Dopplungen ueber die vier App-Flaechen.
+      function pair(start, used){
+        var a=nextUnique(start, used);
+        var b=nextUnique(start+1, used);
         return sortPremiumLeft([a,b]);
       }
       if(N){
         var q=Math.floor(N/4)||1, base=idx*2;
-        var pB=pair(base), pP=pair(base+q), pG=pair(base+2*q), pA=pair(base+3*q);
+        var usedSponsors={};
+        var pB=pair(base, usedSponsors), pP=pair(base+q, usedSponsors), pG=pair(base+2*q, usedSponsors), pA=pair(base+3*q, usedSponsors);
         fillDuo('pbSponsorBook',     'Das Wetter wird dir präsentiert von',    pB[0], pB[1]);
         fillDuo('pbSponsorPlay',     'Dein Spieltag wird dir präsentiert von', pP[0], pP[1]);
         fillDuo('pbSponsorGuthaben', 'Dein Guthaben wird dir präsentiert von', pG[0], pG[1]);
