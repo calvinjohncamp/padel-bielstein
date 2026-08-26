@@ -38,6 +38,8 @@ window.__pbFromStripe = /[?&]booking=(success|cancelled)/.test(location.search);
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap">
+<!-- Flash-Prevention: Body-Hintergrund sofort weiß setzen, bevor CSS lädt -->
+<style>body { background: #F6F1E7 !important; }</style>
 <style>
 :root {
   --bg: #161616;
@@ -104,7 +106,7 @@ window.__pbFromStripe = /[?&]booking=(success|cancelled)/.test(location.search);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: "Manrope","Arial","Helvetica",sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
+body { font-family: "Manrope","Arial","Helvetica",sans-serif; background: #F6F1E7; color: var(--white); min-height: 100vh; overflow-x: hidden; }
 
 /* ■■ HEADER ■■ */
 .hero { margin-bottom: 18px; border-bottom: 1px solid var(--border); background: #000; overflow: hidden; }
@@ -711,24 +713,37 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 @keyframes doorPulse { 0%,100% { transform: scale(1); } 45% { transform: scale(0.965); filter: brightness(1.08); } }
 
 /* Slideshow-Animation für Logo-Überblendung */
-@keyframes logoSlideshow2s {
+/* Main-Logo: fade-out, Action-Logo: fade-in */
+@keyframes logoMain2s {
   0%   { opacity: 1; }
-  45%  { opacity: 1; }
+  40%  { opacity: 1; }
   50%  { opacity: 0; }
-  55%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes logoAction2s {
+  0%   { opacity: 0; }
+  50%  { opacity: 0; }
+  60%  { opacity: 1; }
   100% { opacity: 1; }
 }
-@keyframes logoSlideshow4s {
+@keyframes logoMain4s {
   0%   { opacity: 1; }
-  45%  { opacity: 1; }
+  40%  { opacity: 1; }
   50%  { opacity: 0; }
-  55%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes logoAction4s {
+  0%   { opacity: 0; }
+  50%  { opacity: 0; }
+  60%  { opacity: 1; }
   100% { opacity: 1; }
 }
-.pbp-logo-slideshow-2s { animation: logoSlideshow2s 2s ease-in-out infinite; }
-.pbp-logo-slideshow-4s { animation: logoSlideshow4s 4s ease-in-out infinite; }
 .pbp-logo-main-slideshow { position: absolute; inset: 0; opacity: 1; display: flex; align-items: center; justify-content: center; }
 .pbp-logo-action-slideshow { position: absolute; inset: 0; opacity: 0; display: flex; align-items: center; justify-content: center; }
+.pbp-logo-main-slideshow.pbp-logo-slideshow-2s { animation: logoMain2s 2s ease-in-out infinite; }
+.pbp-logo-action-slideshow.pbp-logo-slideshow-2s { animation: logoAction2s 2s ease-in-out infinite; }
+.pbp-logo-main-slideshow.pbp-logo-slideshow-4s { animation: logoMain4s 4s ease-in-out infinite; }
+.pbp-logo-action-slideshow.pbp-logo-slideshow-4s { animation: logoAction4s 4s ease-in-out infinite; }
 
 .door-btn.is-open { transform: translateY(-2px); }
 .door-note { font-size: 0.9rem; color: #57534D; line-height: 1.6; text-align: center; margin: 14px 4px 20px; }
@@ -11913,9 +11928,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 /* ── SPLASH / EINSTIEGSSEITE (Werte 1:1 aus der Vorlage) ── */
 .pb-splash {
   position: fixed; inset: 0; z-index: 9999;
-  background: #1C1A17; color: #F6F1E7;
+  background: #F6F1E7 !important; color: #F6F1E7;
   display: flex; justify-content: center; overflow-y: auto;
 }
+.pb-splash-inner { background: #1C1A17; }
 .pb-splash[hidden] { display: none !important; }
 .pb-splash-inner {
   width: 100%; max-width: 720px; min-height: 100vh;
