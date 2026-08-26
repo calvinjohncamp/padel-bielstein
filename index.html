@@ -7201,11 +7201,11 @@ async function loadSponsorWeights() {
 
 function sponsorPairPreviewBox(url, label, isAction) {
   const img = url
-    ? `<img src="${url}" style="max-height:120px;max-width:100%;width:auto;height:auto;object-fit:contain;display:block;">`
+    ? `<img src="${url}" style="max-height:160px;max-width:95%;width:auto;height:auto;object-fit:contain;display:block;margin:auto;">`
     : '<span style="font:700 12px Manrope,sans-serif;color:#A59D92;">nicht gesetzt</span>';
   return `<div>
     <div style="font:800 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">${label}</div>
-    <div style="height:140px;display:flex;align-items:center;justify-content:center;background:#fff;border:1.5px solid #E2DACB;border-radius:10px;overflow:hidden;">${img}</div>
+    <div style="height:160px;display:flex;align-items:center;justify-content:center;background:#fff;border:1.5px solid #E2DACB;border-radius:10px;overflow:hidden;">${img}</div>
   </div>`;
 }
 
