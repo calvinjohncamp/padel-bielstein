@@ -2089,6 +2089,7 @@ main {
       <div class="admin-tab"        id="atab-users"     onclick="setAdminTab('users')">👤 Nutzer</div>
       <div class="admin-tab"        id="atab-infos"     onclick="setAdminTab('infos')">📝 Infotexte</div>
       <div class="admin-tab"        id="atab-weather"   onclick="setAdminTab('weather')">🌧 Wetterausfälle</div>
+      <div class="admin-tab"        id="atab-restore"   onclick="setAdminTab('restore')">↺ Wiederherstellung</div>
       <div class="admin-tab"        id="atab-wipe"      onclick="setAdminTab('wipe')" style="display:none;">🧹 Platte putzen</div>
     </div>
 
@@ -3536,6 +3537,46 @@ body.bielstein-theme #tabPlay:not(.active) {
         </div>
       </div>
     </div><!-- /adminInfos -->
+
+    <!-- Wiederherstellungspunkte für ungefährliche Konfigurationen.
+         Buchungen, Zahlungen, Guthaben und Nutzer werden bewusst nicht
+         zurückgedreht. -->
+    <div id="adminRestore" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-title">↺ Wiederherstellungspunkte</div>
+        <div class="admin-card">
+          <div class="restore-note">
+            Sichert und stellt Konfigurationen wieder her: Preise, Rabatte, Sponsoren,
+            Infotexte, Freibad-Zeiten und App-Schalter. Buchungen, Zahlungen, Guthaben,
+            Nutzer und Umsatzhistorie bleiben unangetastet.
+          </div>
+
+          <div class="admin-row" style="align-items:flex-start;">
+            <span class="admin-label">Name</span>
+            <input class="admin-input" id="restoreLabel" type="text" placeholder="z. B. vor Marcus-Test / vor Preisänderung">
+          </div>
+          <div class="admin-row" style="align-items:flex-start;">
+            <span class="admin-label">Notiz</span>
+            <textarea class="admin-input" id="restoreNote" rows="3" placeholder="Was ist an diesem Stand wichtig?"></textarea>
+          </div>
+          <div class="admin-row">
+            <button class="admin-save-btn gold" id="restoreCreateBtn" onclick="createRestorePoint()">Wiederherstellungspunkt erstellen</button>
+            <button class="admin-save-btn" onclick="loadRestorePoints()">Historie aktualisieren</button>
+          </div>
+          <div class="admin-ok" id="restoreOk"></div>
+          <div class="admin-err" id="restoreErr"></div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Historie</div>
+        <div class="admin-card">
+          <div id="restoreList">
+            <div style="color:#7A7368;text-align:center;padding:24px;">Wird geladen …</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Nur während der Testphase sichtbar. Steuert app_settings.test_mode;
          steht der auf false, blendet die App den Bereich aus UND die
@@ -6922,7 +6963,7 @@ function hideToast() {
 // ============================================================
 //  ADMIN – Initialisierung & Tab-Steuerung
 // ============================================================
-let adminTabLoaded = { freibad: false, prices: false, internal: false, bookings: false, mis: false, users: false };
+let adminTabLoaded = { freibad: false, prices: false, internal: false, bookings: false, mis: false, users: false, restore: false };
 
 // ============================================================
 //  PLATTE PUTZEN (nur Testphase)
@@ -7007,6 +7048,160 @@ async function doAdminWipe() {
     show('Fehler: ' + (e.message || e), 'warn');
   } finally {
     btn.disabled = false;
+  }
+}
+
+// ============================================================
+//  ADMIN – Wiederherstellungspunkte
+//  Sichert und stellt nur Konfigurationen wieder her. Keine Buchungen,
+//  Zahlungen, Guthaben, Nutzer oder Umsatzhistorie.
+// ============================================================
+function restoreEsc(v) {
+  return String(v == null ? '' : v)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function restoreDate(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleString('de-DE', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function restoreCounts(c) {
+  c = c || {};
+  const labels = {
+    app_settings: 'App-Schalter',
+    prices: 'Preise',
+    discount_rules: 'Rabatte',
+    sponsors: 'Sponsoren',
+    legal_texts: 'Infotexte',
+    freibad_config: 'Freibad-Zeiten',
+    freibad_closures: 'Sperrtage',
+    freibad_exceptions: 'Ausnahmen'
+  };
+  return Object.keys(labels)
+    .filter(k => c[k] != null)
+    .map(k => `${labels[k]}: ${c[k]}`)
+    .join(' · ') || 'Konfigurationen';
+}
+
+function restoreMsg(kind, text) {
+  const ok = document.getElementById('restoreOk');
+  const err = document.getElementById('restoreErr');
+  if (ok) { ok.classList.remove('show'); ok.textContent = ''; }
+  if (err) { err.classList.remove('show'); err.textContent = ''; }
+  const el = kind === 'ok' ? ok : err;
+  if (el) { el.textContent = text; el.classList.add('show'); }
+}
+
+async function loadRestorePoints() {
+  const box = document.getElementById('restoreList');
+  if (!box) return;
+  box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:24px;">Wird geladen …</div>';
+  try {
+    const { data, error } = await sb.rpc('admin_list_restore_points');
+    if (error) throw error;
+    const rows = data || [];
+    if (!rows.length) {
+      box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:24px;">Noch kein Wiederherstellungspunkt vorhanden.</div>';
+      return;
+    }
+    box.innerHTML = rows.map(r => {
+      const restored = r.restored_at
+        ? `<div class="restore-restored">Bereits wiederhergestellt am ${restoreDate(r.restored_at)}${r.restored_by_email ? ' von ' + restoreEsc(r.restored_by_email) : ''}</div>`
+        : '';
+      return `
+        <div class="restore-item">
+          <div class="restore-main">
+            <div class="restore-title">${restoreEsc(r.label)}</div>
+            <div class="restore-meta">${restoreDate(r.created_at)}${r.created_by_email ? ' · ' + restoreEsc(r.created_by_email) : ''}</div>
+            ${r.note ? `<div class="restore-note-small">${restoreEsc(r.note)}</div>` : ''}
+            <div class="restore-counts">${restoreEsc(restoreCounts(r.table_counts))}</div>
+            ${restored}
+          </div>
+          <button class="admin-save-btn danger" onclick="restorePoint('${r.id}', '${restoreEsc(r.label).replace(/'/g, '&#39;')}')">Wiederherstellen</button>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    box.innerHTML = `<div style="color:#B8402C;padding:18px;">Wiederherstellungspunkte konnten nicht geladen werden: ${restoreEsc(e?.message || 'Unbekannter Fehler')}</div>`;
+  }
+}
+
+async function createRestorePoint() {
+  const labelEl = document.getElementById('restoreLabel');
+  const noteEl = document.getElementById('restoreNote');
+  const btn = document.getElementById('restoreCreateBtn');
+  const label = (labelEl?.value || '').trim();
+  const note = (noteEl?.value || '').trim();
+  if (!label) { restoreMsg('err', 'Bitte einen Namen eingeben.'); return; }
+  const old = btn ? btn.textContent : '';
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = 'Erstellt …'; }
+    const { error } = await sb.rpc('admin_create_restore_point', {
+      p_label: label,
+      p_note: note || null
+    });
+    if (error) throw error;
+    if (labelEl) labelEl.value = '';
+    if (noteEl) noteEl.value = '';
+    restoreMsg('ok', '✓ Wiederherstellungspunkt erstellt.');
+    await loadRestorePoints();
+  } catch(e) {
+    restoreMsg('err', 'Fehler: ' + (e?.message || 'Unbekannter Fehler'));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = old || 'Wiederherstellungspunkt erstellen'; }
+  }
+}
+
+async function restorePoint(id, label) {
+  const msg =
+    `Wiederherstellungspunkt „${label || ''}” zurückholen?\n\n` +
+    'Zurückgesetzt werden nur Konfigurationen: Preise, Rabatte, Sponsoren, Infotexte, Freibad-Zeiten und App-Schalter.\n\n' +
+    'Buchungen, Zahlungen, Guthaben, Nutzer und Umsatzhistorie bleiben unverändert.\n\n' +
+    'Bitte tippe WIEDERHERSTELLEN zur Bestätigung.';
+  const word = prompt(msg);
+  if (String(word || '').trim().toUpperCase() !== 'WIEDERHERSTELLEN') {
+    restoreMsg('err', 'Abgebrochen. Es wurde nichts wiederhergestellt.');
+    return;
+  }
+  try {
+    restoreMsg('ok', 'Wiederherstellung läuft …');
+    const { data, error } = await sb.rpc('admin_restore_point', { p_id: id });
+    if (error) throw error;
+    const restored = restoreCounts(data?.restored || {});
+    restoreMsg('ok', '✓ Wiederhergestellt: ' + restored + '. Buchungen und Finanzdaten blieben unverändert.');
+    adminTabLoaded.freibad = false;
+    adminTabLoaded.prices = false;
+    adminTabLoaded.sponsors = false;
+    adminTabLoaded.infos = false;
+    try {
+      await Promise.all([
+        loadPrices(),
+        loadFreibadPricing(),
+        loadFreibadConfig(),
+        loadSponsorsEnabled(),
+        loadPartnerFlag(),
+        loadShareCardTheme(),
+        loadActionLogoSlideshowSettings(),
+        loadEarlybird(),
+        loadSplash(),
+        loadAboBanner(),
+        loadLegalOverrides()
+      ]);
+      updDurPrices();
+      updateAboDurPrices();
+      renderSlots();
+    } catch(e) {}
+    await loadRestorePoints();
+  } catch(e) {
+    restoreMsg('err', 'Wiederherstellung fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
   }
 }
 
@@ -7535,8 +7730,9 @@ function setAdminTab(tab) {
   document.getElementById('adminMis').style.display       = tab==='mis'      ? 'block' : 'none';
   document.getElementById('adminUsers').style.display     = tab==='users'    ? 'block' : 'none';
   document.getElementById('adminInfos').style.display     = tab==='infos'    ? 'block' : 'none';
+  document.getElementById('adminRestore').style.display   = tab==='restore'  ? 'block' : 'none';
   document.getElementById('adminWipe').style.display      = tab==='wipe'     ? 'block' : 'none';
-  ['freibad','fbtickets','prices','internal','bookings','aktionen','weather','sponsors','mis','users','infos','wipe'].forEach(t =>
+  ['freibad','fbtickets','prices','internal','bookings','aktionen','weather','sponsors','mis','users','infos','restore','wipe'].forEach(t =>
     document.getElementById('atab-'+t).classList.toggle('active', t===tab)
   );
   // Freibad-Tickets: bei jedem Öffnen frisch (Live-Daten); Auto-Refresh nur solange offen.
@@ -7566,6 +7762,7 @@ function setAdminTab(tab) {
   }
   if (tab==='users'    && !adminTabLoaded.users)    { loadAdminUsers();   adminTabLoaded.users=true; }
   if (tab==='infos'    && !adminTabLoaded.infos)    { if(typeof initInfosEditor==='function') initInfosEditor(); adminTabLoaded.infos=true; }
+  if (tab==='restore'  && !adminTabLoaded.restore)  { loadRestorePoints(); adminTabLoaded.restore=true; }
 }
 
 // ============================================================
@@ -7719,6 +7916,7 @@ document.getElementById('adminBookings').style.display  = 'none';
 document.getElementById('adminWeather').style.display   = 'none';
 document.getElementById('adminMis').style.display       = 'none';
 document.getElementById('adminUsers').style.display     = 'none';
+document.getElementById('adminRestore').style.display   = 'none';
 
 // ============================================================
 //  ADMIN – TFB-Mitgliederliste aus CSV aktualisieren (Monats-Import)
@@ -11024,6 +11222,37 @@ body.bielstein-theme .slot.abo-booked .slot-price { color: #F6F1E7 !important; }
 body.bielstein-theme .date-chip .dmon:empty::after { content: "\00A0"; }
 
 /* ── PLATTE PUTZEN ── */
+body.bielstein-theme #adminRestore .restore-note {
+  background: #F6F1E7; border: 1.5px solid #E2DACB; color: #1C1A17;
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.5;
+  margin-bottom: 16px;
+}
+body.bielstein-theme #adminRestore textarea.admin-input {
+  min-height: 82px; resize: vertical; line-height: 1.45;
+}
+body.bielstein-theme #adminRestore .restore-item {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
+  padding: 14px 0; border-bottom: 1px solid #E2DACB;
+}
+body.bielstein-theme #adminRestore .restore-item:last-child { border-bottom: 0; }
+body.bielstein-theme #adminRestore .restore-main { flex: 1; min-width: 0; }
+body.bielstein-theme #adminRestore .restore-title {
+  font: 800 15px/1.25 "Space Grotesk","Arial Narrow",sans-serif; color: #1C1A17;
+}
+body.bielstein-theme #adminRestore .restore-meta,
+body.bielstein-theme #adminRestore .restore-counts,
+body.bielstein-theme #adminRestore .restore-restored {
+  margin-top: 4px; color: #7A7368; font-size: 12.5px; line-height: 1.4;
+}
+body.bielstein-theme #adminRestore .restore-note-small {
+  margin-top: 8px; color: #1C1A17; font-size: 13px; line-height: 1.45;
+}
+body.bielstein-theme #adminRestore .restore-restored { color: #1F8A5F; font-weight: 600; }
+@media (max-width: 640px) {
+  body.bielstein-theme #adminRestore .restore-item { flex-direction: column; }
+  body.bielstein-theme #adminRestore .restore-item .admin-save-btn { width: 100%; }
+}
+
 body.bielstein-theme #adminWipe .wipe-warn {
   background: #FCE9E2; border: 1.5px solid #B8402C; color: #B8402C;
   border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.45;
