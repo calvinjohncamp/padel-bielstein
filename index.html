@@ -1061,7 +1061,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 }
 
 
-body.bielstein-theme #tabVerabredungen .tab-icon{border:none!important;width:15px!important;height:15px!important;transform:rotate(45deg);background:currentColor;border-radius:3px!important}.meet-preview-frame{width:100%;height:1900px;min-height:0;border:0;display:block;background:#FBF8F0;border-radius:0;overflow:hidden}.meet-book-btn{display:none;width:100%;border:2px solid #1C1A17;border-radius:12px;background:#EFE9DC;color:#1C1A17;padding:18px 20px;margin:12px 0 20px;font-family:"Space Grotesk","Arial Narrow",sans-serif;font-weight:800;font-size:17px;box-shadow:0 8px 18px rgba(28,26,23,.08)}.meet-book-btn.visible{display:block!important}.meet-book-btn:hover{background:#1C1A17;color:#F6F1E7}
+body.bielstein-theme #tabVerabredungen .tab-icon{border:none!important;width:15px!important;height:15px!important;transform:rotate(45deg);background:currentColor;border-radius:3px!important}.meet-preview-frame{width:100%;height:900px;min-height:0;border:0;display:block;background:#FBF8F0;border-radius:0;overflow:hidden}.meet-book-btn{display:none;width:100%;border:2px solid #1C1A17;border-radius:12px;background:#EFE9DC;color:#1C1A17;padding:18px 20px;margin:12px 0 20px;font-family:"Space Grotesk","Arial Narrow",sans-serif;font-weight:800;font-size:17px;box-shadow:0 8px 18px rgba(28,26,23,.08)}.meet-book-btn.visible{display:block!important}.meet-book-btn:hover{background:#1C1A17;color:#F6F1E7}
 
 body.bielstein-theme #bookBtn.visible{display:flex!important}body.bielstein-theme #meetBookBtn.visible{display:block!important}
 
@@ -1991,11 +1991,12 @@ input[type=&quot;checkbox&quot;]{accent-color:var(--coral)}
 
 .profile-level-letter{position:relative;top:-2px!important}
 
-body.embedded .appbar,body.embedded .main-tabs{display:none!important}body.embedded .shell{padding-top:0!important;padding-bottom:28px!important}body.embedded{background:transparent!important}
+body.embedded .appbar,body.embedded .main-tabs{display:none!important}body.embedded .shell{padding-top:0!important;padding-bottom:12px!important}body.embedded{background:transparent!important}
 .dating-line{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.45}.create-head h1{margin-bottom:0}
 .dating-title{font-size:clamp(34px,4.3vw,54px)!important;letter-spacing:.08em!important;text-transform:uppercase;max-width:560px}.dating-line{display:none!important}
 
 .profile-inline{width:calc(50% - 4px)!important;max-width:calc(50% - 4px)!important;margin-left:0!important;margin-right:auto!important;text-align:left!important}.profile-inline .profile-data{flex:1 1 auto!important;text-align:left!important}.profile-inline .profile-kicker,.profile-inline strong{text-align:left!important}.profile-inline .profile-meta{justify-content:flex-start!important;text-align:left!important}.profile-inline .btn{margin-left:auto!important;white-space:nowrap}@media(max-width:620px){.profile-inline{width:100%!important;max-width:100%!important}}
+.sponsor-band{margin-top:34px!important;padding-top:24px!important;padding-bottom:8px!important}.sponsor-logos{display:grid!important;grid-template-columns:repeat(2,270px)!important;justify-content:start!important;gap:14px!important;margin-top:14px!important}.sponsor-logos img{width:270px!important;height:123px!important;max-width:100%!important;object-fit:contain!important;border:1.5px solid var(--line)!important;border-radius:14px!important;background:#fff!important;padding:0 22px!important}@media(max-width:620px){.sponsor-logos{grid-template-columns:repeat(2,minmax(0,1fr))!important}.sponsor-logos img{width:100%!important;height:96px!important;padding:0 14px!important}}
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body class=&quot;embedded&quot;&gt;
@@ -2029,7 +2030,7 @@ let matches=[
 ];
 const $=s=&gt;document.querySelector(s),$$=s=&gt;Array.from(document.querySelectorAll(s));
 
-function sendMeetHeight(){requestAnimationFrame(()=&gt;{const h=Math.max(document.documentElement.scrollHeight||0,document.body.scrollHeight||0);parent.postMessage({type:&#x27;pb-meet-height&#x27;,height:h},&#x27;*&#x27;)})}
+function sendMeetHeight(){requestAnimationFrame(()=&gt;{const shell=document.querySelector(&#x27;.shell&#x27;);const rect=shell?shell.getBoundingClientRect():null;const h=rect?Math.ceil(rect.bottom+10):Math.max(document.documentElement.scrollHeight||0,document.body.scrollHeight||0);parent.postMessage({type:&#x27;pb-meet-height&#x27;,height:h},&#x27;*&#x27;)})}
 window.addEventListener(&#x27;load&#x27;,sendMeetHeight);
 window.addEventListener(&#x27;resize&#x27;,sendMeetHeight);
 if(&#x27;ResizeObserver&#x27; in window){new ResizeObserver(sendMeetHeight).observe(document.body)}
@@ -4323,7 +4324,7 @@ async function init() {
 function resizeMeetFrameFromMessage(height) {
   const frame = document.querySelector('#modeVerabredungen .meet-preview-frame');
   if (!frame || !height) return;
-  frame.style.height = Math.max(720, Math.ceil(height) + 8) + 'px';
+  frame.style.height = Math.max(720, Math.ceil(height) + 2) + 'px';
 }
 window.addEventListener('message', function(e) {
   if (e.data && e.data.type === 'pb-meet-height') resizeMeetFrameFromMessage(e.data.height);
