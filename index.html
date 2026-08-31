@@ -1064,6 +1064,62 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 body.bielstein-theme #tabVerabredungen .tab-icon{border:none!important;width:15px!important;height:15px!important;transform:rotate(45deg);background:currentColor;border-radius:3px!important}.meet-preview-frame{width:100%;min-height:1680px;border:0;display:block;background:#FBF8F0;border-radius:0}.meet-book-btn{display:none;width:100%;border:1.5px solid #FF5A36;border-radius:12px;background:#F6F1E7;color:#FF5A36;padding:16px 18px;margin:10px 0 18px;font-family:"Space Grotesk","Arial Narrow",sans-serif;font-weight:800;font-size:16px}.meet-book-btn.visible{display:block!important}.meet-book-btn:hover{background:#FF5A36;color:#fff}
 
 body.bielstein-theme #bookBtn.visible{display:flex!important}body.bielstein-theme #meetBookBtn.visible{display:block!important}
+
+/* Splash iPhone: Premium-Partner nicht vollbreit, sondern wie die App-Partnerkacheln kompakt neben dem Hinweis. */
+@media (max-width: 560px) {
+  .pb-splash > .pb-splash-inner { padding: 44px 28px 36px; }
+  .pb-splash-duo {
+    flex-direction: row !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    margin-top: 30px !important;
+    padding-top: 22px !important;
+  }
+  .pb-splash-duo > #pbSplashSponsor,
+  .pb-splash-duo > .pb-splash-early {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+  }
+  #pbSplashSponsor .pbsp-kicker {
+    min-height: 24px;
+    margin: 0 0 9px 2px !important;
+    font-size: 8.5px !important;
+    letter-spacing: .16em !important;
+    line-height: 1.35 !important;
+  }
+  .pb-splash-duo #pbSplashSponsor .pbsp-tile.pbsp-prem,
+  #pbSplashSponsor .pbsp-tile {
+    width: 100% !important;
+    height: 108px !important;
+    padding: 10px 12px !important;
+    flex: 0 0 auto !important;
+  }
+  #pbSplashSponsor .pbsp-tile img {
+    max-width: 92% !important;
+    max-height: 66px !important;
+  }
+  .pb-splash-early {
+    padding: 12px 13px !important;
+    border-radius: 13px !important;
+  }
+  .pb-splash-early .kick {
+    font-size: 10px !important;
+    letter-spacing: .12em !important;
+    margin-bottom: 7px !important;
+  }
+  .pb-splash-early .txt {
+    font-size: 12px !important;
+    line-height: 1.42 !important;
+  }
+}
+@media (max-width: 380px) {
+  .pb-splash > .pb-splash-inner { padding-left: 22px; padding-right: 22px; }
+  .pb-splash-duo { gap: 10px !important; }
+  .pb-splash-duo #pbSplashSponsor .pbsp-tile.pbsp-prem,
+  #pbSplashSponsor .pbsp-tile { height: 96px !important; }
+  #pbSplashSponsor .pbsp-tile img { max-height: 58px !important; }
+  .pb-splash-early .txt { font-size: 11.4px !important; }
+}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
