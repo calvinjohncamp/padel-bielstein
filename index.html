@@ -12211,69 +12211,72 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   .pb-splash-early .txt { font-size: 11.4px !important; }
 }
 
-/* Splash iPhone quer: kompakter, aber mit klarer Luft zwischen Titel, Button und Partnerzeile. */
+/* Splash iPhone quer: nicht in eine Bildschirmhöhe pressen, sondern mit eleganten Abständen scrollbar anlegen. */
 @media (max-height: 560px) and (orientation: landscape) {
   .pb-splash > .pb-splash-inner {
     max-width: 760px !important;
-    min-height: 100vh !important;
-    justify-content: space-between !important;
-    padding: 20px 34px 24px !important;
+    min-height: 760px !important;
+    justify-content: flex-start !important;
+    padding: 34px 34px 46px !important;
+  }
+  .pb-splash-top {
+    margin-bottom: 58px !important;
   }
   .pb-splash-h1 {
-    font-size: clamp(40px, 12.2vh, 56px) !important;
+    font-size: clamp(54px, 12vw, 72px) !important;
     line-height: .9 !important;
-    margin-top: 8px !important;
+    margin: 0 !important;
   }
   .pb-splash-claim {
-    font-size: 14px !important;
-    line-height: 1.38 !important;
-    max-width: 470px !important;
-    margin-top: 12px !important;
+    font-size: 17px !important;
+    line-height: 1.48 !important;
+    max-width: 520px !important;
+    margin-top: 34px !important;
   }
   .pb-splash-cta {
-    padding: 14px 18px !important;
-    border-radius: 13px !important;
-    font-size: 15px !important;
-    margin-top: 14px !important;
+    padding: 18px 22px !important;
+    border-radius: 15px !important;
+    font-size: 18px !important;
+    margin-top: 34px !important;
   }
   .pb-splash-foot {
-    margin-top: 9px !important;
-    font-size: 11.5px !important;
+    margin-top: 24px !important;
+    font-size: 13px !important;
   }
   .pb-splash-duo {
     flex-direction: row !important;
-    gap: 16px !important;
-    margin-top: 22px !important;
-    padding-top: 16px !important;
+    gap: 28px !important;
+    margin-top: 54px !important;
+    padding-top: 30px !important;
   }
   #pbSplashSponsor .pbsp-kicker {
     min-height: 0 !important;
-    margin: 0 0 7px 2px !important;
-    font-size: 8px !important;
-    letter-spacing: .16em !important;
-    line-height: 1.25 !important;
+    margin: 0 0 14px 2px !important;
+    font-size: 10px !important;
+    letter-spacing: .18em !important;
+    line-height: 1.28 !important;
   }
   .pb-splash-duo #pbSplashSponsor .pbsp-tile.pbsp-prem,
   #pbSplashSponsor .pbsp-tile {
-    height: 88px !important;
-    padding: 9px 11px !important;
+    height: 118px !important;
+    padding: 14px 16px !important;
   }
   #pbSplashSponsor .pbsp-tile img {
-    max-height: 56px !important;
+    max-height: 76px !important;
     max-width: 90% !important;
   }
   .pb-splash-early {
-    padding: 10px 12px !important;
-    border-radius: 12px !important;
+    padding: 16px 18px !important;
+    border-radius: 13px !important;
   }
   .pb-splash-early .kick {
-    font-size: 9.5px !important;
-    letter-spacing: .11em !important;
-    margin-bottom: 6px !important;
+    font-size: 11px !important;
+    letter-spacing: .12em !important;
+    margin-bottom: 8px !important;
   }
   .pb-splash-early .txt {
-    font-size: 11px !important;
-    line-height: 1.34 !important;
+    font-size: 13px !important;
+    line-height: 1.42 !important;
   }
 }
 </style>
