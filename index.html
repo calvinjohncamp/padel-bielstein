@@ -13266,8 +13266,16 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     // und nicht wieder auf der Startseite anfangen.
     if(FROM_STRIPE){ if(window.__pbReleaseBoot) window.__pbReleaseBoot(); return; }
     splash.removeAttribute('hidden');
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
+    try { splash.scrollTop = 0; window.scrollTo(0, 0); } catch(e) {}
+    var touchLike = false;
+    try { touchLike = window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.matchMedia('(max-width: 1024px)').matches; } catch(e) {}
+    if(!touchLike){
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.documentElement.style.removeProperty('overflow');
+      document.body.style.removeProperty('overflow');
+    }
     if(window.__pbReleaseBoot) window.__pbReleaseBoot();
     var cta = document.getElementById('pbSplashCta');
     if(cta) cta.addEventListener('click', function(){ leave(splash); });
