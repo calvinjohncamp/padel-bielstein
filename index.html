@@ -12202,22 +12202,45 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pb-splash-early .txt .hi { color: #FF5A36; font-weight: 800; white-space: nowrap; }
 @media (max-width: 560px) { .pb-splash-duo { flex-direction: column; } }
 
-/* Splash iPhone: Premium-Partner kompakt, iPad-Regeln bleiben unverändert. */
+/* Splash im mobilen Safari: echte Scrollseite statt App-Vollbild-Pressung. */
 @media (max-width: 560px) {
-  .pb-splash > .pb-splash-inner {
-    padding: 46px 28px 38px !important;
-    justify-content: space-between !important;
+  .pb-splash {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    align-items: flex-start !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain;
   }
-  .pb-splash-h1 { margin-top: 12px !important; }
-  .pb-splash-claim { margin-top: 20px !important; }
-  .pb-splash-cta { margin-top: 10px !important; }
-  .pb-splash-foot { margin-top: 14px !important; }
+  .pb-splash > .pb-splash-inner {
+    min-height: auto !important;
+    justify-content: flex-start !important;
+    padding: calc(30px + env(safe-area-inset-top, 0px)) 28px calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .pb-splash-top { margin-bottom: clamp(72px, 11vh, 104px) !important; }
+  .pb-splash-h1 {
+    font-size: clamp(50px, 14.2vw, 64px) !important;
+    line-height: .92 !important;
+    margin: 0 !important;
+  }
+  .pb-splash-claim {
+    font-size: 18px !important;
+    line-height: 1.48 !important;
+    margin-top: 26px !important;
+    max-width: 100% !important;
+  }
+  .pb-splash-cta {
+    margin-top: clamp(64px, 12vh, 92px) !important;
+    padding: 19px 20px !important;
+    border-radius: 16px !important;
+  }
+  .pb-splash-foot { margin-top: 18px !important; }
   .pb-splash-duo {
     flex-direction: row !important;
     align-items: stretch !important;
     gap: 12px !important;
-    margin-top: 34px !important;
-    padding-top: 24px !important;
+    margin-top: 42px !important;
+    padding-top: 26px !important;
   }
   .pb-splash-duo > #pbSplashSponsor,
   .pb-splash-duo > .pb-splash-early {
@@ -12258,24 +12281,30 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 }
 @media (max-width: 380px) {
   .pb-splash > .pb-splash-inner { padding-left: 22px !important; padding-right: 22px !important; }
-  .pb-splash-duo { gap: 10px !important; }
+  .pb-splash-top { margin-bottom: 60px !important; }
+  .pb-splash-cta { margin-top: 52px !important; }
+  .pb-splash-duo { gap: 10px !important; margin-top: 34px !important; }
   .pb-splash-duo #pbSplashSponsor .pbsp-tile.pbsp-prem,
   #pbSplashSponsor .pbsp-tile { height: 96px !important; }
   #pbSplashSponsor .pbsp-tile img { max-height: 58px !important; }
   .pb-splash-early .txt { font-size: 11.4px !important; }
 }
 
-/* Splash iPhone quer: nicht in eine Bildschirmhöhe pressen, sondern mit eleganten Abständen scrollbar anlegen. */
+/* iPhone quer im Safari-Browser: ebenfalls scrollbar und mit ruhiger Luft. */
 @media (max-height: 560px) and (orientation: landscape) {
+  .pb-splash {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
   .pb-splash > .pb-splash-inner {
     max-width: 760px !important;
-    min-height: 760px !important;
+    min-height: auto !important;
     justify-content: flex-start !important;
-    padding: 34px 34px 46px !important;
+    padding: calc(28px + env(safe-area-inset-top, 0px)) 34px calc(72px + env(safe-area-inset-bottom, 0px)) !important;
   }
-  .pb-splash-top {
-    margin-bottom: 58px !important;
-  }
+  .pb-splash-top { margin-bottom: 54px !important; }
   .pb-splash-h1 {
     font-size: clamp(54px, 12vw, 72px) !important;
     line-height: .9 !important;
@@ -12294,13 +12323,13 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     margin-top: 34px !important;
   }
   .pb-splash-foot {
-    margin-top: 24px !important;
+    margin-top: 22px !important;
     font-size: 13px !important;
   }
   .pb-splash-duo {
     flex-direction: row !important;
     gap: 28px !important;
-    margin-top: 54px !important;
+    margin-top: 50px !important;
     padding-top: 30px !important;
   }
   #pbSplashSponsor .pbsp-kicker {
