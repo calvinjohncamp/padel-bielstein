@@ -12142,12 +12142,18 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
    etwas hoch; Titel rückt etwas näher – aber nicht dicht ans Logo.
    Querformat (min-700 ohne portrait) bleibt unberührt. */
 @media (min-width: 768px) and (orientation: portrait) {
-  /* iPad Hochformat: Logo in Relation zur Wortmarke groesser, Gesamtkomposition
-     etwas weiter aufspannen. iPhone bleibt durch die spaeteren Mobile-Regeln unberuehrt. */
-  .pb-splash > .pb-splash-inner {
-    justify-content: flex-start;
+  /* iPad Hochformat: Logo bleibt groesser, die Bloecke verteilen sich aber wieder
+     weich ueber die Hoehe statt oben festzukleben. */
+  .pb-splash {
+    height: 100dvh;
     min-height: 100dvh;
-    padding: 26px 40px 42px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .pb-splash > .pb-splash-inner {
+    justify-content: space-evenly;
+    min-height: 100dvh;
+    padding: clamp(38px, 4.2vh, 56px) 40px clamp(48px, 5vh, 72px);
   }
   .pb-splash > .pb-splash-inner .pb-splash-logobox {
     width: 148px;
@@ -12155,19 +12161,19 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     border-radius: 14px;
   }
   .pb-splash > .pb-splash-inner .pb-splash-top {
-    margin-bottom: clamp(118px, 12vh, 158px);
+    margin-bottom: clamp(36px, 4.2vh, 58px);
   }
   .pb-splash > .pb-splash-inner .pb-splash-claim {
     margin-top: 26px;
   }
   .pb-splash > .pb-splash-inner .pb-splash-cta {
-    margin-top: clamp(86px, 10vh, 118px);
+    margin-top: clamp(58px, 6vh, 82px);
   }
   .pb-splash > .pb-splash-inner .pb-splash-foot {
     margin-top: 18px;
   }
   .pb-splash > .pb-splash-inner .pb-splash-duo {
-    margin-top: clamp(66px, 7vh, 96px);
+    margin-top: clamp(52px, 5.5vh, 78px);
   }
 }
 .pb-splash-top { display: flex; align-items: flex-start; justify-content: space-between; }
