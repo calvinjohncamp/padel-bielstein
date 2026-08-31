@@ -1060,6 +1060,10 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
   color: #4ADE80 !important;
 }
 
+
+body.bielstein-theme #tabVerabredungen .tab-icon{border:none!important;width:15px!important;height:15px!important;transform:rotate(45deg);background:currentColor;border-radius:3px!important}.meet-preview-frame{width:100%;min-height:1680px;border:0;display:block;background:#FBF8F0;border-radius:0}.meet-book-btn{display:none;width:100%;border:1.5px solid #FF5A36;border-radius:12px;background:#F6F1E7;color:#FF5A36;padding:16px 18px;margin:10px 0 18px;font-family:"Space Grotesk","Arial Narrow",sans-serif;font-weight:800;font-size:16px}.meet-book-btn.visible{display:block!important}.meet-book-btn:hover{background:#FF5A36;color:#fff}
+
+body.bielstein-theme #bookBtn.visible{display:flex!important}body.bielstein-theme #meetBookBtn.visible{display:block!important}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -1669,10 +1673,11 @@ main {
   </div>
 
 
-  <div class="mode-tabs" style="grid-template-columns:repeat(5,1fr);" id="mainTabs">
+  <div class="mode-tabs" style="grid-template-columns:repeat(6,1fr);" id="mainTabs">
     <div class="mode-tab active" id="tabBook" onclick="setMode('book')"><span class="tab-icon">■</span> Jetzt buchen</div>
     <div class="mode-tab" id="tabAbo" onclick="setMode('abo')"><span class="tab-icon">■</span> Jahresabo sichern</div>
     <div class="mode-tab" id="tabPlay" onclick="setMode('play')"><span class="tab-icon">▶</span> Jetzt spielen</div>
+    <div class="mode-tab" id="tabVerabredungen" onclick="setMode('verabredungen')"><span class="tab-icon">◆</span> Verabredungen</div>
     <div class="mode-tab" id="tabGutscheine" onclick="setMode('gutscheine')"><span class="tab-icon"><svg viewBox="2.47 4.3 14.23 14.96" fill="none" aria-hidden="true"><defs><mask id="pbCardStack" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20"><rect width="20" height="20" fill="#fff"/><rect x="7.2" y="3.7" width="10.1" height="14.6" rx="2.8" fill="#000"/></mask></defs><g stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><g mask="url(#pbCardStack)"><rect x="5.5" y="5" width="7.5" height="12" rx="1.5" transform="rotate(-12 13 17)"/></g><rect x="8.5" y="5" width="7.5" height="12" rx="1.5"/></g></svg></span> Guthaben</div>
     <div class="mode-tab" id="tabPartner" onclick="setMode('partner')" style="display:none;"><span class="tab-icon"><svg viewBox="1.6 2.8 16.8 14.8" width="16" height="16" fill="none" aria-hidden="true"><path d="M10 3.8 L17.4 16.6 L2.6 16.6 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span> Partner</div>
   </div>
@@ -1741,6 +1746,7 @@ main {
       </div>
     </div>
     <button class="book-btn" id="bookBtn" onclick="confirmBooking()">Jetzt buchen &amp; bezahlen →</button>
+    <button class="meet-book-btn" id="meetBookBtn" onclick="openVerabredungenPreview()">Verabreden</button>
 
     <div id="pbSponsorBook" class="pbsp-slot"></div>
 
@@ -1940,6 +1946,11 @@ main {
       </div>
 
     </div>
+  </div>
+
+  <!-- VERABREDUNGEN MODE: Praesentationsversion ohne Datenbank-/Mailversand -->
+  <div id="modeVerabredungen" style="display:none;">
+    <iframe class="meet-preview-frame" src="verabredungen-prototyp.html?embedded=1" title="Verabredungen"></iframe>
   </div>
 
   <!-- WERTKARTEN MODE -->
@@ -4208,12 +4219,14 @@ function setMode(m) {
   document.getElementById('modeBook').style.display       = m==='book'       ? 'block' : 'none';
   document.getElementById('modeAbo').style.display        = m==='abo'        ? 'block' : 'none';
   document.getElementById('modePlay').style.display       = m==='play'       ? 'block' : 'none';
+  document.getElementById('modeVerabredungen').style.display = m==='verabredungen' ? 'block' : 'none';
   document.getElementById('modeGutscheine').style.display  = m==='gutscheine' ? 'block' : 'none';
   document.getElementById('modePartner').style.display     = m==='partner'    ? 'block' : 'none';
   document.getElementById('modeAdmin').style.display       = m==='admin'      ? 'block' : 'none';
   document.getElementById('tabBook').classList.toggle('active',  m==='book');
   document.getElementById('tabAbo').classList.toggle('active',   m==='abo');
   document.getElementById('tabPlay').classList.toggle('active',  m==='play');
+  document.getElementById('tabVerabredungen').classList.toggle('active', m==='verabredungen');
   document.getElementById('tabGutscheine').classList.toggle('active', m==='gutscheine');
   document.getElementById('tabPartner').classList.toggle('active', m==='partner');
   const adminFooter = document.getElementById('adminFooterBtn');
@@ -4391,7 +4404,7 @@ function pickSlot(ct, h) {
 function updateSummary() {
   const card = document.getElementById("sumCard");
   const btn  = document.getElementById("bookBtn");
-  if (!selSlot) { card.classList.remove("visible"); btn.classList.remove("visible"); return; }
+  if (!selSlot) { card.classList.remove("visible"); btn.classList.remove("visible"); restoreBookingButtonVisibility(); return; }
   const {court:ct, hour:h} = selSlot, end = h + selDur;
   const rp = rawP(h, selDate), p = mP(rp), disc = rp - p;
   const ds = new Date(selDate+'T12:00:00').toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
@@ -4464,6 +4477,30 @@ function updateSummary() {
 
   card.classList.add("visible");
   btn.classList.add("visible");
+  restoreBookingButtonVisibility();
+}
+
+
+function updateMeetBookButton() {
+  const meetBtn = document.getElementById('meetBookBtn');
+  if (!meetBtn) return;
+  meetBtn.classList.toggle('visible', !!selSlot);
+}
+
+
+function restoreBookingButtonVisibility() {
+  const bookBtn = document.getElementById('bookBtn');
+  const meetBtn = document.getElementById('meetBookBtn');
+  const hasSlot = !!window.selSlot || !!selSlot;
+  if (bookBtn) bookBtn.classList.toggle('visible', hasSlot);
+  if (meetBtn) meetBtn.classList.toggle('visible', hasSlot);
+}
+
+function openVerabredungenPreview() {
+  // Praesentationsversion: keine Buchung, keine Datenbank, kein E-Mail-Versand.
+  setMode('verabredungen');
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
 }
 
 // ============================================================
