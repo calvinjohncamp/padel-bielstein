@@ -9691,7 +9691,7 @@ function matchLineHTML(m) {
   const dateStr = m.when.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
   const timeStr = `${String(m.hour_start).padStart(2, '0')}:00`;
   const endStr = `${String(Number(m.hour_start) + Number(m.duration || 1)).padStart(2, '0')}:00`;
-  return `Dein nächstes Match startet am <strong>${dateStr}</strong> um <strong>${timeStr} Uhr</strong> auf <strong>Court ${m.court}</strong>.<br><span>${timeStr} bis ${endStr} Uhr${m.isAbo ? ' · Jahresabo' : ''}</span>`;
+  return `Dein nächstes Match startet am <strong>${dateStr}</strong><br>um <strong>${timeStr} Uhr</strong> auf <strong>Court ${m.court}</strong>.<br><span>${timeStr} bis ${endStr} Uhr${m.isAbo ? ' · Jahresabo' : ''}</span>`;
 }
 
 // Titelseite des Account-Stapels. nextMatch (optional) = nächster Termin.
