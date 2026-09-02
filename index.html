@@ -2285,7 +2285,7 @@ main {
       return Array.from({ length: n }, () =&gt; '&lt;img src=&quot;assets/icons/padel-ball-hd.png&quot; alt=&quot;&quot;&gt;').join(&quot;&quot;);
     }
     function applyBalls(root = document) {
-      $(&quot;[data-balls]&quot;, root).forEach(el =&gt; {
+      $$(&quot;[data-balls]&quot;, root).forEach(el =&gt; {
         el.innerHTML = balls(Number(el.dataset.balls || 0));
       });
     }
@@ -2516,8 +2516,8 @@ main {
           &lt;span class=&quot;status ${item.mode === &quot;direct&quot; ? &quot;coral&quot; : &quot;&quot;}&quot;&gt;${item.mode === &quot;direct&quot; ? &quot;direkt&quot; : &quot;offen&quot;}&lt;/span&gt;
         &lt;/button&gt;
       `}).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Aktuell keine passenden Einladungen.&lt;/div&gt;';
-      $(&quot;[data-booking]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectBooking(btn.dataset.booking)));
-      $(&quot;[data-invite]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectInvite(btn.dataset.invite)));
+      $$(&quot;[data-booking]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectBooking(btn.dataset.booking)));
+      $$(&quot;[data-invite]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectInvite(btn.dataset.invite)));
     }
     function renderLevelStrip() {
       $(&quot;#levelStrip&quot;).innerHTML = Object.entries(levels).map(([level, meta]) =&gt; `
@@ -2538,7 +2538,7 @@ main {
       $(&quot;#profileBalls&quot;).dataset.balls = meta.balls;
       $(&quot;#profileGender&quot;).textContent = user.gender;
       $(&quot;#profileLevelPicker&quot;).innerHTML = Object.keys(levels).map(level =&gt; `&lt;button class=&quot;chip ${level === user.level ? &quot;active&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-profile-level=&quot;${level}&quot;&gt;${level}&lt;/button&gt;`).join(&quot;&quot;);
-      $(&quot;#profileLevelPicker [data-profile-level]&quot;).forEach(btn =&gt; {
+      $$(&quot;#profileLevelPicker [data-profile-level]&quot;).forEach(btn =&gt; {
         btn.addEventListener(&quot;click&quot;, () =&gt; {
           user.level = btn.dataset.profileLevel;
           updateUserLevelReferences();
@@ -2576,8 +2576,8 @@ main {
     }
     function addEmailRow(value = &quot;&quot;) {
       const list = $(&quot;#emailList&quot;);
-      list.insertAdjacentHTML(&quot;beforeend&quot;, emailRowHTML(value, $(&quot;.player-email&quot;, list).length + 1));
-      const input = $(&quot;.player-email&quot;, list).at(-1);
+      list.insertAdjacentHTML(&quot;beforeend&quot;, emailRowHTML(value, $$(&quot;.player-email&quot;, list).length + 1));
+      const input = $$(&quot;.player-email&quot;, list).at(-1);
       if (input) input.focus();
       refreshEmailIndexes();
     }
@@ -2619,10 +2619,10 @@ main {
       &lt;/div&gt;`;
     }
     function groupEditorEmails() {
-      return $(&quot;.group-email&quot;).map(input =&gt; input.value.trim()).filter(Boolean);
+      return $$(&quot;.group-email&quot;).map(input =&gt; input.value.trim()).filter(Boolean);
     }
     function refreshGroupEmailIndexes() {
-      $(&quot;#groupEmailList .email-row&quot;).forEach((row, index) =&gt; {
+      $$(&quot;#groupEmailList .email-row&quot;).forEach((row, index) =&gt; {
         const n = index + 1;
         $(&quot;.seat-index&quot;, row).textContent = n;
         $(&quot;.group-email&quot;, row).setAttribute(&quot;aria-label&quot;, `Gruppen-E-Mail ${n}`);
@@ -2630,8 +2630,8 @@ main {
     }
     function addGroupEmailRow() {
       const list = $(&quot;#groupEmailList&quot;);
-      list.insertAdjacentHTML(&quot;beforeend&quot;, groupEmailRowHTML(&quot;&quot;, $(&quot;.group-email&quot;, list).length + 1));
-      $(&quot;.group-email&quot;, list).at(-1)?.focus();
+      list.insertAdjacentHTML(&quot;beforeend&quot;, groupEmailRowHTML(&quot;&quot;, $$(&quot;.group-email&quot;, list).length + 1));
+      $$(&quot;.group-email&quot;, list).at(-1)?.focus();
       refreshGroupEmailIndexes();
     }
     function openGroupEditor(id) {
@@ -2706,7 +2706,7 @@ main {
       toast(&quot;Gruppe gelöscht.&quot;);
     }
     function refreshEmailIndexes() {
-      $(&quot;.email-row&quot;).forEach((row, index) =&gt; {
+      $$(&quot;.email-row&quot;).forEach((row, index) =&gt; {
         const n = index + 1;
         $(&quot;.seat-index&quot;, row).textContent = n;
         $(&quot;.player-email&quot;, row).setAttribute(&quot;aria-label&quot;, `E-Mail ${n}`);
@@ -2826,20 +2826,20 @@ main {
       &lt;/div&gt;`;
     }
     function wireSegments(root = document) {
-      $(&quot;.seg[data-seg] .chip&quot;, root).forEach(btn =&gt; {
+      $$(&quot;.seg[data-seg] .chip&quot;, root).forEach(btn =&gt; {
         btn.addEventListener(&quot;click&quot;, () =&gt; {
           const seg = btn.closest(&quot;.seg&quot;);
           if (seg.dataset.seg === &quot;level&quot;) {
             if (btn.dataset.value === &quot;egal&quot;) {
-              $(&quot;.chip&quot;, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip === btn));
+              $$(&quot;.chip&quot;, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip === btn));
               return;
             }
-            $('.chip[data-value=&quot;egal&quot;]', seg).forEach(chip =&gt; chip.classList.remove(&quot;active&quot;));
+            $$(&quot;.chip[data-value='egal']&quot;, seg).forEach(chip =&gt; chip.classList.remove(&quot;active&quot;));
             btn.classList.toggle(&quot;active&quot;);
-            if (!$(&quot;.chip.active&quot;, seg).length) $('.chip[data-value=&quot;egal&quot;]', seg).forEach(chip =&gt; chip.classList.add(&quot;active&quot;));
+            if (!$$(&quot;.chip.active&quot;, seg).length) $$(&quot;.chip[data-value='egal']&quot;, seg).forEach(chip =&gt; chip.classList.add(&quot;active&quot;));
             return;
           }
-          $(&quot;.chip&quot;, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip === btn));
+          $$(&quot;.chip&quot;, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip === btn));
         });
       });
     }
@@ -2878,7 +2878,7 @@ main {
       if (accept) accept.addEventListener(&quot;click&quot;, acceptInvitation);
       const withdraw = $(&quot;#withdrawInvite&quot;);
       if (withdraw) withdraw.addEventListener(&quot;click&quot;, withdrawInvitation);
-      $(&quot;[data-remove-me]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, withdrawInvitation));
+      $$(&quot;[data-remove-me]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, withdrawInvitation));
       applyBalls($(&quot;#editor&quot;));
     }
     function selectBooking(id) {
