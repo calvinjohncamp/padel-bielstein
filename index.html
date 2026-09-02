@@ -2896,10 +2896,10 @@ main {
       renderEditor();
     }
     function collectEmails() {
-      return $(&quot;.player-email&quot;).map(input =&gt; input.value.trim()).filter(Boolean);
+      return $$(&quot;.player-email&quot;).map(input =&gt; input.value.trim()).filter(Boolean);
     }
     function selectedLevelsFromEditor() {
-      const active = $('[data-seg=&quot;level&quot;] .chip.active').map(btn =&gt; btn.dataset.value).filter(Boolean);
+      const active = $$(&quot;[data-seg='level'] .chip.active&quot;).map(btn =&gt; btn.dataset.value).filter(Boolean);
       return active.length ? active : [&quot;egal&quot;];
     }
     function uniqueEmails(emails) {
@@ -2913,6 +2913,7 @@ main {
     }
     async function sendInvitation() {
       const item = currentBooking();
+      const sendButton = $(&quot;#sendInvite&quot;);
       const emails = collectEmails();
       const audience = selectedChip(&quot;audience&quot;);
       const selectedGroup = groups.find(group =&gt; group.id === state.selectedGroupId);
@@ -2932,6 +2933,10 @@ main {
       if (audience === &quot;Meine Gruppe&quot; &amp;&amp; (!selectedGroup || !selectedGroup.emails.length)) {
         toast(&quot;Bitte zuerst eine Gruppe mit E-Mail-Adressen auswählen.&quot;);
         return;
+      }
+      if (sendButton) {
+        sendButton.disabled = true;
+        sendButton.textContent = &quot;Verabredung wird gespeichert ...&quot;;
       }
       const playerEmails = emails.slice(0, 4);
       if (embedded) {
@@ -2961,11 +2966,16 @@ main {
             state.ownMatches.sort(sortByDate);
           }
           renderStatus();
+          if (sendButton) sendButton.textContent = data.mails?.length ? &quot;Einladung verschickt&quot; : &quot;Verabredung gespeichert&quot;;
           toast(data.mails?.length ? `${data.mails.length} neue Adresse${data.mails.length === 1 ? &quot;&quot; : &quot;n&quot;} informiert.` : &quot;Verabredung gespeichert. Keine doppelte Mail verschickt.&quot;);
           sendMeetHeight();
           return;
         } catch (e) {
           toast(e.message || &quot;Verabredung konnte nicht gespeichert werden.&quot;);
+          if (sendButton) {
+            sendButton.disabled = false;
+            sendButton.textContent = &quot;Verabreden / Spieler informieren&quot;;
+          }
           return;
         }
       }
@@ -3009,6 +3019,7 @@ main {
       else state.ownMatches.push(match);
       state.ownMatches.sort(sortByDate);
       renderStatus();
+      if (sendButton) sendButton.textContent = &quot;Verabredung gespeichert&quot;;
       if (mailType === &quot;noch keine Mail&quot;) {
         toast(&quot;Liste gespeichert. Die direkte Info-Mail startet erst, wenn vier Personen eingetragen sind.&quot;);
       } else if (audience === &quot;Alle&quot; &amp;&amp; !newRecipients.length) {
