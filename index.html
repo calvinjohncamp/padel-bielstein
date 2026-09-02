@@ -1061,7 +1061,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 }
 
 
-body.bielstein-theme #tabVerabredungen .tab-icon{border:none!important;width:18px!important;height:18px!important;transform:none!important;background:url("assets/icons/Megafon Icon klein transparent.png") center/contain no-repeat!important;border-radius:0!important;color:transparent!important;font-size:0!important}.meet-preview-frame{width:100%;height:900px;min-height:0;border:0;display:block;background:#FBF8F0;border-radius:0;overflow:hidden}.meet-book-btn{display:none!important}
+body.bielstein-theme #tabVerabredungen .tab-icon{border:none!important;width:23px!important;height:23px!important;transform:none!important;background:url("assets/icons/Megafon Icon klein transparent.png") center/contain no-repeat!important;border-radius:0!important;color:transparent!important;font-size:0!important}.meet-preview-frame{width:100%;height:900px;min-height:0;border:0;display:block;background:#FBF8F0;border-radius:0;overflow:hidden}.meet-book-btn{display:none!important}
 body.bielstein-theme #tabVerabredungen.active .tab-icon{background-image:url("assets/icons/Megafon Icon klein transparent beige.png")!important}
 
 body.bielstein-theme #bookBtn.visible{display:flex!important}
@@ -2097,7 +2097,7 @@ main {
     body.embedded .shell{padding-top:0;padding-bottom:12px}
   &lt;/style&gt;
 &lt;/head&gt;
-&lt;body&gt;
+&lt;body class=&quot;embedded&quot;&gt;
   &lt;header class=&quot;appbar&quot;&gt;
     &lt;button class=&quot;brand&quot; type=&quot;button&quot; aria-label=&quot;Padel Bielstein&quot;&gt;&lt;span&gt;PADEL&lt;/span&gt; &lt;span&gt;BIELSTEIN&lt;/span&gt;&lt;/button&gt;
     &lt;div class=&quot;user-pill&quot;&gt;&lt;span id=&quot;topUserName&quot;&gt;Jörn Kämper&lt;/span&gt;&lt;span id=&quot;topUserLevel&quot;&gt;A Profi&lt;/span&gt;&lt;span class=&quot;avatar&quot;&gt;JK&lt;/span&gt;&lt;/div&gt;
@@ -2251,8 +2251,7 @@ main {
     const esc = value =&gt; String(value ?? &quot;&quot;).replace(/[&amp;&lt;&gt;&quot;']/g, c =&gt; ({ &quot;&amp;&quot;:&quot;&amp;amp;&quot;, &quot;&lt;&quot;:&quot;&amp;lt;&quot;, &quot;&gt;&quot;:&quot;&amp;gt;&quot;, '&quot;':&quot;&amp;quot;&quot;, &quot;'&quot;:&quot;&amp;#39;&quot; }[c]));
     const sortByDate = (a, b) =&gt; `${a.dateISO}-${a.time}`.localeCompare(`${b.dateISO}-${b.time}`);
     const app = (() =&gt; { try { return window.parent || window; } catch (_e) { return window; } })();
-    const embedded = app !== window;
-    if (embedded) document.body.classList.add(&quot;embedded&quot;);
+    const embedded = app !== window || document.body.classList.contains(&quot;embedded&quot;);
     function appFn(name) { try { return typeof app[name] === &quot;function&quot; ? app[name].bind(app) : null; } catch (_e) { return null; } }
     function appVal(name, fallback) { try { return app[name] || fallback; } catch (_e) { return fallback; } }
     async function authHeaders() {
@@ -2435,10 +2434,11 @@ main {
       try {
         const data = await callMeetupFunction({ action: &quot;dashboard&quot; });
         if (data.profile) {
+          const liveLevel = String(data.profile.level || &quot;&quot;).toUpperCase();
           user = {
             name: data.profile.name || data.profile.email || user.name,
             email: data.profile.email || user.email,
-            level: data.profile.level || user.level,
+            level: levels[liveLevel] ? liveLevel : user.level,
             gender: data.profile.gender || user.gender
           };
         }
@@ -2490,7 +2490,8 @@ main {
       return index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
     }
     function renderPickLists() {
-      $(&quot;#myBookings&quot;).innerHTML = bookings.slice().sort(sortByDate).map((item, index) =&gt; {
+      const sortedBookings = bookings.slice().sort(sortByDate);
+      $(&quot;#myBookings&quot;).innerHTML = sortedBookings.length ? sortedBookings.map((item, index) =&gt; {
         const active = state.selectedType === &quot;booking&quot; &amp;&amp; state.selectedId === item.id;
         const tone = index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
         return `
@@ -2501,9 +2502,9 @@ main {
           &lt;/span&gt;
           &lt;span class=&quot;mini-avatar&quot;&gt;JK&lt;/span&gt;
         &lt;/button&gt;
-      `}).join(&quot;&quot;);
+      `}).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine kommenden Buchungen gefunden.&lt;/div&gt;';
       const orderedInvites = invites.slice().sort((a, b) =&gt; (a.priority - b.priority) || sortByDate(a, b)).slice(0, 10);
-      $(&quot;#incomingInvites&quot;).innerHTML = orderedInvites.map((item, index) =&gt; {
+      $(&quot;#incomingInvites&quot;).innerHTML = orderedInvites.length ? orderedInvites.map((item, index) =&gt; {
         const active = state.selectedType === &quot;invite&quot; &amp;&amp; state.selectedId === item.id;
         const tone = index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
         return `
@@ -2514,7 +2515,7 @@ main {
           &lt;/span&gt;
           &lt;span class=&quot;status ${item.mode === &quot;direct&quot; ? &quot;coral&quot; : &quot;&quot;}&quot;&gt;${item.mode === &quot;direct&quot; ? &quot;direkt&quot; : &quot;offen&quot;}&lt;/span&gt;
         &lt;/button&gt;
-      `}).join(&quot;&quot;);
+      `}).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Aktuell keine passenden Einladungen.&lt;/div&gt;';
       $(&quot;[data-booking]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectBooking(btn.dataset.booking)));
       $(&quot;[data-invite]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectInvite(btn.dataset.invite)));
     }
@@ -2844,7 +2845,13 @@ main {
     }
     function renderEditor() {
       const source = selectedSource();
-      if (!source) return;
+      if (!source) {
+        $(&quot;#editorHeadline&quot;).textContent = &quot;Buchung bearbeiten&quot;;
+        $(&quot;#editorSubline&quot;).textContent = &quot;Wähle oben einen Termin aus.&quot;;
+        $(&quot;#editor&quot;).innerHTML = &quot;&quot;;
+        sendMeetHeight();
+        return;
+      }
       $(&quot;#editorHeadline&quot;).textContent = state.selectedType === &quot;booking&quot; ? &quot;Buchung bearbeiten&quot; : &quot;Einladung ansehen&quot;;
       $(&quot;#editorSubline&quot;).textContent = sourceLabel(source);
       $(&quot;#editor&quot;).innerHTML = state.selectedType === &quot;booking&quot; ? ownEditorHTML(source) : inviteEditorHTML(source);
@@ -3108,11 +3115,20 @@ main {
       applyBalls();
       sendMeetHeight();
     }
+    let refreshAttempts = 0;
+    async function retryLiveRefresh() {
+      if (!embedded || refreshAttempts &gt;= 3) return;
+      if (bookings.length || invites.length) return;
+      refreshAttempts += 1;
+      await init();
+      if (!bookings.length &amp;&amp; !invites.length) setTimeout(retryLiveRefresh, 900 * refreshAttempts);
+    }
     window.addEventListener(&quot;message&quot;, async event =&gt; {
       if (!event.data || event.data.type !== &quot;pb-refresh-meet&quot;) return;
+      refreshAttempts = 0;
       await init();
     });
-    init();
+    init().then(() =&gt; setTimeout(retryLiveRefresh, 700));
   &lt;/script&gt;
 &lt;/body&gt;
 &lt;/html&gt;
