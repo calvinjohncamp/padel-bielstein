@@ -1956,149 +1956,701 @@ main {
 
   <!-- VERABREDUNGEN MODE: Praesentationsversion ohne Datenbank-/Mailversand, direkt in index.html eingebettet -->
   <div id="modeVerabredungen" style="display:none;">
+
     <iframe class="meet-preview-frame" title="Verabreden" scrolling="no" srcdoc="&lt;!DOCTYPE html&gt;
 &lt;html lang=&quot;de&quot;&gt;
 &lt;head&gt;
-&lt;meta charset=&quot;UTF-8&quot;&gt;
-&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
-&lt;meta name=&quot;theme-color&quot; content=&quot;#1C1A17&quot;&gt;
-&lt;base href=&quot;./&quot;&gt;
-&lt;title&gt;Padel Bielstein - Verabreden&lt;/title&gt;
-&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;&gt;
-&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.gstatic.com&quot; crossorigin&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap&quot;&gt;
-&lt;style&gt;
-html,body{overflow:hidden!important}
-:root{--ink:#1C1A17;--cream:#F6F1E7;--paper:#FBF8F0;--line:#E2DACB;--soft:#EFE9DC;--muted:#7A7368;--coral:#FF5A36;--red:#B83428;--green:#3E7D4E;--white:#fff}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);font-family:Manrope,Arial,sans-serif}button,input,select{font:inherit}button{cursor:pointer}.appbar{position:sticky;top:0;z-index:20;min-height:72px;padding:14px clamp(16px,4vw,42px);background:var(--ink);color:var(--cream);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;box-shadow:0 8px 22px rgba(28,26,23,.12)}.brand{border:0;background:transparent;color:inherit;padding:0;justify-self:start;font-family:&quot;Space Grotesk&quot;,&quot;Arial Narrow&quot;,sans-serif;font-weight:700;font-size:clamp(21px,4.8vw,32px);letter-spacing:0}.brand span:last-child{color:var(--coral)}.info-dot{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(246,241,231,.45);background:transparent;color:var(--cream);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:700}.user-pill{justify-self:end;border:1px solid rgba(246,241,231,.18);background:rgba(246,241,231,.08);color:var(--cream);border-radius:999px;padding:7px 8px 7px 14px;display:inline-flex;align-items:center;gap:10px;white-space:nowrap}.avatar{width:30px;height:30px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:700}.shell{max-width:1120px;margin:0 auto;padding:24px clamp(14px,3vw,28px) 72px}.main-tabs,.view-tabs{display:flex;gap:2px;background:var(--soft);border-radius:14px;padding:3px;overflow-x:auto;scrollbar-width:none}.main-tabs::-webkit-scrollbar,.view-tabs::-webkit-scrollbar{display:none}.main-tab,.view-tab{flex:1 1 auto;min-width:max-content;border:0;border-radius:10px;background:transparent;color:var(--muted);padding:15px 13px;font-family:&quot;Space Grotesk&quot;,&quot;Arial Narrow&quot;,sans-serif;font-weight:700;font-size:15.5px;white-space:nowrap}.main-tab.active,.view-tab.active{background:var(--ink);color:var(--cream)}.hero-line{display:block;margin:24px 0}.intro{display:grid;align-content:center;gap:12px;padding:8px 0}.kicker{color:var(--coral);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.12em}h1{margin:0;font-family:&quot;Space Grotesk&quot;,&quot;Arial Narrow&quot;,sans-serif;font-size:clamp(38px,8vw,82px);line-height:.93;letter-spacing:0}.lead{margin:0;max-width:620px;color:var(--muted);font-size:17px;line-height:1.55}.create-card,.pb-card,.booking-card,.group-card,.profile-card{position:relative;background:var(--cream);border:1.5px solid var(--coral);border-radius:22px;color:var(--ink);box-shadow:0 12px 34px rgba(28,26,23,.08)}.create-card{padding:28px 22px 22px}.meet-info-btn{position:absolute;top:0;right:0;transform:translate(42%,-42%);width:34px;height:34px;border-radius:50%;border:1.5px solid var(--line);background:var(--cream);color:var(--ink);box-shadow:0 7px 18px rgba(28,26,23,.14);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;font-size:17px;display:grid;place-items:center;z-index:5}.meet-info-btn:hover{border-color:var(--coral);color:var(--coral)}.meet-info-box{position:absolute;top:42px;right:0;width:min(540px,calc(100vw - 36px));background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:20px 20px 18px;box-shadow:0 18px 46px rgba(28,26,23,.18);z-index:30;color:var(--ink)}.meet-info-box[hidden]{display:none!important}.meet-info-close{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:0;background:var(--soft);color:var(--ink);font-weight:900}.meet-info-box p{margin:0;padding-right:26px;color:var(--muted);font-size:clamp(15.5px,1.6vw,16.5px);line-height:1.62}.meet-info-box strong{color:var(--ink)}.create-card.wide{padding:34px clamp(18px,3vw,30px) 24px}.create-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start}.create-head h1{font-size:clamp(34px,5vw,58px)}.source-mini{align-self:start;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.48);padding:12px 14px;color:var(--muted);font-weight:800;white-space:normal;line-height:1.35;text-align:right}.create-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.duration-pills{display:inline-flex;gap:2px;background:var(--soft);border-radius:12px;padding:3px;width:max-content}.duration-pill{width:52px;min-height:40px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-family:Manrope,Arial,sans-serif;font-weight:800;font-size:16px;padding:10px 12px;cursor:default}.duration-pill.active{background:var(--ink);color:var(--cream)}.duration-pill:disabled{opacity:1;cursor:default}.time-window{margin-top:8px;color:var(--coral);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;font-size:14px}.invite-panel{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}.invite-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.invite-head strong{display:block;font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px}.invite-head span{display:block;margin-top:3px;color:var(--muted);font-size:13px}.btn.compact{padding:10px 12px}.email-list{display:grid;gap:8px}.email-row{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:center}.level-profile-band{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.32fr);gap:14px;margin:10px 0 18px}.level-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.level-item{border:1px solid var(--line);border-radius:14px;background:var(--cream);padding:13px 12px;display:grid;gap:4px}.level-item strong{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:26px;color:var(--coral);line-height:1}.level-item span{color:var(--muted);font-size:12px;line-height:1.35}.profile-inline{border:1px solid var(--line);border-radius:14px;background:var(--cream);padding:13px;display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-inline strong,.profile-inline span{display:block}.profile-inline span{margin-top:3px;color:var(--muted);font-size:12px}.profile-kicker{color:var(--coral);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}.group-invite-panel{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}.member-pick-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.member-pick{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.55);padding:10px;color:var(--ink);font-weight:700}.group-select{max-width:260px}.group-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.group-email-tools{display:flex;justify-content:flex-end;margin-bottom:8px}.badge{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);height:30px;padding:0 14px;border-radius:15px;background:var(--cream);border:1.5px solid var(--coral);color:var(--coral);box-shadow:0 0 0 8px var(--cream);display:flex;align-items:center;justify-content:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}.card-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:24px;font-weight:700;margin:0 0 6px}.card-sub{margin:0;color:var(--muted);line-height:1.45;font-size:14px}.form-grid{display:grid;gap:16px;margin-top:20px}.field label{display:block;margin-bottom:8px;color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}.seg{display:flex;gap:2px;background:var(--soft);border-radius:12px;padding:3px;overflow-x:auto}.chip{border:0;border-radius:9px;padding:10px 12px;color:var(--muted);background:transparent;font-weight:800;white-space:nowrap}.chip.active{color:var(--cream);background:var(--ink)}.select,.text-input{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink);padding:10px 12px}.select:focus,.text-input:focus{outline:0;border-color:var(--coral);box-shadow:0 0 0 3px rgba(255,90,54,.16)}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.btn{border:0;border-radius:10px;padding:13px 16px;background:var(--ink);color:var(--cream);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}.btn.secondary{background:var(--soft);color:var(--ink)}.btn.coral{background:var(--coral);color:var(--white)}.btn.coral.sent{background:var(--ink);color:var(--cream)}.btn.coral:disabled{opacity:.82;cursor:default}.btn.warn{background:#F1D8D2;color:var(--red)}.book-now-note{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.45}.btn.book-now{background:var(--ink);color:var(--cream)}.btn.book-now.warn{background:#F1D8D2;color:var(--red)}.cta-large{width:100%;min-height:62px;font-size:18px;padding:18px 22px}.notice{margin-top:12px;padding:12px 14px;border-radius:10px;background:#FFF8DC;border:1px solid #E8D899;color:#5F5121;font-size:13px;line-height:1.45}.section-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin:24px 0 14px}.section-head h2{margin:0;font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:clamp(25px,4vw,38px)}.section-head p{margin:4px 0 0;color:var(--muted)}.filters{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin:14px 0 20px;align-items:center}.cards-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.pb-card{padding:28px 20px 20px;min-height:372px;display:flex;flex-direction:column}.pb-card.sold{border-color:var(--red);background:#F8E7E2}.match-top{display:flex;justify-content:space-between;gap:14px;margin-bottom:16px}.day{font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:700;color:var(--coral);font-size:13px;letter-spacing:.12em;text-transform:uppercase}.time{font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:700;font-size:30px;line-height:1}.status{height:fit-content;padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:12px;font-weight:800;white-space:nowrap}.status.green{background:#DDEBD9;color:var(--green)}.status.red{background:#EFCBC3;color:var(--red)}.meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}.meta span{padding:7px 9px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:13px;font-weight:700}.players{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:4px 0 18px}.seat{min-height:96px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42);display:grid;place-items:center;text-align:center;padding:10px 6px}.seat.free{border-style:dashed;color:var(--muted)}.seat-avatar{width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--cream);display:grid;place-items:center;margin:0 auto 7px;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:700}.seat.free .seat-avatar{background:var(--soft);color:var(--muted)}.seat-name{font-size:12px;font-weight:800;line-height:1.15;overflow-wrap:anywhere}.seat-level{margin-top:3px;color:var(--muted);font-size:11px;font-weight:700}.card-note{margin:auto 0 0;color:var(--muted);font-size:13px;line-height:1.45}.sold-note{margin-top:12px;border-radius:10px;padding:12px 13px;background:#F1D8D2;color:var(--red);font-weight:700;font-size:13px;line-height:1.4}.panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}.booking-card,.group-card,.profile-card{padding:20px;border-color:var(--line);box-shadow:none}.list{display:grid;gap:10px;margin-top:14px}.row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px;border-radius:12px;background:rgba(255,255,255,.52);border:1px solid var(--line)}.row-title{font-weight:800}.row-sub{margin-top:3px;color:var(--muted);font-size:13px}.empty{padding:22px;border-radius:14px;background:var(--soft);color:var(--muted);text-align:center;font-weight:700}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--cream);border-radius:999px;padding:12px 16px;box-shadow:0 10px 30px rgba(28,26,23,.2);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:min(92vw,720px);text-align:center}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}dialog{width:min(560px,calc(100vw - 28px));border:0;border-radius:20px;padding:0;background:var(--cream);color:var(--ink);box-shadow:0 24px 70px rgba(28,26,23,.28);position:absolute;top:var(--group-dialog-top,24px);left:50%;transform:translateX(-50%);margin:0;max-height:var(--group-dialog-max-height,calc(100vh - 28px));overflow:auto}dialog::backdrop{background:rgba(28,26,23,.48)}.dialog-inner{padding:22px}.member-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.member{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.52)}[hidden]{display:none!important}@media(max-width:860px){.appbar{grid-template-columns:1fr auto}.info-dot{display:none}.user-pill span:first-child{display:none}.create-head,.create-grid,.cards-grid,.panels,.level-profile-band,.level-strip{grid-template-columns:1fr}.section-head{display:block}.pb-card{min-height:auto}}@media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.source-mini{white-space:normal}.member-pick-list{grid-template-columns:1fr}.players{grid-template-columns:repeat(2,1fr)}.seat{min-height:82px}.row{grid-template-columns:1fr}.member-grid{grid-template-columns:1fr}}
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;title&gt;Padel Bielstein - Verabreden&lt;/title&gt;
+  &lt;style&gt;
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Manrope, Arial, sans-serif;
+      background: #FBF8F0;
+      color: #1C1A17;
+    }
 
-input[type=&quot;checkbox&quot;]{accent-color:var(--coral)}
-.create-card .badge{content:none}.cta-large{font-size:17px;line-height:1.2;text-align:center}
-.level-profile-band{grid-template-columns:1fr;margin:14px 0 20px}.level-head{font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;font-size:22px;color:var(--ink);margin:0 0 10px}.level-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.level-balls{display:inline-flex;gap:3px;opacity:.72}.level-balls img{width:15px;height:15px;object-fit:contain}.invite-source{margin:0 0 10px;color:var(--coral);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}.inviter-line{margin:0 0 12px;color:var(--muted);font-size:14px}.inviter-line strong{color:var(--ink)}.group-members{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.35}.sponsor-band{margin-top:28px;border-top:1px solid var(--line);padding:22px 0 0;color:var(--muted);font-size:13px;text-align:center;font-weight:800}.sponsor-logos{display:grid;grid-template-columns:repeat(2,minmax(0,180px));justify-content:center;gap:14px;margin-top:12px}.sponsor-logos img{width:100%;height:74px;object-fit:contain;border:1px solid var(--line);border-radius:14px;background:var(--cream);padding:12px}
-@media(max-width:860px){.level-profile-band{grid-template-columns:1fr!important}.level-strip{grid-template-columns:1fr!important}}
+    .verabreden-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-.level-balls img{width:23px!important;height:23px!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;mix-blend-mode:multiply}.profile-inline{text-align:center}.profile-data{flex:1}.profile-inline strong{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px}.seat-balls{display:inline-flex;justify-content:center;gap:2px;margin-top:4px}.seat-balls img{width:11px;height:11px;background:transparent;mix-blend-mode:multiply}.sponsor-band{text-align:left}.sponsor-logos{justify-content:start}.sponsor-logos img{background:#fff!important}
+    /* AUSWAHLLEISTE */
+    .selection-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 40px;
+    }
 
-.level-top{justify-content:flex-start!important;gap:12px!important}.level-balls{align-items:center!important;min-width:104px}.level-balls img{width:27px!important;height:27px!important;display:block;object-fit:contain;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;mix-blend-mode:normal!important}.seat-level{display:inline-flex;align-items:flex-end;justify-content:center;gap:7px;line-height:1}.seat-balls{align-items:flex-end!important;margin-top:0!important}.seat-balls img{width:15px!important;height:15px!important;display:block;object-fit:contain;background:transparent!important;mix-blend-mode:normal!important}.section-head{margin-bottom:22px}.pb-card{margin-top:8px}.pb-card.direct-invite{border-color:var(--ink)!important;box-shadow:0 12px 34px rgba(28,26,23,.12)}.pb-card.direct-invite .badge{border-color:var(--ink);color:var(--ink)}
+    .booking-panel, .invite-panel {
+      background: white;
+      border: 1.5px solid #E2DACB;
+      border-radius: 16px;
+      padding: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
 
-.level-top{justify-content:flex-start!important;gap:12px!important}.level-balls{align-items:center!important;min-width:0!important}.seat-balls{position:relative;top:2px;align-items:flex-end!important;margin-top:0!important}.seat-balls img{vertical-align:bottom!important}
+    .panel-title {
+      font-family: 'Space Grotesk', Arial, sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 16px;
+      color: #1C1A17;
+    }
 
-.level-item span b{color:var(--ink);font-weight:800}.profile-inline span b{color:var(--ink);font-weight:800}.profile-balls{display:inline-flex;gap:2px;align-items:flex-end;margin:0 5px;position:relative;top:2px}.profile-balls img{width:14px;height:14px;display:block;object-fit:contain;background:transparent!important;border:0!important;box-shadow:none!important}
+    .booking-list, .invite-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-.profile-inline .profile-meta{display:inline-flex!important;align-items:flex-end;justify-content:center;gap:6px;margin-top:4px;color:var(--muted);font-size:12px}.profile-inline .profile-meta span{display:inline-flex!important}.profile-inline .profile-balls{display:inline-flex!important;gap:2px;align-items:flex-end;margin:0 2px;position:relative;top:1px}.profile-inline .profile-balls img{width:14px;height:14px;display:block;object-fit:contain;background:transparent!important;border:0!important;box-shadow:none!important}
+    .booking-item, .invite-item {
+      padding: 12px;
+      border: 1px solid #E2DACB;
+      border-radius: 10px;
+      background: #FBF8F0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
 
-.profile-inline .profile-meta{align-items:center!important;gap:7px}.profile-inline .profile-balls{top:-1px!important;margin:0 1px!important;align-items:center!important}.profile-inline .profile-gender{margin-left:1px!important}
+    .booking-item:hover, .invite-item:hover {
+      background: #F6F1E7;
+      border-color: #FF5A36;
+    }
 
-.profile-inline .profile-meta{gap:8px!important}.profile-inline .profile-balls{top:0!important;margin:0!important}.profile-inline .profile-gender{margin-left:0!important}
+    .booking-item.active, .invite-item.active {
+      background: white;
+      border: 1.5px solid #FF5A36;
+      box-shadow: 0 0 0 3px rgba(255, 90, 54, 0.1);
+    }
 
-.profile-inline .profile-meta{display:inline-flex!important;align-items:baseline!important;justify-content:center;gap:8px!important;margin-top:4px;color:var(--muted);font-size:12px}.profile-level-letter{display:inline-flex!important;color:var(--coral);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:800;line-height:1}.profile-inline .profile-meta b{display:inline-flex!important;color:var(--ink);font-weight:800}.profile-inline .profile-balls{display:inline-flex!important;gap:2px;align-items:flex-end!important;margin:0!important;position:relative;top:1px!important}.profile-inline .profile-gender{display:inline-flex!important;margin-left:0!important}
+    .item-date {
+      font-size: 12px;
+      font-weight: 800;
+      color: #FF5A36;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
 
-.profile-level-letter{font-size:27px!important;color:var(--coral)!important;font-weight:800!important;line-height:.85!important;align-self:flex-end}.profile-inline .profile-balls{top:2px!important}
+    .item-time {
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
 
-.profile-level-letter{position:relative;top:-2px!important}
+    .item-court {
+      font-size: 12px;
+      color: #7A7368;
+      margin-top: 2px;
+    }
 
-body.embedded .appbar,body.embedded .main-tabs{display:none!important}body.embedded .shell{padding-top:0!important;padding-bottom:12px!important}body.embedded{background:transparent!important}
-.dating-line{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.45}.create-head h1{margin-bottom:0}
-.dating-title{font-size:clamp(34px,4.3vw,54px)!important;letter-spacing:.08em!important;text-transform:uppercase;max-width:560px}.dating-line{display:none!important}
+    /* DETAIL-VIEW */
+    .detail-view {
+      background: white;
+      border: 1.5px solid #E2DACB;
+      border-radius: 20px;
+      padding: 40px;
+      min-height: 500px;
+    }
 
-.profile-inline{width:calc(50% - 4px)!important;max-width:calc(50% - 4px)!important;margin-left:0!important;margin-right:auto!important;text-align:left!important}.profile-inline .profile-data{flex:1 1 auto!important;text-align:left!important}.profile-inline .profile-kicker,.profile-inline strong{text-align:left!important}.profile-inline .profile-meta{justify-content:flex-start!important;text-align:left!important}.profile-inline .btn{margin-left:auto!important;white-space:nowrap}@media(max-width:620px){.profile-inline{width:100%!important;max-width:100%!important}}
-.sponsor-band{margin-top:34px!important;padding-top:24px!important;padding-bottom:8px!important}.sponsor-logos{display:grid!important;grid-template-columns:repeat(2,270px)!important;justify-content:start!important;gap:14px!important;margin-top:14px!important}.sponsor-logos img{width:270px!important;height:123px!important;max-width:100%!important;object-fit:contain!important;border:1.5px solid var(--line)!important;border-radius:14px!important;background:#fff!important;padding:0 22px!important}@media(max-width:620px){.sponsor-logos{grid-template-columns:repeat(2,minmax(0,1fr))!important}.sponsor-logos img{width:100%!important;height:96px!important;padding:0 14px!important}}
-@media(max-width:620px){.meet-info-btn{right:8px;transform:translateY(-42%)}.meet-info-box{right:0;top:38px}}
-&lt;/style&gt;
+    .booking-detail {
+      display: grid;
+      gap: 24px;
+    }
+
+    .detail-header {
+      padding-bottom: 20px;
+      border-bottom: 1px solid #E2DACB;
+    }
+
+    .detail-title {
+      font-family: 'Space Grotesk', Arial, sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: #1C1A17;
+    }
+
+    .detail-subtitle {
+      font-size: 14px;
+      color: #7A7368;
+      margin: 0;
+    }
+
+    .form-section {
+      display: grid;
+      gap: 16px;
+    }
+
+    .form-section-title {
+      font-weight: 700;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #7A7368;
+      margin: 16px 0 0;
+    }
+
+    .email-fields {
+      display: grid;
+      gap: 8px;
+    }
+
+    .email-field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .email-field input {
+      padding: 10px 12px;
+      border: 1px solid #E2DACB;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .email-field input:focus {
+      outline: 0;
+      border-color: #FF5A36;
+      box-shadow: 0 0 0 3px rgba(255, 90, 54, 0.1);
+    }
+
+    .variant-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .variant-btn {
+      padding: 16px;
+      border: 1px solid #E2DACB;
+      border-radius: 10px;
+      background: #FBF8F0;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .variant-btn:hover {
+      border-color: #FF5A36;
+      background: #F6F1E7;
+    }
+
+    .variant-btn strong {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    .variant-btn small {
+      display: block;
+      color: #7A7368;
+      font-size: 11px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #FBF8F0;
+      color: #7A7368;
+      margin-top: 8px;
+    }
+
+    .status-badge.full {
+      background: #DDEBD9;
+      color: #3E7D4E;
+    }
+
+    .status-badge.partial {
+      background: #F6F1E7;
+      color: #FF5A36;
+    }
+
+    .detail-row {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .action-buttons {
+      display: grid;
+      gap: 12px;
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid #E2DACB;
+    }
+
+    .btn {
+      padding: 13px 16px;
+      border: 0;
+      border-radius: 10px;
+      font-family: 'Space Grotesk', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn.primary {
+      background: #FF5A36;
+      color: white;
+      width: 100%;
+    }
+
+    .btn.primary:hover {
+      background: #E54A2A;
+    }
+
+    .btn.secondary {
+      background: #EFE9DC;
+      color: #1C1A17;
+      width: 100%;
+    }
+
+    .btn.secondary:hover {
+      background: #E2DACB;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #7A7368;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .selection-bar {
+        grid-template-columns: 1fr;
+      }
+      .detail-view {
+        padding: 20px;
+      }
+      .detail-title {
+        font-size: 20px;
+      }
+    }
+  &lt;/style&gt;
 &lt;/head&gt;
-&lt;body class=&quot;embedded&quot;&gt;
-&lt;script&gt;if(new URLSearchParams(location.search).get(&#x27;embedded&#x27;)===&#x27;1&#x27;){document.body.classList.add(&#x27;embedded&#x27;);}&lt;/script&gt;
+&lt;body&gt;
+  &lt;div class=&quot;verabreden-container&quot;&gt;
+    &lt;div class=&quot;selection-bar&quot;&gt;
+      &lt;div class=&quot;booking-panel&quot;&gt;
+        &lt;h3 class=&quot;panel-title&quot;&gt;Meine Buchungen (nächste 14 Tage)&lt;/h3&gt;
+        &lt;div class=&quot;booking-list&quot; id=&quot;bookingsList&quot;&gt;
+          &lt;div style=&quot;text-align: center; color: #7A7368; padding: 20px;&quot;&gt;Lade Buchungen ...&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
 
-&lt;header class=&quot;appbar&quot;&gt;&lt;button class=&quot;brand&quot; type=&quot;button&quot;&gt;&lt;span&gt;PADEL&lt;/span&gt; &lt;span&gt;BIELSTEIN&lt;/span&gt;&lt;/button&gt;&lt;button class=&quot;info-dot&quot; type=&quot;button&quot; title=&quot;Infos&quot;&gt;i&lt;/button&gt;&lt;button class=&quot;user-pill&quot; type=&quot;button&quot;&gt;&lt;span&gt;Jörn Kämper&lt;/span&gt;&lt;span class=&quot;avatar&quot;&gt;JK&lt;/span&gt;&lt;/button&gt;&lt;/header&gt;
-&lt;main class=&quot;shell&quot;&gt;
-&lt;nav class=&quot;main-tabs&quot; aria-label=&quot;Hauptnavigation&quot;&gt;&lt;button class=&quot;main-tab&quot;&gt;Jetzt spielen&lt;/button&gt;&lt;button class=&quot;main-tab active&quot;&gt;Verabreden&lt;/button&gt;&lt;button class=&quot;main-tab&quot;&gt;Guthaben&lt;/button&gt;&lt;button class=&quot;main-tab&quot;&gt;Jahresabo sichern&lt;/button&gt;&lt;/nav&gt;
-&lt;section class=&quot;hero-line&quot;&gt;&lt;article class=&quot;create-card wide&quot;&gt;&lt;button class=&quot;meet-info-btn&quot; id=&quot;meetInfoBtn&quot; type=&quot;button&quot; aria-label=&quot;Informationen zu Verabreden&quot;&gt;i&lt;/button&gt;&lt;div class=&quot;meet-info-box&quot; id=&quot;meetInfoBox&quot; hidden&gt;&lt;button class=&quot;meet-info-close&quot; id=&quot;meetInfoClose&quot; type=&quot;button&quot; aria-label=&quot;Schließen&quot;&gt;×&lt;/button&gt;&lt;p&gt;Es gibt 2 Wege, dich für ein Padel-Match mit anderen zu verabreden: a) du kannst entweder unter „&lt;strong&gt;Jetzt buchen&lt;/strong&gt;“ eine oder zwei Stunden, die du noch nicht gebucht hast, auswählen und somit „Im Blick behalten“. Der Klick unten auf „&lt;strong&gt;Jetzt zum Spielen verabreden&lt;/strong&gt;“ gibt dir die Möglichkeit, nach passenden Mitspielern zu suchen. Sobald 4 Mitspieler gefunden sind, wirst du per E-Mail informiert und kannst anschließend ganz normal buchen (sofern der betreffende Slot noch verfügbar ist – „Im Blick behalten“ ist nämlich keine Reservierung und ersetzt somit das eigentliche Buchen nicht). b) Hast du hingegen bereits eine feste Stunde gebucht, kannst du unter „Verabreden“ ggf. noch fehlende Mitspieler suchen und finden. Deine demnächst anstehenden Buchungen werden automatisch unter „Verabreden“ / „Meine Verabredungen“ angezeigt (inkl. Abo-Termine).&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;badge&quot;&gt;Mitspieler finden&lt;/div&gt;&lt;div class=&quot;create-head&quot;&gt;&lt;div&gt;&lt;h1 class=&quot;dating-title&quot;&gt;Jetzt verabreden&lt;/h1&gt;&lt;/div&gt;&lt;div class=&quot;source-mini&quot; id=&quot;sourceMini&quot;&gt;Nächster Termin wird geladen …&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;form-grid create-grid&quot;&gt;&lt;div class=&quot;field&quot;&gt;&lt;label for=&quot;sourceSelect&quot;&gt;Tag, Uhrzeit, Court&lt;/label&gt;&lt;select class=&quot;select&quot; id=&quot;sourceSelect&quot;&gt;&lt;option value=&quot;selected&quot; selected&gt;Im Blick · ausgewählter Slot&lt;/option&gt;&lt;/select&gt;&lt;div class=&quot;time-window&quot; id=&quot;timeWindow&quot;&gt;Spielzeit wird geladen …&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;field&quot;&gt;&lt;label&gt;Spielzeit&lt;/label&gt;&lt;div class=&quot;duration-pills&quot; id=&quot;durationPills&quot;&gt;&lt;button class=&quot;duration-pill&quot; type=&quot;button&quot; data-hours=&quot;1&quot;&gt;1h&lt;/button&gt;&lt;button class=&quot;duration-pill active&quot; type=&quot;button&quot; data-hours=&quot;2&quot;&gt;2h&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;field&quot;&gt;&lt;label&gt;Gewünschte Spielstärke&lt;/label&gt;&lt;div class=&quot;seg&quot; id=&quot;levelSeg&quot;&gt;&lt;button class=&quot;chip&quot; data-level=&quot;A&quot; type=&quot;button&quot;&gt;A&lt;/button&gt;&lt;button class=&quot;chip&quot; data-level=&quot;B&quot; type=&quot;button&quot;&gt;B&lt;/button&gt;&lt;button class=&quot;chip&quot; data-level=&quot;C&quot; type=&quot;button&quot;&gt;C&lt;/button&gt;&lt;button class=&quot;chip&quot; data-level=&quot;D&quot; type=&quot;button&quot;&gt;D&lt;/button&gt;&lt;button class=&quot;chip active&quot; data-level=&quot;OFFEN&quot; type=&quot;button&quot;&gt;egal&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;field&quot;&gt;&lt;label&gt;Mitspieler&lt;/label&gt;&lt;div class=&quot;seg&quot; id=&quot;genderSeg&quot;&gt;&lt;button class=&quot;chip&quot; data-gender=&quot;weiblich&quot; type=&quot;button&quot;&gt;weiblich&lt;/button&gt;&lt;button class=&quot;chip&quot; data-gender=&quot;männlich&quot; type=&quot;button&quot;&gt;männlich&lt;/button&gt;&lt;button class=&quot;chip active&quot; data-gender=&quot;egal&quot; type=&quot;button&quot;&gt;egal&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;field&quot;&gt;&lt;label&gt;Einladung an&lt;/label&gt;&lt;div class=&quot;seg&quot; id=&quot;audienceSeg&quot;&gt;&lt;button class=&quot;chip active&quot; data-audience=&quot;Mitspieler&quot; type=&quot;button&quot;&gt;Mitspieler&lt;/button&gt;&lt;button class=&quot;chip&quot; data-audience=&quot;Meine Gruppe&quot; type=&quot;button&quot;&gt;Meine Gruppe&lt;/button&gt;&lt;button class=&quot;chip&quot; data-audience=&quot;Einladung an alle&quot; type=&quot;button&quot;&gt;Alle&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;invite-panel&quot; id=&quot;invitePanel&quot;&gt;&lt;div class=&quot;invite-head&quot;&gt;&lt;div&gt;&lt;strong&gt;Mitspieler einladen&lt;/strong&gt;&lt;span&gt;Wer sich zuerst anmeldet, spielt zuerst.&lt;/span&gt;&lt;/div&gt;&lt;button class=&quot;btn secondary compact&quot; type=&quot;button&quot; id=&quot;addEmail&quot;&gt;E-Mail ergänzen&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;email-list&quot; id=&quot;emailList&quot;&gt;&lt;div class=&quot;email-row&quot;&gt;&lt;input class=&quot;text-input partner-email&quot; type=&quot;email&quot; name=&quot;partner_email_1&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; aria-label=&quot;Mitspieler E-Mail 1&quot;&gt;&lt;/div&gt;&lt;div class=&quot;email-row&quot;&gt;&lt;input class=&quot;text-input partner-email&quot; type=&quot;email&quot; name=&quot;partner_email_2&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; aria-label=&quot;Mitspieler E-Mail 2&quot;&gt;&lt;/div&gt;&lt;div class=&quot;email-row&quot;&gt;&lt;input class=&quot;text-input partner-email&quot; type=&quot;email&quot; name=&quot;partner_email_3&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; aria-label=&quot;Mitspieler E-Mail 3&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;group-invite-panel&quot; id=&quot;groupInvitePanel&quot; hidden&gt;&lt;div class=&quot;invite-head&quot;&gt;&lt;div&gt;&lt;strong&gt;Gruppe auswählen&lt;/strong&gt;&lt;span&gt;Alle Gruppenmitglieder sind voreingestellt. Einzelne Personen kannst du abwählen.&lt;/span&gt;&lt;/div&gt;&lt;select class=&quot;select group-select&quot; id=&quot;groupSelect&quot;&gt;&lt;/select&gt;&lt;/div&gt;&lt;div class=&quot;member-pick-list&quot; id=&quot;groupMemberPickList&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;actions&quot;&gt;&lt;button class=&quot;btn coral cta-large&quot; id=&quot;createMatch&quot; type=&quot;button&quot;&gt;Verabreden / Potenzielle Mitspieler informieren&lt;/button&gt;&lt;/div&gt;&lt;/article&gt;&lt;/section&gt;
-&lt;section class=&quot;level-profile-band&quot;&gt;&lt;div class=&quot;level-head&quot;&gt;Spielstärken&lt;/div&gt;&lt;div class=&quot;level-strip&quot;&gt;&lt;div class=&quot;level-item&quot;&gt;&lt;div class=&quot;level-top&quot;&gt;&lt;strong&gt;A&lt;/strong&gt;&lt;span class=&quot;level-balls&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;span&gt;&lt;b&gt;Profi&lt;/b&gt; · mehr als 5 Jahre Erfahrung · Tennis LK 1 bis 14&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;level-item&quot;&gt;&lt;div class=&quot;level-top&quot;&gt;&lt;strong&gt;B&lt;/strong&gt;&lt;span class=&quot;level-balls&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;span&gt;&lt;b&gt;Könner&lt;/b&gt; · mehr als 3 Jahre Erfahrung · Tennis LK 15 bis 20&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;level-item&quot;&gt;&lt;div class=&quot;level-top&quot;&gt;&lt;strong&gt;C&lt;/strong&gt;&lt;span class=&quot;level-balls&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;span&gt;&lt;b&gt;Hobby&lt;/b&gt; · 1-3 Jahre Padel- oder Tenniserfahrung&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;level-item&quot;&gt;&lt;div class=&quot;level-top&quot;&gt;&lt;strong&gt;D&lt;/strong&gt;&lt;span class=&quot;level-balls&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;span&gt;&lt;b&gt;Einsteiger&lt;/b&gt; · neu bei Padel oder Tennis&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;article class=&quot;profile-inline&quot; id=&quot;meetProfileInline&quot;&gt;&lt;div class=&quot;profile-data&quot;&gt;&lt;div class=&quot;profile-kicker&quot;&gt;Mein Profil&lt;/div&gt;&lt;strong&gt;Jörn Kämper&lt;/strong&gt;&lt;span class=&quot;profile-meta&quot;&gt;&lt;span class=&quot;profile-level-letter&quot;&gt;B&lt;/span&gt;&lt;b&gt;Könner&lt;/b&gt;&lt;span class=&quot;profile-balls&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;img data-ball alt=&quot;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;profile-gender&quot;&gt;männlich&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;&lt;button class=&quot;btn secondary compact&quot; id=&quot;editProfileBtn&quot; type=&quot;button&quot;&gt;Profil ändern&lt;/button&gt;&lt;/article&gt;&lt;/section&gt;
-&lt;nav class=&quot;view-tabs&quot; aria-label=&quot;Verabredungen&quot;&gt;&lt;button class=&quot;view-tab active&quot; data-view=&quot;forMe&quot; type=&quot;button&quot;&gt;Meine Verabredungen&lt;/button&gt;&lt;button class=&quot;view-tab&quot; data-view=&quot;all&quot; type=&quot;button&quot;&gt;Einladungen für mich&lt;/button&gt;&lt;button class=&quot;view-tab&quot; data-view=&quot;groups&quot; type=&quot;button&quot;&gt;Meine Gruppen&lt;/button&gt;&lt;/nav&gt;
-&lt;section id=&quot;matchesView&quot;&gt;&lt;div class=&quot;section-head&quot;&gt;&lt;div&gt;&lt;h2 id=&quot;viewTitle&quot;&gt;Meine Verabredungen&lt;/h2&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;cards-grid&quot; id=&quot;cardsGrid&quot;&gt;&lt;/div&gt;&lt;/section&gt;
-&lt;section id=&quot;groupsView&quot; hidden&gt;&lt;div class=&quot;section-head&quot;&gt;&lt;div&gt;&lt;h2&gt;Meine Gruppen&lt;/h2&gt;&lt;p&gt;Gruppen anlegen, ansehen und beim Verabreden gezielt auswählen.&lt;/p&gt;&lt;/div&gt;&lt;button class=&quot;btn coral&quot; id=&quot;openGroupDialog&quot; type=&quot;button&quot;&gt;Gruppe anlegen&lt;/button&gt;&lt;/div&gt;&lt;article class=&quot;group-card&quot;&gt;&lt;h3 class=&quot;card-title&quot;&gt;Angelegte Gruppen&lt;/h3&gt;&lt;div class=&quot;list&quot; id=&quot;groupList&quot;&gt;&lt;/div&gt;&lt;/article&gt;&lt;/section&gt;
-&lt;section class=&quot;sponsor-band&quot;&gt;&lt;div&gt;Deine Verabredungen werden dir präsentiert von&lt;/div&gt;&lt;div class=&quot;sponsor-logos&quot;&gt;&lt;img src=&quot;sponsors/partner-sparkasse.png&quot; alt=&quot;Sparkasse&quot;&gt;&lt;img src=&quot;sponsors/partner-schwalbe.png&quot; alt=&quot;Schwalbe&quot;&gt;&lt;/div&gt;&lt;/section&gt;&lt;/main&gt;
-&lt;dialog id=&quot;groupDialog&quot;&gt;&lt;div class=&quot;dialog-inner&quot;&gt;&lt;h2 class=&quot;card-title&quot; id=&quot;groupDialogTitle&quot;&gt;Gruppe anlegen&lt;/h2&gt;&lt;p class=&quot;card-sub&quot;&gt;Trage die E-Mail-Adressen deiner Gruppe ein. Weitere Felder kannst du jederzeit ergänzen.&lt;/p&gt;&lt;div class=&quot;form-grid&quot;&gt;&lt;div class=&quot;field&quot;&gt;&lt;label for=&quot;groupName&quot;&gt;Gruppenname&lt;/label&gt;&lt;input class=&quot;text-input&quot; id=&quot;groupName&quot; value=&quot;&quot; placeholder=&quot;z. B. Freitagsrunde&quot;&gt;&lt;/div&gt;&lt;div class=&quot;field&quot;&gt;&lt;label&gt;Mitglieder per E-Mail&lt;/label&gt;&lt;div class=&quot;group-email-tools&quot;&gt;&lt;button class=&quot;btn secondary compact&quot; type=&quot;button&quot; id=&quot;addGroupEmail&quot;&gt;E-Mail ergänzen&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;email-list&quot; id=&quot;groupEmailList&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;actions&quot;&gt;&lt;button class=&quot;btn coral&quot; id=&quot;saveGroup&quot; type=&quot;button&quot;&gt;Gruppe speichern&lt;/button&gt;&lt;button class=&quot;btn secondary&quot; id=&quot;closeGroupDialog&quot; type=&quot;button&quot;&gt;Schließen&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/dialog&gt;&lt;div class=&quot;toast&quot; id=&quot;toast&quot;&gt;&lt;/div&gt;
-&lt;script&gt;
-const app=(()=&gt;{try{return window.parent||window}catch(_e){return window}})();
-function appFn(name){try{return typeof app[name]===&#x27;function&#x27;?app[name].bind(app):null}catch(_e){return null}}
-function appVal(name,fallback){try{return app[name]||fallback}catch(_e){return fallback}}
-const profile={name:&quot;Jörn Kämper&quot;,level:&quot;B&quot;,gender:&quot;männlich&quot;};
-const LEVEL_META={A:{title:&quot;Profi&quot;,balls:4},B:{title:&quot;Könner&quot;,balls:3},C:{title:&quot;Hobby&quot;,balls:2},D:{title:&quot;Einsteiger&quot;,balls:1}};
-function currentProfileFromParent(){const fn=appFn(&#x27;getMeetProfile&#x27;);try{return fn?fn():{}}catch(_e){return {}}}
-function renderProfileInline(){const root=$(&quot;#meetProfileInline&quot;);if(!root)return;const meta=LEVEL_META[profile.level]||LEVEL_META.B;root.innerHTML=`&lt;div class=&quot;profile-data&quot;&gt;&lt;div class=&quot;profile-kicker&quot;&gt;Mein Profil&lt;/div&gt;&lt;strong&gt;${esc(profile.name)}&lt;/strong&gt;&lt;span class=&quot;profile-meta&quot;&gt;&lt;span class=&quot;profile-level-letter&quot;&gt;${esc(profile.level)}&lt;/span&gt;&lt;b&gt;${esc(meta.title)}&lt;/b&gt;&lt;span class=&quot;profile-balls&quot;&gt;${levelBalls(profile.level)}&lt;/span&gt;&lt;span class=&quot;profile-gender&quot;&gt;${esc(profile.gender)}&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;&lt;button class=&quot;btn secondary compact&quot; id=&quot;editProfileBtn&quot; type=&quot;button&quot;&gt;Profil ändern&lt;/button&gt;`;applyBallImages(root);const editProfile=$(&quot;#editProfileBtn&quot;);if(editProfile)editProfile.addEventListener(&#x27;click&#x27;,openParentProfile)}
-function syncProfileFromParent(){const p=currentProfileFromParent();profile.name=p.name||getProfileName();profile.level=LEVEL_META[p.level]?p.level:profile.level;profile.gender=p.gender||profile.gender;renderProfileInline();renderCards()}
-const members=[[&quot;Michael Schmitz&quot;,&quot;B&quot;,&quot;männlich&quot;],[&quot;Frank Schneider&quot;,&quot;C&quot;,&quot;männlich&quot;],[&quot;Nina Weber&quot;,&quot;B&quot;,&quot;weiblich&quot;],[&quot;Sarah Klein&quot;,&quot;C&quot;,&quot;weiblich&quot;],[&quot;Thomas Becker&quot;,&quot;D&quot;,&quot;männlich&quot;],[&quot;Anne Fischer&quot;,&quot;A&quot;,&quot;weiblich&quot;],[&quot;Ben Hoffmann&quot;,&quot;B&quot;,&quot;männlich&quot;],[&quot;Laura Wagner&quot;,&quot;C&quot;,&quot;weiblich&quot;]];
-let selectedLevels=new Set([&quot;OFFEN&quot;]),selectedGender=&quot;egal&quot;,selectedAudience=&quot;Mitspieler&quot;,activeView=&quot;forMe&quot;;
-let liveSources=[],matches=[],hasExternalSelectedSlot=false;
-let groups=[{name:&quot;Tennistruppe&quot;,detail:&quot;6 Mitglieder&quot;,members:[&quot;michael.schmitz@example.de&quot;,&quot;frank.schneider@example.de&quot;,&quot;nina.weber@example.de&quot;,&quot;sarah.klein@example.de&quot;,&quot;thomas.becker@example.de&quot;,&quot;ben.hoffmann@example.de&quot;]},{name:&quot;Mittwochspadel&quot;,detail:&quot;4 Mitglieder&quot;,members:[&quot;michael.schmitz@example.de&quot;,&quot;anne.fischer@example.de&quot;,&quot;ben.hoffmann@example.de&quot;,&quot;laura.wagner@example.de&quot;]}];
-let editingGroupIndex=null;
-function groupStoreKey(){const email=String(appVal(&#x27;currentUser&#x27;,{})?.email||&#x27;gast&#x27;).toLowerCase();return &#x27;pb_meet_groups_&#x27;+email}
-function loadSavedGroups(){try{const raw=app.localStorage?.getItem(groupStoreKey());const saved=raw?JSON.parse(raw):null;if(Array.isArray(saved))groups=saved.filter(g=&gt;g&amp;&amp;g.name&amp;&amp;Array.isArray(g.members))}catch(_e){}}
-function saveGroups(){try{app.localStorage?.setItem(groupStoreKey(),JSON.stringify(groups))}catch(_e){}}
-const $=s=&gt;document.querySelector(s),$$=s=&gt;Array.from(document.querySelectorAll(s));
-function sendMeetHeight(){requestAnimationFrame(()=&gt;{const shell=document.querySelector(&#x27;.shell&#x27;);const rect=shell?shell.getBoundingClientRect():null;const h=rect?Math.ceil(rect.bottom+10):Math.max(document.documentElement.scrollHeight||0,document.body.scrollHeight||0);parent.postMessage({type:&#x27;pb-meet-height&#x27;,height:h},&#x27;*&#x27;)})}
-window.addEventListener(&#x27;load&#x27;,sendMeetHeight);window.addEventListener(&#x27;resize&#x27;,sendMeetHeight);if(&#x27;ResizeObserver&#x27; in window){new ResizeObserver(sendMeetHeight).observe(document.body)}
-function toast(t){const e=$(&quot;#toast&quot;);e.textContent=t;e.classList.add(&quot;show&quot;);clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=&gt;e.classList.remove(&quot;show&quot;),3000)}
-const BALL_PATHS=[&quot;assets/icons/padel-ball-hd.png&quot;,&quot;assets/padel-ball-hd.png&quot;,&quot;Padel%20Ball%20HD.png&quot;];
-function ballUrl(path){try{return new URL(path, window.parent.location.href).href}catch(e){return path}}
-function applyBallImages(root=document){root.querySelectorAll(&#x27;img[data-ball]&#x27;).forEach(img=&gt;{let i=0;const load=()=&gt;{img.onerror=()=&gt;{i++;if(i&lt;BALL_PATHS.length)load()};img.src=ballUrl(BALL_PATHS[i])};load()})}
-function initials(n){return String(n||&#x27;&#x27;).split(/\s+/).map(p=&gt;p[0]).join(&quot;&quot;).slice(0,2).toUpperCase()||&#x27;?&#x27;}
-function levelBalls(level){const n={D:1,C:2,B:3,A:4}[level]||0;return Array.from({length:n},()=&gt;&#x27;&lt;img data-ball alt=&quot;&quot;&gt;&#x27;).join(&#x27;&#x27;)}
-function esc(s){return String(s==null?&#x27;&#x27;:s).replace(/[&amp;&lt;&gt;&quot;]/g,c=&gt;({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;}[c]))}
-function getProfileName(){try{return app.document?.getElementById(&#x27;userBarName&#x27;)?.textContent?.trim()||profile.name}catch(_e){return profile.name}}
-function openParentProfile(){const fn=appFn(&#x27;openProfileCard&#x27;)||appFn(&#x27;openLoyaltyCard&#x27;);if(fn)fn(true);else toast(&#x27;Bitte oben rechts dein Account-Kärtchen öffnen.&#x27;)}
-function matchIsForMe(m){const lo=m.levels.includes(profile.level)||m.levels.includes(&quot;OFFEN&quot;),go=m.gender===&quot;egal&quot;||m.gender===profile.gender;return m.mine||m.invited||m.group||(lo&amp;&amp;go)}
-function cardHtml(m){const free=m.players.filter(p=&gt;!p).length,timeRange=m.end?`${m.time}–${m.end}`:m.time,levelLabel=m.levels.includes(&quot;OFFEN&quot;)?&quot;egal&quot;:m.levels.join(&quot; / &quot;),status=m.sold?&#x27;&lt;span class=&quot;status red&quot;&gt;Nicht verfügbar&lt;/span&gt;&#x27;:m.paid?&#x27;&lt;span class=&quot;status green&quot;&gt;Gebucht&lt;/span&gt;&#x27;:&#x27;&lt;span class=&quot;status&quot;&gt;Im Blick&lt;/span&gt;&#x27;;const players=m.players.map(p=&gt;p?`&lt;div class=&quot;seat&quot;&gt;&lt;div&gt;&lt;div class=&quot;seat-avatar&quot;&gt;${initials(p[0])}&lt;/div&gt;&lt;div class=&quot;seat-name&quot;&gt;${esc(p[0])}&lt;/div&gt;&lt;div class=&quot;seat-level&quot;&gt;${esc(p[1]||&#x27;&#x27;)}&lt;span class=&quot;seat-balls&quot;&gt;${levelBalls(p[1])}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`:&#x27;&lt;div class=&quot;seat free&quot;&gt;&lt;div&gt;&lt;div class=&quot;seat-avatar&quot;&gt;+&lt;/div&gt;&lt;div class=&quot;seat-name&quot;&gt;Frei&lt;/div&gt;&lt;div class=&quot;seat-level&quot;&gt;Platz offen&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#x27;).join(&quot;&quot;);const soldNote=m.sold?&#x27;&lt;div class=&quot;sold-note&quot;&gt;Der Slot wurde inzwischen verkauft. Potenzielle Mitspieler sehen diese Information.&lt;/div&gt;&#x27;:&quot;&quot;;const canInform=m.mine&amp;&amp;Array.isArray(m.inviteEmails)&amp;&amp;m.inviteEmails.length&gt;0;const complete=free===0;const inform=canInform?`&lt;button class=&quot;btn coral&quot; type=&quot;button&quot; data-inform=&quot;${m.id}&quot;&gt;Mitspieler informieren&lt;/button&gt;`:&quot;&quot;;const bookNow=(m.mine&amp;&amp;!m.paid&amp;&amp;complete&amp;&amp;!m.sold)?`&lt;button class=&quot;btn book-now&quot; type=&quot;button&quot; data-book-now=&quot;${m.id}&quot;&gt;Jetzt buchen&lt;/button&gt;`:&quot;&quot;;const join=!m.mine?(m.sold?&#x27;&lt;button class=&quot;btn secondary&quot; type=&quot;button&quot;&gt;Alternativen ansehen&lt;/button&gt;&#x27;:&#x27;&lt;button class=&quot;btn coral&quot; type=&quot;button&quot; data-join&gt;Mitspielen&lt;/button&gt;&#x27;):&#x27;&#x27;;const src=m.mine?&#x27;Ich habe eingeladen&#x27;:`${esc(m.source)} ${esc(m.inviter)}`;const cardClass=[&quot;pb-card&quot;,m.sold?&quot;sold&quot;:&quot;&quot;,(!m.mine&amp;&amp;(m.invited||m.group))?&quot;direct-invite&quot;:&quot;&quot;].filter(Boolean).join(&quot; &quot;);const bookNote=(m.mine&amp;&amp;!m.paid&amp;&amp;complete&amp;&amp;!m.sold)?&#x27;&lt;div class=&quot;book-now-note&quot;&gt;Alle vier Spieler stehen fest. Bitte buche den Slot jetzt verbindlich, sofern er noch frei ist.&lt;/div&gt;&#x27;:&#x27;&#x27;;return `&lt;article class=&quot;${cardClass}&quot;&gt;&lt;div class=&quot;badge&quot;&gt;${free?&quot;Noch &quot;+free+&quot; frei&quot;:&quot;Komplett&quot;}&lt;/div&gt;&lt;div class=&quot;invite-source&quot;&gt;${src}&lt;/div&gt;&lt;div class=&quot;match-top&quot;&gt;&lt;div&gt;&lt;div class=&quot;day&quot;&gt;${esc(m.day)} · ${esc(m.date)}&lt;/div&gt;&lt;div class=&quot;time&quot;&gt;${esc(timeRange)}&lt;/div&gt;&lt;/div&gt;${status}&lt;/div&gt;&lt;h3 class=&quot;card-title&quot;&gt;${esc(m.title)}&lt;/h3&gt;&lt;p class=&quot;inviter-line&quot;&gt;Wer lädt ein? &lt;strong&gt;${esc(m.inviter)}&lt;/strong&gt;&lt;/p&gt;&lt;div class=&quot;meta&quot;&gt;&lt;span&gt;${esc(m.court)}&lt;/span&gt;&lt;span&gt;${esc(m.duration)}&lt;/span&gt;&lt;span&gt;${esc(levelLabel)}&lt;/span&gt;&lt;span&gt;${esc(m.gender)}&lt;/span&gt;&lt;span&gt;${esc(m.audience)}&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;players&quot;&gt;${players}&lt;/div&gt;&lt;p class=&quot;card-note&quot;&gt;${esc(m.note)}&lt;/p&gt;${bookNote}${soldNote}&lt;div class=&quot;actions&quot;&gt;${inform}${bookNow}${join}&lt;/div&gt;&lt;/article&gt;`}
-function renderCards(){let list=matches.slice();if(activeView===&quot;forMe&quot;)list=list.filter(m=&gt;m.mine);if(activeView===&quot;all&quot;){const direct=matches.filter(m=&gt;!m.mine&amp;&amp;(m.invited||m.group));const open=matches.filter(m=&gt;!m.mine&amp;&amp;!m.invited&amp;&amp;!m.group&amp;&amp;matchIsForMe(m));list=[...direct,...open]}$(&quot;#cardsGrid&quot;).innerHTML=list.length?list.map(cardHtml).join(&quot;&quot;):&#x27;&lt;div class=&quot;empty&quot;&gt;Keine passende Einladung gefunden.&lt;/div&gt;&#x27;;applyBallImages($(&quot;#cardsGrid&quot;));sendMeetHeight();$$(&#x27;[data-join]&#x27;).forEach(b=&gt;b.addEventListener(&#x27;click&#x27;,()=&gt;toast(&#x27;Mitspielen wird im nächsten Schritt vollständig angebunden.&#x27;)));$$(&#x27;[data-inform]&#x27;).forEach(b=&gt;b.addEventListener(&#x27;click&#x27;,()=&gt;sendPlayerMail(Number(b.dataset.inform))));$$(&#x27;[data-book-now]&#x27;).forEach(b=&gt;b.addEventListener(&#x27;click&#x27;,()=&gt;requestBooking(Number(b.dataset.bookNow))))}
-function renderGroups(){const list=$(&quot;#groupList&quot;);list.innerHTML=groups.length?groups.map((g,i)=&gt;`&lt;div class=&quot;row&quot;&gt;&lt;div&gt;&lt;div class=&quot;row-title&quot;&gt;${esc(g.name)}&lt;/div&gt;&lt;div class=&quot;row-sub&quot;&gt;${g.members.length} Mitglieder&lt;/div&gt;&lt;div class=&quot;group-members&quot;&gt;${g.members.map(esc).join(&#x27;, &#x27;)}&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;group-actions&quot;&gt;&lt;button class=&quot;btn secondary compact&quot; type=&quot;button&quot; data-edit-group=&quot;${i}&quot;&gt;Bearbeiten&lt;/button&gt;&lt;button class=&quot;btn warn compact&quot; type=&quot;button&quot; data-delete-group=&quot;${i}&quot;&gt;Löschen&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`).join(&quot;&quot;):&#x27;&lt;div class=&quot;empty&quot;&gt;Noch keine Gruppe angelegt.&lt;/div&gt;&#x27;;$$(&#x27;[data-edit-group]&#x27;).forEach(b=&gt;b.addEventListener(&#x27;click&#x27;,()=&gt;openGroupEditor(Number(b.dataset.editGroup))));$$(&#x27;[data-delete-group]&#x27;).forEach(b=&gt;b.addEventListener(&#x27;click&#x27;,()=&gt;deleteGroup(Number(b.dataset.deleteGroup))));renderGroupSelect();sendMeetHeight()}
-function groupEmailInputHTML(value=&#x27;&#x27;){return `&lt;div class=&quot;email-row group-email-row&quot;&gt;&lt;input class=&quot;text-input group-email&quot; type=&quot;email&quot; value=&quot;${esc(value)}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; aria-label=&quot;Gruppenmitglied E-Mail&quot;&gt;&lt;/div&gt;`}
-function addGroupEmailRow(value=&#x27;&#x27;){const list=$(&quot;#groupEmailList&quot;);if(!list)return;const wrap=document.createElement(&#x27;div&#x27;);wrap.innerHTML=groupEmailInputHTML(value);const row=wrap.firstElementChild;list.appendChild(row);const input=row.querySelector(&#x27;input&#x27;);input.addEventListener(&#x27;input&#x27;,()=&gt;setTimeout(cleanGroupAutofilledEmailRows,0));return input}
-function ensureGroupEmailRows(min=6){while($$(&#x27;.group-email-row&#x27;).length&lt;min)addGroupEmailRow()}
-function cleanGroupAutofilledEmailRows(){const inputs=$$(&#x27;.group-email&#x27;);const values=inputs.map(i=&gt;i.value.trim().toLowerCase()).filter(Boolean);if(values.length&gt;1&amp;&amp;new Set(values).size===1){inputs.slice(1).forEach(i=&gt;{i.value=&#x27;&#x27;})}}
-function groupEmailRows(){cleanGroupAutofilledEmailRows();return $$(&#x27;.group-email&#x27;).map(i=&gt;i.value.trim().toLowerCase()).filter(Boolean)}
-function validGroupEmails(){return Array.from(new Set(groupEmailRows().filter(v=&gt;/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v))))}
-function resetGroupDialog(index=null){editingGroupIndex=Number.isInteger(index)?index:null;const group=editingGroupIndex!==null?groups[editingGroupIndex]:null;$(&quot;#groupDialogTitle&quot;).textContent=group?&#x27;Gruppe bearbeiten&#x27;:&#x27;Gruppe anlegen&#x27;;$(&quot;#groupName&quot;).value=group?.name||&#x27;&#x27;;$(&quot;#saveGroup&quot;).textContent=group?&#x27;Gruppe speichern&#x27;:&#x27;Gruppe speichern&#x27;;$(&quot;#groupEmailList&quot;).innerHTML=&#x27;&#x27;;(group?.members||[]).forEach(email=&gt;addGroupEmailRow(email));ensureGroupEmailRows(6);sendMeetHeight()}
-function positionGroupDialog(){const dialog=$(&quot;#groupDialog&quot;);if(!dialog)return;let top=24;try{const frame=app.document?.querySelector(&#x27;#modeVerabredungen .meet-preview-frame&#x27;);const frameTop=frame?frame.getBoundingClientRect().top+(app.scrollY||app.document?.documentElement?.scrollTop||0):0;const scrollY=app.scrollY||app.document?.documentElement?.scrollTop||0;const vh=app.innerHeight||window.innerHeight||720;const h=Math.min(dialog.scrollHeight||520,Math.max(280,vh-32));top=Math.max(16,scrollY-frameTop+Math.max(16,(vh-h)/2))}catch(_e){top=24}dialog.style.setProperty(&#x27;--group-dialog-top&#x27;,Math.round(top)+&#x27;px&#x27;)}
-function showGroupDialog(){positionGroupDialog();$(&quot;#groupDialog&quot;).showModal();setTimeout(positionGroupDialog,0);sendMeetHeight()}
-function openGroupEditor(index){resetGroupDialog(index);showGroupDialog()}
-function saveGroupFromDialog(){const name=$(&quot;#groupName&quot;).value.trim()||&#x27;Neue Gruppe&#x27;,emails=validGroupEmails();if(groupEmailRows().length!==emails.length){toast(&#x27;Bitte nur gültige E-Mail-Adressen verwenden.&#x27;);return}if(!emails.length){toast(&#x27;Bitte mindestens eine E-Mail-Adresse eintragen.&#x27;);return}const group={name,detail:emails.length+&#x27; Mitglieder&#x27;,members:emails};if(editingGroupIndex!==null&amp;&amp;groups[editingGroupIndex])groups.splice(editingGroupIndex,1,group);else groups.unshift(group);editingGroupIndex=null;saveGroups();renderGroups();$(&quot;#groupDialog&quot;).close();toast(&#x27;Gruppe gespeichert.&#x27;)}
-function deleteGroup(index){if(!groups[index])return;if(!confirm(&#x27;Willst du diese Gruppe wirklich löschen?&#x27;))return;groups.splice(index,1);saveGroups();renderGroups();toast(&#x27;Gruppe gelöscht.&#x27;)}
-function renderGroupSelect(){const sel=$(&quot;#groupSelect&quot;);if(!sel)return;sel.innerHTML=groups.map((g,i)=&gt;`&lt;option value=&quot;${i}&quot;&gt;${esc(g.name)}&lt;/option&gt;`).join(&quot;&quot;);renderGroupMemberPickList();sendMeetHeight()}
-function renderGroupMemberPickList(){const host=$(&quot;#groupMemberPickList&quot;),sel=$(&quot;#groupSelect&quot;);if(!host||!sel)return;const group=groups[Number(sel.value)]||groups[0];host.innerHTML=(group.members||[]).map(name=&gt;`&lt;label class=&quot;member-pick&quot;&gt;&lt;input type=&quot;checkbox&quot; checked&gt; &lt;span&gt;${esc(name)}&lt;/span&gt;&lt;/label&gt;`).join(&quot;&quot;)}
-function setView(v){activeView=v;$$(&#x27;.view-tab&#x27;).forEach(b=&gt;b.classList.toggle(&#x27;active&#x27;,b.dataset.view===v));$(&quot;#matchesView&quot;).hidden=v===&quot;groups&quot;;$(&quot;#groupsView&quot;).hidden=v!==&quot;groups&quot;;const labels={forMe:[&quot;Meine Verabredungen&quot;],all:[&quot;Einladungen für mich&quot;]};if(labels[v]){$(&quot;#viewTitle&quot;).textContent=labels[v][0];renderCards()}}
-function cleanAutofilledEmailRows(){const inputs=$$(&#x27;.partner-email&#x27;);const values=inputs.map(i=&gt;i.value.trim().toLowerCase()).filter(Boolean);if(values.length&gt;1&amp;&amp;new Set(values).size===1){inputs.slice(1).forEach(i=&gt;{i.value=&#x27;&#x27;});}}
-function emailRows(){cleanAutofilledEmailRows();return $$(&#x27;.partner-email&#x27;).map(i=&gt;i.value.trim().toLowerCase()).filter(Boolean)}
-function validEmails(){return Array.from(new Set(emailRows().filter(v=&gt;/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v))))}
-function profileMap(profiles){const map=new Map();(profiles||[]).forEach(p=&gt;{const email=String(p.email||&#x27;&#x27;).toLowerCase();if(email)map.set(email,p)});return map}
-function playerFromEmail(email,profiles){const key=String(email||&#x27;&#x27;).toLowerCase();const p=profileMap(profiles).get(key);return p?[p.name||email,p.level||&#x27;&#x27;]:[email,&#x27;&#x27;]}
-function refreshMatchPlayers(m,profiles){if(!m)return;const owner=m.players&amp;&amp;m.players[0]?m.players[0]:[getProfileName(),profile.level];const emails=Array.from(new Set(m.inviteEmails||[]));m.players=[owner,...emails.map(e=&gt;playerFromEmail(e,profiles))].slice(0,4);while(m.players.length&lt;4)m.players.push(null);const missing=4-m.players.filter(Boolean).length;m.title=missing?`Noch ${missing} Mitspieler gesucht`:&#x27;Vier Spieler festgelegt&#x27;}
-function sourceToMatch(src,extraPlayers=[]){const owner=getProfileName();const players=[[owner,profile.level],...extraPlayers.map(e=&gt;[e,&#x27;&#x27;])].slice(0,4);while(players.length&lt;4)players.push(null);const missing=4-players.filter(Boolean).length;return {id:src.id||Date.now(),sourceId:src.id,mine:true,invited:false,group:false,inviter:owner,source:&quot;Ich habe eingeladen&quot;,sold:false,title:missing?&quot;Noch &quot;+missing+&quot; Mitspieler gesucht&quot;:&quot;Vier Spieler festgelegt&quot;,day:src.day,date:src.date,dateISO:src.dateISO||&#x27;&#x27;,time:src.time,end:src.end,hourStart:src.hourStart??parseInt(String(src.time||&#x27;0&#x27;),10),court:src.court,courtNum:src.courtNum||parseCourt(src.court),duration:src.duration,hours:src.hours||selectedHours(src),levels:selectedLevels.size?Array.from(selectedLevels):[&quot;OFFEN&quot;],gender:selectedGender,audience:selectedAudience,paid:!!src.paid,players,inviteEmails:extraPlayers,sentInviteEmails:[],note:src.paid?&quot;Bezahlte Buchung. Du kannst einzelne Mitspieler einladen und später weitere ergänzen.&quot;:&quot;Slot im Blick. Das ist noch keine Reservierung; du kannst einzelne Mitspieler einladen und später weitere ergänzen.&quot;,mailSent:false,sortKey:src.sortKey||&#x27;&#x27;,bookingId:src.bookingId||&#x27;&#x27;,subscriptionId:src.subscriptionId||&#x27;&#x27;}}
-async function createMatch(){const btn=$(&quot;#createMatch&quot;),oldText=btn?btn.textContent:&#x27;&#x27;;if(btn){btn.disabled=true;btn.textContent=&#x27;Wird verschickt …&#x27;}const src=currentSource(),emails=(selectedAudience===&quot;Mitspieler&quot;||selectedAudience===&quot;Einladung an alle&quot;)?validEmails().slice(0,3):[];if((selectedAudience===&quot;Mitspieler&quot;||selectedAudience===&quot;Einladung an alle&quot;)&amp;&amp;emailRows().length!==emails.length){if(btn){btn.disabled=false;btn.textContent=oldText}toast(&#x27;Bitte nur gültige E-Mail-Adressen verwenden.&#x27;);return}const existing=matches.findIndex(m=&gt;m.sourceId&amp;&amp;src.id&amp;&amp;m.sourceId===src.id);const previous=existing&gt;=0?matches[existing]:null;const merged=Array.from(new Set([...(previous?.inviteEmails||[]),...emails])).slice(0,3);const m=sourceToMatch(src,merged);m.sentInviteEmails=previous?.sentInviteEmails||[];m.mailSent=!!m.sentInviteEmails.length;if(m.inviteEmails.length)m.note=m.paid?&#x27;Mitspieler sind eingetragen. Du kannst jetzt informieren oder später weitere ergänzen.&#x27;:&#x27;Slot im Blick. Mitspieler sind eingetragen; du kannst jetzt informieren oder später weitere ergänzen.&#x27;;if(existing&gt;=0)matches.splice(existing,1,m);else matches.unshift(m);sortMatches();setView(&#x27;forMe&#x27;);toast(&#x27;Verabredung vorbereitet.&#x27;);const newEmails=emails.filter(e=&gt;!m.sentInviteEmails.includes(e));let sent=false;if(newEmails.length){try{await sendPlayerMail(m.id,{quiet:true,emails:newEmails});sent=true;toast(newEmails.length===1?&#x27;Einladung wurde verschickt.&#x27;:&#x27;Einladungen wurden verschickt.&#x27;)}catch(_e){}}if(btn){btn.disabled=false;btn.classList.toggle(&#x27;sent&#x27;,sent);btn.textContent=sent?&#x27;Einladung verschickt&#x27;:&#x27;Verabreden / Potenzielle Mitspieler informieren&#x27;;if(sent)setTimeout(()=&gt;{btn.classList.remove(&#x27;sent&#x27;);btn.textContent=&#x27;Verabreden / Potenzielle Mitspieler informieren&#x27;},4200)}sendMeetHeight()}
-let selectedSlotSource={kind:&quot;selected&quot;,id:&quot;selected&quot;,label:&quot;Im Blick · ausgewählter Slot&quot;,mini:&quot;Ausgewählter Slot · im Blick&quot;,day:&quot;Mittwoch&quot;,date:&quot;03.03.2027&quot;,dateISO:&quot;2027-03-03&quot;,time:&quot;19:00&quot;,end:&quot;21:00&quot;,hourStart:19,court:&quot;Court 1&quot;,courtNum:1,duration:&quot;120 Min&quot;,hours:2,paid:false};
-function currentSource(){const v=$(&quot;#sourceSelect&quot;).value;if(v===&quot;selected&quot;)return selectedSlotSource;return liveSources.find(s=&gt;s.id===v)||selectedSlotSource}
-function selectedHours(src){const n=Number(src?.hours||parseInt(String(src?.duration||&#x27;&#x27;),10)/60||2);return n===1?1:2}
-function updateDurationUi(){const src=currentSource();const h=selectedHours(src);$$(&#x27;.duration-pill&#x27;).forEach(b=&gt;{b.classList.toggle(&#x27;active&#x27;,Number(b.dataset.hours)===h);b.disabled=true;b.setAttribute(&#x27;aria-disabled&#x27;,&#x27;true&#x27;)});const tw=$(&quot;#timeWindow&quot;);if(tw)tw.textContent=src.time&amp;&amp;src.end?`von ${src.time} bis ${src.end} Uhr`:&#x27;Spielzeit wählen&#x27;}
-function setSelectedDuration(hours){const src=currentSource();if(src.paid)return;const h=Number(hours)===1?1:2;src.hours=h;src.duration=(h*60)+&#x27; Min&#x27;;const start=parseInt(String(src.time||&#x27;0&#x27;),10)||0;src.hourStart=start;src.end=String(start+h).padStart(2,&#x27;0&#x27;)+&#x27;:00&#x27;;src.label=`Im Blick · ${src.day} · ${src.date} · ${src.time}–${src.end} · ${src.court}`;src.mini=`${src.day} · ${src.date} · ${src.time}–${src.end} · ${src.court} · im Blick`;fillSourceSelect();$(&quot;#sourceSelect&quot;).value=src.id||&#x27;selected&#x27;;updateSourceNotice()}
-function fillSourceSelect(){const sel=$(&quot;#sourceSelect&quot;);const current=sel.value;sel.innerHTML=&#x27;&lt;option value=&quot;selected&quot;&gt;&#x27;+esc(selectedSlotSource.label)+&#x27;&lt;/option&gt;&#x27;+liveSources.map(s=&gt;`&lt;option value=&quot;${esc(s.id)}&quot;&gt;${esc(s.label)}&lt;/option&gt;`).join(&#x27;&#x27;);sel.value=liveSources.some(s=&gt;s.id===current)?current:&#x27;selected&#x27;;updateSourceNotice()}
-function updateSelectedSource(src){hasExternalSelectedSlot=true;selectedSlotSource=Object.assign(selectedSlotSource,src||{});selectedSlotSource.hours=selectedHours(selectedSlotSource);fillSourceSelect();$(&quot;#sourceSelect&quot;).value=&quot;selected&quot;;updateSourceNotice();sendMeetHeight()}
-function updateSourceNotice(){const src=currentSource();$(&quot;#sourceMini&quot;).textContent=src.mini||src.label;updateDurationUi()}
-function updateInvitePanel(){const partner=$(&quot;#invitePanel&quot;),group=$(&quot;#groupInvitePanel&quot;);if(partner){partner.hidden=selectedAudience!==&quot;Mitspieler&quot;&amp;&amp;selectedAudience!==&quot;Einladung an alle&quot;;const head=partner.querySelector(&quot;strong&quot;),sub=partner.querySelector(&quot;span&quot;);if(selectedAudience===&quot;Einladung an alle&quot;){head.textContent=&quot;Optional Mitspieler ergänzen&quot;;sub.textContent=&quot;Offen für passende Spieler. Zusätzlich kannst du einzelne Mitspieler direkt einladen.&quot;}else{head.textContent=&quot;Mitspieler einladen&quot;;sub.textContent=&quot;Trage die E-Mail-Adressen deiner Mitspieler ein.&quot;}}if(group)group.hidden=selectedAudience!==&quot;Meine Gruppe&quot;;renderGroupSelect()}
-async function authHeaders(){const fn=appFn(&#x27;authHeaders&#x27;);return fn?await fn():{}}
-async function callInviteFunction(payload){const headers=await authHeaders();headers[&#x27;Content-Type&#x27;]=&#x27;application/json&#x27;;const res=await fetch(appVal(&#x27;SUPABASE_URL&#x27;,&#x27;https://hioaqcwqzeqcvvikollq.supabase.co&#x27;)+&#x27;/functions/v1/send-player-invite&#x27;,{method:&#x27;POST&#x27;,headers,body:JSON.stringify(payload)});let data={};try{data=await res.json()}catch(_e){}if(!res.ok)throw new Error(data.error||&#x27;Anfrage fehlgeschlagen&#x27;);return data}
-function parseCourt(court){const m=String(court||&#x27;&#x27;).match(/\d+/);return m?Number(m[0]):Number(court||0)}
-async function sendPlayerMail(id,opts={}){const m=matches.find(x=&gt;x.id===id);if(!m)return;const recipients=Array.from(new Set(opts.emails||m.inviteEmails||[])).filter(e=&gt;/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e));if(!recipients.length){toast(&#x27;Bitte erst mindestens eine gültige E-Mail-Adresse eintragen.&#x27;);return}try{const data=await callInviteFunction({action:&#x27;send&#x27;,emails:recipients,inviterName:m.inviter,court:parseCourt(m.court),date:m.day+&#x27; · &#x27;+m.date,time:m.end?m.time+&#x27;–&#x27;+m.end:m.time,duration:m.duration,slot_status:m.paid?&#x27;booked&#x27;:&#x27;watch&#x27;,booking_id:m.bookingId||&#x27;&#x27;,subscription_id:m.subscriptionId||&#x27;&#x27;});if(data&amp;&amp;Array.isArray(data.profiles))refreshMatchPlayers(m,data.profiles);m.mailSent=true;m.sentInviteEmails=Array.from(new Set([...(m.sentInviteEmails||[]),...recipients]));m.note=m.paid?&#x27;Mitspieler wurden zur gebuchten Stunde eingeladen. Du kannst später weitere ergänzen.&#x27;:&#x27;Mitspieler wurden zum Slot im Blick eingeladen. Du kannst später weitere ergänzen.&#x27;;renderCards();if(!opts.quiet)toast(recipients.length===1?&#x27;Mitspieler wurde informiert.&#x27;:&#x27;Mitspieler wurden informiert.&#x27;)}catch(e){toast(e.message||&#x27;Mail konnte nicht gesendet werden.&#x27;);throw e}}
-async function loadInvitesForMe(){try{const data=await callInviteFunction({action:&#x27;list&#x27;});const rows=Array.isArray(data.invites)?data.invites:[];const currentEmail=String(appVal(&#x27;currentUser&#x27;,{})?.email||&#x27;&#x27;).toLowerCase();const mapped=rows.map(r=&gt;{const dateISO=String(r.date||&#x27;&#x27;);const d=dateISO?new Date(dateISO+&#x27;T12:00:00&#x27;):null;const day=d?d.toLocaleDateString(&#x27;de-DE&#x27;,{weekday:&#x27;short&#x27;}).replace(&#x27;.&#x27;,&#x27;&#x27;):String(r.day_label||&#x27;&#x27;);const date=d?d.toLocaleDateString(&#x27;de-DE&#x27;,{day:&#x27;2-digit&#x27;,month:&#x27;2-digit&#x27;,year:&#x27;numeric&#x27;}):String(r.day_label||&#x27;&#x27;);const hour=Number(r.hour_start||0);const mins=Number(r.duration_minutes||120);const hours=Math.max(1,Math.round(mins/60));const start=hour?String(hour).padStart(2,&#x27;0&#x27;)+&#x27;:00&#x27;:String(r.time_label||&#x27;&#x27;).split(/[–-]/)[0]||&#x27;&#x27;;const end=hour?String(hour+hours).padStart(2,&#x27;0&#x27;)+&#x27;:00&#x27;:&#x27;&#x27;;const paid=String(r.slot_status||&#x27;&#x27;)===&#x27;booked&#x27;;return {id:&#x27;invite-&#x27;+r.id,sourceId:&#x27;invite-&#x27;+r.id,mine:false,invited:true,group:false,inviter:r.inviter_name||&#x27;Ein Mitspieler&#x27;,source:&#x27;Einladung von&#x27;,sold:false,title:paid?&#x27;Einladung zu gebuchtem Match&#x27;:&#x27;Einladung zu Slot im Blick&#x27;,day,date,dateISO,time:start,end,hourStart:hour,court:`Court ${r.court||1}`,courtNum:Number(r.court||1),duration:mins+&#x27; Min&#x27;,hours,levels:[&#x27;OFFEN&#x27;],gender:&#x27;egal&#x27;,audience:&#x27;Mitspieler&#x27;,paid,players:[[r.inviter_name||&#x27;Ein Mitspieler&#x27;,&#x27;&#x27;],r.recipient_profile?[r.recipient_profile.name||currentEmail,r.recipient_profile.level||&#x27;&#x27;]:[currentEmail||&#x27;Du&#x27;,&#x27;&#x27;],null,null],inviteEmails:[],sentInviteEmails:[],note:paid?&#x27;Du wurdest zu einem bereits gebuchten Termin eingeladen.&#x27;:&#x27;Du wurdest zu einem Slot eingeladen, der noch gebucht werden muss, sobald vier Spieler feststehen.&#x27;,mailSent:true,sortKey:dateISO?`${dateISO}-${String(hour).padStart(2,&#x27;0&#x27;)}`:&#x27;&#x27;}});const known=new Set(matches.map(m=&gt;m.sourceId));mapped.forEach(m=&gt;{if(!known.has(m.sourceId))matches.push(m)});sortMatches();renderCards()}catch(e){console.warn(e)}}
-function requestBooking(id){const m=matches.find(x=&gt;x.id===id);if(!m)return;parent.postMessage({type:&#x27;pb-book-watch-slot&#x27;,source:{dateISO:m.dateISO||&#x27;&#x27;,court:Number(m.courtNum||parseCourt(m.court)),hourStart:Number(m.hourStart||parseInt(String(m.time||&#x27;0&#x27;),10)),duration:Number(m.hours||selectedHours(m)),label:`${m.day} · ${m.date} · ${m.time}${m.end?&#x27;–&#x27;+m.end:&#x27;&#x27;} · ${m.court}`}},&#x27;*&#x27;)}
-function sortMatches(){matches.sort((a,b)=&gt;String(a.sortKey||a.date+a.time).localeCompare(String(b.sortKey||b.date+b.time)))}
-function sourceFromBooking(b){const d=new Date(b.date+&#x27;T12:00:00&#x27;);const day=d.toLocaleDateString(&#x27;de-DE&#x27;,{weekday:&#x27;short&#x27;}).replace(&#x27;.&#x27;,&#x27;&#x27;);const date=d.toLocaleDateString(&#x27;de-DE&#x27;,{day:&#x27;2-digit&#x27;,month:&#x27;2-digit&#x27;,year:&#x27;numeric&#x27;});const h=String(Number(b.hour_start)).padStart(2,&#x27;0&#x27;)+&#x27;:00&#x27;;const end=String(Number(b.hour_start)+Number(b.duration)).padStart(2,&#x27;0&#x27;)+&#x27;:00&#x27;;return {id:&#x27;booking-&#x27;+b.id,kind:&#x27;paid&#x27;,sortKey:`${b.date}-${String(b.hour_start).padStart(2,&#x27;0&#x27;)}`,label:`Bezahlte Buchung · ${day} · ${date} · ${h}–${end} · Court ${b.court}`,mini:`${day} · ${date} · ${h}–${end} · Court ${b.court} · bezahlt`,day,date,dateISO:b.date,time:h,end,hourStart:Number(b.hour_start),court:`Court ${b.court}`,courtNum:Number(b.court),duration:`${Number(b.duration)*60} Min`,hours:Number(b.duration)||2,paid:true,bookingId:b.id,raw:b}}
-function sourceFromAbo(a,dateISO){const d=new Date(dateISO+&#x27;T12:00:00&#x27;);const day=d.toLocaleDateString(&#x27;de-DE&#x27;,{weekday:&#x27;short&#x27;}).replace(&#x27;.&#x27;,&#x27;&#x27;);const date=d.toLocaleDateString(&#x27;de-DE&#x27;,{day:&#x27;2-digit&#x27;,month:&#x27;2-digit&#x27;,year:&#x27;numeric&#x27;});const h=String(Number(a.hour_start)).padStart(2,&#x27;0&#x27;)+&#x27;:00&#x27;;const end=String(Number(a.hour_start)+Number(a.duration)).padStart(2,&#x27;0&#x27;)+&#x27;:00&#x27;;return {id:&#x27;abo-&#x27;+a.id,kind:&#x27;abo&#x27;,sortKey:`${dateISO}-${String(a.hour_start).padStart(2,&#x27;0&#x27;)}`,label:`Jahresabo · ${day} · ${date} · ${h}–${end} · Court ${a.court}`,mini:`${day} · ${date} · ${h}–${end} · Court ${a.court} · Abo`,day,date,dateISO,time:h,end,hourStart:Number(a.hour_start),court:`Court ${a.court}`,courtNum:Number(a.court),duration:`${Number(a.duration)*60} Min`,hours:Number(a.duration)||2,paid:true,isAbo:true,subscriptionId:a.id,raw:a}}
-async function loadLiveMeetData(){const loadBookings=appFn(&#x27;loadUpcomingBookings&#x27;),loadAbos=appFn(&#x27;loadActiveAbos&#x27;),nextAbo=appFn(&#x27;nextAboDateAfter&#x27;);try{if(!loadBookings||!loadAbos)return;const today=(appFn(&#x27;todayStr&#x27;)?appFn(&#x27;todayStr&#x27;)():new Date().toISOString().slice(0,10));const [bookings,abos]=await Promise.all([loadBookings(),loadAbos()]);const now=new Date();liveSources=(bookings||[]).filter(b=&gt;[&#x27;paid&#x27;,&#x27;active&#x27;].includes(String(b.status||&#x27;&#x27;))).filter(b=&gt;new Date(`${b.date}T${String(b.hour_start).padStart(2,&#x27;0&#x27;)}:00:00`)&gt;now).map(sourceFromBooking);(abos||[]).filter(a=&gt;[&#x27;paid&#x27;,&#x27;active&#x27;,&#x27;pending&#x27;].includes(String(a.status||&#x27;&#x27;))).forEach(a=&gt;{const d=nextAbo?nextAbo(a,today):null;if(d)liveSources.push(sourceFromAbo(a,d))});liveSources.sort((a,b)=&gt;a.sortKey.localeCompare(b.sortKey));matches=liveSources.map(s=&gt;sourceToMatch(s,[]));sortMatches();fillSourceSelect();if(!hasExternalSelectedSlot&amp;&amp;liveSources[0]){$(&quot;#sourceSelect&quot;).value=liveSources[0].id;updateSourceNotice()}renderCards();await loadInvitesForMe()}catch(e){toast(&#x27;Verabredungen konnten Buchungen nicht laden.&#x27;);console.warn(e)}sendMeetHeight()}
-function init(){applyBallImages();loadSavedGroups();syncProfileFromParent();const editProfile=$(&quot;#editProfileBtn&quot;);if(editProfile)editProfile.addEventListener(&#x27;click&#x27;,openParentProfile);const infoBtn=$(&quot;#meetInfoBtn&quot;),infoBox=$(&quot;#meetInfoBox&quot;),infoClose=$(&quot;#meetInfoClose&quot;);if(infoBtn&amp;&amp;infoBox){infoBtn.addEventListener(&quot;click&quot;,()=&gt;{infoBox.hidden=!infoBox.hidden;sendMeetHeight()});infoClose?.addEventListener(&quot;click&quot;,()=&gt;{infoBox.hidden=true;sendMeetHeight()})}$$(&#x27;.view-tab&#x27;).forEach(b=&gt;b.addEventListener(&#x27;click&#x27;,()=&gt;setView(b.dataset.view)));$$(&#x27;#levelSeg .chip&#x27;).forEach(b=&gt;b.addEventListener(&#x27;click&#x27;,()=&gt;{const l=b.dataset.level;if(l===&#x27;OFFEN&#x27;){selectedLevels.clear();selectedLevels.add(&#x27;OFFEN&#x27;);$$(&#x27;#levelSeg .chip&#x27;).forEach(x=&gt;x.classList.toggle(&#x27;active&#x27;,x.dataset.level===&#x27;OFFEN&#x27;));return}selectedLevels.delete(&#x27;OFFEN&#x27;);b.classList.toggle(&#x27;active&#x27;);b.classList.contains(&#x27;active&#x27;)?selectedLevels.add(l):selectedLevels.delete(l);const offen=$$(&#x27;#levelSeg .chip&#x27;).find(x=&gt;x.dataset.level===&#x27;OFFEN&#x27;);if(offen)offen.classList.remove(&#x27;active&#x27;)}));$$(&#x27;#genderSeg .chip&#x27;).forEach(b=&gt;b.addEventListener(&#x27;click&#x27;,()=&gt;{selectedGender=b.dataset.gender;$$(&#x27;#genderSeg .chip&#x27;).forEach(x=&gt;x.classList.toggle(&#x27;active&#x27;,x===b))}));$$(&#x27;#audienceSeg .chip&#x27;).forEach(b=&gt;b.addEventListener(&#x27;click&#x27;,()=&gt;{selectedAudience=b.dataset.audience;$$(&#x27;#audienceSeg .chip&#x27;).forEach(x=&gt;x.classList.toggle(&#x27;active&#x27;,x===b));updateInvitePanel()}));$(&quot;#sourceSelect&quot;).addEventListener(&#x27;change&#x27;,updateSourceNotice);$(&quot;#addEmail&quot;).addEventListener(&#x27;click&#x27;,()=&gt;{if($$(&#x27;.partner-email&#x27;).length&gt;=6){toast(&#x27;Bis zu sechs E-Mail-Adressen sind vorgesehen.&#x27;);return}const wrap=document.createElement(&#x27;div&#x27;);wrap.className=&#x27;email-row&#x27;;wrap.innerHTML=&#x27;&lt;input class=&quot;text-input partner-email&quot; type=&quot;email&quot; name=&quot;partner_email_extra_&#x27;+Date.now()+&#x27;&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; aria-label=&quot;Weitere E-Mail&quot;&gt;&#x27;;$(&quot;#emailList&quot;).appendChild(wrap);const input=wrap.querySelector(&#x27;input&#x27;);input.addEventListener(&#x27;input&#x27;,()=&gt;setTimeout(cleanAutofilledEmailRows,0));input.focus();sendMeetHeight()});window.addEventListener(&#x27;message&#x27;,e=&gt;{if(e.data&amp;&amp;e.data.type===&#x27;pb-selected-slot&#x27;)updateSelectedSource(e.data.source);if(e.data&amp;&amp;e.data.type===&#x27;pb-refresh-meet&#x27;){syncProfileFromParent();loadLiveMeetData()}if(e.data&amp;&amp;e.data.type===&#x27;pb-profile-updated&#x27;)syncProfileFromParent()});$$(&#x27;.partner-email&#x27;).forEach(i=&gt;i.addEventListener(&#x27;input&#x27;,()=&gt;setTimeout(cleanAutofilledEmailRows,0)));$(&quot;#createMatch&quot;).addEventListener(&#x27;click&#x27;,createMatch);$(&quot;#openGroupDialog&quot;).addEventListener(&#x27;click&#x27;,()=>{resetGroupDialog();$(&quot;#groupDialog&quot;).showModal()});$(&quot;#closeGroupDialog&quot;).addEventListener(&#x27;click&#x27;,()=>{$(&quot;#groupDialog&quot;).close();editingGroupIndex=null});$(&quot;#addGroupEmail&quot;).addEventListener(&#x27;click&#x27;,()=>{const input=addGroupEmailRow();if(input)input.focus();sendMeetHeight()});$(&quot;#saveGroup&quot;).addEventListener(&#x27;click&#x27;,saveGroupFromDialog);fillSourceSelect();renderGroups();updateInvitePanel();if($(&quot;#groupSelect&quot;))$(&quot;#groupSelect&quot;).addEventListener(&#x27;change&#x27;,renderGroupMemberPickList);renderCards();loadLiveMeetData();sendMeetHeight()}
-init();
-&lt;/script&gt;
+      &lt;div class=&quot;invite-panel&quot;&gt;
+        &lt;h3 class=&quot;panel-title&quot;&gt;Einladungen für mich (nächste 14 Tage)&lt;/h3&gt;
+        &lt;div class=&quot;invite-list&quot; id=&quot;invitesList&quot;&gt;
+          &lt;div style=&quot;text-align: center; color: #7A7368; padding: 20px;&quot;&gt;Lade Einladungen ...&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;detail-view&quot;&gt;
+      &lt;div id=&quot;detailContent&quot;&gt;
+        &lt;div class=&quot;empty-state&quot;&gt;
+          &lt;div class=&quot;empty-state-icon&quot;&gt;👇&lt;/div&gt;
+          &lt;p&gt;Wähle eine Buchung oder Einladung oben aus, um zu beginnen&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;script&gt;
+    // State
+    let currentBooking = null;
+    let currentInvite = null;
+    let myBookings = [];
+    let myInvites = [];
+    let allInvitesForCurrentBooking = [];
+
+    // Init
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      await loadMyBookingsForVerabreden();
+      await loadInvitesForMe();
+    }
+
+    async function loadMyBookingsForVerabreden() {
+      try {
+        const client = window.parent.supabaseClient;
+        const user = window.parent.currentUser;
+        const today = new Date().toISOString().split('T')[0];
+        const in14Days = getDate14DaysFromNow();
+
+        const result = await client
+          .from('bookings')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('date', today)
+          .lte('date', in14Days)
+          .order('date', { ascending: true })
+          .order('hour_start', { ascending: true });
+
+        if (result.error) throw result.error;
+        myBookings = result.data || [];
+        renderBookingsList();
+      } catch (error) {
+        console.error('Error loading bookings:', error);
+        document.getElementById('bookingsList').innerHTML = '&lt;div style=&quot;color: red; padding: 10px;&quot;&gt;Fehler beim Laden&lt;/div&gt;';
+      }
+    }
+
+    async function loadInvitesForMe() {
+      try {
+        const client = window.parent.supabaseClient;
+        const user = window.parent.currentUser;
+        const today = new Date().toISOString().split('T')[0];
+        const in14Days = getDate14DaysFromNow();
+
+        const result = await client
+          .from('player_invites')
+          .select('*')
+          .eq('recipient_email', user.email)
+          .in('status', ['invited', 'accepted', 'declined'])
+          .gte('date', today)
+          .lte('date', in14Days)
+          .order('date', { ascending: true })
+          .order('hour_start', { ascending: true });
+
+        if (result.error) throw result.error;
+        myInvites = result.data || [];
+        renderInvitesList();
+      } catch (error) {
+        console.error('Error loading invites:', error);
+        document.getElementById('invitesList').innerHTML = '&lt;div style=&quot;color: red; padding: 10px;&quot;&gt;Fehler beim Laden&lt;/div&gt;';
+      }
+    }
+
+    function renderBookingsList() {
+      const container = document.getElementById('bookingsList');
+      if (myBookings.length === 0) {
+        container.innerHTML = '&lt;div style=&quot;text-align: center; color: #7A7368; padding: 20px;&quot;&gt;Keine Buchungen&lt;/div&gt;';
+        return;
+      }
+
+      container.innerHTML = myBookings.map((booking, idx) =&gt; `
+        &lt;div class=&quot;booking-item&quot; onclick=&quot;selectBooking(${idx})&quot;&gt;
+          &lt;div class=&quot;item-date&quot;&gt;${formatDate(booking.date)}&lt;/div&gt;
+          &lt;div class=&quot;item-time&quot;&gt;${String(booking.hour_start).padStart(2, '0')}:00–${String(booking.hour_start + (booking.duration_minutes === 120 ? 2 : 1)).padStart(2, '0')}:00 Uhr&lt;/div&gt;
+          &lt;div class=&quot;item-court&quot;&gt;Court ${booking.court}&lt;/div&gt;
+        &lt;/div&gt;
+      `).join('');
+    }
+
+    function renderInvitesList() {
+      const container = document.getElementById('invitesList');
+      if (myInvites.length === 0) {
+        container.innerHTML = '&lt;div style=&quot;text-align: center; color: #7A7368; padding: 20px;&quot;&gt;Keine Einladungen&lt;/div&gt;';
+        return;
+      }
+
+      container.innerHTML = myInvites.map((invite, idx) =&gt; {
+        const statusLabel = {
+          'invited': '❓ Ausstehend',
+          'accepted': '✅ Zusage',
+          'declined': '❌ Absage'
+        }[invite.status] || 'Status?';
+
+        return `
+          &lt;div class=&quot;invite-item&quot; onclick=&quot;selectInvite(${idx})&quot;&gt;
+            &lt;div class=&quot;item-date&quot;&gt;${formatDate(invite.date)}&lt;/div&gt;
+            &lt;div class=&quot;item-time&quot;&gt;${String(invite.hour_start).padStart(2, '0')}:00–${String(invite.hour_start + (invite.duration_minutes === 120 ? 2 : 1)).padStart(2, '0')}:00 Uhr&lt;/div&gt;
+            &lt;div class=&quot;item-court&quot;&gt;${statusLabel}&lt;/div&gt;
+          &lt;/div&gt;
+        `;
+      }).join('');
+    }
+
+    function selectBooking(idx) {
+      currentBooking = myBookings[idx];
+      currentInvite = null;
+      renderDetailForBooking();
+      updateActiveStates();
+    }
+
+    function selectInvite(idx) {
+      currentInvite = myInvites[idx];
+      currentBooking = null;
+      renderDetailForInvite();
+      updateActiveStates();
+    }
+
+    function updateActiveStates() {
+      document.querySelectorAll('.booking-item').forEach((el, idx) =&gt; {
+        el.classList.toggle('active', currentBooking &amp;&amp; myBookings[idx] === currentBooking);
+      });
+      document.querySelectorAll('.invite-item').forEach((el, idx) =&gt; {
+        el.classList.toggle('active', currentInvite &amp;&amp; myInvites[idx] === currentInvite);
+      });
+    }
+
+    function renderDetailForBooking() {
+      const booking = currentBooking;
+      const dateStr = new Date(booking.date).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+
+      loadInvitesForThisBooking(booking).then(invites =&gt; {
+        allInvitesForCurrentBooking = invites;
+        const acceptedCount = invites.filter(i =&gt; i.status === 'accepted').length;
+        const totalPlayers = acceptedCount + 1;
+
+        const statusHtml = totalPlayers &gt;= 4
+          ? `&lt;span class=&quot;status-badge full&quot;&gt;✅ ${totalPlayers}/4 Spieler&lt;/span&gt;`
+          : `&lt;span class=&quot;status-badge partial&quot;&gt;${totalPlayers}/4 Spieler&lt;/span&gt;`;
+
+        document.getElementById('detailContent').innerHTML = `
+          &lt;div class=&quot;booking-detail&quot;&gt;
+            &lt;div class=&quot;detail-header&quot;&gt;
+              &lt;h2 class=&quot;detail-title&quot;&gt;Verabredung&lt;/h2&gt;
+              &lt;p class=&quot;detail-subtitle&quot;&gt;Court ${booking.court} • ${dateStr}&lt;/p&gt;
+              ${statusHtml}
+            &lt;/div&gt;
+
+            &lt;div class=&quot;form-section&quot;&gt;
+              &lt;h4 class=&quot;form-section-title&quot;&gt;Spieler einladen&lt;/h4&gt;
+              &lt;p style=&quot;color: #7A7368; margin: 0 0 16px;&quot;&gt;Wähle, wie du Spieler einladen möchtest:&lt;/p&gt;
+
+              &lt;div class=&quot;variant-buttons&quot;&gt;
+                &lt;button class=&quot;variant-btn&quot; onclick=&quot;selectVariant('konkret')&quot;&gt;
+                  &lt;strong&gt;Konkrete Personen&lt;/strong&gt;
+                  &lt;small&gt;E-Mails angeben&lt;/small&gt;
+                &lt;/button&gt;
+                &lt;button class=&quot;variant-btn&quot; onclick=&quot;selectVariant('gruppe')&quot;&gt;
+                  &lt;strong&gt;Meine Gruppe&lt;/strong&gt;
+                  &lt;small&gt;Vordefinierte Gruppe&lt;/small&gt;
+                &lt;/button&gt;
+                &lt;button class=&quot;variant-btn&quot; onclick=&quot;selectVariant('offen')&quot;&gt;
+                  &lt;strong&gt;Alle Nutzer&lt;/strong&gt;
+                  &lt;small&gt;Offene Einladung&lt;/small&gt;
+                &lt;/button&gt;
+              &lt;/div&gt;
+
+              &lt;div id=&quot;variantForm&quot; style=&quot;margin-top: 20px;&quot;&gt;&lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        `;
+      });
+    }
+
+    function renderDetailForInvite() {
+      const invite = currentInvite;
+      const dateStr = new Date(invite.date).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      const timeStr = `${String(invite.hour_start).padStart(2, '0')}:00–${String(invite.hour_start + (invite.duration_minutes === 120 ? 2 : 1)).padStart(2, '0')}:00 Uhr`;
+
+      const organizerName = invite.inviter_name || invite.inviter_email || 'Jemand';
+
+      document.getElementById('detailContent').innerHTML = `
+        &lt;div class=&quot;booking-detail&quot;&gt;
+          &lt;div class=&quot;detail-header&quot;&gt;
+            &lt;h2 class=&quot;detail-title&quot;&gt;Einladung&lt;/h2&gt;
+            &lt;p class=&quot;detail-subtitle&quot;&gt;${organizerName}&lt;/p&gt;
+          &lt;/div&gt;
+
+          &lt;div style=&quot;background: #FBF8F0; padding: 20px; border-radius: 10px; margin: 20px 0;&quot;&gt;
+            &lt;div class=&quot;detail-row&quot;&gt;&lt;strong&gt;Termin:&lt;/strong&gt; ${dateStr}&lt;/div&gt;
+            &lt;div class=&quot;detail-row&quot;&gt;&lt;strong&gt;Uhrzeit:&lt;/strong&gt; ${timeStr}&lt;/div&gt;
+            &lt;div class=&quot;detail-row&quot;&gt;&lt;strong&gt;Court:&lt;/strong&gt; Court ${invite.court}&lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;div class=&quot;action-buttons&quot;&gt;
+            ${invite.status === 'invited' ? `
+              &lt;button class=&quot;btn primary&quot; onclick=&quot;acceptInvitation()&quot;&gt;✅ Zusage&lt;/button&gt;
+              &lt;button class=&quot;btn secondary&quot; onclick=&quot;declineInvitation()&quot;&gt;❌ Absage&lt;/button&gt;
+            ` : invite.status === 'accepted' ? `
+              &lt;div style=&quot;text-align: center; color: #3E7D4E; font-weight: 700;&quot;&gt;✅ Du hast zugesagt&lt;/div&gt;
+              &lt;button class=&quot;btn secondary&quot; onclick=&quot;changeInvitationStatus('declined')&quot;&gt;Zusage zurückziehen&lt;/button&gt;
+            ` : `
+              &lt;div style=&quot;text-align: center; color: #7A7368; font-weight: 700;&quot;&gt;❌ Du hast abgesagt&lt;/div&gt;
+              &lt;button class=&quot;btn secondary&quot; onclick=&quot;changeInvitationStatus('invited')&quot;&gt;Zusage geben&lt;/button&gt;
+            `}
+          &lt;/div&gt;
+        &lt;/div&gt;
+      `;
+    }
+
+    function selectVariant(variant) {
+      const formDiv = document.getElementById('variantForm');
+
+      if (variant === 'konkret') {
+        formDiv.innerHTML = `
+          &lt;div class=&quot;form-section&quot;&gt;
+            &lt;h5 class=&quot;form-section-title&quot;&gt;E-Mail-Adressen&lt;/h5&gt;
+            &lt;p style=&quot;color: #7A7368; font-size: 13px; margin: 0 0 12px;&quot;&gt;Gib bis zu 3 E-Mail-Adressen ein (optional)&lt;/p&gt;
+            &lt;div class=&quot;email-fields&quot; id=&quot;emailFields&quot;&gt;
+              &lt;div class=&quot;email-field&quot;&gt;
+                &lt;input type=&quot;email&quot; placeholder=&quot;E-Mail Spieler 1 (optional)&quot; class=&quot;email-input&quot; /&gt;
+              &lt;/div&gt;
+              &lt;div class=&quot;email-field&quot;&gt;
+                &lt;input type=&quot;email&quot; placeholder=&quot;E-Mail Spieler 2 (optional)&quot; class=&quot;email-input&quot; /&gt;
+              &lt;/div&gt;
+              &lt;div class=&quot;email-field&quot;&gt;
+                &lt;input type=&quot;email&quot; placeholder=&quot;E-Mail Spieler 3 (optional)&quot; class=&quot;email-input&quot; /&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;button class=&quot;btn primary&quot; style=&quot;margin-top: 16px;&quot; onclick=&quot;submitVerabrede('konkret')&quot;&gt;
+              Einladungen versenden
+            &lt;/button&gt;
+          &lt;/div&gt;
+        `;
+      } else if (variant === 'gruppe') {
+        formDiv.innerHTML = `
+          &lt;div class=&quot;form-section&quot;&gt;
+            &lt;h5 class=&quot;form-section-title&quot;&gt;Meine Gruppe&lt;/h5&gt;
+            &lt;p style=&quot;color: #7A7368;&quot;&gt;Alle Spieler deiner Gruppe laden ein&lt;/p&gt;
+            &lt;button class=&quot;btn primary&quot; style=&quot;margin-top: 16px;&quot; onclick=&quot;submitVerabrede('gruppe')&quot;&gt;
+              Gruppe einladen
+            &lt;/button&gt;
+          &lt;/div&gt;
+        `;
+      } else if (variant === 'offen') {
+        formDiv.innerHTML = `
+          &lt;div class=&quot;form-section&quot;&gt;
+            &lt;h5 class=&quot;form-section-title&quot;&gt;Offene Einladung&lt;/h5&gt;
+            &lt;p style=&quot;color: #7A7368;&quot;&gt;Sichtbar für alle Nutzer in der App (keine Mails)&lt;/p&gt;
+            &lt;button class=&quot;btn primary&quot; style=&quot;margin-top: 16px;&quot; onclick=&quot;submitVerabrede('offen')&quot;&gt;
+              Offene Einladung erstellen
+            &lt;/button&gt;
+          &lt;/div&gt;
+        `;
+      }
+    }
+
+    async function submitVerabrede(variant) {
+      try {
+        if (!currentBooking) return;
+
+        if (variant === 'konkret') {
+          const emails = Array.from(document.querySelectorAll('.email-input'))
+            .map(input =&gt; input.value.trim())
+            .filter(email =&gt; email);
+
+          if (emails.length === 0) {
+            alert('Bitte mindestens eine E-Mail eingeben');
+            return;
+          }
+
+          const response = await fetch(window.parent.VERABREDUNG_EDGE_FUNCTION_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              booking_id: currentBooking.id,
+              variant: 'konkret',
+              emails: emails,
+              inviter_email: window.parent.currentUser.email,
+              inviter_name: window.parent.currentUser.full_name
+            })
+          });
+
+          if (!response.ok) throw new Error('Fehler beim Versenden');
+          alert('✅ Einladungen versendet!');
+          await loadMyBookingsForVerabreden();
+          selectBooking(myBookings.indexOf(currentBooking));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Fehler beim Versenden');
+      }
+    }
+
+    async function acceptInvitation() {
+      if (!currentInvite) return;
+      await updateInvitationStatus('accepted');
+    }
+
+    async function declineInvitation() {
+      if (!currentInvite) return;
+      await updateInvitationStatus('declined');
+    }
+
+    async function changeInvitationStatus(newStatus) {
+      await updateInvitationStatus(newStatus);
+    }
+
+    async function updateInvitationStatus(status) {
+      try {
+        const result = await window.parent.supabaseClient
+          .from('player_invites')
+          .update({ status: status })
+          .eq('id', currentInvite.id);
+
+        if (result.error) throw result.error;
+
+        currentInvite.status = status;
+        renderDetailForInvite();
+        await loadInvitesForMe();
+        alert(status === 'accepted' ? '✅ Zusage gespeichert' : '❌ Absage gespeichert');
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Fehler beim Speichern');
+      }
+    }
+
+    async function loadInvitesForThisBooking(booking) {
+      try {
+        const result = await window.parent.supabaseClient
+          .from('player_invites')
+          .select('*')
+          .eq('inviter_user_id', booking.user_id)
+          .eq('date', booking.date)
+          .eq('hour_start', booking.hour_start)
+          .eq('duration_minutes', booking.duration_minutes)
+          .eq('court', booking.court);
+
+        if (result.error) throw result.error;
+        return result.data || [];
+      } catch (error) {
+        console.error('Error loading invites for booking:', error);
+        return [];
+      }
+    }
+
+    // Hilfsfunktionen
+    function getDate14DaysFromNow() {
+      const d = new Date();
+      d.setDate(d.getDate() + 14);
+      return d.toISOString().split('T')[0];
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr + 'T00:00:00');
+      const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+      const dayName = days[date.getDay()];
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      return `${dayName} ${day}.${month}.`;
+    }
+  &lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;
-"></iframe>
+&lt;/html&gt;"></iframe>
+
   </div>
 
   <!-- WERTKARTEN MODE -->
@@ -3773,6 +4325,10 @@ body.bielstein-theme #tabPlay:not(.active) {
 const SUPABASE_URL  = 'https://hioaqcwqzeqcvvikollq.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_hPdHQmbez9NKPtA9m9Izmg_DPcrLzv7';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// Für iFrame "Verabreden": Globale Variablen für Zugriff von iFrame aus
+const supabaseClient = sb;
+const VERABREDUNG_EDGE_FUNCTION_URL = 'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/send-verabredung-mail';
 
 // Fuer Admin-geschuetzte Schreibzugriffe: echten Login-Token statt nur des
 // oeffentlichen Anon-Keys mitschicken, damit RLS-Regeln wie "...admin_all"
@@ -6730,6 +7286,7 @@ async function confirmBooking(skipAuthCheck) {
         if (typeof renderCreditOverview === 'function') await renderCreditOverview();
         if (typeof loadMyBookings === 'function') await loadMyBookings();
       } catch(e) { console.warn('Ansicht nach Guthabenbuchung aktualisieren', e); }
+}
     } else {
       showToast('Fehler: ' + (data.error || 'Unbekannter Fehler'));
     }
