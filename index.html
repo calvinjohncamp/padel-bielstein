@@ -2024,6 +2024,7 @@ main {
     .chip{border:0;border-radius:9px;padding:10px 12px;color:var(--muted);background:transparent;font-weight:900;white-space:nowrap}
     .chip.active{color:var(--cream);background:var(--ink)}
     .seg.multi .chip.active{background:var(--coral);color:var(--white)}
+    .seg.multi .chip[data-value=&quot;egal&quot;].active{background:var(--ink);color:var(--cream)}
     .text-input{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink);padding:10px 12px}
     .text-input:focus{outline:0;border-color:var(--coral);box-shadow:0 0 0 3px rgba(255,90,54,.16)}
     .email-panel{margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}
@@ -2794,7 +2795,7 @@ main {
             ${emails.map((email, index) =&gt; emailRowHTML(email, index + 1)).join(&quot;&quot;)}
           &lt;/div&gt;
           &lt;div class=&quot;actions&quot;&gt;&lt;button class=&quot;btn secondary&quot; type=&quot;button&quot; id=&quot;addEmail&quot;&gt;E-Mail ergänzen&lt;/button&gt;&lt;/div&gt;
-          &lt;p class=&quot;small-note&quot;&gt;Die erste Mail ist bereits vorausgefüllt. Sie kann gelöscht oder überschrieben werden, wenn du selbst nicht mitspielst.&lt;/p&gt;
+          &lt;p class=&quot;small-note&quot;&gt;Die erste Mail-Adresse ist bereits vorausgefüllt. Sie kann gelöscht oder überschrieben werden, wenn du selbst nicht mitspielst.&lt;/p&gt;
         &lt;/div&gt;
         &lt;div class=&quot;form-grid&quot;&gt;
           &lt;div class=&quot;field&quot;&gt;
