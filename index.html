@@ -2081,19 +2081,19 @@ main {
     .text-input:focus{outline:0;border-color:var(--coral);box-shadow:0 0 0 3px rgba(255,90,54,.16)}
     .email-panel{margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}
     .email-list{display:grid;gap:8px}
-    .email-list .email-row{min-height:64px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42);display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 12px}
+    .email-list .email-row{min-height:78px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.58);display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:12px 14px}
     .email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto auto}
-    .email-list .email-row .mini-avatar{width:38px;height:38px;background:var(--coral);color:var(--ink)}
+    .email-list .email-row .mini-avatar{width:48px;height:48px;border:2px solid var(--coral);background:var(--coral);color:var(--ink);font-size:15px}
     .email-list .email-row .mini-avatar.has-photo{color:transparent;background-color:var(--cream)}
     .email-field-wrap{display:grid;gap:2px;min-width:0}
-    .email-player-name{color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:14px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}
+    .email-player-name{color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:17px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}
     .email-list .email-row .text-input{min-height:24px;border:0;background:transparent;padding:0;color:var(--muted);font-size:13px;font-weight:700;box-shadow:none}
     .email-list .email-row .text-input:focus{background:var(--white);border:1px solid var(--line);border-color:var(--coral);border-radius:8px;padding:8px 10px;box-shadow:0 0 0 3px rgba(255,90,54,.13)}
-    .email-profile{display:inline-flex;align-items:center;justify-content:flex-end;gap:5px;color:var(--muted);font-size:12px;font-weight:900;white-space:nowrap}
+    .email-profile{display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;color:var(--muted);font-size:14px;font-weight:900;white-space:nowrap}
     .email-profile .profile-level-letter{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:22px;font-weight:900;line-height:.9;color:var(--coral);top:0}
     .email-profile .profile-level-title{color:var(--ink)}
     .email-profile .balls{display:inline-flex;gap:2px}
-    .email-profile .balls img{width:12px;height:12px}
+    .email-profile .balls img{width:15px;height:15px}
     .seat-index{width:34px;height:34px;border-radius:9px;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
     .invite-save-actions{display:grid;grid-template-columns:1fr 1.25fr;gap:10px;align-items:stretch}
@@ -2122,44 +2122,44 @@ main {
     .level-item span b{color:var(--ink);font-weight:900}
     .balls{display:inline-flex;gap:2px;align-items:flex-end}
     .balls img{width:15px;height:15px;object-fit:contain;display:block}
-    .profile-card{margin-top:14px;min-height:95px;padding:13px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:18px;border:2px solid var(--ink);box-shadow:none}
+    .profile-card{margin-top:14px;min-height:104px;padding:16px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:18px;border:2px solid var(--ink);box-shadow:none}
     .profile-main{display:block}
     .profile-person{display:flex;align-items:center;gap:12px}
-    .profile-photo{width:46px;height:46px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;border:2px solid var(--ink);overflow:hidden;background-size:cover;background-position:center}
+    .profile-photo{width:58px;height:58px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;border:2px solid var(--coral);overflow:hidden;background-size:cover;background-position:center}
     .profile-photo.has-photo{color:transparent;background-color:var(--cream)}
     .profile-data{justify-self:start}
     .profile-action{justify-self:center}
     .profile-level-control{justify-self:end;width:min(100%,300px)}
     .profile-level-control .email-block-label{text-align:right}
     .profile-kicker{color:var(--coral);font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
-    .profile-card strong{display:block}
+    .profile-card strong{display:block;font-size:17px;line-height:1.18}
     .profile-card span{color:var(--muted);font-size:12px}
     .profile-meta{display:inline-flex!important;align-items:center!important;gap:8px!important;margin-top:6px!important;flex-wrap:nowrap;color:var(--muted);font-size:12px}
     .profile-meta b{display:inline-flex!important;align-items:center}
-    .profile-level-letter{display:inline-flex!important;color:var(--coral);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:27px;font-weight:900;line-height:.85;position:relative;top:-2px}
+    .profile-level-letter{display:inline-flex!important;color:var(--coral);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:22px;font-weight:900;line-height:.9;position:relative;top:0}
     .profile-card .balls{display:inline-flex!important;gap:2px;align-items:flex-end;margin:0}
     .profile-card .balls img{width:15px;height:15px;object-fit:contain;display:block}
     .profile-level-control .seg{justify-content:flex-end;background:transparent;gap:8px;padding:0}
     .profile-level-control .chip{min-width:44px;border:1.5px solid var(--line);background:var(--white);color:var(--muted)}
     .profile-level-control .chip.active{border-color:var(--ink);background:var(--ink);color:var(--cream)}
     .player-grid{display:grid;grid-template-columns:1fr;gap:8px;margin:18px 0}
-    .seat{min-height:64px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42);display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;text-align:left;padding:10px 12px;gap:12px}
+    .seat{min-height:78px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.58);display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;text-align:left;padding:12px 14px;gap:14px}
     .seat.mine{position:relative;border-color:var(--coral);box-shadow:0 0 0 3px rgba(255,90,54,.10)}
     .seat.free{border-style:dashed;color:var(--muted)}
     .seat-remove{position:absolute;top:7px;right:7px;width:24px;height:24px;border:0;border-radius:50%;background:var(--soft);color:var(--ink);font-weight:900;line-height:1}
-    .seat-avatar{width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--cream);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;overflow:hidden;background-size:cover;background-position:center}
+    .seat-avatar{width:48px;height:48px;border-radius:50%;border:2px solid var(--coral);background:var(--ink);color:var(--cream);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;overflow:hidden;background-size:cover;background-position:center}
     .seat-avatar.has-photo{color:transparent;background-color:var(--cream);background-image:var(--avatar-image)!important}
     .seat.mine .seat-avatar{background:var(--coral);color:var(--white)}
     .seat.mine .seat-avatar.has-photo{color:transparent;background-color:var(--cream);background-image:var(--avatar-image)!important}
-    .seat.free .seat-avatar{background:var(--soft);color:var(--muted)}
+    .seat.free .seat-avatar{background:var(--soft);color:var(--muted);border-color:var(--line)}
     .seat-avatar img{width:100%;height:100%;object-fit:cover;display:block}
     .seat-main{min-width:0}
-    .seat-name{font-size:14px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}
-    .seat-mail{margin-top:2px;color:var(--muted);font-size:12px;font-weight:700;overflow-wrap:anywhere}
-    .seat-level{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:12px;font-weight:900;white-space:nowrap}
+    .seat-name{font-size:17px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}
+    .seat-mail{margin-top:2px;color:var(--muted);font-size:13px;font-weight:700;overflow-wrap:anywhere}
+    .seat-level{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:14px;font-weight:900;white-space:nowrap}
     .seat-level-letter{font-family:&quot;Space Grotesk&quot;,sans-serif;color:var(--coral);font-size:22px;font-weight:900;line-height:.9}
     .seat-level-title{color:var(--ink)}
-    .seat-level .balls img{width:12px;height:12px}
+    .seat-level .balls img{width:15px;height:15px}
     .small-note{margin:10px 0 0;color:var(--muted);font-size:13px;line-height:1.45}
     .pb-card{padding:30px 20px 20px;min-height:246px;display:flex;flex-direction:column}
     .pb-card.own-world{background:#F4EFE5;border-color:#DED2C2}
@@ -2276,7 +2276,7 @@ main {
   &lt;div class=&quot;toast&quot; id=&quot;toast&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
 
   &lt;script&gt;
-    let user = { name: &quot;Jörn Kämper&quot;, email: &quot;calvinjohncampa@aol.com&quot;, level: &quot;A&quot;, gender: &quot;&quot;, avatar_url: &quot;&quot; };
+    let user = { name: &quot;Jörn Kämper&quot;, email: &quot;calvinjohncamp@aol.com&quot;, level: &quot;A&quot;, gender: &quot;&quot;, avatar_url: &quot;&quot; };
     const levels = {
       A: { title: &quot;Profi&quot;, text: &quot;mehr als 5 Jahre Erfahrung · Tennis LK 1 bis 12&quot;, balls: 4 },
       B: { title: &quot;Könner&quot;, text: &quot;mehr als 3 Jahre Erfahrung · Tennis LK 13 bis 20&quot;, balls: 3 },
@@ -2297,7 +2297,7 @@ main {
       { id: &quot;g2&quot;, name: &quot;Mittwochspadel&quot;, emails: [&quot;anne.fischer@example.de&quot;, &quot;laura.wagner@example.de&quot;, &quot;ben.hoffmann@example.de&quot;, &quot;michael.schmitz@example.de&quot;] }
     ];
     let invites = [
-      { id: &quot;i1&quot;, priority: 0, from: &quot;Michael Schmitz&quot;, mode: &quot;direct&quot;, invitedEmails: [&quot;calvinjohncampa@aol.com&quot;], day: &quot;Do&quot;, date: &quot;03.09.2026&quot;, dateISO: &quot;2026-09-03&quot;, time: &quot;20:00&quot;, end: &quot;22:00&quot;, court: &quot;Court 1&quot;, duration: &quot;2h&quot;, levels: [&quot;A&quot;,&quot;B&quot;], gender: &quot;egal&quot;, players: [
+      { id: &quot;i1&quot;, priority: 0, from: &quot;Michael Schmitz&quot;, mode: &quot;direct&quot;, invitedEmails: [&quot;calvinjohncamp@aol.com&quot;], day: &quot;Do&quot;, date: &quot;03.09.2026&quot;, dateISO: &quot;2026-09-03&quot;, time: &quot;20:00&quot;, end: &quot;22:00&quot;, court: &quot;Court 1&quot;, duration: &quot;2h&quot;, levels: [&quot;A&quot;,&quot;B&quot;], gender: &quot;egal&quot;, players: [
         { email: &quot;michael.schmitz@example.de&quot;, name: &quot;Michael Schmitz&quot;, level: &quot;A&quot; },
         null,
         null
@@ -2308,7 +2308,7 @@ main {
         null,
         null
       ]},
-      { id: &quot;i3&quot;, priority: 0, from: &quot;Nina Weber&quot;, mode: &quot;direct&quot;, invitedEmails: [&quot;calvinjohncampa@aol.com&quot;], day: &quot;Di&quot;, date: &quot;08.09.2026&quot;, dateISO: &quot;2026-09-08&quot;, time: &quot;18:00&quot;, end: &quot;20:00&quot;, court: &quot;Court 3&quot;, duration: &quot;2h&quot;, levels: [&quot;A&quot;,&quot;B&quot;], gender: &quot;egal&quot;, players: [
+      { id: &quot;i3&quot;, priority: 0, from: &quot;Nina Weber&quot;, mode: &quot;direct&quot;, invitedEmails: [&quot;calvinjohncamp@aol.com&quot;], day: &quot;Di&quot;, date: &quot;08.09.2026&quot;, dateISO: &quot;2026-09-08&quot;, time: &quot;18:00&quot;, end: &quot;20:00&quot;, court: &quot;Court 3&quot;, duration: &quot;2h&quot;, levels: [&quot;A&quot;,&quot;B&quot;], gender: &quot;egal&quot;, players: [
         { email: &quot;nina.weber@example.de&quot;, name: &quot;Nina Weber&quot;, level: &quot;B&quot; },
         null,
         null,
@@ -2320,7 +2320,7 @@ main {
         null,
         null
       ]},
-      { id: &quot;i5&quot;, priority: 0, from: &quot;Ben Hoffmann&quot;, mode: &quot;direct&quot;, invitedEmails: [&quot;calvinjohncampa@aol.com&quot;], day: &quot;Sa&quot;, date: &quot;12.09.2026&quot;, dateISO: &quot;2026-09-12&quot;, time: &quot;12:00&quot;, end: &quot;14:00&quot;, court: &quot;Court 1&quot;, duration: &quot;2h&quot;, levels: [&quot;A&quot;], gender: &quot;egal&quot;, players: [
+      { id: &quot;i5&quot;, priority: 0, from: &quot;Ben Hoffmann&quot;, mode: &quot;direct&quot;, invitedEmails: [&quot;calvinjohncamp@aol.com&quot;], day: &quot;Sa&quot;, date: &quot;12.09.2026&quot;, dateISO: &quot;2026-09-12&quot;, time: &quot;12:00&quot;, end: &quot;14:00&quot;, court: &quot;Court 1&quot;, duration: &quot;2h&quot;, levels: [&quot;A&quot;], gender: &quot;egal&quot;, players: [
         { email: &quot;ben.hoffmann@example.de&quot;, name: &quot;Ben Hoffmann&quot;, level: &quot;B&quot; },
         null,
         null,
