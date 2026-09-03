@@ -2152,7 +2152,7 @@ main {
 
     &lt;section class=&quot;section-head matchplan-section-head&quot;&gt;
       &lt;div&gt;
-        &lt;h2 id=&quot;editorHeadline&quot;&gt;Buchung verwalten + Mitspieler einladen&lt;/h2&gt;
+        &lt;h2 id=&quot;editorHeadline&quot;&gt;Mitspieler einladen&lt;/h2&gt;
         &lt;p id=&quot;editorSubline&quot;&gt;Wähle oben einen Termin aus.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/section&gt;
@@ -2913,13 +2913,13 @@ main {
     function renderEditor() {
       const source = selectedSource();
       if (!source) {
-        $(&quot;#editorHeadline&quot;).textContent = &quot;Buchung verwalten + Mitspieler einladen&quot;;
+        $(&quot;#editorHeadline&quot;).textContent = &quot;Mitspieler einladen&quot;;
         $(&quot;#editorSubline&quot;).textContent = &quot;Wähle oben einen Termin aus.&quot;;
         $(&quot;#editor&quot;).innerHTML = &quot;&quot;;
         sendMeetHeight();
         return;
       }
-      $(&quot;#editorHeadline&quot;).textContent = state.selectedType === &quot;booking&quot; ? &quot;Buchung verwalten + Mitspieler einladen&quot; : &quot;Einladung ansehen + bearbeiten&quot;;
+      $(&quot;#editorHeadline&quot;).textContent = state.selectedType === &quot;booking&quot; ? &quot;Mitspieler einladen&quot; : &quot;Einladung ansehen + bearbeiten&quot;;
       $(&quot;#editorSubline&quot;).textContent = sourceLabel(source);
       $(&quot;#editor&quot;).innerHTML = state.selectedType === &quot;booking&quot; ? ownEditorHTML(source) : inviteEditorHTML(source);
       wireSegments($(&quot;#editor&quot;));
