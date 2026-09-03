@@ -2040,6 +2040,7 @@ main {
     .status.coral{background:#FFE0D7;color:var(--coral)}
     .mini-avatar{width:34px;height:34px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;overflow:hidden;background-size:cover;background-position:center;flex-shrink:0}
     .mini-avatar.has-photo{color:transparent;background-color:var(--cream)}
+    .mini-avatar img{width:100%;height:100%;object-fit:cover;display:block}
     .invite-pick-side{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
     .badge{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);height:30px;padding:0 14px;border-radius:15px;background:var(--cream);border:1.5px solid var(--coral);color:var(--coral);box-shadow:0 0 0 8px var(--cream);display:flex;align-items:center;justify-content:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;font-size:12px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
     .create-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start}
@@ -2062,6 +2063,8 @@ main {
     .email-panel{margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}
     .email-list{display:grid;gap:8px}
     .email-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+    .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto}
+    .email-row .mini-avatar{width:36px;height:36px}
     .seat-index{width:34px;height:34px;border-radius:9px;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
     .btn{border:0;border-radius:10px;padding:13px 16px;background:var(--ink);color:var(--cream);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px}
@@ -2118,6 +2121,7 @@ main {
     .seat.mine .seat-avatar{background:var(--coral);color:var(--white)}
     .seat.mine .seat-avatar.has-photo{color:transparent;background-color:var(--cream);background-image:var(--avatar-image)!important}
     .seat.free .seat-avatar{background:var(--soft);color:var(--muted)}
+    .seat-avatar img{width:100%;height:100%;object-fit:cover;display:block}
     .seat-main{min-width:0}
     .seat-name{font-size:14px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}
     .seat-mail{margin-top:2px;color:var(--muted);font-size:12px;font-weight:700;overflow-wrap:anywhere}
@@ -2347,13 +2351,13 @@ main {
     }
     function miniAvatarHTML(name = user.name, url = user.avatar_url) {
       const photo = safeCssUrl(url);
-      return `&lt;span class=&quot;mini-avatar${photo ? &quot; has-photo&quot; : &quot;&quot;}&quot;${photo ? ` style=&quot;background-image:url('${photo}')&quot; data-avatar-url=&quot;${esc(photo)}&quot; data-avatar-large-url=&quot;${esc(avatarLargeUrl(photo))}&quot; data-avatar-name=&quot;${esc(name || &quot;Profilbild&quot;)}&quot; role=&quot;button&quot; tabindex=&quot;0&quot;` : &quot;&quot;}&gt;${photo ? &quot;&quot; : esc(initials(name))}&lt;/span&gt;`;
+      return `&lt;span class=&quot;mini-avatar${photo ? &quot; has-photo&quot; : &quot;&quot;}&quot;${photo ? ` data-avatar-url=&quot;${esc(photo)}&quot; data-avatar-large-url=&quot;${esc(avatarLargeUrl(photo))}&quot; data-avatar-name=&quot;${esc(name || &quot;Profilbild&quot;)}&quot; role=&quot;button&quot; tabindex=&quot;0&quot;` : &quot;&quot;}&gt;${photo ? `&lt;img src=&quot;${esc(photo)}&quot; alt=&quot;${esc(name || &quot;Profilbild&quot;)}&quot;&gt;` : esc(initials(name))}&lt;/span&gt;`;
     }
     function seatAvatarHTML(player, index) {
       if (!player) return `&lt;div class=&quot;seat-avatar&quot;&gt;${index + 1}&lt;/div&gt;`;
       const photo = safeCssUrl(player.avatar_url || &quot;&quot;);
       const label = initials(player.name || player.email || &quot;?&quot;);
-      return `&lt;div class=&quot;seat-avatar${photo ? &quot; has-photo&quot; : &quot;&quot;}&quot;${photo ? ` style=&quot;--avatar-image:url('${photo}');background-image:var(--avatar-image)&quot; data-avatar-url=&quot;${esc(photo)}&quot; data-avatar-large-url=&quot;${esc(avatarLargeUrl(photo))}&quot; data-avatar-name=&quot;${esc(player.name || player.email || &quot;Profilbild&quot;)}&quot; role=&quot;button&quot; tabindex=&quot;0&quot;` : &quot;&quot;}&gt;${photo ? &quot;&quot; : esc(label)}&lt;/div&gt;`;
+      return `&lt;div class=&quot;seat-avatar${photo ? &quot; has-photo&quot; : &quot;&quot;}&quot;${photo ? ` data-avatar-url=&quot;${esc(photo)}&quot; data-avatar-large-url=&quot;${esc(avatarLargeUrl(photo))}&quot; data-avatar-name=&quot;${esc(player.name || player.email || &quot;Profilbild&quot;)}&quot; role=&quot;button&quot; tabindex=&quot;0&quot;` : &quot;&quot;}&gt;${photo ? `&lt;img src=&quot;${esc(photo)}&quot; alt=&quot;${esc(player.name || player.email || &quot;Profilbild&quot;)}&quot;&gt;` : esc(label)}&lt;/div&gt;`;
     }
     const sortByDate = (a, b) =&gt; `${a.dateISO}-${a.time}`.localeCompare(`${b.dateISO}-${b.time}`);
     const app = (() =&gt; { try { return window.parent || window; } catch (_e) { return window; } })();
@@ -2687,8 +2691,26 @@ main {
         });
       });
     }
+    function emailAvatarFor(value) {
+      const mail = String(value || &quot;&quot;).trim().toLowerCase();
+      return mail &amp;&amp; mail === user.email.toLowerCase() ? miniAvatarHTML(user.name, user.avatar_url) : &quot;&quot;;
+    }
+    function refreshEmailRowAvatars(root = document) {
+      $$('.email-row', root).forEach(row =&gt; {
+        const input = row.querySelector('.player-email');
+        if (!input) return;
+        const existing = row.querySelector('.email-row-avatar');
+        const html = emailAvatarFor(input.value);
+        row.classList.toggle('has-avatar', !!html);
+        if (html &amp;&amp; !existing) input.insertAdjacentHTML('beforebegin', `&lt;span class=&quot;email-row-avatar&quot;&gt;${html}&lt;/span&gt;`);
+        else if (html &amp;&amp; existing) existing.innerHTML = html;
+        else if (!html &amp;&amp; existing) existing.remove();
+      });
+    }
     function emailRowHTML(value = &quot;&quot;, index = 1) {
-      return `&lt;div class=&quot;email-row&quot;&gt;
+      const avatar = emailAvatarFor(value);
+      return `&lt;div class=&quot;email-row${avatar ? &quot; has-avatar&quot; : &quot;&quot;}&quot;&gt;
+        ${avatar ? `&lt;span class=&quot;email-row-avatar&quot;&gt;${avatar}&lt;/span&gt;` : &quot;&quot;}
         &lt;input class=&quot;text-input player-email&quot; type=&quot;email&quot; name=&quot;player_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;E-Mail ${index}&quot;&gt;
         &lt;span class=&quot;seat-index&quot;&gt;${index}&lt;/span&gt;
       &lt;/div&gt;`;
@@ -2834,10 +2856,14 @@ main {
         $(&quot;.seat-index&quot;, row).textContent = n;
         $(&quot;.player-email&quot;, row).setAttribute(&quot;aria-label&quot;, `E-Mail ${n}`);
       });
+      refreshEmailRowAvatars();
     }
     let focusedEmailInput = null;
     function runEmailAutofillGuard(input) {
-      [0, 50, 180, 350, 900].forEach(delay =&gt; setTimeout(() =&gt; enforceUniqueVisibleEmails(input), delay));
+      [0, 50, 180, 350, 900].forEach(delay =&gt; setTimeout(() =&gt; {
+        enforceUniqueVisibleEmails(input);
+        refreshEmailRowAvatars();
+      }, delay));
     }
     function enforceUniqueVisibleEmails(preferredInput = null) {
       const byEmail = new Map();
@@ -2865,10 +2891,12 @@ main {
         input.addEventListener(&quot;focus&quot;, () =&gt; { focusedEmailInput = input; input.dataset.prevValue = input.value || &quot;&quot;; });
         input.addEventListener(&quot;input&quot;, () =&gt; {
           runEmailAutofillGuard(focusedEmailInput || input);
+          refreshEmailRowAvatars(root);
           input.dataset.prevValue = input.value || &quot;&quot;;
         });
         input.addEventListener(&quot;change&quot;, () =&gt; {
           runEmailAutofillGuard(focusedEmailInput || input);
+          refreshEmailRowAvatars(root);
           input.dataset.prevValue = input.value || &quot;&quot;;
         });
         input.addEventListener(&quot;keydown&quot;, event =&gt; {
@@ -3045,6 +3073,7 @@ main {
       if (withdraw) withdraw.addEventListener(&quot;click&quot;, withdrawInvitation);
       $$(&quot;[data-remove-me]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, withdrawInvitation));
       wireEmailAutofillGuard($(&quot;#editor&quot;));
+      refreshEmailRowAvatars($(&quot;#editor&quot;));
       applyBalls($(&quot;#editor&quot;));
     }
     function selectBooking(id) {
@@ -3132,6 +3161,7 @@ main {
             else state.ownMatches.push(saved);
             state.ownMatches.sort(sortByDate);
           }
+          updateUserLevelReferences();
           renderStatus();
           const successText = data.mails?.length
             ? &quot;Mitspieler-Einladung ist raus&quot;
@@ -11280,14 +11310,14 @@ function avatarLargeBlob() {
     const img = avatarCropState.img;
     const naturalW = img.naturalWidth || img.width;
     const naturalH = img.naturalHeight || img.height;
-    const maxSide = 1200;
+    const maxSide = 1600;
     const scale = Math.min(1, maxSide / Math.max(naturalW, naturalH));
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, Math.round(naturalW * scale));
     canvas.height = Math.max(1, Math.round(naturalH * scale));
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Das große Profilbild konnte nicht vorbereitet werden.')), 'image/webp', 0.82);
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Das große Profilbild konnte nicht vorbereitet werden.')), 'image/webp', 0.88);
   });
 }
 async function saveProfileAvatar(file) {
