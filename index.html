@@ -2543,11 +2543,14 @@ main {
       $$(&quot;[data-booking]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectBooking(btn.dataset.booking)));
       $$(&quot;[data-invite]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectInvite(btn.dataset.invite)));
     }
+    function levelTextHTML(text) {
+      return esc(text).replace(&quot;Tennis LK&quot;, &quot;&lt;br&gt;Tennis LK&quot;);
+    }
     function renderLevelStrip() {
       $(&quot;#levelStrip&quot;).innerHTML = Object.entries(levels).map(([level, meta]) =&gt; `
         &lt;article class=&quot;level-item&quot;&gt;
           &lt;div class=&quot;level-top&quot;&gt;&lt;strong&gt;${level}&lt;/strong&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${meta.balls}&quot;&gt;&lt;/span&gt;&lt;/div&gt;
-          &lt;span&gt;&lt;b&gt;${esc(meta.title)}&lt;/b&gt; · ${esc(meta.text)}&lt;/span&gt;
+          &lt;span&gt;&lt;b&gt;${esc(meta.title)}&lt;/b&gt; · ${levelTextHTML(meta.text)}&lt;/span&gt;
         &lt;/article&gt;
       `).join(&quot;&quot;);
       applyBalls($(&quot;#levelStrip&quot;));
@@ -2919,7 +2922,7 @@ main {
         sendMeetHeight();
         return;
       }
-      $(&quot;#editorHeadline&quot;).textContent = state.selectedType === &quot;booking&quot; ? &quot;Mitspieler einladen&quot; : &quot;Einladung ansehen + bearbeiten&quot;;
+      $(&quot;#editorHeadline&quot;).textContent = state.selectedType === &quot;booking&quot; ? &quot;Mitspieler einladen&quot; : &quot;Einladungen ansehen + zusagen&quot;;
       $(&quot;#editorSubline&quot;).textContent = sourceLabel(source);
       $(&quot;#editor&quot;).innerHTML = state.selectedType === &quot;booking&quot; ? ownEditorHTML(source) : inviteEditorHTML(source);
       wireSegments($(&quot;#editor&quot;));
