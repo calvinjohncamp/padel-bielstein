@@ -2179,6 +2179,12 @@ main {
       &lt;/article&gt;
     &lt;/section&gt;
 
+    &lt;section class=&quot;section-head&quot;&gt;
+      &lt;div&gt;
+        &lt;h2&gt;Chronologischer Überblick&lt;/h2&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
     &lt;section class=&quot;status-grid&quot; aria-label=&quot;Verabredungsstatus&quot;&gt;
       &lt;article class=&quot;booking-card world-own&quot;&gt;
         &lt;h2 class=&quot;card-title&quot;&gt;Meine Verabredungen&lt;/h2&gt;
@@ -2836,7 +2842,6 @@ main {
     function inviteEditorHTML(item) {
       const filled = item.players.filter(Boolean).length;
       const alreadyIn = item.players.some(p =&gt; p &amp;&amp; p.email.toLowerCase() === user.email.toLowerCase());
-      const selfTestAllowed = alreadyIn &amp;&amp; filled &lt; 4 &amp;&amp; item.from === user.name &amp;&amp; !item.players.some(p =&gt; p &amp;&amp; p.testSelf);
       return `&lt;article class=&quot;create-card is-invite ${selectedToneClass()}&quot;&gt;
         &lt;div class=&quot;badge&quot;&gt;Einladung von ${esc(item.from)}&lt;/div&gt;
         &lt;div class=&quot;create-head&quot;&gt;
@@ -2861,7 +2866,6 @@ main {
         &lt;/div&gt;
         &lt;div class=&quot;actions&quot;&gt;
           &lt;button class=&quot;btn ${alreadyIn ? &quot;done&quot; : &quot;coral&quot;} cta-large&quot; type=&quot;button&quot; id=&quot;acceptInvite&quot; ${alreadyIn || filled &gt;= 4 ? &quot;disabled&quot; : &quot;&quot;}&gt;${alreadyIn ? &quot;Du bist dabei&quot; : filled &gt;= 4 ? &quot;Bereits voll&quot; : &quot;Mitspielen&quot;}&lt;/button&gt;
-          ${selfTestAllowed ? '&lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;acceptSelfTestInvite&quot;&gt;Test: zweite Zusage anzeigen&lt;/button&gt;' : ''}
           ${alreadyIn ? '&lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;withdrawInvite&quot;&gt;Teilnahme zurückziehen&lt;/button&gt;' : ''}
         &lt;/div&gt;
       &lt;/article&gt;`;
@@ -2938,8 +2942,6 @@ main {
       if (send) send.addEventListener(&quot;click&quot;, sendInvitation);
       const accept = $(&quot;#acceptInvite&quot;);
       if (accept) accept.addEventListener(&quot;click&quot;, acceptInvitation);
-      const acceptSelfTest = $(&quot;#acceptSelfTestInvite&quot;);
-      if (acceptSelfTest) acceptSelfTest.addEventListener(&quot;click&quot;, acceptSelfTestInvitation);
       const withdraw = $(&quot;#withdrawInvite&quot;);
       if (withdraw) withdraw.addEventListener(&quot;click&quot;, withdrawInvitation);
       $$(&quot;[data-remove-me]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, withdrawInvitation));
@@ -3147,26 +3149,6 @@ main {
       renderEditor();
       renderStatus();
       toast(&quot;Du bist dabei. Die Einladung erscheint jetzt unten rechts.&quot;);
-    }
-    function acceptSelfTestInvitation() {
-      const item = currentInvite();
-      if (!item) return;
-      if (item.players.some(p =&gt; p &amp;&amp; p.testSelf)) {
-        toast(&quot;Die zweite Test-Zusage ist bereits sichtbar.&quot;);
-        return;
-      }
-      const empty = item.players.findIndex(p =&gt; !p);
-      if (empty &lt; 0) {
-        toast(&quot;Diese Verabredung ist bereits voll.&quot;);
-        return;
-      }
-      item.players[empty] = { email: user.email, name: `${user.name} (Test)`, level: user.level, accepted: true, testSelf: true };
-      if (!state.accepted.includes(item.id)) state.accepted.push(item.id);
-      renderPickLists();
-      renderEditor();
-      renderStatus();
-      toast(&quot;Test-Zusage sichtbar. Diese zweite Teilnahme wird nicht dauerhaft gespeichert.&quot;);
-      sendMeetHeight();
     }
     async function withdrawInvitation() {
       const item = currentInvite();
