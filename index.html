@@ -2081,15 +2081,19 @@ main {
     .text-input:focus{outline:0;border-color:var(--coral);box-shadow:0 0 0 3px rgba(255,90,54,.16)}
     .email-panel{margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}
     .email-list{display:grid;gap:8px}
-    .email-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
-    .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto}
-    .email-row .mini-avatar{width:36px;height:36px}
-    .email-field-wrap{display:grid;gap:4px;min-width:0}
-    .email-profile{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px;font-weight:800;min-height:18px}
-    .email-profile strong{color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:13px}
-    .email-profile .profile-level-letter{font-size:16px;line-height:1;color:var(--coral);top:0}
+    .email-list .email-row{min-height:64px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42);display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 12px}
+    .email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto auto}
+    .email-list .email-row .mini-avatar{width:38px;height:38px;background:var(--coral);color:var(--ink)}
+    .email-list .email-row .mini-avatar.has-photo{color:transparent;background-color:var(--cream)}
+    .email-field-wrap{display:grid;gap:2px;min-width:0}
+    .email-player-name{color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:14px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}
+    .email-list .email-row .text-input{min-height:24px;border:0;background:transparent;padding:0;color:var(--muted);font-size:13px;font-weight:700;box-shadow:none}
+    .email-list .email-row .text-input:focus{background:var(--white);border:1px solid var(--line);border-color:var(--coral);border-radius:8px;padding:8px 10px;box-shadow:0 0 0 3px rgba(255,90,54,.13)}
+    .email-profile{display:inline-flex;align-items:center;justify-content:flex-end;gap:5px;color:var(--muted);font-size:12px;font-weight:900;white-space:nowrap}
+    .email-profile .profile-level-letter{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:22px;font-weight:900;line-height:.9;color:var(--coral);top:0}
+    .email-profile .profile-level-title{color:var(--ink)}
     .email-profile .balls{display:inline-flex;gap:2px}
-    .email-profile .balls img{width:10px;height:10px}
+    .email-profile .balls img{width:12px;height:12px}
     .seat-index{width:34px;height:34px;border-radius:9px;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
     .invite-save-actions{display:grid;grid-template-columns:1fr 1.25fr;gap:10px;align-items:stretch}
@@ -2174,7 +2178,7 @@ main {
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     [hidden]{display:none!important}
     @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
-    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-row,.email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto}.seat-index{width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.cta-large{font-size:16px}}
+    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}.email-list .email-row .email-profile{grid-column:2;justify-content:flex-start}.seat-index{width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.cta-large{font-size:16px}}
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
@@ -2760,17 +2764,23 @@ main {
       if (mail === user.email.toLowerCase()) return { name: user.name, email: user.email, level: user.level, avatar_url: user.avatar_url || &quot;&quot; };
       return fallback;
     }
-    function emailProfileHTML(player) {
+    function emailPlayerNameHTML(player) {
       if (!player || !player.name || player.name === player.email) return &quot;&quot;;
+      return `&lt;div class=&quot;email-player-name&quot;&gt;${esc(player.name)}&lt;/div&gt;`;
+    }
+    function emailProfileHTML(player, hasValue = false) {
+      if (!player || !levels[player.level]) {
+        return hasValue ? '&lt;span class=&quot;email-profile&quot;&gt;Spielstärke offen&lt;/span&gt;' : &quot;&quot;;
+      }
       const level = levels[player.level] ? player.level : &quot;&quot;;
-      return `&lt;span class=&quot;email-profile&quot;&gt;&lt;strong&gt;${esc(player.name)}&lt;/strong&gt;${level ? `&lt;span class=&quot;profile-level-letter&quot;&gt;${level}&lt;/span&gt;&lt;span&gt;${esc(levels[level].title)}&lt;/span&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${levels[level].balls}&quot;&gt;&lt;/span&gt;` : &quot;&quot;}&lt;/span&gt;`;
+      return `&lt;span class=&quot;email-profile&quot;&gt;&lt;span class=&quot;profile-level-letter&quot;&gt;${level}&lt;/span&gt;&lt;span class=&quot;profile-level-title&quot;&gt;${esc(levels[level].title)}&lt;/span&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${levels[level].balls}&quot;&gt;&lt;/span&gt;&lt;/span&gt;`;
     }
     function refreshEmailRowAvatars(root = document) {
       $$('.email-row', root).forEach(row =&gt; {
         const input = row.querySelector('.player-email');
         if (!input) return;
         const existing = row.querySelector('.email-row-avatar');
-        const profileName = row.querySelector('.email-profile strong')?.textContent || input.value;
+        const profileName = row.querySelector('.email-player-name')?.textContent || input.value;
         const html = input.value.trim() ? emailFallbackAvatarHTML(input.value, { name: profileName }) : &quot;&quot;;
         row.classList.toggle('has-avatar', !!html);
         if (html &amp;&amp; !existing) input.insertAdjacentHTML('beforebegin', `&lt;span class=&quot;email-row-avatar&quot;&gt;${html}&lt;/span&gt;`);
@@ -2781,13 +2791,15 @@ main {
     function emailRowHTML(value = &quot;&quot;, index = 1, player = null) {
       const profile = profileForEmail(value, player);
       const avatar = value ? emailFallbackAvatarHTML(value, profile) : &quot;&quot;;
-      const profileInfo = emailProfileHTML(profile);
+      const playerName = emailPlayerNameHTML(profile);
+      const profileInfo = emailProfileHTML(profile, !!value);
       return `&lt;div class=&quot;email-row${avatar ? &quot; has-avatar&quot; : &quot;&quot;}&quot;&gt;
         ${avatar ? `&lt;span class=&quot;email-row-avatar&quot;&gt;${avatar}&lt;/span&gt;` : &quot;&quot;}
         &lt;span class=&quot;email-field-wrap&quot;&gt;
+          ${playerName}
           &lt;input class=&quot;text-input player-email&quot; type=&quot;email&quot; name=&quot;player_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;E-Mail ${index}&quot;&gt;
-          ${profileInfo}
         &lt;/span&gt;
+        ${profileInfo}
         &lt;span class=&quot;seat-index&quot;&gt;${index}&lt;/span&gt;
       &lt;/div&gt;`;
     }
