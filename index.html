@@ -2037,8 +2037,9 @@ main {
     .status.progress span{display:block;color:var(--muted)}
     .status.green{background:#DDEBD9;color:var(--green)}
     .status.coral{background:#FFE0D7;color:var(--coral)}
-    .mini-avatar{width:34px;height:34px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;overflow:hidden;background-size:cover;background-position:center}
+    .mini-avatar{width:34px;height:34px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;overflow:hidden;background-size:cover;background-position:center;flex-shrink:0}
     .mini-avatar.has-photo{color:transparent;background-color:var(--cream)}
+    .invite-pick-side{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
     .badge{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);height:30px;padding:0 14px;border-radius:15px;background:var(--cream);border:1.5px solid var(--coral);color:var(--coral);box-shadow:0 0 0 8px var(--cream);display:flex;align-items:center;justify-content:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;font-size:12px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
     .create-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start}
     .card-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:24px;font-weight:800;margin:0 0 6px}
@@ -2502,6 +2503,7 @@ main {
         id: meetup.id,
         priority: row.direct ? 0 : 1,
         from: organizer.full_name || organizer.email || &quot;Ein Mitspieler&quot;,
+        fromAvatar: organizer.avatar_url || &quot;&quot;,
         mode: row.direct ? &quot;direct&quot; : &quot;open&quot;,
         participantId: row.participant_id || &quot;&quot;,
         inviteStatus: row.invite_status || &quot;invited&quot;,
@@ -2599,7 +2601,10 @@ main {
             &lt;span class=&quot;row-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/span&gt;
             &lt;span class=&quot;row-sub&quot;&gt;${esc(item.court)} · von ${esc(item.from)}&lt;/span&gt;
           &lt;/span&gt;
-          &lt;span class=&quot;status ${item.mode === &quot;direct&quot; ? &quot;coral&quot; : &quot;&quot;}&quot;&gt;${item.mode === &quot;direct&quot; ? &quot;Direkte Einladung&quot; : &quot;Offene Einladung&quot;}&lt;/span&gt;
+          &lt;span class=&quot;invite-pick-side&quot;&gt;
+            ${miniAvatarHTML(item.from, item.fromAvatar)}
+            &lt;span class=&quot;status ${item.mode === &quot;direct&quot; ? &quot;coral&quot; : &quot;&quot;}&quot;&gt;${item.mode === &quot;direct&quot; ? &quot;Direkte Einladung&quot; : &quot;Offene Einladung&quot;}&lt;/span&gt;
+          &lt;/span&gt;
         &lt;/button&gt;
       `}).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Aktuell keine passenden Einladungen.&lt;/div&gt;';
       $$(&quot;[data-booking]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectBooking(btn.dataset.booking)));
@@ -3274,6 +3279,7 @@ main {
     }
     async function init() {
       await loadLiveData();
+      updateUserLevelReferences();
       renderLevelStrip();
       renderProfile();
       renderPickLists();
@@ -11050,7 +11056,8 @@ function dropProfileAvatar(event) {
   const file = event?.dataTransfer?.files?.[0];
   saveProfileAvatar(file);
 }
-function avatarFileToBlob(file) {
+let avatarCropState = null;
+function loadAvatarImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) { reject(new Error('Bitte zuerst ein Bild auswählen.')); return; }
     if (!/^image\/(jpeg|png|webp)$/.test(file.type || '')) {
@@ -11065,18 +11072,7 @@ function avatarFileToBlob(file) {
     const reader = new FileReader();
     reader.onload = () => {
       img.onload = () => {
-        const size = 320;
-        const canvas = document.createElement('canvas');
-        canvas.width = size; canvas.height = size;
-        const ctx = canvas.getContext('2d');
-        const side = Math.min(img.naturalWidth || img.width, img.naturalHeight || img.height);
-        const sx = ((img.naturalWidth || img.width) - side) / 2;
-        const sy = ((img.naturalHeight || img.height) - side) / 2;
-        ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
-        canvas.toBlob(blob => {
-          if (blob) resolve(blob);
-          else reject(new Error('Das Bild konnte nicht vorbereitet werden.'));
-        }, 'image/webp', 0.84);
+        resolve(img);
       };
       img.onerror = () => reject(new Error('Das Bild konnte nicht gelesen werden.'));
       img.src = reader.result;
@@ -11085,12 +11081,124 @@ function avatarFileToBlob(file) {
     reader.readAsDataURL(file);
   });
 }
+function ensureAvatarCropModal() {
+  let overlay = document.getElementById('avatarCropOverlay');
+  if (overlay) return overlay;
+  overlay = document.createElement('div');
+  overlay.id = 'avatarCropOverlay';
+  overlay.className = 'avatar-crop-overlay';
+  overlay.innerHTML = `
+    <div class="avatar-crop-card" role="dialog" aria-modal="true" aria-labelledby="avatarCropTitle">
+      <div class="avatar-crop-head">
+        <div>
+          <h2 class="avatar-crop-title" id="avatarCropTitle">Profilbild ausrichten</h2>
+          <p class="avatar-crop-sub">Zieh das Bild im Kreis an die richtige Stelle und stelle die Größe ein.</p>
+        </div>
+        <button class="avatar-crop-close" type="button" onclick="closeAvatarCrop()" aria-label="Schließen">×</button>
+      </div>
+      <div class="avatar-crop-stage" id="avatarCropStage"><img id="avatarCropImg" alt=""></div>
+      <input class="avatar-crop-slider" id="avatarCropZoom" type="range" min="1" max="3" step="0.01" value="1">
+      <div class="avatar-crop-actions">
+        <button class="avatar-crop-cancel" type="button" onclick="closeAvatarCrop()">Abbrechen</button>
+        <button class="avatar-crop-save" type="button" onclick="confirmAvatarCrop()">Profilbild speichern</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  const stage = overlay.querySelector('#avatarCropStage');
+  const zoom = overlay.querySelector('#avatarCropZoom');
+  let dragging = false, startX = 0, startY = 0, baseX = 0, baseY = 0;
+  stage.addEventListener('pointerdown', (e) => {
+    if (!avatarCropState) return;
+    dragging = true; startX = e.clientX; startY = e.clientY; baseX = avatarCropState.x; baseY = avatarCropState.y;
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!dragging || !avatarCropState) return;
+    avatarCropState.x = baseX + e.clientX - startX;
+    avatarCropState.y = baseY + e.clientY - startY;
+    updateAvatarCropPreview();
+  });
+  stage.addEventListener('pointerup', () => { dragging = false; });
+  stage.addEventListener('pointercancel', () => { dragging = false; });
+  zoom.addEventListener('input', () => {
+    if (!avatarCropState) return;
+    avatarCropState.zoom = Number(zoom.value) || 1;
+    updateAvatarCropPreview();
+  });
+  return overlay;
+}
+function updateAvatarCropPreview() {
+  if (!avatarCropState) return;
+  const img = document.getElementById('avatarCropImg');
+  const stageSize = 250;
+  const naturalW = avatarCropState.img.naturalWidth || avatarCropState.img.width;
+  const naturalH = avatarCropState.img.naturalHeight || avatarCropState.img.height;
+  const baseScale = stageSize / Math.min(naturalW, naturalH);
+  const visibleW = naturalW * baseScale * avatarCropState.zoom;
+  const visibleH = naturalH * baseScale * avatarCropState.zoom;
+  avatarCropState.x = Math.max((stageSize - visibleW) / 2, Math.min((visibleW - stageSize) / 2, avatarCropState.x));
+  avatarCropState.y = Math.max((stageSize - visibleH) / 2, Math.min((visibleH - stageSize) / 2, avatarCropState.y));
+  img.src = avatarCropState.img.src;
+  img.style.width = `${naturalW * baseScale}px`;
+  img.style.height = `${naturalH * baseScale}px`;
+  img.style.setProperty('--crop-x', `${avatarCropState.x}px`);
+  img.style.setProperty('--crop-y', `${avatarCropState.y}px`);
+  img.style.setProperty('--crop-z', avatarCropState.zoom);
+}
+function closeAvatarCrop() {
+  const overlay = document.getElementById('avatarCropOverlay');
+  if (overlay) overlay.classList.remove('open');
+  avatarCropState = null;
+}
+function avatarCropBlob() {
+  return new Promise((resolve, reject) => {
+    if (!avatarCropState?.img) { reject(new Error('Kein Bild zum Speichern ausgewählt.')); return; }
+    const output = 320;
+    const stageSize = 250;
+    const img = avatarCropState.img;
+    const naturalW = img.naturalWidth || img.width;
+    const naturalH = img.naturalHeight || img.height;
+    const baseScale = stageSize / Math.min(naturalW, naturalH);
+    const visibleW = naturalW * baseScale * avatarCropState.zoom;
+    const visibleH = naturalH * baseScale * avatarCropState.zoom;
+    const sx = (naturalW / 2) - ((stageSize / 2 + avatarCropState.x) * naturalW / visibleW);
+    const sy = (naturalH / 2) - ((stageSize / 2 + avatarCropState.y) * naturalH / visibleH);
+    const sw = stageSize * naturalW / visibleW;
+    const sh = stageSize * naturalH / visibleH;
+    const canvas = document.createElement('canvas');
+    canvas.width = output; canvas.height = output;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, output, output);
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Das Bild konnte nicht vorbereitet werden.')), 'image/webp', 0.84);
+  });
+}
 async function saveProfileAvatar(file) {
+  return openProfileAvatarCrop(file);
+}
+async function openProfileAvatarCrop(file) {
+  const msg = document.getElementById('pfSaveMsg');
+  try {
+    const img = await loadAvatarImage(file);
+    const overlay = ensureAvatarCropModal();
+    const stageSize = 250;
+    const naturalW = img.naturalWidth || img.width;
+    const naturalH = img.naturalHeight || img.height;
+    const yHint = naturalH > naturalW * 1.15 ? Math.round(stageSize * 0.08) : 0;
+    avatarCropState = { img, x: 0, y: yHint, zoom: 1 };
+    const zoom = document.getElementById('avatarCropZoom');
+    if (zoom) zoom.value = '1';
+    updateAvatarCropPreview();
+    overlay.classList.add('open');
+  } catch(e) {
+    if (msg) { msg.style.color = '#d64545'; msg.textContent = 'Profilbild nicht vorbereitet: ' + (e.message || e); }
+  }
+}
+async function confirmAvatarCrop() {
   const msg = document.getElementById('pfSaveMsg');
   if (!currentUser?.id) { if (msg) msg.textContent = 'Bitte erst anmelden.'; return; }
   if (msg) { msg.style.color = ''; msg.textContent = 'Profilbild wird gespeichert …'; }
   try {
-    const blob = await avatarFileToBlob(file);
+    const blob = await avatarCropBlob();
     const path = `${currentUser.id}/avatar.webp`;
     const { error: upErr } = await sb.storage.from('profile-avatars').upload(path, blob, {
       upsert: true,
@@ -11109,6 +11217,7 @@ async function saveProfileAvatar(file) {
     if (!data) throw new Error('Profilbild konnte nicht im Account gespeichert werden.');
     currentProfile = { ...(currentProfile || {}), avatar_url: data.avatar_url };
     if (msg) { msg.style.color = '#2f7d45'; msg.textContent = '✓ Profilbild gespeichert'; }
+    closeAvatarCrop();
     refreshProfileViews();
   } catch(e) {
     if (msg) { msg.style.color = '#d64545'; msg.textContent = 'Profilbild nicht gespeichert: ' + (e.message || e); }
@@ -13347,6 +13456,43 @@ body.bielstein-theme .acct-avatar-btn {
 }
 body.bielstein-theme .acct-avatar-btn.danger { color: #B8402C; }
 body.bielstein-theme .acct-avatar-note { grid-column: 2; margin-top: -4px; font-size: 12px; color: #8C8B84; line-height: 1.4; }
+body.bielstein-theme .avatar-crop-overlay {
+  position: fixed; inset: 0; z-index: 900; display: none; align-items: center; justify-content: center;
+  background: rgba(28,26,23,.78); padding: 18px;
+}
+body.bielstein-theme .avatar-crop-overlay.open { display: flex; }
+body.bielstein-theme .avatar-crop-card {
+  width: min(100%, 390px); background: #F6F1E7; border: 1.5px solid #FF5A36;
+  border-radius: 20px; padding: 20px; color: #1C1A17; box-shadow: 0 24px 80px rgba(0,0,0,.28);
+}
+body.bielstein-theme .avatar-crop-head {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px;
+}
+body.bielstein-theme .avatar-crop-title {
+  font: 800 22px/1.1 "Space Grotesk","Arial Narrow",sans-serif; margin: 0 0 4px;
+}
+body.bielstein-theme .avatar-crop-sub { margin: 0; font-size: 13px; color: #7A7368; line-height: 1.4; }
+body.bielstein-theme .avatar-crop-close {
+  border: 0; background: #FFFFFF; color: #1C1A17; width: 34px; height: 34px; border-radius: 50%;
+  font-size: 22px; cursor: pointer; line-height: 1;
+}
+body.bielstein-theme .avatar-crop-stage {
+  width: 250px; height: 250px; margin: 12px auto 16px; border-radius: 50%; overflow: hidden;
+  background: #E2DACB; border: 2px solid #1C1A17; position: relative; touch-action: none; cursor: move;
+}
+body.bielstein-theme .avatar-crop-stage img {
+  position: absolute; left: 50%; top: 50%; max-width: none; user-select: none; pointer-events: none;
+  transform: translate(calc(-50% + var(--crop-x,0px)), calc(-50% + var(--crop-y,0px))) scale(var(--crop-z,1));
+  transform-origin: center;
+}
+body.bielstein-theme .avatar-crop-slider { width: 100%; accent-color: #FF5A36; }
+body.bielstein-theme .avatar-crop-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+body.bielstein-theme .avatar-crop-actions button {
+  border: 0; border-radius: 12px; padding: 13px 12px; cursor: pointer;
+  font: 800 13px "Space Grotesk","Arial Narrow",sans-serif;
+}
+body.bielstein-theme .avatar-crop-save { background: #FF5A36; color: #1C1A17; }
+body.bielstein-theme .avatar-crop-cancel { background: #FFFFFF; color: #7A7368; }
 body.bielstein-theme .acct-cover-redesign .cover-mid { align-items: flex-start; gap: 0; padding-top: 0; }
 body.bielstein-theme .acct-cover-redesign .cover-greet { text-align: left; margin: 4px 0 0; }
 body.bielstein-theme .acct-cover-redesign .cover-greet-line { font-size: 1.02rem; color: #1C1A17; }
