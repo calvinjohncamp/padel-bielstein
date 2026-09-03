@@ -434,6 +434,9 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 .rw-badge.acct-photo-badge.has-photo {
   color: transparent;
   border-color: #1C1A17;
+  background-image: var(--avatar-image) !important;
+  background-size: cover !important;
+  background-position: center !important;
 }
 /* Kopf großzügig gesetzt, elegantere Abstände */
 .rw-tagline { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: #3E4A55; margin-bottom: 14px; }
@@ -628,10 +631,23 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 }
 .cover-wordmark span { color: #FF5A36; }
 .cover-mid { display: flex; flex-direction: column; }
+.cover-greet-wrap { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 18px; align-items: center; }
 .cover-greet { margin: 4px 0; }
+.cover-avatar {
+  width: 76px; height: 76px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  background: #FF5A36; color: #1C1A17; border: 2px solid #1C1A17;
+  display: flex; align-items: center; justify-content: center;
+  font-family: "Space Grotesk","Arial Narrow",sans-serif; font-weight: 800; font-size: 22px;
+  background-size: cover; background-position: center;
+}
+.cover-avatar.has-photo {
+  color: transparent;
+  background-color: #FAF8F4;
+  background-image: var(--avatar-image) !important;
+}
 /* Nächster Termin – mit Abstand unter der Begrüßung, ruhig und gut lesbar. */
 .cover-match {
-  margin-top: 22px; font-family: "Manrope","Arial","Helvetica",sans-serif;
+  margin-top: 24px; font-family: "Manrope","Arial","Helvetica",sans-serif;
   font-size: 0.98rem; line-height: 1.55; color: #57534D; max-width: 320px;
 }
 .cover-match strong { color: #1C1A17; font-weight: 700; }
@@ -2095,8 +2111,10 @@ main {
     .seat.mine{position:relative;border-color:var(--coral);box-shadow:0 0 0 3px rgba(255,90,54,.10)}
     .seat.free{border-style:dashed;color:var(--muted)}
     .seat-remove{position:absolute;top:7px;right:7px;width:24px;height:24px;border:0;border-radius:50%;background:var(--soft);color:var(--ink);font-weight:900;line-height:1}
-    .seat-avatar{width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--cream);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800}
+    .seat-avatar{width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--cream);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;overflow:hidden;background-size:cover;background-position:center}
+    .seat-avatar.has-photo{color:transparent;background-color:var(--cream);background-image:var(--avatar-image)!important}
     .seat.mine .seat-avatar{background:var(--coral);color:var(--white)}
+    .seat.mine .seat-avatar.has-photo{color:transparent;background-color:var(--cream)}
     .seat.free .seat-avatar{background:var(--soft);color:var(--muted)}
     .seat-main{min-width:0}
     .seat-name{font-size:14px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}
@@ -2189,7 +2207,7 @@ main {
             &lt;/span&gt;
           &lt;/div&gt;
         &lt;/div&gt;
-        &lt;button class=&quot;btn secondary profile-action&quot; type=&quot;button&quot;&gt;Profil ändern&lt;/button&gt;
+        &lt;button class=&quot;btn secondary profile-action&quot; type=&quot;button&quot; onclick=&quot;try{parent.openProfileCard()}catch(e){}&quot;&gt;Profil ändern&lt;/button&gt;
         &lt;div class=&quot;profile-level-control&quot;&gt;
           &lt;span class=&quot;email-block-label&quot;&gt;Spielstärke ändern&lt;/span&gt;
           &lt;div class=&quot;seg&quot; id=&quot;profileLevelPicker&quot; data-seg=&quot;profileLevel&quot;&gt;&lt;/div&gt;
@@ -2309,6 +2327,12 @@ main {
       const photo = safeCssUrl(url);
       return `&lt;span class=&quot;mini-avatar${photo ? &quot; has-photo&quot; : &quot;&quot;}&quot;${photo ? ` style=&quot;background-image:url('${photo}')&quot;` : &quot;&quot;}&gt;${photo ? &quot;&quot; : esc(initials(name))}&lt;/span&gt;`;
     }
+    function seatAvatarHTML(player, index) {
+      if (!player) return `&lt;div class=&quot;seat-avatar&quot;&gt;${index + 1}&lt;/div&gt;`;
+      const photo = safeCssUrl(player.avatar_url || &quot;&quot;);
+      const label = initials(player.name || player.email || &quot;?&quot;);
+      return `&lt;div class=&quot;seat-avatar${photo ? &quot; has-photo&quot; : &quot;&quot;}&quot;${photo ? ` style=&quot;--avatar-image:url('${photo}');background-image:var(--avatar-image)&quot;` : &quot;&quot;}&gt;${photo ? &quot;&quot; : esc(label)}&lt;/div&gt;`;
+    }
     const sortByDate = (a, b) =&gt; `${a.dateISO}-${a.time}`.localeCompare(`${b.dateISO}-${b.time}`);
     const app = (() =&gt; { try { return window.parent || window; } catch (_e) { return window; } })();
     const embedded = app !== window || document.body.classList.contains(&quot;embedded&quot;);
@@ -2420,6 +2444,7 @@ main {
         email: row.email_normalized || row.email || &quot;&quot;,
         name: row.display_name || row.email_normalized || row.email || &quot;&quot;,
         level: row.playing_level || &quot;&quot;,
+        avatar_url: row.avatar_url || &quot;&quot;,
         accepted: row.status === &quot;accepted&quot;
       };
     }
@@ -2623,11 +2648,13 @@ main {
       state.ownMatches.forEach(match =&gt; {
         match.players.forEach(player =&gt; {
           if (player &amp;&amp; player.email.toLowerCase() === user.email.toLowerCase()) player.level = user.level;
+          if (player &amp;&amp; player.email.toLowerCase() === user.email.toLowerCase()) player.avatar_url = user.avatar_url || &quot;&quot;;
         });
       });
       invites.forEach(invite =&gt; {
         invite.players.forEach(player =&gt; {
           if (player &amp;&amp; player.email.toLowerCase() === user.email.toLowerCase()) player.level = user.level;
+          if (player &amp;&amp; player.email.toLowerCase() === user.email.toLowerCase()) player.avatar_url = user.avatar_url || &quot;&quot;;
         });
       });
     }
@@ -2929,7 +2956,7 @@ main {
       const mine = player.email.toLowerCase() === user.email.toLowerCase();
       return `&lt;div class=&quot;seat ${mine ? &quot;mine&quot; : &quot;&quot;}&quot;&gt;
         ${mine &amp;&amp; removable ? '&lt;button class=&quot;seat-remove&quot; type=&quot;button&quot; data-remove-me aria-label=&quot;Teilnahme zurückziehen&quot;&gt;×&lt;/button&gt;' : ''}
-        &lt;div class=&quot;seat-avatar&quot;&gt;${esc(initials || &quot;?&quot; )}&lt;/div&gt;
+        ${seatAvatarHTML(player, index)}
         &lt;div class=&quot;seat-main&quot;&gt;&lt;div class=&quot;seat-name&quot;&gt;${esc(player.name || player.email)}&lt;/div&gt;&lt;div class=&quot;seat-mail&quot;&gt;${esc(player.email)}&lt;/div&gt;&lt;/div&gt;
         ${seatLevelHTML(player.level)}
       &lt;/div&gt;`;
@@ -3104,7 +3131,8 @@ main {
       const players = playerEmails.map(email =&gt; ({
         email,
         name: email.toLowerCase() === user.email.toLowerCase() ? user.name : email,
-        level: email.toLowerCase() === user.email.toLowerCase() ? user.level : &quot;&quot;
+        level: email.toLowerCase() === user.email.toLowerCase() ? user.level : &quot;&quot;,
+        avatar_url: email.toLowerCase() === user.email.toLowerCase() ? user.avatar_url || &quot;&quot; : &quot;&quot;
       }));
       while (players.length &lt; 4) players.push(null);
       const mailType = audience === &quot;Mitspieler&quot; &amp;&amp; playerEmails.length &gt;= 4 ? &quot;Du bist dabei&quot; : audience === &quot;Mitspieler&quot; ? &quot;noch keine Mail&quot; : &quot;Lust auf Padel?&quot;;
@@ -3185,7 +3213,7 @@ main {
           toast(&quot;Diese Verabredung ist bereits voll.&quot;);
           return;
         }
-        item.players[empty] = { email: user.email, name: user.name, level: user.level, accepted: true };
+        item.players[empty] = { email: user.email, name: user.name, level: user.level, avatar_url: user.avatar_url || &quot;&quot;, accepted: true };
       }
       if (!state.accepted.includes(item.id)) state.accepted.push(item.id);
       renderPickLists();
@@ -10422,7 +10450,7 @@ function profileAvatarUrl() {
 }
 function roundAvatarHTML(className, initials = profileInitials(), url = profileAvatarUrl()) {
   const safeUrl = cssUrl(url);
-  const style = safeUrl ? ` style="background-image:url('${safeUrl}')"` : '';
+  const style = safeUrl ? ` style="--avatar-image:url('${safeUrl}');background-image:var(--avatar-image)"` : '';
   return `<div class="${className}${safeUrl ? ' has-photo' : ''}"${style}>${safeUrl ? '' : esc(initials)}</div>`;
 }
 
@@ -10651,14 +10679,14 @@ function profileCardHTML() {
     <div class="profile-form">
       <div class="form-group">
         <label class="form-label">Profilbild</label>
-        <div class="acct-avatar-field">
+        <div class="acct-avatar-field" data-avatar-dropzone ondragenter="profileAvatarDrag(event, true)" ondragover="profileAvatarDrag(event, true)" ondragleave="profileAvatarDrag(event, false)" ondrop="dropProfileAvatar(event)">
           ${roundAvatarHTML('acct-avatar-preview', inits, avatar)}
           <div class="acct-avatar-actions">
             <input id="pfAvatarFile" type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="saveProfileAvatar(this.files && this.files[0])">
             <button class="acct-avatar-btn" type="button" onclick="document.getElementById('pfAvatarFile').click()">Bild auswählen</button>
             ${avatar ? '<button class="acct-avatar-btn danger" type="button" onclick="removeProfileAvatar()">Entfernen</button>' : ''}
           </div>
-          <div class="acct-avatar-note">Wird rund angezeigt und vor dem Speichern automatisch verkleinert.</div>
+          <div class="acct-avatar-note">Bild auswählen oder hier ablegen. Wird rund angezeigt und automatisch verkleinert.</div>
         </div>
       </div>
       <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
@@ -11009,6 +11037,19 @@ function refreshProfileViews() {
     renderAccountPage(0);
   }
 }
+function profileAvatarDrag(event, on) {
+  if (!event) return;
+  event.preventDefault();
+  event.stopPropagation();
+  if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+  const zone = event.currentTarget?.closest?.('[data-avatar-dropzone]') || event.currentTarget;
+  if (zone) zone.classList.toggle('is-dragover', !!on);
+}
+function dropProfileAvatar(event) {
+  profileAvatarDrag(event, false);
+  const file = event?.dataTransfer?.files?.[0];
+  saveProfileAvatar(file);
+}
 function avatarFileToBlob(file) {
   return new Promise((resolve, reject) => {
     if (!file) { reject(new Error('Bitte zuerst ein Bild auswählen.')); return; }
@@ -11106,6 +11147,7 @@ function coverCardHTML(nextMatch) {
   const fullName  = (currentProfile?.full_name || '').trim();
   const firstName = esc(fullName.split(/\s+/)[0] || '');
   const level = currentPlayingLevel();
+  const coverAvatar = roundAvatarHTML('cover-avatar', profileInitials(fullName), profileAvatarUrl());
   const matchHtml = nextMatch
     ? `<div class="cover-match"><span class="cover-section-kicker">Nächstes Match</span>${matchLineHTML(nextMatch)}</div>`
     : '<div class="cover-match empty"><span class="cover-section-kicker">Nächstes Match</span>Noch kein kommender Termin gefunden.</div>';
@@ -11115,9 +11157,12 @@ function coverCardHTML(nextMatch) {
       <h2 class="cover-wordmark">PADEL<br><span>BIELSTEIN</span></h2>
     </div>
     <div class="cover-mid">
-      <div class="cover-greet">
-        <span class="cover-greet-line">Schön, dass du da bist,</span>
-        <span class="cover-greet-name">${firstName || 'willkommen'}</span>
+      <div class="cover-greet-wrap">
+        <div class="cover-greet">
+          <span class="cover-greet-line">Schön, dass du da bist,</span>
+          <span class="cover-greet-name">${firstName || 'willkommen'}</span>
+        </div>
+        ${coverAvatar}
       </div>
       ${matchHtml}
       ${accountLevelPillHTML(level)}
@@ -13279,6 +13324,12 @@ body.bielstein-theme .acct-avatar-field {
   display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center;
   background: #FFFFFF; border: 1.5px solid #E2DACB; border-radius: 14px;
   padding: 12px; margin: 2px 0 14px;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+body.bielstein-theme .acct-avatar-field.is-dragover {
+  background: #FFF8F3;
+  border-color: #FF5A36;
+  box-shadow: 0 0 0 4px rgba(255,90,54,.13);
 }
 body.bielstein-theme .acct-avatar-preview {
   width: 58px; height: 58px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
@@ -13286,6 +13337,7 @@ body.bielstein-theme .acct-avatar-preview {
   display: flex; align-items: center; justify-content: center;
   font: 800 16px "Space Grotesk","Arial Narrow",sans-serif;
   background-size: cover; background-position: center;
+  cursor: copy;
 }
 body.bielstein-theme .acct-avatar-preview.has-photo { color: transparent; background-color: #FAF8F4; }
 body.bielstein-theme .acct-avatar-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-start; }
@@ -13299,13 +13351,15 @@ body.bielstein-theme .acct-cover-redesign .cover-mid { align-items: flex-start; 
 body.bielstein-theme .acct-cover-redesign .cover-greet { text-align: left; margin: 4px 0 0; }
 body.bielstein-theme .acct-cover-redesign .cover-greet-line { font-size: 1.02rem; color: #1C1A17; }
 body.bielstein-theme .acct-cover-redesign .cover-greet-name { font-size: clamp(34px,8.2vw,48px); line-height: .95; }
+body.bielstein-theme .acct-cover-redesign .cover-greet-wrap { width: 100%; margin-bottom: 6px; }
+body.bielstein-theme .acct-cover-redesign .cover-avatar.has-photo { background-image: var(--avatar-image) !important; }
 body.bielstein-theme .cover-section-kicker { display: block; margin: 0 0 7px; font: 800 10.5px/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #FF5A36; }
-body.bielstein-theme .cover-match { margin-top: 34px; font-family: "Manrope","Arial",sans-serif; font-size: .98rem; line-height: 1.55; color: #57534D; max-width: 320px; background: transparent; border-radius: 0; padding: 0; box-shadow: none; }
+body.bielstein-theme .cover-match { margin-top: 37px; font-family: "Manrope","Arial",sans-serif; font-size: .98rem; line-height: 1.55; color: #57534D; max-width: 320px; background: transparent; border-radius: 0; padding: 0; box-shadow: none; }
 body.bielstein-theme .cover-match strong { color: #1C1A17; font-weight: 800; }
 body.bielstein-theme .cover-match span:not(.cover-section-kicker) { color: #7A7368; font-size: 13px; }
 body.bielstein-theme .cover-match.empty { background: transparent; color: #7A7368; }
 body.bielstein-theme .acct-level-pill {
-  display: inline-flex; align-items: center; gap: 8px; margin-top: 34px;
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 37px;
   background: transparent; border: 0; border-radius: 0; padding: 0; text-align: left;
 }
 body.bielstein-theme .acct-level-letter { font-family: "Space Grotesk","Arial Narrow",sans-serif; font-size: 24px; font-weight: 800; line-height: .9; color: #FF5A36; }
