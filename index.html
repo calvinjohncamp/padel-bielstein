@@ -3010,6 +3010,7 @@ main {
         &lt;div class=&quot;actions invite-save-actions&quot;&gt;
           &lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;saveMeetup&quot;&gt;Änderungen speichern&lt;/button&gt;
           &lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot;&gt;Spieler informieren&lt;/button&gt;
+          &lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;sendReminder&quot;&gt;Erinnerungs-Mail schicken&lt;/button&gt;
         &lt;/div&gt;
       &lt;/article&gt;`;
     }
@@ -3114,6 +3115,8 @@ main {
       if (deleteGroupBtn) deleteGroupBtn.addEventListener(&quot;click&quot;, deleteGroup);
       const send = $(&quot;#sendInvite&quot;);
       if (send) send.addEventListener(&quot;click&quot;, sendInvitation);
+      const reminder = $(&quot;#sendReminder&quot;);
+      if (reminder) reminder.addEventListener(&quot;click&quot;, () =&gt; sendInvitation(true, &quot;status_update&quot;));
       const saveMeetup = $(&quot;#saveMeetup&quot;);
       if (saveMeetup) saveMeetup.addEventListener(&quot;click&quot;, () =&gt; sendInvitation(false));
       const accept = $(&quot;#acceptInvite&quot;);
@@ -3156,14 +3159,14 @@ main {
         return true;
       });
     }
-    async function sendInvitation(sendEmails = true) {
+    async function sendInvitation(sendEmails = true, forcedMailType = &quot;&quot;) {
       const item = currentBooking();
       const sendButton = $(&quot;#sendInvite&quot;);
       const saveButton = $(&quot;#saveMeetup&quot;);
       const actionButton = sendEmails ? sendButton : saveButton;
       const emails = collectEmails();
       const audience = selectedChip(&quot;audience&quot;);
-      const chosenMailType = selectedChip(&quot;mailType&quot;) || &quot;lust_auf_padel&quot;;
+      const chosenMailType = forcedMailType || selectedChip(&quot;mailType&quot;) || &quot;lust_auf_padel&quot;;
       const selectedGroup = groups.find(group =&gt; group.id === state.selectedGroupId);
       const invalid = emails.filter(email =&gt; !mailOk(email));
       if (invalid.length) {
@@ -3184,7 +3187,7 @@ main {
       }
       if (actionButton) {
         actionButton.disabled = true;
-        actionButton.textContent = sendEmails ? &quot;Spieler werden informiert ...&quot; : &quot;Änderungen werden gespeichert ...&quot;;
+        actionButton.textContent = forcedMailType === &quot;status_update&quot; ? &quot;Erinnerung wird verschickt ...&quot; : sendEmails ? &quot;Spieler werden informiert ...&quot; : &quot;Änderungen werden gespeichert ...&quot;;
       }
       const playerEmails = emails.slice(0, 4);
       if (embedded) {
@@ -3210,7 +3213,7 @@ main {
           const data = await callMeetupFunction(payload);
           const saved = data.meetup ? ownMatchFromMeetup(data.meetup) : null;
           if (saved) {
-            saved.mailType = chosenMailType === &quot;du_bist_dabei&quot; ? &quot;Du bist dabei&quot; : &quot;Lust auf Padel?&quot;;
+            saved.mailType = chosenMailType === &quot;status_update&quot; ? &quot;Erinnerung&quot; : chosenMailType === &quot;du_bist_dabei&quot; ? &quot;Du bist dabei&quot; : &quot;Lust auf Padel?&quot;;
             const index = state.ownMatches.findIndex(match =&gt; match.meetupId === saved.meetupId || match.id === saved.id || match.bookingId === saved.bookingId);
             if (index &gt;= 0) state.ownMatches.splice(index, 1, saved);
             else state.ownMatches.push(saved);
@@ -3220,6 +3223,8 @@ main {
           renderStatus();
           const successText = !sendEmails
             ? &quot;Änderungen gespeichert&quot;
+            : forcedMailType === &quot;status_update&quot; &amp;&amp; data.mails?.length
+              ? `${data.mails.length} Erinnerungs-Mail${data.mails.length === 1 ? &quot;&quot; : &quot;s&quot;} verschickt`
             : data.mails?.length
               ? `${data.mails.length} neue Adresse${data.mails.length === 1 ? &quot;&quot; : &quot;n&quot;} informiert`
               : &quot;Keine neue Adresse zu informieren&quot;;
@@ -3236,7 +3241,7 @@ main {
           toast(e.message || &quot;Verabredung konnte nicht gespeichert werden.&quot;);
           if (actionButton) {
             actionButton.disabled = false;
-            actionButton.textContent = sendEmails ? &quot;Spieler informieren&quot; : &quot;Änderungen speichern&quot;;
+            actionButton.textContent = forcedMailType === &quot;status_update&quot; ? &quot;Erinnerungs-Mail schicken&quot; : sendEmails ? &quot;Spieler informieren&quot; : &quot;Änderungen speichern&quot;;
           }
           return;
         }
@@ -3248,7 +3253,7 @@ main {
         avatar_url: email.toLowerCase() === user.email.toLowerCase() ? user.avatar_url || &quot;&quot; : &quot;&quot;
       }));
       while (players.length &lt; 4) players.push(null);
-      const mailType = chosenMailType === &quot;du_bist_dabei&quot; ? &quot;Du bist dabei&quot; : &quot;Lust auf Padel?&quot;;
+      const mailType = chosenMailType === &quot;status_update&quot; ? &quot;Erinnerung&quot; : chosenMailType === &quot;du_bist_dabei&quot; ? &quot;Du bist dabei&quot; : &quot;Lust auf Padel?&quot;;
       const shouldSendMail = !!sendEmails;
       const notifyPool = audience === &quot;Meine Gruppe&quot; ? uniqueEmails([...emails, ...(selectedGroup?.emails || [])]) : audience === &quot;Alle&quot; ? emails : emails;
       const existing = state.ownMatches.findIndex(match =&gt; {
@@ -3288,7 +3293,7 @@ main {
       if (actionButton) {
         actionButton.classList.remove(&quot;coral&quot;);
         actionButton.classList.add(&quot;done&quot;);
-        actionButton.textContent = shouldSendMail ? &quot;Spieler informiert&quot; : &quot;Änderungen gespeichert&quot;;
+        actionButton.textContent = forcedMailType === &quot;status_update&quot; ? &quot;Erinnerung verschickt&quot; : shouldSendMail ? &quot;Spieler informiert&quot; : &quot;Änderungen gespeichert&quot;;
         actionButton.disabled = false;
       }
       if (!sendEmails) {
@@ -3296,7 +3301,7 @@ main {
       } else if (audience === &quot;Alle&quot; &amp;&amp; !newRecipients.length) {
         toast(&quot;Offene Einladung gespeichert. Keine neue Adresse zu informieren.&quot;);
       } else if (newRecipients.length) {
-        toast(`${newRecipients.length} neue Adresse${newRecipients.length === 1 ? &quot;&quot; : &quot;n&quot;}: ${mailType === &quot;Du bist dabei&quot; ? &quot;Du-bist-dabei-Mail&quot; : &quot;Lust-auf-Padel-Mail&quot;} vorbereitet.`);
+        toast(`${newRecipients.length} neue Adresse${newRecipients.length === 1 ? &quot;&quot; : &quot;n&quot;}: ${mailType === &quot;Erinnerung&quot; ? &quot;Erinnerungs-Mail&quot; : mailType === &quot;Du bist dabei&quot; ? &quot;Du-bist-dabei-Mail&quot; : &quot;Lust-auf-Padel-Mail&quot;} vorbereitet.`);
       } else {
         toast(&quot;Änderungen gespeichert. Keine Adresse wird doppelt informiert.&quot;);
       }
