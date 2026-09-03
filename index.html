@@ -10768,6 +10768,10 @@ function profileCardHTML() {
     ${headerVisual}
     <div class="rw-divider"></div>
     <div class="profile-form">
+      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
+      <div class="form-group"><label class="form-label">E-Mail</label><input class="form-input" id="pfEmail" type="email" value="${email}"></div>
+      <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
+      <div class="form-group"><label class="form-label">Spielstärke</label><div class="acct-level-picker">${profileLevelOptionsHTML()}</div></div>
       <div class="form-group">
         <label class="form-label">Profilbild</label>
         <div class="acct-avatar-field" data-avatar-dropzone ondragenter="profileAvatarDrag(event, true)" ondragover="profileAvatarDrag(event, true)" ondragleave="profileAvatarDrag(event, false)" ondrop="dropProfileAvatar(event)">
@@ -10780,10 +10784,6 @@ function profileCardHTML() {
           <div class="acct-avatar-note">Bild auswählen oder hier ablegen. Wird rund angezeigt und automatisch verkleinert.</div>
         </div>
       </div>
-      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
-      <div class="form-group"><label class="form-label">E-Mail</label><input class="form-input" id="pfEmail" type="email" value="${email}"></div>
-      <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
-      <div class="form-group"><label class="form-label">Spielstärke</label><div class="acct-level-picker">${profileLevelOptionsHTML()}</div></div>
       <!-- Geschlecht und Geburtsjahr entfernt (Datenminimierung, 23.07.2026) -->
       <button class="book-btn visible" id="pfSaveBtn" style="width:100%;position:static;" onclick="saveProfile()">Änderungen speichern</button>
       <div class="profile-save-ok" id="pfSaveMsg"></div>
@@ -13698,18 +13698,20 @@ body.bielstein-theme .acct-level-option {
 }
 body.bielstein-theme .acct-level-option.active { width: 100%; background: #FFFFFF; border-color: #FF5A36; box-shadow: 0 0 0 3px rgba(255,90,54,.13); }
 body.bielstein-theme .acct-level-option.compact {
-  width: 50%; justify-self: end; grid-template-columns: auto 1fr; gap: 8px;
+  width: 62%; justify-self: start; grid-template-columns: auto minmax(0,1fr) auto; gap: 8px;
   padding: 7px 9px; background: #EEE7DA; opacity: .78;
 }
 body.bielstein-theme .acct-level-option.compact .acct-level-letter { font-size: 18px; }
 body.bielstein-theme .acct-level-option.compact strong { font-size: 11px; }
-body.bielstein-theme .acct-level-option.compact .acct-level-balls { display: none; }
+body.bielstein-theme .acct-level-option.compact .acct-level-balls { display: inline-flex; gap: 2px; justify-content: flex-end; }
+body.bielstein-theme .acct-level-option.compact .acct-level-balls img { width: 10px; height: 10px; }
 body.bielstein-theme .acct-level-option .acct-level-letter { font-size: 27px; }
 @media (max-width: 560px) {
   body.bielstein-theme .acct-level-pill { flex-wrap: wrap; }
   body.bielstein-theme .acct-level-option { grid-template-columns: auto 1fr; }
-  body.bielstein-theme .acct-level-option.compact { width: 62%; }
+  body.bielstein-theme .acct-level-option.compact { width: 72%; grid-template-columns: auto minmax(0,1fr) auto; }
   body.bielstein-theme .acct-level-option .acct-level-balls { grid-column: 2; justify-content: flex-start; min-width: 0; }
+  body.bielstein-theme .acct-level-option.compact .acct-level-balls { grid-column: auto; justify-content: flex-end; }
 }
 body.bielstein-theme .acct-name {
   font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
