@@ -1982,6 +1982,7 @@ main {
     .section-head h1{font-size:clamp(34px,5vw,58px);line-height:.96}
     .section-head h2{font-size:clamp(25px,4vw,38px)}
     .section-head p{margin:4px 0 0;color:var(--muted);line-height:1.45}
+    .editor-section-head,.matchplan-section-head{margin-top:33px}
     .top-grid,.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
     .booking-card,.create-card,.profile-card,.pb-card{position:relative;background:var(--cream);border:1.5px solid var(--line);border-radius:22px;color:var(--ink);box-shadow:0 12px 34px rgba(28,26,23,.08)}
     .booking-card{padding:20px;box-shadow:none;transition:background .18s,border-color .18s,box-shadow .18s}
@@ -2049,7 +2050,7 @@ main {
     .group-editor-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
     .group-editor-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
     .group-email-list{display:grid;gap:8px;margin-top:10px}
-    .level-profile-band{display:block;margin:18px 0}
+    .level-profile-band{display:block;margin:54px 0 18px}
     .level-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
     .level-item{border:1px solid var(--line);border-radius:14px;background:var(--cream);padding:13px 12px;display:grid;gap:4px}
     .level-top{display:flex;align-items:center;gap:10px}
@@ -2128,7 +2129,7 @@ main {
       &lt;button class=&quot;main-tab&quot; type=&quot;button&quot;&gt;Jahresabo sichern&lt;/button&gt;
     &lt;/nav&gt;
 
-    &lt;section class=&quot;section-head&quot;&gt;
+    &lt;section class=&quot;section-head editor-section-head&quot;&gt;
       &lt;div&gt;
         &lt;h1&gt;Dating 2.0&lt;/h1&gt;
         &lt;p&gt;Mitspieler für gebuchte Termine finden und Einladungen annehmen.&lt;/p&gt;
@@ -2149,9 +2150,9 @@ main {
       &lt;/article&gt;
     &lt;/section&gt;
 
-    &lt;section class=&quot;section-head&quot;&gt;
+    &lt;section class=&quot;section-head matchplan-section-head&quot;&gt;
       &lt;div&gt;
-        &lt;h2 id=&quot;editorHeadline&quot;&gt;Buchung bearbeiten&lt;/h2&gt;
+        &lt;h2 id=&quot;editorHeadline&quot;&gt;Buchung verwalten + Mitspieler einladen&lt;/h2&gt;
         &lt;p id=&quot;editorSubline&quot;&gt;Wähle oben einen Termin aus.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/section&gt;
@@ -2181,7 +2182,7 @@ main {
 
     &lt;section class=&quot;section-head&quot;&gt;
       &lt;div&gt;
-        &lt;h2&gt;Chronologischer Überblick&lt;/h2&gt;
+        &lt;h2&gt;Matchplan - Chronologischer Überblick&lt;/h2&gt;
       &lt;/div&gt;
     &lt;/section&gt;
 
@@ -2912,13 +2913,13 @@ main {
     function renderEditor() {
       const source = selectedSource();
       if (!source) {
-        $(&quot;#editorHeadline&quot;).textContent = &quot;Buchung bearbeiten&quot;;
+        $(&quot;#editorHeadline&quot;).textContent = &quot;Buchung verwalten + Mitspieler einladen&quot;;
         $(&quot;#editorSubline&quot;).textContent = &quot;Wähle oben einen Termin aus.&quot;;
         $(&quot;#editor&quot;).innerHTML = &quot;&quot;;
         sendMeetHeight();
         return;
       }
-      $(&quot;#editorHeadline&quot;).textContent = state.selectedType === &quot;booking&quot; ? &quot;Buchung bearbeiten&quot; : &quot;Einladung ansehen&quot;;
+      $(&quot;#editorHeadline&quot;).textContent = state.selectedType === &quot;booking&quot; ? &quot;Buchung verwalten + Mitspieler einladen&quot; : &quot;Einladung ansehen + bearbeiten&quot;;
       $(&quot;#editorSubline&quot;).textContent = sourceLabel(source);
       $(&quot;#editor&quot;).innerHTML = state.selectedType === &quot;booking&quot; ? ownEditorHTML(source) : inviteEditorHTML(source);
       wireSegments($(&quot;#editor&quot;));
