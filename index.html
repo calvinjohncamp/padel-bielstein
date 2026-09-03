@@ -1986,7 +1986,7 @@ main {
     .booking-card,.create-card,.profile-card,.pb-card{position:relative;background:var(--cream);border:1.5px solid var(--line);border-radius:22px;color:var(--ink);box-shadow:0 12px 34px rgba(28,26,23,.08)}
     .booking-card{padding:20px;box-shadow:none;transition:background .18s,border-color .18s,box-shadow .18s}
     .pick-card{height:360px;display:flex;flex-direction:column}
-    .pick-card .list{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px}
+    .pick-card .list{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px;align-content:start}
     .pick-card{background:#F4F2ED}
     .create-card{border-color:#9E978A;padding:34px clamp(18px,3vw,30px) 24px;transition:background .18s,border-color .18s,box-shadow .18s}
     .create-card.is-booking,.create-card.is-invite{box-shadow:0 12px 34px rgba(28,26,23,.14)}
@@ -1999,6 +1999,9 @@ main {
     .row-title{display:block;font-weight:900}
     .row-sub{margin-top:3px;color:var(--muted);font-size:13px;line-height:1.35}
     .status{height:fit-content;padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:12px;font-weight:900;white-space:nowrap}
+    .status.progress{border-radius:14px;line-height:1.25;text-align:right;white-space:normal}
+    .status.progress strong{display:block;color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
+    .status.progress span{display:block;color:var(--muted)}
     .status.green{background:#DDEBD9;color:var(--green)}
     .status.coral{background:#FFE0D7;color:var(--coral)}
     .mini-avatar{width:34px;height:34px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
@@ -2008,6 +2011,7 @@ main {
     .card-sub{margin:0;color:var(--muted);line-height:1.45;font-size:14px}
     .source-mini{align-self:start;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.48);padding:12px 14px;color:var(--muted);font-weight:900;line-height:1.35;text-align:right;white-space:normal}
     .source-mini strong{display:block;color:var(--ink)}
+    .source-mini span{display:block}
     .duration-line{display:block;color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900}
     .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}
     .field label,.email-block-label{display:block;margin-bottom:8px;color:var(--muted);font-size:12px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
@@ -2028,6 +2032,7 @@ main {
     .btn.coral{background:var(--coral);color:var(--white)}
     .btn.done{background:var(--ink);color:var(--cream)}
     .btn:disabled{opacity:.62;cursor:default}
+    .btn.done:disabled{opacity:1}
     .cta-large{width:100%;min-height:62px;font-size:18px;padding:18px 22px}
     .group-tools{display:grid;gap:8px}
     .group-tools-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px}
@@ -2514,7 +2519,7 @@ main {
             &lt;span class=&quot;row-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/span&gt;
             &lt;span class=&quot;row-sub&quot;&gt;${esc(item.court)} · von ${esc(item.from)}&lt;/span&gt;
           &lt;/span&gt;
-          &lt;span class=&quot;status ${item.mode === &quot;direct&quot; ? &quot;coral&quot; : &quot;&quot;}&quot;&gt;${item.mode === &quot;direct&quot; ? &quot;direkt&quot; : &quot;offen&quot;}&lt;/span&gt;
+          &lt;span class=&quot;status ${item.mode === &quot;direct&quot; ? &quot;coral&quot; : &quot;&quot;}&quot;&gt;${item.mode === &quot;direct&quot; ? &quot;Direkte Einladung&quot; : &quot;Offene Einladung&quot;}&lt;/span&gt;
         &lt;/button&gt;
       `}).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Aktuell keine passenden Einladungen.&lt;/div&gt;';
       $$(&quot;[data-booking]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectBooking(btn.dataset.booking)));
@@ -2715,19 +2720,24 @@ main {
       });
     }
     let focusedEmailInput = null;
-    function clearAutofilledSiblingEmails(input) {
-      if (!input || !input.matches(&quot;.player-email&quot;)) return;
-      const value = input.value.trim().toLowerCase();
-      if (!value) return;
-      requestAnimationFrame(() =&gt; {
-        $$(&quot;.player-email&quot;).forEach(other =&gt; {
-          if (other === input) return;
-          const previous = String(other.dataset.prevValue || &quot;&quot;).trim();
-          const current = other.value.trim().toLowerCase();
-          if (!previous &amp;&amp; current === value) {
-            other.value = &quot;&quot;;
-            other.dataset.prevValue = &quot;&quot;;
-          }
+    function runEmailAutofillGuard(input) {
+      [0, 50, 180, 350, 900].forEach(delay =&gt; setTimeout(() =&gt; enforceUniqueVisibleEmails(input), delay));
+    }
+    function enforceUniqueVisibleEmails(preferredInput = null) {
+      const byEmail = new Map();
+      $$(&quot;.player-email&quot;).forEach(input =&gt; {
+        const key = input.value.trim().toLowerCase();
+        if (!key) return;
+        if (!byEmail.has(key)) byEmail.set(key, []);
+        byEmail.get(key).push(input);
+      });
+      byEmail.forEach(group =&gt; {
+        if (group.length &lt; 2) return;
+        const keep = group.includes(preferredInput) ? preferredInput : group[0];
+        group.forEach(input =&gt; {
+          if (input === keep) return;
+          input.value = &quot;&quot;;
+          input.dataset.prevValue = &quot;&quot;;
         });
       });
     }
@@ -2738,13 +2748,17 @@ main {
         input.dataset.prevValue = input.value || &quot;&quot;;
         input.addEventListener(&quot;focus&quot;, () =&gt; { focusedEmailInput = input; input.dataset.prevValue = input.value || &quot;&quot;; });
         input.addEventListener(&quot;input&quot;, () =&gt; {
-          clearAutofilledSiblingEmails(focusedEmailInput || input);
+          runEmailAutofillGuard(focusedEmailInput || input);
           input.dataset.prevValue = input.value || &quot;&quot;;
         });
         input.addEventListener(&quot;change&quot;, () =&gt; {
-          clearAutofilledSiblingEmails(focusedEmailInput || input);
+          runEmailAutofillGuard(focusedEmailInput || input);
           input.dataset.prevValue = input.value || &quot;&quot;;
         });
+        input.addEventListener(&quot;keydown&quot;, event =&gt; {
+          if (event.key === &quot;Enter&quot;) runEmailAutofillGuard(input);
+        });
+        input.addEventListener(&quot;blur&quot;, () =&gt; runEmailAutofillGuard(input));
       });
     }
     function segmentHTML(name, items, active, multi = false) {
@@ -2818,7 +2832,7 @@ main {
             &lt;h2 class=&quot;card-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/h2&gt;
             &lt;p class=&quot;card-sub&quot;&gt;${esc(item.court)} · ${esc(item.duration)} · ${item.mode === &quot;direct&quot; ? &quot;direkte Einladung&quot; : &quot;offene Einladung&quot;}&lt;/p&gt;
           &lt;/div&gt;
-          &lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${filled} von 4&lt;/strong&gt;Mitspieler haben bisher zugesagt&lt;/div&gt;
+          &lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${filled} von 4 Mitspielern&lt;/strong&gt;&lt;span&gt;${filled === 1 ? &quot;hat&quot; : &quot;haben&quot;} bisher zugesagt&lt;/span&gt;&lt;/div&gt;
         &lt;/div&gt;
         &lt;div class=&quot;player-grid&quot;&gt;
           ${[0,1,2,3].map(i =&gt; seatHTML(item.players[i], i, true)).join(&quot;&quot;)}
@@ -2834,7 +2848,7 @@ main {
           &lt;/div&gt;
         &lt;/div&gt;
         &lt;div class=&quot;actions&quot;&gt;
-          &lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;acceptInvite&quot; ${alreadyIn || filled &gt;= 4 ? &quot;disabled&quot; : &quot;&quot;}&gt;${alreadyIn ? &quot;Du bist dabei&quot; : filled &gt;= 4 ? &quot;Bereits voll&quot; : &quot;Mitspielen&quot;}&lt;/button&gt;
+          &lt;button class=&quot;btn ${alreadyIn ? &quot;done&quot; : &quot;coral&quot;} cta-large&quot; type=&quot;button&quot; id=&quot;acceptInvite&quot; ${alreadyIn || filled &gt;= 4 ? &quot;disabled&quot; : &quot;&quot;}&gt;${alreadyIn ? &quot;Du bist dabei&quot; : filled &gt;= 4 ? &quot;Bereits voll&quot; : &quot;Mitspielen&quot;}&lt;/button&gt;
           ${alreadyIn ? '&lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;withdrawInvite&quot;&gt;Teilnahme zurückziehen&lt;/button&gt;' : ''}
         &lt;/div&gt;
       &lt;/article&gt;`;
@@ -2932,6 +2946,7 @@ main {
       renderEditor();
     }
     function collectEmails() {
+      enforceUniqueVisibleEmails(focusedEmailInput);
       return $$(&quot;.player-email&quot;).map(input =&gt; input.value.trim()).filter(Boolean);
     }
     function selectedLevelsFromEditor() {
@@ -3150,12 +3165,11 @@ main {
     }
     function miniStatusHTML(item, kind) {
       const players = item.players.filter(Boolean).length;
-      const statusText = `${players} von 4 Mitspieler${players === 1 ? &quot; hat&quot; : &quot; haben&quot;} bisher zugesagt`;
       return `&lt;article class=&quot;pb-card ${kind === &quot;direct&quot; ? &quot;direct&quot; : &quot;&quot;}&quot;&gt;
         &lt;div class=&quot;badge&quot;&gt;${kind === &quot;own&quot; ? &quot;Ich habe eingeladen&quot; : &quot;Ich wurde eingeladen und bin dabei&quot;}&lt;/div&gt;
         &lt;div class=&quot;match-top&quot;&gt;
           &lt;div&gt;&lt;div class=&quot;day&quot;&gt;${esc(item.day)}, ${esc(item.date)}&lt;/div&gt;&lt;div class=&quot;time&quot;&gt;${esc(item.time)}-${esc(item.end)}&lt;/div&gt;&lt;/div&gt;
-          &lt;span class=&quot;status green&quot;&gt;${esc(statusText)}&lt;/span&gt;
+          &lt;span class=&quot;status green progress&quot;&gt;&lt;strong&gt;${players} von 4 Mitspielern&lt;/strong&gt;&lt;span&gt;${players === 1 ? &quot;hat&quot; : &quot;haben&quot;} bisher zugesagt&lt;/span&gt;&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&quot;meta&quot;&gt;&lt;span&gt;${esc(item.court)}&lt;/span&gt;&lt;span&gt;${esc(item.duration)}&lt;/span&gt;${item.mailType ? `&lt;span&gt;${esc(item.mailType)}&lt;/span&gt;` : &quot;&quot;}&lt;/div&gt;
         &lt;div class=&quot;player-grid&quot;&gt;${[0,1,2,3].map(i =&gt; seatHTML(item.players[i], i)).join(&quot;&quot;)}&lt;/div&gt;
