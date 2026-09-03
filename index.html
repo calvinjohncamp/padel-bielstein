@@ -426,6 +426,15 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 /* Kleiner, edler Kreis mittig auf der oberen Rahmenlinie. Der Creme-"Halo"
    (box-shadow) maskiert die Linie rundum → sie berührt den Kreis nicht (Luft). */
 .rw-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; background: #FAF8F4; border: 1.5px solid #FF5A36; color: #FF5A36; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; box-shadow: 0 0 0 8px #FAF8F4; }
+.rw-badge.acct-photo-badge {
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+.rw-badge.acct-photo-badge.has-photo {
+  color: transparent;
+  border-color: #1C1A17;
+}
 /* Kopf großzügig gesetzt, elegantere Abstände */
 .rw-tagline { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: #3E4A55; margin-bottom: 14px; }
 .rw-number { font-family: "Manrope","Arial","Helvetica",sans-serif; font-weight: 800; font-size: 4.4rem; line-height: 0.9; letter-spacing: -0.02em; color: #1C1A17; }
@@ -1971,7 +1980,8 @@ main {
     .brand{border:0;background:transparent;color:inherit;padding:0;justify-self:start;font-family:&quot;Space Grotesk&quot;,&quot;Arial Narrow&quot;,sans-serif;font-weight:800;font-size:clamp(21px,4.8vw,32px);letter-spacing:0}
     .brand span:last-child{color:var(--coral)}
     .user-pill{justify-self:end;border:1px solid rgba(246,241,231,.18);background:rgba(246,241,231,.08);color:var(--cream);border-radius:999px;padding:7px 8px 7px 14px;display:inline-flex;align-items:center;gap:10px;white-space:nowrap}
-    .avatar{width:30px;height:30px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800}
+    .avatar{width:30px;height:30px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;overflow:hidden;background-size:cover;background-position:center}
+    .avatar.has-photo{color:transparent;background-color:var(--cream)}
     .shell{max-width:1120px;margin:0 auto;padding:24px clamp(14px,3vw,28px) 72px}
     .main-tabs{display:flex;gap:2px;background:var(--soft);border-radius:14px;padding:3px;overflow-x:auto;scrollbar-width:none}
     .main-tabs::-webkit-scrollbar{display:none}
@@ -2011,7 +2021,8 @@ main {
     .status.progress span{display:block;color:var(--muted)}
     .status.green{background:#DDEBD9;color:var(--green)}
     .status.coral{background:#FFE0D7;color:var(--coral)}
-    .mini-avatar{width:34px;height:34px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
+    .mini-avatar{width:34px;height:34px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;overflow:hidden;background-size:cover;background-position:center}
+    .mini-avatar.has-photo{color:transparent;background-color:var(--cream)}
     .badge{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);height:30px;padding:0 14px;border-radius:15px;background:var(--cream);border:1.5px solid var(--coral);color:var(--coral);box-shadow:0 0 0 8px var(--cream);display:flex;align-items:center;justify-content:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;font-size:12px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
     .create-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start}
     .card-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:24px;font-weight:800;margin:0 0 6px}
@@ -2061,6 +2072,9 @@ main {
     .balls img{width:15px;height:15px;object-fit:contain;display:block}
     .profile-card{margin-top:14px;min-height:95px;padding:13px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:18px;border:2px solid var(--ink);box-shadow:none}
     .profile-main{display:block}
+    .profile-person{display:flex;align-items:center;gap:12px}
+    .profile-photo{width:46px;height:46px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;border:2px solid var(--ink);overflow:hidden;background-size:cover;background-position:center}
+    .profile-photo.has-photo{color:transparent;background-color:var(--cream)}
     .profile-data{justify-self:start}
     .profile-action{justify-self:center}
     .profile-level-control{justify-self:end;width:min(100%,300px)}
@@ -2118,7 +2132,7 @@ main {
 &lt;body class=&quot;embedded&quot;&gt;
   &lt;header class=&quot;appbar&quot;&gt;
     &lt;button class=&quot;brand&quot; type=&quot;button&quot; aria-label=&quot;Padel Bielstein&quot;&gt;&lt;span&gt;PADEL&lt;/span&gt; &lt;span&gt;BIELSTEIN&lt;/span&gt;&lt;/button&gt;
-    &lt;div class=&quot;user-pill&quot;&gt;&lt;span id=&quot;topUserName&quot;&gt;Jörn Kämper&lt;/span&gt;&lt;span id=&quot;topUserLevel&quot;&gt;A Profi&lt;/span&gt;&lt;span class=&quot;avatar&quot;&gt;JK&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;user-pill&quot;&gt;&lt;span id=&quot;topUserName&quot;&gt;Jörn Kämper&lt;/span&gt;&lt;span id=&quot;topUserLevel&quot;&gt;A Profi&lt;/span&gt;&lt;span class=&quot;avatar&quot; id=&quot;topUserAvatar&quot;&gt;JK&lt;/span&gt;&lt;/div&gt;
   &lt;/header&gt;
 
   &lt;main class=&quot;shell&quot;&gt;
@@ -2166,10 +2180,13 @@ main {
       &lt;/div&gt;
       &lt;article class=&quot;profile-card&quot;&gt;
         &lt;div class=&quot;profile-main&quot;&gt;
-          &lt;div class=&quot;profile-data&quot;&gt;
-            &lt;div class=&quot;profile-kicker&quot;&gt;Mein Profil&lt;/div&gt;
-            &lt;strong id=&quot;profileName&quot;&gt;Jörn Kämper&lt;/strong&gt;
-            &lt;span class=&quot;profile-meta&quot;&gt;&lt;b class=&quot;profile-level-letter&quot; id=&quot;profileLevelLetter&quot;&gt;A&lt;/b&gt;&lt;b id=&quot;profileLevelTitle&quot;&gt;Profi&lt;/b&gt;&lt;span class=&quot;balls&quot; id=&quot;profileBalls&quot; data-balls=&quot;4&quot;&gt;&lt;/span&gt;&lt;span id=&quot;profileGender&quot;&gt;männlich&lt;/span&gt;&lt;/span&gt;
+          &lt;div class=&quot;profile-data profile-person&quot;&gt;
+            &lt;span class=&quot;profile-photo&quot; id=&quot;profilePhoto&quot;&gt;JK&lt;/span&gt;
+            &lt;span&gt;
+              &lt;div class=&quot;profile-kicker&quot;&gt;Mein Profil&lt;/div&gt;
+              &lt;strong id=&quot;profileName&quot;&gt;Jörn Kämper&lt;/strong&gt;
+              &lt;span class=&quot;profile-meta&quot;&gt;&lt;b class=&quot;profile-level-letter&quot; id=&quot;profileLevelLetter&quot;&gt;A&lt;/b&gt;&lt;b id=&quot;profileLevelTitle&quot;&gt;Profi&lt;/b&gt;&lt;span class=&quot;balls&quot; id=&quot;profileBalls&quot; data-balls=&quot;4&quot;&gt;&lt;/span&gt;&lt;span id=&quot;profileGender&quot;&gt;männlich&lt;/span&gt;&lt;/span&gt;
+            &lt;/span&gt;
           &lt;/div&gt;
         &lt;/div&gt;
         &lt;button class=&quot;btn secondary profile-action&quot; type=&quot;button&quot;&gt;Profil ändern&lt;/button&gt;
@@ -2204,7 +2221,7 @@ main {
   &lt;div class=&quot;toast&quot; id=&quot;toast&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
 
   &lt;script&gt;
-    let user = { name: &quot;Jörn Kämper&quot;, email: &quot;calvinjohncampa@aol.com&quot;, level: &quot;A&quot;, gender: &quot;männlich&quot; };
+    let user = { name: &quot;Jörn Kämper&quot;, email: &quot;calvinjohncampa@aol.com&quot;, level: &quot;A&quot;, gender: &quot;männlich&quot;, avatar_url: &quot;&quot; };
     const levels = {
       A: { title: &quot;Profi&quot;, text: &quot;mehr als 5 Jahre Erfahrung · Tennis LK 1 bis 12&quot;, balls: 4 },
       B: { title: &quot;Könner&quot;, text: &quot;mehr als 3 Jahre Erfahrung · Tennis LK 13 bis 20&quot;, balls: 3 },
@@ -2273,6 +2290,25 @@ main {
     const $$ = (sel, root = document) =&gt; Array.from(root.querySelectorAll(sel));
     const mailOk = value =&gt; /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(value || &quot;&quot;).trim());
     const esc = value =&gt; String(value ?? &quot;&quot;).replace(/[&amp;&lt;&gt;&quot;']/g, c =&gt; ({ &quot;&amp;&quot;:&quot;&amp;amp;&quot;, &quot;&lt;&quot;:&quot;&amp;lt;&quot;, &quot;&gt;&quot;:&quot;&amp;gt;&quot;, '&quot;':&quot;&amp;quot;&quot;, &quot;'&quot;:&quot;&amp;#39;&quot; }[c]));
+    const initials = value =&gt; String(value || &quot;&quot;).trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part =&gt; part[0].toUpperCase()).join(&quot;&quot;) || &quot;JK&quot;;
+    const safeCssUrl = value =&gt; String(value || &quot;&quot;).replace(/[\\&quot;)\n\r]/g, &quot;&quot;);
+    function paintAvatar(el, name = user.name, url = user.avatar_url) {
+      if (!el) return;
+      const photo = safeCssUrl(url);
+      if (photo) {
+        el.textContent = &quot;&quot;;
+        el.style.backgroundImage = `url(&quot;${photo}&quot;)`;
+        el.classList.add(&quot;has-photo&quot;);
+      } else {
+        el.style.backgroundImage = &quot;&quot;;
+        el.classList.remove(&quot;has-photo&quot;);
+        el.textContent = initials(name);
+      }
+    }
+    function miniAvatarHTML(name = user.name, url = user.avatar_url) {
+      const photo = safeCssUrl(url);
+      return `&lt;span class=&quot;mini-avatar${photo ? &quot; has-photo&quot; : &quot;&quot;}&quot;${photo ? ` style=&quot;background-image:url('${photo}')&quot;` : &quot;&quot;}&gt;${photo ? &quot;&quot; : esc(initials(name))}&lt;/span&gt;`;
+    }
     const sortByDate = (a, b) =&gt; `${a.dateISO}-${a.time}`.localeCompare(`${b.dateISO}-${b.time}`);
     const app = (() =&gt; { try { return window.parent || window; } catch (_e) { return window; } })();
     const embedded = app !== window || document.body.classList.contains(&quot;embedded&quot;);
@@ -2463,7 +2499,8 @@ main {
             name: data.profile.name || data.profile.email || user.name,
             email: data.profile.email || user.email,
             level: levels[liveLevel] ? liveLevel : user.level,
-            gender: data.profile.gender || user.gender
+            gender: data.profile.gender || user.gender,
+            avatar_url: data.profile.avatar_url || user.avatar_url || &quot;&quot;
           };
         }
         groups = Array.isArray(data.groups) &amp;&amp; data.groups.length ? data.groups.map(group =&gt; ({
@@ -2524,7 +2561,7 @@ main {
             &lt;span class=&quot;row-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/span&gt;
             &lt;span class=&quot;row-sub&quot;&gt;${esc(item.court)} · ${esc(item.duration)} · ${esc(item.paidBy)}&lt;/span&gt;
           &lt;/span&gt;
-          &lt;span class=&quot;mini-avatar&quot;&gt;JK&lt;/span&gt;
+          ${miniAvatarHTML()}
         &lt;/button&gt;
       `}).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine kommenden Buchungen gefunden.&lt;/div&gt;';
       const orderedInvites = invites.slice().sort((a, b) =&gt; (a.priority - b.priority) || sortByDate(a, b)).slice(0, 10);
@@ -2559,6 +2596,8 @@ main {
       const meta = levels[user.level] || levels.B;
       $(&quot;#topUserName&quot;).textContent = user.name;
       $(&quot;#topUserLevel&quot;).textContent = `${user.level} ${meta.title}`;
+      paintAvatar($(&quot;#topUserAvatar&quot;));
+      paintAvatar($(&quot;#profilePhoto&quot;));
       $(&quot;#profileName&quot;).textContent = user.name;
       $(&quot;#profileLevelLetter&quot;).textContent = user.level;
       $(&quot;#profileLevelTitle&quot;).textContent = meta.title;
@@ -10371,6 +10410,21 @@ function cardRestwert(card) { return cardRemaining(card) * CARD_PRICE_PER_HOUR; 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
+function cssUrl(s) {
+  return String(s == null ? '' : s).replace(/[\\")\n\r]/g, '');
+}
+function profileInitials(name = currentProfile?.full_name) {
+  return (name || '').trim().split(/\s+/).filter(Boolean)
+    .slice(0, 2).map(w => w[0].toUpperCase()).join('') || '·';
+}
+function profileAvatarUrl() {
+  return String(currentProfile?.avatar_url || '').trim();
+}
+function roundAvatarHTML(className, initials = profileInitials(), url = profileAvatarUrl()) {
+  const safeUrl = cssUrl(url);
+  const style = safeUrl ? ` style="background-image:url('${safeUrl}')"` : '';
+  return `<div class="${className}${safeUrl ? ' has-photo' : ''}"${style}>${safeUrl ? '' : esc(initials)}</div>`;
+}
 
 // --- Punktraster als HTML-Strings ---
 // Vorlage: Der Meilenstein-Punkt zeigt den echten Rabatt (5%/10%/25%/50%) bzw. ★.
@@ -10552,8 +10606,8 @@ function profileCardHTML() {
   const name = esc(currentProfile?.full_name);
   const email = esc(currentProfile?.email || currentUser?.email);
   const phone = esc(currentProfile?.phone);
-  const inits = (currentProfile?.full_name || '').trim().split(/\s+/).filter(Boolean)
-    .slice(0, 2).map(w => w[0].toUpperCase()).join('') || '·';
+  const inits = profileInitials();
+  const avatar = profileAvatarUrl();
   // Mitgliedschaft wird serverseitig über die BESTÄTIGTE E-Mail-Adresse erkannt
   // (my_membership()). Reine Anzeige – der Nutzer kann hier nichts setzen.
   const srcs = Array.isArray(myMemberSources) ? myMemberSources : [];
@@ -10590,11 +10644,23 @@ function profileCardHTML() {
          ${srcs.length ? '' : '<br><button type="button" class="acct-report-btn" onclick="reportMissingMembership()">Ich bin Mitglied, werde aber nicht erkannt →</button>'}
        </div>`;
   return `<div class="loyalty-card acct-card${isPartner ? ' acct-card-partner' : ''}">
-    <div class="rw-badge">${esc(inits)}</div>
+    ${roundAvatarHTML('rw-badge acct-photo-badge', inits, avatar)}
     <div class="rw-tagline">${isPartner ? 'Dein Partner-Account' : 'Dein Account'}</div>
     ${headerVisual}
     <div class="rw-divider"></div>
     <div class="profile-form">
+      <div class="form-group">
+        <label class="form-label">Profilbild</label>
+        <div class="acct-avatar-field">
+          ${roundAvatarHTML('acct-avatar-preview', inits, avatar)}
+          <div class="acct-avatar-actions">
+            <input id="pfAvatarFile" type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="saveProfileAvatar(this.files && this.files[0])">
+            <button class="acct-avatar-btn" type="button" onclick="document.getElementById('pfAvatarFile').click()">Bild auswählen</button>
+            ${avatar ? '<button class="acct-avatar-btn danger" type="button" onclick="removeProfileAvatar()">Entfernen</button>' : ''}
+          </div>
+          <div class="acct-avatar-note">Wird rund angezeigt und vor dem Speichern automatisch verkleinert.</div>
+        </div>
+      </div>
       <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
       <div class="form-group"><label class="form-label">E-Mail</label><input class="form-input" id="pfEmail" type="email" value="${email}"></div>
       <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
@@ -10936,6 +11002,97 @@ function wireProfileLevelPicker() {
 }
 function selectedProfileLevel() {
   return document.querySelector('[data-profile-level].active')?.dataset.profileLevel || currentPlayingLevel();
+}
+function refreshProfileViews() {
+  updateUserBar();
+  if (document.querySelector('#loyaltyModal.open') && accountPages[accountPageIndex]?.type === 'profile') {
+    renderAccountPage(0);
+  }
+}
+function avatarFileToBlob(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) { reject(new Error('Bitte zuerst ein Bild auswählen.')); return; }
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type || '')) {
+      reject(new Error('Bitte ein JPG-, PNG- oder WebP-Bild auswählen.'));
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      reject(new Error('Das Bild ist sehr groß. Bitte ein Foto unter 8 MB wählen.'));
+      return;
+    }
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = () => {
+      img.onload = () => {
+        const size = 320;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const side = Math.min(img.naturalWidth || img.width, img.naturalHeight || img.height);
+        const sx = ((img.naturalWidth || img.width) - side) / 2;
+        const sy = ((img.naturalHeight || img.height) - side) / 2;
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+        canvas.toBlob(blob => {
+          if (blob) resolve(blob);
+          else reject(new Error('Das Bild konnte nicht vorbereitet werden.'));
+        }, 'image/webp', 0.84);
+      };
+      img.onerror = () => reject(new Error('Das Bild konnte nicht gelesen werden.'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('Das Bild konnte nicht gelesen werden.'));
+    reader.readAsDataURL(file);
+  });
+}
+async function saveProfileAvatar(file) {
+  const msg = document.getElementById('pfSaveMsg');
+  if (!currentUser?.id) { if (msg) msg.textContent = 'Bitte erst anmelden.'; return; }
+  if (msg) { msg.style.color = ''; msg.textContent = 'Profilbild wird gespeichert …'; }
+  try {
+    const blob = await avatarFileToBlob(file);
+    const path = `${currentUser.id}/avatar.webp`;
+    const { error: upErr } = await sb.storage.from('profile-avatars').upload(path, blob, {
+      upsert: true,
+      cacheControl: '3600',
+      contentType: 'image/webp'
+    });
+    if (upErr) throw upErr;
+    const url = sb.storage.from('profile-avatars').getPublicUrl(path).data.publicUrl + `?v=${Date.now()}`;
+    const { data, error } = await sb
+      .from('users')
+      .update({ avatar_url: url })
+      .eq('auth_id', currentUser.id)
+      .select('auth_id,avatar_url')
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error('Profilbild konnte nicht im Account gespeichert werden.');
+    currentProfile = { ...(currentProfile || {}), avatar_url: data.avatar_url };
+    if (msg) { msg.style.color = '#2f7d45'; msg.textContent = '✓ Profilbild gespeichert'; }
+    refreshProfileViews();
+  } catch(e) {
+    if (msg) { msg.style.color = '#d64545'; msg.textContent = 'Profilbild nicht gespeichert: ' + (e.message || e); }
+  }
+}
+async function removeProfileAvatar() {
+  const msg = document.getElementById('pfSaveMsg');
+  if (!currentUser?.id) return;
+  if (msg) { msg.style.color = ''; msg.textContent = 'Profilbild wird entfernt …'; }
+  try {
+    await sb.storage.from('profile-avatars').remove([`${currentUser.id}/avatar.webp`]);
+    const { data, error } = await sb
+      .from('users')
+      .update({ avatar_url: null })
+      .eq('auth_id', currentUser.id)
+      .select('auth_id,avatar_url')
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error('Profilbild konnte nicht im Account entfernt werden.');
+    currentProfile = { ...(currentProfile || {}), avatar_url: null };
+    if (msg) { msg.style.color = '#2f7d45'; msg.textContent = '✓ Profilbild entfernt'; }
+    refreshProfileViews();
+  } catch(e) {
+    if (msg) { msg.style.color = '#d64545'; msg.textContent = 'Profilbild nicht entfernt: ' + (e.message || e); }
+  }
 }
 function matchLineHTML(m) {
   const dateStr = m.when.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -11430,7 +11587,7 @@ async function saveProfile() {
       .from('users')
       .update({ full_name: name, phone: phone || null, email, playing_level: playingLevel })
       .eq('auth_id', currentUser.id)
-      .select('auth_id,full_name,email,phone,playing_level')
+      .select('auth_id,full_name,email,phone,playing_level,avatar_url')
       .maybeSingle();
 
     if (profileErr && /playing_level/i.test(profileErr.message || '')) {
@@ -11438,7 +11595,7 @@ async function saveProfile() {
         .from('users')
         .update({ full_name: name, phone: phone || null, email })
         .eq('auth_id', currentUser.id)
-        .select('auth_id,full_name,email,phone')
+        .select('auth_id,full_name,email,phone,avatar_url')
         .maybeSingle();
       saved = fallback.data ? { ...fallback.data, playing_level: playingLevel } : null;
       profileErr = fallback.error;
@@ -12311,7 +12468,10 @@ body.bielstein-theme .appbar-avatar {
   background: #FF5A36; color: #1C1A17;
   font-family: "Space Grotesk","Arial Narrow",sans-serif; font-weight: 700; font-size: 13px;
   display: flex; align-items: center; justify-content: center;
+  overflow: hidden; background-size: cover; background-position: center;
+  border: 1.5px solid rgba(255,255,255,.16);
 }
+body.bielstein-theme .appbar-avatar.has-photo { color: transparent; background-color: #FAF8F4; }
 @media (max-width: 560px) {
   body.bielstein-theme .appbar { padding: 14px 18px; }
   body.bielstein-theme .appbar-wordmark { font-size: 21px; }
@@ -13115,6 +13275,26 @@ body.bielstein-theme .acct-card {
   padding-top: 40px;
 }
 body.bielstein-theme .acct-card .profile-form { text-align: left; }
+body.bielstein-theme .acct-avatar-field {
+  display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center;
+  background: #FFFFFF; border: 1.5px solid #E2DACB; border-radius: 14px;
+  padding: 12px; margin: 2px 0 14px;
+}
+body.bielstein-theme .acct-avatar-preview {
+  width: 58px; height: 58px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  background: #FF5A36; color: #1C1A17; border: 2px solid #1C1A17;
+  display: flex; align-items: center; justify-content: center;
+  font: 800 16px "Space Grotesk","Arial Narrow",sans-serif;
+  background-size: cover; background-position: center;
+}
+body.bielstein-theme .acct-avatar-preview.has-photo { color: transparent; background-color: #FAF8F4; }
+body.bielstein-theme .acct-avatar-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-start; }
+body.bielstein-theme .acct-avatar-btn {
+  border: 1.5px solid #E2DACB; border-radius: 10px; background: #F6F1E7; color: #1C1A17;
+  padding: 9px 11px; cursor: pointer; font: 800 12px "Space Grotesk","Arial Narrow",sans-serif;
+}
+body.bielstein-theme .acct-avatar-btn.danger { color: #B8402C; }
+body.bielstein-theme .acct-avatar-note { grid-column: 2; margin-top: -4px; font-size: 12px; color: #8C8B84; line-height: 1.4; }
 body.bielstein-theme .acct-cover-redesign .cover-mid { align-items: flex-start; gap: 0; padding-top: 0; }
 body.bielstein-theme .acct-cover-redesign .cover-greet { text-align: left; margin: 4px 0 0; }
 body.bielstein-theme .acct-cover-redesign .cover-greet-line { font-size: 1.02rem; color: #1C1A17; }
@@ -14631,11 +14811,23 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       document.getElementById('appbarName').textContent = display;
       // Initialen nur aus einem echten Namen bilden. Bei einer E-Mail als
       // Rückfall wäre "C" für "calvin@…" irreführend – dann lieber neutral.
-      document.getElementById('appbarAvatar').textContent =
-        profileName ? initials(profileName) : '·';
+      var avatar = document.getElementById('appbarAvatar');
+      var photo = '';
+      try { photo = String((currentProfile && currentProfile.avatar_url) || '').trim(); } catch(e) {}
+      if (photo) {
+        avatar.textContent = '';
+        avatar.style.backgroundImage = 'url("' + photo.replace(/["\\]/g, '') + '")';
+        avatar.classList.add('has-photo');
+      } else {
+        avatar.style.backgroundImage = '';
+        avatar.classList.remove('has-photo');
+        avatar.textContent = profileName ? initials(profileName) : '·';
+      }
       user.style.display = 'flex';
       if(auth) auth.style.display = 'none';
     } else {
+      var avatarOut = document.getElementById('appbarAvatar');
+      if (avatarOut) { avatarOut.style.backgroundImage = ''; avatarOut.classList.remove('has-photo'); avatarOut.textContent = ''; }
       user.style.display = 'none';
       if(auth) auth.style.display = 'flex';
     }
