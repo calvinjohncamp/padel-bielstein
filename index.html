@@ -1992,6 +1992,10 @@ main {
     .create-card.is-booking,.create-card.is-invite{box-shadow:0 12px 34px rgba(28,26,23,.14)}
     .tone-a{background:#E5E1D8!important}
     .tone-b{background:#D5D0C5!important}
+    .booking-pick.active.tone-a,.create-card.is-booking.tone-a{background:#E5E1D8!important;border-color:#9E978A}
+    .booking-pick.active.tone-b,.create-card.is-booking.tone-b{background:#D5D0C5!important;border-color:#8C8577}
+    .invite-pick.active.tone-a,.create-card.is-invite.tone-a{background:#DDE4E3!important;border-color:#8A9996}
+    .invite-pick.active.tone-b,.create-card.is-invite.tone-b{background:#CFD9D7!important;border-color:#748682}
     .list{display:grid;gap:10px;margin-top:14px}
     .pick-row{width:100%;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.52);padding:12px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;color:var(--ink)}
     .pick-row:hover,.pick-row.active{border-color:#8D8679;box-shadow:0 0 0 3px rgba(28,26,23,.11)}
@@ -2501,7 +2505,7 @@ main {
         const active = state.selectedType === &quot;booking&quot; &amp;&amp; state.selectedId === item.id;
         const tone = index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
         return `
-        &lt;button class=&quot;pick-row ${active ? `active ${tone}` : &quot;&quot;}&quot; type=&quot;button&quot; data-booking=&quot;${esc(item.id)}&quot;&gt;
+        &lt;button class=&quot;pick-row booking-pick ${active ? `active ${tone}` : &quot;&quot;}&quot; type=&quot;button&quot; data-booking=&quot;${esc(item.id)}&quot;&gt;
           &lt;span&gt;
             &lt;span class=&quot;row-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/span&gt;
             &lt;span class=&quot;row-sub&quot;&gt;${esc(item.court)} · ${esc(item.duration)} · ${esc(item.paidBy)}&lt;/span&gt;
@@ -2514,7 +2518,7 @@ main {
         const active = state.selectedType === &quot;invite&quot; &amp;&amp; state.selectedId === item.id;
         const tone = index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
         return `
-        &lt;button class=&quot;pick-row ${active ? `active ${tone}` : &quot;&quot;}&quot; type=&quot;button&quot; data-invite=&quot;${esc(item.id)}&quot;&gt;
+        &lt;button class=&quot;pick-row invite-pick ${active ? `active ${tone}` : &quot;&quot;}&quot; type=&quot;button&quot; data-invite=&quot;${esc(item.id)}&quot;&gt;
           &lt;span&gt;
             &lt;span class=&quot;row-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/span&gt;
             &lt;span class=&quot;row-sub&quot;&gt;${esc(item.court)} · von ${esc(item.from)}&lt;/span&gt;
