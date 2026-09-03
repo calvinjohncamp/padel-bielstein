@@ -2059,7 +2059,7 @@ main {
     .level-item span b{color:var(--ink);font-weight:900}
     .balls{display:inline-flex;gap:2px;align-items:flex-end}
     .balls img{width:15px;height:15px;object-fit:contain;display:block}
-    .profile-card{margin-top:14px;min-height:95px;padding:13px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:18px;box-shadow:none}
+    .profile-card{margin-top:14px;min-height:95px;padding:13px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:18px;border:2px solid var(--ink);box-shadow:none}
     .profile-main{display:block}
     .profile-data{justify-self:start}
     .profile-action{justify-self:center}
@@ -4014,8 +4014,8 @@ main {
             </div>
           </div>
           <div style="margin-bottom:12px;">
-            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Name</label>
-            <input id="spName" type="text" placeholder="z. B. Sparkasse Gummersbach" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Marke</label>
+            <input id="spName" type="text" placeholder="z. B. Sparkasse Gummersbach" oninput="syncSponsorCompanyFromBrand()" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
           </div>
 
           <div style="margin-bottom:12px;">
@@ -4051,6 +4051,10 @@ main {
               Interne Übersicht für Vorstand und Vertragsversand. Diese Angaben erscheinen nicht in der öffentlichen Partner-Anzeige.
             </div>
             <div style="display:grid;grid-template-columns:1fr 110px 1fr 150px;gap:10px;">
+              <div style="grid-column:1 / -1;">
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Firma</label>
+                <input id="spContractCompany" type="text" placeholder="z. B. Muster GmbH" oninput="markSponsorCompanyManual()" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              </div>
               <div>
                 <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Straße / Hausnummer</label>
                 <input id="spAddressStreet" type="text" placeholder="Straße 1" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
@@ -8675,7 +8679,7 @@ async function loadAdminSponsors() {
         ? `<span style="color:#FF5A36;font-weight:800;"> · ${actionLabel}</span>`
         : '';
       const hasContact = s.contact_name || s.contact_email || s.contact_phone;
-      const hasAddress = s.address_street || s.address_zip || s.address_city || s.address_country || s.contract_note;
+      const hasAddress = s.contract_company || s.address_street || s.address_zip || s.address_city || s.address_country || s.contract_note;
       const num = getNum(s, idx, tier);
       const canMoveUp = idx > 0;
       const canMoveDown = idx < tierRows.length - 1;
@@ -8710,6 +8714,7 @@ async function loadAdminSponsors() {
             <div style="text-align:left;">
               ${hasAddress ? `
                 <div style="font:800 10px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#FF5A36;margin-bottom:4px;">Vertragsadresse</div>
+                ${s.contract_company ? `<div style="font:800 12.6px 'Manrope',sans-serif;color:#1C1A17;line-height:1.35;margin-bottom:2px;">${esc(s.contract_company)}</div>` : ''}
                 ${s.address_street ? `<div style="font:600 12.1px 'Manrope',sans-serif;color:#1C1A17;line-height:1.35;">${esc(s.address_street)}</div>` : ''}
                 ${(s.address_zip || s.address_city) ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.35;">${esc([s.address_zip, s.address_city].filter(Boolean).join(' '))}</div>` : ''}
                 ${s.address_country ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.35;">${esc(s.address_country)}</div>` : ''}
@@ -8774,6 +8779,25 @@ async function uploadSponsorLogo(file, prefix) {
   return sb.storage.from('sponsor-logos').getPublicUrl(path).data.publicUrl;
 }
 
+function setSponsorCompanyAuto(auto) {
+  const company = document.getElementById('spContractCompany');
+  if (company) company.dataset.manual = auto ? '0' : '1';
+}
+
+function syncSponsorCompanyFromBrand() {
+  const brand = document.getElementById('spName');
+  const company = document.getElementById('spContractCompany');
+  if (!brand || !company || company.dataset.manual === '1') return;
+  company.value = brand.value;
+}
+
+function markSponsorCompanyManual() {
+  const brand = document.getElementById('spName');
+  const company = document.getElementById('spContractCompany');
+  if (!brand || !company) return;
+  if (company.value.trim() !== brand.value.trim()) company.dataset.manual = '1';
+}
+
 function editSponsor(id) {
   const s = (window.__sponsorRows || []).find(r => r.id === id);
   if (!s) return;
@@ -8788,6 +8812,9 @@ function editSponsor(id) {
   document.getElementById('spContactName').value  = s.contact_name  || '';
   document.getElementById('spContactEmail').value = s.contact_email || '';
   document.getElementById('spContactPhone').value = s.contact_phone || '';
+  const contractCompany = s.contract_company || s.name || '';
+  document.getElementById('spContractCompany').value = contractCompany;
+  setSponsorCompanyAuto(contractCompany === (s.name || ''));
   document.getElementById('spAddressStreet').value = s.address_street || '';
   document.getElementById('spAddressZip').value = s.address_zip || '';
   document.getElementById('spAddressCity').value = s.address_city || '';
@@ -8814,6 +8841,8 @@ function resetSponsorForm() {
   document.getElementById('spContactName').value  = '';
   document.getElementById('spContactEmail').value = '';
   document.getElementById('spContactPhone').value = '';
+  document.getElementById('spContractCompany').value = '';
+  setSponsorCompanyAuto(true);
   document.getElementById('spAddressStreet').value = '';
   document.getElementById('spAddressZip').value = '';
   document.getElementById('spAddressCity').value = '';
@@ -8933,14 +8962,16 @@ async function saveSponsor() {
   const contactEmail = document.getElementById('spContactEmail').value.trim();
   const contactPhone = document.getElementById('spContactPhone').value.trim();
   const website      = document.getElementById('spWebsite').value.trim();
+  const contractCompany = document.getElementById('spContractCompany').value.trim();
   const addressStreet = document.getElementById('spAddressStreet').value.trim();
   const addressZip = document.getElementById('spAddressZip').value.trim();
   const addressCity = document.getElementById('spAddressCity').value.trim();
   const addressCountry = document.getElementById('spAddressCountry').value.trim();
   const contractNote = document.getElementById('spContractNote').value.trim();
+  const hasContractCompanyDiff = !!(contractCompany && contractCompany !== name);
   const hasAddressInput = !!(addressStreet || addressZip || addressCity || contractNote || (addressCountry && addressCountry !== 'Deutschland'));
 
-  if (!name) { alert('Bitte einen Namen angeben.'); return; }
+  if (!name) { alert('Bitte eine Marke angeben.'); return; }
   if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
 
   const prev = btn.textContent;
@@ -8954,15 +8985,18 @@ async function saveSponsor() {
       p_website_url: website || null,
       p_action_logo_url: actionLogoUrl,
       p_has_action_logo: hasActionLogo,
-      p_action_logo_mode: actionLogoMode,
-      p_address_street: addressStreet || null,
-      p_address_zip: addressZip || null,
-      p_address_city: addressCity || null,
-      p_address_country: addressCountry || null,
-      p_contract_note: contractNote || null
+      p_action_logo_mode: actionLogoMode
     };
+    if (hasContractCompanyDiff) payload.p_contract_company = contractCompany;
+    if (hasAddressInput) {
+      payload.p_address_street = addressStreet || null;
+      payload.p_address_zip = addressZip || null;
+      payload.p_address_city = addressCity || null;
+      payload.p_address_country = addressCountry || null;
+      payload.p_contract_note = contractNote || null;
+    }
     let { error } = await sb.rpc('admin_upsert_sponsor', payload);
-    if (error && !hasAddressInput && !actionLogoUrl && !hasActionLogo && actionLogoMode === 'off') {
+    if (error && !hasContractCompanyDiff && !hasAddressInput && !actionLogoUrl && !hasActionLogo && actionLogoMode === 'off') {
       const legacyPayload = {
         p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort,
         p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
