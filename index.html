@@ -2091,16 +2091,18 @@ main {
     .seat-level-title{color:var(--ink)}
     .seat-level .balls img{width:12px;height:12px}
     .small-note{margin:10px 0 0;color:var(--muted);font-size:13px;line-height:1.45}
-    .pb-card{padding:28px 20px 20px;min-height:246px;display:flex;flex-direction:column}
+    .pb-card{padding:30px 20px 20px;min-height:246px;display:flex;flex-direction:column}
     .pb-card.own-world{background:#F4EFE5;border-color:#DED2C2}
+    .pb-card.own-world.shade-b{background:#E8DDCE;border-color:#C6B7A4}
     .pb-card.invite-world{background:#EAF1F0;border-color:#A8BBB7}
+    .pb-card.invite-world.shade-b{background:#D7E7E4;border-color:#829E99}
     .pb-card.direct{border-color:var(--ink)}
     .match-top{display:flex;justify-content:space-between;gap:14px;margin-bottom:16px}
     .day{font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;color:var(--coral);font-size:13px;letter-spacing:.12em;text-transform:uppercase}
     .time{font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;font-size:30px;line-height:1}
     .meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
     .meta span{padding:7px 9px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:13px;font-weight:800}
-    .status-grid .list{margin-top:20px}
+    .status-grid .list{margin-top:26px;gap:46px}
     .empty{padding:22px;border-radius:14px;background:var(--soft);color:var(--muted);text-align:center;font-weight:800}
     .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--cream);border-radius:999px;padding:12px 16px;box-shadow:0 10px 30px rgba(28,26,23,.2);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:min(92vw,760px);text-align:center;font-weight:800}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -3196,10 +3198,11 @@ main {
       renderStatus();
       toast(&quot;Teilnahme zurückgezogen.&quot;);
     }
-    function miniStatusHTML(item, kind) {
+    function miniStatusHTML(item, kind, index = 0) {
       const players = item.players.filter(Boolean).length;
       const world = kind === &quot;own&quot; ? &quot;own-world&quot; : &quot;invite-world&quot;;
-      return `&lt;article class=&quot;pb-card ${world} ${kind === &quot;direct&quot; ? &quot;direct&quot; : &quot;&quot;}&quot;&gt;
+      const shade = index % 2 === 0 ? &quot;shade-a&quot; : &quot;shade-b&quot;;
+      return `&lt;article class=&quot;pb-card ${world} ${shade} ${kind === &quot;direct&quot; ? &quot;direct&quot; : &quot;&quot;}&quot;&gt;
         &lt;div class=&quot;badge&quot;&gt;${kind === &quot;own&quot; ? &quot;Ich habe eingeladen&quot; : &quot;Ich wurde eingeladen und bin dabei&quot;}&lt;/div&gt;
         &lt;div class=&quot;match-top&quot;&gt;
           &lt;div&gt;&lt;div class=&quot;day&quot;&gt;${esc(item.day)}, ${esc(item.date)}&lt;/div&gt;&lt;div class=&quot;time&quot;&gt;${esc(item.time)}-${esc(item.end)}&lt;/div&gt;&lt;/div&gt;
@@ -3210,9 +3213,9 @@ main {
       &lt;/article&gt;`;
     }
     function renderStatus() {
-      $(&quot;#ownStatus&quot;).innerHTML = state.ownMatches.length ? state.ownMatches.map(item =&gt; miniStatusHTML(item, &quot;own&quot;)).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine eigene Einladung vorbereitet.&lt;/div&gt;';
+      $(&quot;#ownStatus&quot;).innerHTML = state.ownMatches.length ? state.ownMatches.map((item, index) =&gt; miniStatusHTML(item, &quot;own&quot;, index)).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine eigene Einladung vorbereitet.&lt;/div&gt;';
       const acceptedItems = state.accepted.map(id =&gt; invites.find(item =&gt; item.id === id)).filter(Boolean).sort(sortByDate);
-      $(&quot;#acceptedStatus&quot;).innerHTML = acceptedItems.length ? acceptedItems.map(item =&gt; miniStatusHTML(item, &quot;direct&quot;)).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine Einladung angenommen.&lt;/div&gt;';
+      $(&quot;#acceptedStatus&quot;).innerHTML = acceptedItems.length ? acceptedItems.map((item, index) =&gt; miniStatusHTML(item, &quot;direct&quot;, index)).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine Einladung angenommen.&lt;/div&gt;';
       applyBalls($(&quot;#ownStatus&quot;));
       applyBalls($(&quot;#acceptedStatus&quot;));
     }
