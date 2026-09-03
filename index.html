@@ -1998,6 +1998,7 @@ main {
     .user-pill{justify-self:end;border:1px solid rgba(246,241,231,.18);background:rgba(246,241,231,.08);color:var(--cream);border-radius:999px;padding:7px 8px 7px 14px;display:inline-flex;align-items:center;gap:10px;white-space:nowrap}
     .avatar{width:30px;height:30px;border-radius:50%;background:var(--coral);color:var(--white);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;overflow:hidden;background-size:cover;background-position:center}
     .avatar.has-photo{color:transparent;background-color:var(--cream)}
+    .has-photo[data-avatar-url]{cursor:zoom-in}
     .shell{max-width:1120px;margin:0 auto;padding:24px clamp(14px,3vw,28px) 72px}
     .main-tabs{display:flex;gap:2px;background:var(--soft);border-radius:14px;padding:3px;overflow-x:auto;scrollbar-width:none}
     .main-tabs::-webkit-scrollbar{display:none}
@@ -2115,7 +2116,7 @@ main {
     .seat-avatar{width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--cream);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;overflow:hidden;background-size:cover;background-position:center}
     .seat-avatar.has-photo{color:transparent;background-color:var(--cream);background-image:var(--avatar-image)!important}
     .seat.mine .seat-avatar{background:var(--coral);color:var(--white)}
-    .seat.mine .seat-avatar.has-photo{color:transparent;background-color:var(--cream)}
+    .seat.mine .seat-avatar.has-photo{color:transparent;background-color:var(--cream);background-image:var(--avatar-image)!important}
     .seat.free .seat-avatar{background:var(--soft);color:var(--muted)}
     .seat-main{min-width:0}
     .seat-name{font-size:14px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}
@@ -2311,6 +2312,10 @@ main {
     const esc = value =&gt; String(value ?? &quot;&quot;).replace(/[&amp;&lt;&gt;&quot;']/g, c =&gt; ({ &quot;&amp;&quot;:&quot;&amp;amp;&quot;, &quot;&lt;&quot;:&quot;&amp;lt;&quot;, &quot;&gt;&quot;:&quot;&amp;gt;&quot;, '&quot;':&quot;&amp;quot;&quot;, &quot;'&quot;:&quot;&amp;#39;&quot; }[c]));
     const initials = value =&gt; String(value || &quot;&quot;).trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part =&gt; part[0].toUpperCase()).join(&quot;&quot;) || &quot;JK&quot;;
     const safeCssUrl = value =&gt; String(value || &quot;&quot;).replace(/[\\&quot;)\n\r]/g, &quot;&quot;);
+    const avatarLargeUrl = value =&gt; {
+      const clean = String(value || &quot;&quot;).trim();
+      return clean ? clean.replace(/\/avatar\.webp(\?[^#]*)?$/, &quot;/avatar-large.webp$1&quot;) : &quot;&quot;;
+    };
     function paintAvatar(el, name = user.name, url = user.avatar_url) {
       if (!el) return;
       const photo = safeCssUrl(url);
@@ -2318,21 +2323,31 @@ main {
         el.textContent = &quot;&quot;;
         el.style.backgroundImage = `url(&quot;${photo}&quot;)`;
         el.classList.add(&quot;has-photo&quot;);
+        el.dataset.avatarUrl = photo;
+        el.dataset.avatarLargeUrl = avatarLargeUrl(photo);
+        el.dataset.avatarName = name || &quot;Profilbild&quot;;
+        el.setAttribute(&quot;role&quot;, &quot;button&quot;);
+        el.setAttribute(&quot;tabindex&quot;, &quot;0&quot;);
       } else {
         el.style.backgroundImage = &quot;&quot;;
         el.classList.remove(&quot;has-photo&quot;);
+        delete el.dataset.avatarUrl;
+        delete el.dataset.avatarLargeUrl;
+        delete el.dataset.avatarName;
+        el.removeAttribute(&quot;role&quot;);
+        el.removeAttribute(&quot;tabindex&quot;);
         el.textContent = initials(name);
       }
     }
     function miniAvatarHTML(name = user.name, url = user.avatar_url) {
       const photo = safeCssUrl(url);
-      return `&lt;span class=&quot;mini-avatar${photo ? &quot; has-photo&quot; : &quot;&quot;}&quot;${photo ? ` style=&quot;background-image:url('${photo}')&quot;` : &quot;&quot;}&gt;${photo ? &quot;&quot; : esc(initials(name))}&lt;/span&gt;`;
+      return `&lt;span class=&quot;mini-avatar${photo ? &quot; has-photo&quot; : &quot;&quot;}&quot;${photo ? ` style=&quot;background-image:url('${photo}')&quot; data-avatar-url=&quot;${esc(photo)}&quot; data-avatar-large-url=&quot;${esc(avatarLargeUrl(photo))}&quot; data-avatar-name=&quot;${esc(name || &quot;Profilbild&quot;)}&quot; role=&quot;button&quot; tabindex=&quot;0&quot;` : &quot;&quot;}&gt;${photo ? &quot;&quot; : esc(initials(name))}&lt;/span&gt;`;
     }
     function seatAvatarHTML(player, index) {
       if (!player) return `&lt;div class=&quot;seat-avatar&quot;&gt;${index + 1}&lt;/div&gt;`;
       const photo = safeCssUrl(player.avatar_url || &quot;&quot;);
       const label = initials(player.name || player.email || &quot;?&quot;);
-      return `&lt;div class=&quot;seat-avatar${photo ? &quot; has-photo&quot; : &quot;&quot;}&quot;${photo ? ` style=&quot;--avatar-image:url('${photo}');background-image:var(--avatar-image)&quot;` : &quot;&quot;}&gt;${photo ? &quot;&quot; : esc(label)}&lt;/div&gt;`;
+      return `&lt;div class=&quot;seat-avatar${photo ? &quot; has-photo&quot; : &quot;&quot;}&quot;${photo ? ` style=&quot;--avatar-image:url('${photo}');background-image:var(--avatar-image)&quot; data-avatar-url=&quot;${esc(photo)}&quot; data-avatar-large-url=&quot;${esc(avatarLargeUrl(photo))}&quot; data-avatar-name=&quot;${esc(player.name || player.email || &quot;Profilbild&quot;)}&quot; role=&quot;button&quot; tabindex=&quot;0&quot;` : &quot;&quot;}&gt;${photo ? &quot;&quot; : esc(label)}&lt;/div&gt;`;
     }
     const sortByDate = (a, b) =&gt; `${a.dateISO}-${a.time}`.localeCompare(`${b.dateISO}-${b.time}`);
     const app = (() =&gt; { try { return window.parent || window; } catch (_e) { return window; } })();
@@ -2520,6 +2535,7 @@ main {
       const today = appFn(&quot;todayStr&quot;) ? appFn(&quot;todayStr&quot;)() : new Date().toISOString().slice(0, 10);
       try {
         const data = await callMeetupFunction({ action: &quot;dashboard&quot; });
+        const parentAvatar = appFn(&quot;profileAvatarUrl&quot;) ? appFn(&quot;profileAvatarUrl&quot;)() : &quot;&quot;;
         if (data.profile) {
           const liveLevel = String(data.profile.level || &quot;&quot;).toUpperCase();
           user = {
@@ -2527,8 +2543,10 @@ main {
             email: data.profile.email || user.email,
             level: levels[liveLevel] ? liveLevel : user.level,
             gender: data.profile.gender || user.gender,
-            avatar_url: data.profile.avatar_url || user.avatar_url || &quot;&quot;
+            avatar_url: data.profile.avatar_url || parentAvatar || user.avatar_url || &quot;&quot;
           };
+        } else if (parentAvatar) {
+          user.avatar_url = parentAvatar;
         }
         groups = Array.isArray(data.groups) &amp;&amp; data.groups.length ? data.groups.map(group =&gt; ({
           id: group.id,
@@ -3277,6 +3295,26 @@ main {
       applyBalls($(&quot;#ownStatus&quot;));
       applyBalls($(&quot;#acceptedStatus&quot;));
     }
+    function openAvatarPreviewFromNode(node) {
+      const photo = node?.dataset?.avatarUrl || &quot;&quot;;
+      if (!photo) return;
+      const opener = appFn(&quot;openAvatarLightbox&quot;);
+      if (opener) opener(photo, node.dataset.avatarName || &quot;Profilbild&quot;, node.dataset.avatarLargeUrl || avatarLargeUrl(photo));
+    }
+    document.addEventListener(&quot;click&quot;, event =&gt; {
+      const avatar = event.target.closest(&quot;[data-avatar-url]&quot;);
+      if (!avatar) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openAvatarPreviewFromNode(avatar);
+    });
+    document.addEventListener(&quot;keydown&quot;, event =&gt; {
+      if (event.key !== &quot;Enter&quot; &amp;&amp; event.key !== &quot; &quot;) return;
+      const avatar = event.target.closest(&quot;[data-avatar-url]&quot;);
+      if (!avatar) return;
+      event.preventDefault();
+      openAvatarPreviewFromNode(avatar);
+    });
     async function init() {
       await loadLiveData();
       updateUserLevelReferences();
@@ -10447,6 +10485,9 @@ function esc(s) {
 function cssUrl(s) {
   return String(s == null ? '' : s).replace(/[\\")\n\r]/g, '');
 }
+function jsSingleQuoted(s) {
+  return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n|\r/g, '');
+}
 function profileInitials(name = currentProfile?.full_name) {
   return (name || '').trim().split(/\s+/).filter(Boolean)
     .slice(0, 2).map(w => w[0].toUpperCase()).join('') || '·';
@@ -10454,10 +10495,18 @@ function profileInitials(name = currentProfile?.full_name) {
 function profileAvatarUrl() {
   return String(currentProfile?.avatar_url || '').trim();
 }
+function avatarLargeUrl(url = profileAvatarUrl()) {
+  const clean = String(url || '').trim();
+  if (!clean) return '';
+  return clean.replace(/\/avatar\.webp(\?[^#]*)?$/, '/avatar-large.webp$1');
+}
 function roundAvatarHTML(className, initials = profileInitials(), url = profileAvatarUrl()) {
   const safeUrl = cssUrl(url);
+  const safeLargeUrl = cssUrl(avatarLargeUrl(url));
   const style = safeUrl ? ` style="--avatar-image:url('${safeUrl}');background-image:var(--avatar-image)"` : '';
-  return `<div class="${className}${safeUrl ? ' has-photo' : ''}"${style}>${safeUrl ? '' : esc(initials)}</div>`;
+  const call = `openAvatarLightbox('${jsSingleQuoted(safeUrl)}','${jsSingleQuoted(initials)}','${jsSingleQuoted(safeLargeUrl)}')`;
+  const preview = safeUrl ? ` role="button" tabindex="0" onclick="${esc(call)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${esc(call)}}"` : '';
+  return `<div class="${className}${safeUrl ? ' has-photo avatar-clickable' : ''}"${style}${preview}>${safeUrl ? '' : esc(initials)}</div>`;
 }
 
 // --- Punktraster als HTML-Strings ---
@@ -10996,21 +11045,21 @@ function computeNextMatch(bookings, abos, now) {
 }
 
 const PLAYING_LEVELS = {
-  A: { title: 'Profi', detail: 'mehr als 5 Jahre Erfahrung · Tennis LK 1 bis 14', balls: 4 },
-  B: { title: 'Könner', detail: 'mehr als 3 Jahre Erfahrung · Tennis LK 15 bis 20', balls: 3 },
+  A: { title: 'Profi', detail: 'mehr als 5 Jahre Erfahrung · Tennis LK 1 bis 12', balls: 4 },
+  B: { title: 'Könner', detail: 'mehr als 3 Jahre Erfahrung · Tennis LK 13 bis 20', balls: 3 },
   C: { title: 'Hobby', detail: '1-3 Jahre Padel- oder Tenniserfahrung', balls: 2 },
   D: { title: 'Einsteiger', detail: 'neu bei Padel oder Tennis', balls: 1 },
 };
 function currentPlayingLevel() {
-  const raw = String(currentProfile?.playing_level || localStorage.getItem('pb_playing_level') || 'B').toUpperCase();
-  return PLAYING_LEVELS[raw] ? raw : 'B';
+  const raw = String(currentProfile?.playing_level || localStorage.getItem('pb_playing_level') || 'D').toUpperCase();
+  return PLAYING_LEVELS[raw] ? raw : 'D';
 }
 function accountBallImgs(level) {
   const count = PLAYING_LEVELS[level]?.balls || 0;
   return Array.from({ length: count }, () => '<img src="assets/icons/padel-ball-hd.png" alt="">').join('');
 }
 function accountLevelPillHTML(level = currentPlayingLevel()) {
-  const meta = PLAYING_LEVELS[level] || PLAYING_LEVELS.B;
+  const meta = PLAYING_LEVELS[level] || PLAYING_LEVELS.D;
   return `<div class="acct-level-pill">
     <span class="acct-level-letter">${level}</span>
     <span class="acct-level-title">${meta.title}</span>
@@ -11020,7 +11069,7 @@ function accountLevelPillHTML(level = currentPlayingLevel()) {
 function profileLevelOptionsHTML(selected = currentPlayingLevel()) {
   return Object.keys(PLAYING_LEVELS).map(level => {
     const meta = PLAYING_LEVELS[level];
-    return `<button type="button" class="acct-level-option${level === selected ? ' active' : ''}" data-profile-level="${level}">
+    return `<button type="button" class="acct-level-option${level === selected ? ' active' : ' compact'}" data-profile-level="${level}">
       <span class="acct-level-letter">${level}</span>
       <span><strong>${meta.title}</strong><em>${meta.detail}</em></span>
       <span class="acct-level-balls">${accountBallImgs(level)}</span>
@@ -11030,7 +11079,11 @@ function profileLevelOptionsHTML(selected = currentPlayingLevel()) {
 function wireProfileLevelPicker() {
   document.querySelectorAll('[data-profile-level]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-profile-level]').forEach(b => b.classList.toggle('active', b === btn));
+      document.querySelectorAll('[data-profile-level]').forEach(b => {
+        const isActive = b === btn;
+        b.classList.toggle('active', isActive);
+        b.classList.toggle('compact', !isActive);
+      });
     });
   });
 }
@@ -11150,6 +11203,50 @@ function closeAvatarCrop() {
   if (overlay) overlay.classList.remove('open');
   avatarCropState = null;
 }
+function ensureAvatarLightbox() {
+  let overlay = document.getElementById('avatarLightbox');
+  if (overlay) return overlay;
+  overlay = document.createElement('div');
+  overlay.id = 'avatarLightbox';
+  overlay.className = 'avatar-lightbox';
+  overlay.innerHTML = `
+    <div class="avatar-lightbox-card" role="dialog" aria-modal="true" aria-label="Profilbild ansehen">
+      <button class="avatar-lightbox-close" type="button" onclick="closeAvatarLightbox()" aria-label="Schließen">×</button>
+      <img class="avatar-lightbox-img" id="avatarLightboxImg" alt="">
+      <div class="avatar-lightbox-name" id="avatarLightboxName"></div>
+    </div>`;
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeAvatarLightbox();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeAvatarLightbox();
+  });
+  document.body.appendChild(overlay);
+  return overlay;
+}
+function openAvatarLightbox(avatarUrl, name = '', largeUrl = '') {
+  const cleanAvatar = String(avatarUrl || '').trim();
+  if (!cleanAvatar) return;
+  const cleanLarge = String(largeUrl || avatarLargeUrl(cleanAvatar) || cleanAvatar).trim();
+  const overlay = ensureAvatarLightbox();
+  const img = overlay.querySelector('#avatarLightboxImg');
+  const title = overlay.querySelector('#avatarLightboxName');
+  let triedFallback = false;
+  img.onerror = () => {
+    if (!triedFallback && cleanAvatar && img.src !== cleanAvatar) {
+      triedFallback = true;
+      img.src = cleanAvatar;
+    }
+  };
+  img.alt = name ? `Profilbild von ${name}` : 'Profilbild';
+  img.src = cleanLarge;
+  title.textContent = name || 'Profilbild';
+  overlay.classList.add('open');
+}
+function closeAvatarLightbox() {
+  const overlay = document.getElementById('avatarLightbox');
+  if (overlay) overlay.classList.remove('open');
+}
 function avatarCropBlob() {
   return new Promise((resolve, reject) => {
     if (!avatarCropState?.img) { reject(new Error('Kein Bild zum Speichern ausgewählt.')); return; }
@@ -11159,17 +11256,32 @@ function avatarCropBlob() {
     const naturalW = img.naturalWidth || img.width;
     const naturalH = img.naturalHeight || img.height;
     const baseScale = stageSize / Math.min(naturalW, naturalH);
-    const visibleW = naturalW * baseScale * avatarCropState.zoom;
-    const visibleH = naturalH * baseScale * avatarCropState.zoom;
-    const sx = (naturalW / 2) - ((stageSize / 2 + avatarCropState.x) * naturalW / visibleW);
-    const sy = (naturalH / 2) - ((stageSize / 2 + avatarCropState.y) * naturalH / visibleH);
-    const sw = stageSize * naturalW / visibleW;
-    const sh = stageSize * naturalH / visibleH;
+    const scale = baseScale * avatarCropState.zoom;
+    const sw = stageSize / scale;
+    const sh = stageSize / scale;
+    const sx = (naturalW - sw) / 2 - (avatarCropState.x / scale);
+    const sy = (naturalH - sh) / 2 - (avatarCropState.y / scale);
     const canvas = document.createElement('canvas');
     canvas.width = output; canvas.height = output;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, output, output);
     canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Das Bild konnte nicht vorbereitet werden.')), 'image/webp', 0.84);
+  });
+}
+function avatarLargeBlob() {
+  return new Promise((resolve, reject) => {
+    if (!avatarCropState?.img) { reject(new Error('Kein Bild zum Speichern ausgewählt.')); return; }
+    const img = avatarCropState.img;
+    const naturalW = img.naturalWidth || img.width;
+    const naturalH = img.naturalHeight || img.height;
+    const maxSide = 1200;
+    const scale = Math.min(1, maxSide / Math.max(naturalW, naturalH));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(naturalW * scale));
+    canvas.height = Math.max(1, Math.round(naturalH * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Das große Profilbild konnte nicht vorbereitet werden.')), 'image/webp', 0.82);
   });
 }
 async function saveProfileAvatar(file) {
@@ -11199,13 +11311,21 @@ async function confirmAvatarCrop() {
   if (msg) { msg.style.color = ''; msg.textContent = 'Profilbild wird gespeichert …'; }
   try {
     const blob = await avatarCropBlob();
+    const largeBlob = await avatarLargeBlob();
     const path = `${currentUser.id}/avatar.webp`;
+    const largePath = `${currentUser.id}/avatar-large.webp`;
     const { error: upErr } = await sb.storage.from('profile-avatars').upload(path, blob, {
       upsert: true,
       cacheControl: '3600',
       contentType: 'image/webp'
     });
     if (upErr) throw upErr;
+    const { error: upLargeErr } = await sb.storage.from('profile-avatars').upload(largePath, largeBlob, {
+      upsert: true,
+      cacheControl: '3600',
+      contentType: 'image/webp'
+    });
+    if (upLargeErr) throw upLargeErr;
     const url = sb.storage.from('profile-avatars').getPublicUrl(path).data.publicUrl + `?v=${Date.now()}`;
     const { data, error } = await sb
       .from('users')
@@ -11228,7 +11348,7 @@ async function removeProfileAvatar() {
   if (!currentUser?.id) return;
   if (msg) { msg.style.color = ''; msg.textContent = 'Profilbild wird entfernt …'; }
   try {
-    await sb.storage.from('profile-avatars').remove([`${currentUser.id}/avatar.webp`]);
+    await sb.storage.from('profile-avatars').remove([`${currentUser.id}/avatar.webp`, `${currentUser.id}/avatar-large.webp`]);
     const { data, error } = await sb
       .from('users')
       .update({ avatar_url: null })
@@ -12626,6 +12746,27 @@ body.bielstein-theme .appbar-avatar {
   border: 1.5px solid rgba(255,255,255,.16);
 }
 body.bielstein-theme .appbar-avatar.has-photo { color: transparent; background-color: #FAF8F4; }
+body.bielstein-theme .avatar-clickable { cursor: zoom-in; }
+body.bielstein-theme .avatar-lightbox {
+  position: fixed; inset: 0; z-index: 980; display: none; align-items: center; justify-content: center;
+  background: rgba(28,26,23,.88); padding: 22px;
+}
+body.bielstein-theme .avatar-lightbox.open { display: flex; }
+body.bielstein-theme .avatar-lightbox-card {
+  position: relative; width: min(92vw, 680px); max-height: 88vh;
+  display: grid; gap: 12px; justify-items: center;
+}
+body.bielstein-theme .avatar-lightbox-img {
+  display: block; max-width: 100%; max-height: 78vh; border-radius: 18px;
+  object-fit: contain; background: #F6F1E7; box-shadow: 0 28px 80px rgba(0,0,0,.34);
+}
+body.bielstein-theme .avatar-lightbox-name {
+  color: #F6F1E7; font: 800 16px "Space Grotesk","Arial Narrow",sans-serif;
+}
+body.bielstein-theme .avatar-lightbox-close {
+  position: absolute; top: -14px; right: -14px; width: 36px; height: 36px; border: 0; border-radius: 50%;
+  background: #F6F1E7; color: #1C1A17; font-size: 24px; line-height: 1; cursor: pointer;
+}
 @media (max-width: 560px) {
   body.bielstein-theme .appbar { padding: 14px 18px; }
   body.bielstein-theme .appbar-wordmark { font-size: 21px; }
@@ -13516,13 +13657,22 @@ body.bielstein-theme .acct-level-balls img { width: 16px; height: 16px; object-f
 body.bielstein-theme .acct-level-picker { display: grid; gap: 8px; }
 body.bielstein-theme .acct-level-option {
   width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
-  text-align: left; border: 1.5px solid #E2DACB; border-radius: 12px; background: #FFFFFF; color: #1C1A17; padding: 11px 12px; cursor: pointer;
+  text-align: left; border: 1.5px solid #E2DACB; border-radius: 12px; background: #F4EFE6; color: #1C1A17; padding: 11px 12px; cursor: pointer;
+  transition: width .16s ease, padding .16s ease, background-color .16s ease, border-color .16s ease, box-shadow .16s ease, opacity .16s ease;
 }
-body.bielstein-theme .acct-level-option.active { border-color: #FF5A36; box-shadow: 0 0 0 3px rgba(255,90,54,.13); }
+body.bielstein-theme .acct-level-option.active { width: 100%; background: #FFFFFF; border-color: #FF5A36; box-shadow: 0 0 0 3px rgba(255,90,54,.13); }
+body.bielstein-theme .acct-level-option.compact {
+  width: 50%; justify-self: end; grid-template-columns: auto 1fr; gap: 8px;
+  padding: 7px 9px; background: #EEE7DA; opacity: .78;
+}
+body.bielstein-theme .acct-level-option.compact .acct-level-letter { font-size: 18px; }
+body.bielstein-theme .acct-level-option.compact strong { font-size: 11px; }
+body.bielstein-theme .acct-level-option.compact .acct-level-balls { display: none; }
 body.bielstein-theme .acct-level-option .acct-level-letter { font-size: 27px; }
 @media (max-width: 560px) {
   body.bielstein-theme .acct-level-pill { flex-wrap: wrap; }
   body.bielstein-theme .acct-level-option { grid-template-columns: auto 1fr; }
+  body.bielstein-theme .acct-level-option.compact { width: 62%; }
   body.bielstein-theme .acct-level-option .acct-level-balls { grid-column: 2; justify-content: flex-start; min-width: 0; }
 }
 body.bielstein-theme .acct-name {
