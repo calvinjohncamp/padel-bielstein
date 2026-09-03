@@ -1297,8 +1297,8 @@ main {
         <input class="form-input" type="tel" id="regPhone" placeholder="z.B. 0170 1234567" autocomplete="tel">
         <div class="form-hint">Für Rückfragen bei Wetter/Zugangsproblemen</div>
       </div>
-      <!-- Geburtsjahr und Geschlecht werden bewusst NICHT mehr erhoben
-           (Datenminimierung, Entscheidung Jörn 23.07.2026). -->
+      <!-- Geschlecht wird spaeter freiwillig im Profil gesetzt; bei Registrierung
+           bleibt es bewusst leer. Geburtsjahr wird nicht mehr erhoben. -->
       <div class="form-hint" style="margin-bottom:14px;line-height:1.5;">
         <strong>Mitglied der Tennisfreunde oder Freibad-Dauerkarte?</strong><br>
         Du musst nichts angeben. Sobald du deine E-Mail-Adresse bestätigt hast,
@@ -2170,7 +2170,7 @@ main {
     &lt;section class=&quot;section-head editor-section-head&quot;&gt;
       &lt;div&gt;
         &lt;h1&gt;Dating 2.0&lt;/h1&gt;
-        &lt;p&gt;Mitspieler für gebuchte Termine finden und Einladungen annehmen.&lt;/p&gt;
+        &lt;p&gt;Mitspielerinnen und Mitspieler für gebuchte Termine finden und Einladungen annehmen.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/section&gt;
 
@@ -2209,7 +2209,7 @@ main {
             &lt;span&gt;
               &lt;div class=&quot;profile-kicker&quot;&gt;Mein Profil&lt;/div&gt;
               &lt;strong id=&quot;profileName&quot;&gt;Jörn Kämper&lt;/strong&gt;
-              &lt;span class=&quot;profile-meta&quot;&gt;&lt;b class=&quot;profile-level-letter&quot; id=&quot;profileLevelLetter&quot;&gt;A&lt;/b&gt;&lt;b id=&quot;profileLevelTitle&quot;&gt;Profi&lt;/b&gt;&lt;span class=&quot;balls&quot; id=&quot;profileBalls&quot; data-balls=&quot;4&quot;&gt;&lt;/span&gt;&lt;span id=&quot;profileGender&quot;&gt;männlich&lt;/span&gt;&lt;/span&gt;
+              &lt;span class=&quot;profile-meta&quot;&gt;&lt;b class=&quot;profile-level-letter&quot; id=&quot;profileLevelLetter&quot;&gt;A&lt;/b&gt;&lt;b id=&quot;profileLevelTitle&quot;&gt;Profi&lt;/b&gt;&lt;span class=&quot;balls&quot; id=&quot;profileBalls&quot; data-balls=&quot;4&quot;&gt;&lt;/span&gt;&lt;span id=&quot;profileGender&quot; hidden&gt;&lt;/span&gt;&lt;/span&gt;
             &lt;/span&gt;
           &lt;/div&gt;
         &lt;/div&gt;
@@ -2245,7 +2245,7 @@ main {
   &lt;div class=&quot;toast&quot; id=&quot;toast&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
 
   &lt;script&gt;
-    let user = { name: &quot;Jörn Kämper&quot;, email: &quot;calvinjohncampa@aol.com&quot;, level: &quot;A&quot;, gender: &quot;männlich&quot;, avatar_url: &quot;&quot; };
+    let user = { name: &quot;Jörn Kämper&quot;, email: &quot;calvinjohncampa@aol.com&quot;, level: &quot;A&quot;, gender: &quot;&quot;, avatar_url: &quot;&quot; };
     const levels = {
       A: { title: &quot;Profi&quot;, text: &quot;mehr als 5 Jahre Erfahrung · Tennis LK 1 bis 12&quot;, balls: 4 },
       B: { title: &quot;Könner&quot;, text: &quot;mehr als 3 Jahre Erfahrung · Tennis LK 13 bis 20&quot;, balls: 3 },
@@ -2320,7 +2320,7 @@ main {
       const raw = String(value || &quot;&quot;).trim().toLowerCase();
       if (raw === &quot;maennlich&quot; || raw === &quot;mannlich&quot; || raw === &quot;männlich&quot;) return &quot;männlich&quot;;
       if (raw === &quot;weiblich&quot;) return &quot;weiblich&quot;;
-      return raw || &quot;egal&quot;;
+      return raw;
     };
     const avatarLargeUrl = value =&gt; {
       const clean = String(value || &quot;&quot;).trim();
@@ -2552,7 +2552,7 @@ main {
             name: data.profile.name || data.profile.email || user.name,
             email: data.profile.email || user.email,
             level: levels[liveLevel] ? liveLevel : user.level,
-            gender: data.profile.gender || user.gender,
+            gender: data.profile.gender || &quot;&quot;,
             avatar_url: data.profile.avatar_url || parentAvatar || user.avatar_url || &quot;&quot;
           };
         } else if (parentAvatar) {
@@ -2660,7 +2660,10 @@ main {
       $(&quot;#profileLevelLetter&quot;).textContent = user.level;
       $(&quot;#profileLevelTitle&quot;).textContent = meta.title;
       $(&quot;#profileBalls&quot;).dataset.balls = meta.balls;
-      $(&quot;#profileGender&quot;).textContent = displayGender(user.gender);
+      const genderLabel = displayGender(user.gender);
+      const genderEl = $(&quot;#profileGender&quot;);
+      genderEl.textContent = genderLabel;
+      genderEl.hidden = !genderLabel;
       $(&quot;#profileLevelPicker&quot;).innerHTML = Object.keys(levels).map(level =&gt; `&lt;button class=&quot;chip ${level === user.level ? &quot;active&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-profile-level=&quot;${level}&quot;&gt;${level}&lt;/button&gt;`).join(&quot;&quot;);
       $$(&quot;#profileLevelPicker [data-profile-level]&quot;).forEach(btn =&gt; {
         btn.addEventListener(&quot;click&quot;, () =&gt; {
@@ -6443,8 +6446,8 @@ async function doRegister() {
   const email  = document.getElementById('regEmail').value.trim();
   const pw     = document.getElementById('regPw').value;
   const phone  = document.getElementById('regPhone').value.trim() || null;
-  // Geburtsjahr und Geschlecht werden seit 23.07.2026 nicht mehr erhoben
-  // (Datenminimierung). Der Profil-Trigger verträgt fehlende Metadaten.
+  // Geschlecht wird spaeter freiwillig im Profil gesetzt. Bei Registrierung
+  // bleibt es bewusst leer; der Profil-Trigger vertraegt fehlende Metadaten.
   if (!name)            { showAuthErr('Bitte Name eingeben.'); return; }
   if (!email)           { showAuthErr('Bitte E-Mail eingeben.'); return; }
   if (pw.length < 8)    { showAuthErr('Passwort mindestens 8 Zeichen.'); return; }
@@ -10771,6 +10774,7 @@ function profileCardHTML() {
       <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
       <div class="form-group"><label class="form-label">E-Mail</label><input class="form-input" id="pfEmail" type="email" value="${email}"></div>
       <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
+      <div class="form-group"><label class="form-label">Geschlecht</label><div class="acct-gender-picker">${profileGenderOptionsHTML()}</div></div>
       <div class="form-group"><label class="form-label">Spielstärke</label><div class="acct-level-picker">${profileLevelOptionsHTML()}</div></div>
       <div class="form-group">
         <label class="form-label">Profilbild</label>
@@ -10784,7 +10788,6 @@ function profileCardHTML() {
           <div class="acct-avatar-note">Bild auswählen oder hier ablegen. Wird rund angezeigt und automatisch verkleinert.</div>
         </div>
       </div>
-      <!-- Geschlecht und Geburtsjahr entfernt (Datenminimierung, 23.07.2026) -->
       <button class="book-btn visible" id="pfSaveBtn" style="width:100%;position:static;" onclick="saveProfile()">Änderungen speichern</button>
       <div class="profile-save-ok" id="pfSaveMsg"></div>
     </div>
@@ -11112,6 +11115,24 @@ function profileLevelOptionsHTML(selected = currentPlayingLevel()) {
     </button>`;
   }).join('');
 }
+function normalizedProfileGender(value = currentProfile?.gender) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'maennlich' || raw === 'mannlich' || raw === 'männlich') return 'männlich';
+  if (raw === 'weiblich') return 'weiblich';
+  return '';
+}
+function profileGenderOptionsHTML(selected = normalizedProfileGender()) {
+  return [
+    { value: 'weiblich', label: 'weiblich' },
+    { value: 'männlich', label: 'männlich' },
+  ].map(option => {
+    const active = option.value === selected;
+    return `<button type="button" class="acct-gender-option${active ? ' active' : ''}" data-profile-gender="${option.value}">
+      <span class="acct-gender-check" aria-hidden="true">${active ? '✓' : ''}</span>
+      <span>${option.label}</span>
+    </button>`;
+  }).join('');
+}
 function wireProfileLevelPicker() {
   document.querySelectorAll('[data-profile-level]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -11123,8 +11144,28 @@ function wireProfileLevelPicker() {
     });
   });
 }
+function wireProfileGenderPicker() {
+  document.querySelectorAll('[data-profile-gender]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const wasActive = btn.classList.contains('active');
+      document.querySelectorAll('[data-profile-gender]').forEach(b => {
+        b.classList.remove('active');
+        const check = b.querySelector('.acct-gender-check');
+        if (check) check.textContent = '';
+      });
+      if (!wasActive) {
+        btn.classList.add('active');
+        const check = btn.querySelector('.acct-gender-check');
+        if (check) check.textContent = '✓';
+      }
+    });
+  });
+}
 function selectedProfileLevel() {
   return document.querySelector('[data-profile-level].active')?.dataset.profileLevel || currentPlayingLevel();
+}
+function selectedProfileGender() {
+  return document.querySelector('[data-profile-gender].active')?.dataset.profileGender || '';
 }
 function refreshProfileViews() {
   updateUserBar();
@@ -11778,7 +11819,7 @@ function renderAccountPage(direction = 0) {
   else if (p.type === 'rewards') { host.innerHTML = rewardsCardHTML(p.hours); label = 'Rewards'; }
   else if (p.type === 'abo')     { host.innerHTML = aboAccountCardHTML(p.abo); label = 'Jahresabo'; }
   else if (p.type === 'card')    { host.innerHTML = anyCardHTML(p.card);     label = p.card.card_size ? cardLabel(p.card.card_size) : 'Wertkarte'; }
-  else if (p.type === 'profile') { host.innerHTML = profileCardHTML(); wireProfileLevelPicker(); label = 'Meine Daten'; }
+  else if (p.type === 'profile') { host.innerHTML = profileCardHTML(); wireProfileLevelPicker(); wireProfileGenderPicker(); label = 'Meine Daten'; }
 
   // Beim Blättern beginnt jede Karte wieder oben; der Pager bleibt fest sichtbar.
   host.scrollTop = 0;
@@ -11870,8 +11911,7 @@ async function saveProfile() {
   const email = document.getElementById('pfEmail').value.trim().toLowerCase();
   const phone = document.getElementById('pfPhone').value.trim();
   const playingLevel = selectedProfileLevel();
-  // Geschlecht/Geburtsjahr werden nicht mehr erhoben (Datenminimierung
-  // 23.07.2026); vorhandene Werte in der Datenbank bleiben unangetastet.
+  const gender = selectedProfileGender() || null;
   if (!name)  { msg.style.color = '#d64545'; msg.textContent = 'Bitte einen Namen angeben.'; return; }
   if (!email) { msg.style.color = '#d64545'; msg.textContent = 'Bitte eine E-Mail angeben.'; return; }
   msg.style.color = ''; msg.textContent = 'Wird gespeichert …';
@@ -11895,21 +11935,21 @@ async function saveProfile() {
     // Update liefert sonst unter Umständen keinen HTTP-Fehler, aber 0 Zeilen.
     let { data: saved, error: profileErr } = await sb
       .from('users')
-      .update({ full_name: name, phone: phone || null, email, playing_level: playingLevel })
+      .update({ full_name: name, phone: phone || null, email, playing_level: playingLevel, gender })
       .eq('auth_id', currentUser.id)
-      .select('auth_id,full_name,email,phone,playing_level,avatar_url')
+      .select('auth_id,full_name,email,phone,playing_level,gender,avatar_url')
       .maybeSingle();
 
-    if (profileErr && /playing_level/i.test(profileErr.message || '')) {
+    if (profileErr && /(playing_level|gender)/i.test(profileErr.message || '')) {
       const fallback = await sb
         .from('users')
         .update({ full_name: name, phone: phone || null, email })
         .eq('auth_id', currentUser.id)
         .select('auth_id,full_name,email,phone,avatar_url')
         .maybeSingle();
-      saved = fallback.data ? { ...fallback.data, playing_level: playingLevel } : null;
+      saved = fallback.data ? { ...fallback.data, playing_level: playingLevel, gender } : null;
       profileErr = fallback.error;
-      emailNote += ' – Spielstärke wird dauerhaft gespeichert, sobald die Datenbank-Erweiterung aktiv ist';
+      emailNote += ' – Spielstärke/Geschlecht werden dauerhaft gespeichert, sobald die Datenbank-Erweiterung aktiv ist';
     }
 
     if (profileErr) throw new Error('Profildaten konnten nicht gespeichert werden: ' + profileErr.message);
@@ -11918,7 +11958,7 @@ async function saveProfile() {
     }
 
     // Nur den nachweislich von der Datenbank zurückgegebenen Stand übernehmen.
-    currentProfile = { ...(currentProfile || {}), ...saved, playing_level: playingLevel };
+    currentProfile = { ...(currentProfile || {}), ...saved, playing_level: playingLevel, gender };
     localStorage.setItem('pb_playing_level', playingLevel);
     const nb = document.getElementById('userBarName'); if (nb) nb.textContent = name;
 
@@ -13606,6 +13646,46 @@ body.bielstein-theme .acct-card {
   padding-top: 40px;
 }
 body.bielstein-theme .acct-card .profile-form { text-align: left; }
+body.bielstein-theme .acct-gender-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+body.bielstein-theme .acct-gender-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1.5px solid #E2DACB;
+  border-radius: 12px;
+  background: #FFFFFF;
+  color: #1C1A17;
+  cursor: pointer;
+  font: 800 13px "Space Grotesk","Arial Narrow",sans-serif;
+  text-align: left;
+}
+body.bielstein-theme .acct-gender-option .acct-gender-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid #CFC5B4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+body.bielstein-theme .acct-gender-option.active {
+  border-color: #1C1A17;
+  background: #F6F1E7;
+}
+body.bielstein-theme .acct-gender-option.active .acct-gender-check {
+  border-color: #1C1A17;
+  background: #1C1A17;
+  color: #F6F1E7;
+}
 body.bielstein-theme .acct-avatar-field {
   display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center;
   background: #FFFFFF; border: 1.5px solid #E2DACB; border-radius: 14px;
