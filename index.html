@@ -2065,8 +2065,16 @@ main {
     .email-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
     .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto}
     .email-row .mini-avatar{width:36px;height:36px}
+    .email-field-wrap{display:grid;gap:4px;min-width:0}
+    .email-profile{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px;font-weight:800;min-height:18px}
+    .email-profile strong{color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:13px}
+    .email-profile .profile-level-letter{font-size:16px;line-height:1;color:var(--coral);top:0}
+    .email-profile .balls{display:inline-flex;gap:2px}
+    .email-profile .balls img{width:10px;height:10px}
     .seat-index{width:34px;height:34px;border-radius:9px;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .invite-save-actions{display:grid;grid-template-columns:1fr 1.25fr;gap:10px;align-items:stretch}
+    .invite-mail-choice{margin-top:18px}
     .btn{border:0;border-radius:10px;padding:13px 16px;background:var(--ink);color:var(--cream);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px}
     .btn.secondary{background:var(--soft);color:var(--ink)}
     .btn.coral{background:var(--coral);color:var(--white)}
@@ -2147,7 +2155,7 @@ main {
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     [hidden]{display:none!important}
     @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
-    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-row{grid-template-columns:1fr}.seat-index{width:100%;height:26px}.group-tools-row{grid-template-columns:1fr 44px 44px}.cta-large{font-size:16px}}
+    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-row,.email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto}.seat-index{width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.cta-large{font-size:16px}}
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
@@ -2412,8 +2420,17 @@ main {
     function currentInvite() {
       return invites.find(item =&gt; item.id === state.selectedId);
     }
-    function ownMatchFor(bookingId) {
-      return state.ownMatches.find(match =&gt; match.bookingId === bookingId);
+    function ownMatchFor(source) {
+      const item = typeof source === &quot;string&quot; ? bookings.find(booking =&gt; booking.id === source) : source;
+      if (!item) return null;
+      return state.ownMatches.find(match =&gt; {
+        if (match.meetupId &amp;&amp; item.meetupId &amp;&amp; match.meetupId === item.meetupId) return true;
+        if (item.type === &quot;booking&quot;) return String(match.bookingId || &quot;&quot;) === String(item.bookingId || item.id || &quot;&quot;);
+        return String(match.subscriptionId || &quot;&quot;) === String(item.subscriptionId || &quot;&quot;)
+          &amp;&amp; match.dateISO === item.dateISO
+          &amp;&amp; String(match.courtNum || match.court || &quot;&quot;) === String(item.courtNum || item.court || &quot;&quot;)
+          &amp;&amp; match.time === item.time;
+      });
     }
     function selectedSource() {
       return state.selectedType === &quot;booking&quot; ? currentBooking() : currentInvite();
@@ -2698,6 +2715,17 @@ main {
       const mail = String(value || &quot;&quot;).trim().toLowerCase();
       return mail &amp;&amp; mail === user.email.toLowerCase() ? miniAvatarHTML(user.name, user.avatar_url) : &quot;&quot;;
     }
+    function profileForEmail(value, fallback = null) {
+      const mail = String(value || &quot;&quot;).trim().toLowerCase();
+      if (!mail) return fallback;
+      if (mail === user.email.toLowerCase()) return { name: user.name, email: user.email, level: user.level, avatar_url: user.avatar_url || &quot;&quot; };
+      return fallback;
+    }
+    function emailProfileHTML(player) {
+      if (!player || !player.name || player.name === player.email) return &quot;&quot;;
+      const level = levels[player.level] ? player.level : &quot;&quot;;
+      return `&lt;span class=&quot;email-profile&quot;&gt;&lt;strong&gt;${esc(player.name)}&lt;/strong&gt;${level ? `&lt;span class=&quot;profile-level-letter&quot;&gt;${level}&lt;/span&gt;&lt;span&gt;${esc(levels[level].title)}&lt;/span&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${levels[level].balls}&quot;&gt;&lt;/span&gt;` : &quot;&quot;}&lt;/span&gt;`;
+    }
     function refreshEmailRowAvatars(root = document) {
       $$('.email-row', root).forEach(row =&gt; {
         const input = row.querySelector('.player-email');
@@ -2710,11 +2738,16 @@ main {
         else if (!html &amp;&amp; existing) existing.remove();
       });
     }
-    function emailRowHTML(value = &quot;&quot;, index = 1) {
-      const avatar = emailAvatarFor(value);
+    function emailRowHTML(value = &quot;&quot;, index = 1, player = null) {
+      const profile = profileForEmail(value, player);
+      const avatar = profile?.avatar_url ? miniAvatarHTML(profile.name || value, profile.avatar_url) : emailAvatarFor(value);
+      const profileInfo = emailProfileHTML(profile);
       return `&lt;div class=&quot;email-row${avatar ? &quot; has-avatar&quot; : &quot;&quot;}&quot;&gt;
         ${avatar ? `&lt;span class=&quot;email-row-avatar&quot;&gt;${avatar}&lt;/span&gt;` : &quot;&quot;}
-        &lt;input class=&quot;text-input player-email&quot; type=&quot;email&quot; name=&quot;player_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;E-Mail ${index}&quot;&gt;
+        &lt;span class=&quot;email-field-wrap&quot;&gt;
+          &lt;input class=&quot;text-input player-email&quot; type=&quot;email&quot; name=&quot;player_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;E-Mail ${index}&quot;&gt;
+          ${profileInfo}
+        &lt;/span&gt;
         &lt;span class=&quot;seat-index&quot;&gt;${index}&lt;/span&gt;
       &lt;/div&gt;`;
     }
@@ -2917,11 +2950,15 @@ main {
     function ownEditorHTML(item) {
       const existing = ownMatchFor(item.id);
       if (existing?.groupId) state.selectedGroupId = existing.groupId;
-      const emails = existing ? [...existing.players.filter(Boolean).map(player =&gt; player.email), ...(existing.extraEmails || [])] : [user.email, &quot;&quot;, &quot;&quot;, &quot;&quot;];
-      while (emails.length &lt; 4) emails.push(&quot;&quot;);
+      const rows = existing
+        ? existing.players.map((player, index) =&gt; ({ email: player?.email || &quot;&quot;, player, index: index + 1 }))
+        : [{ email: user.email, player: profileForEmail(user.email), index: 1 }, { email: &quot;&quot;, player: null, index: 2 }, { email: &quot;&quot;, player: null, index: 3 }, { email: &quot;&quot;, player: null, index: 4 }];
+      while (rows.length &lt; 4) rows.push({ email: &quot;&quot;, player: null, index: rows.length + 1 });
       const selectedLevels = existing?.levels || (existing?.level ? [existing.level] : [&quot;egal&quot;]);
       const gender = existing?.gender || &quot;egal&quot;;
       const audience = existing?.audience || &quot;Mitspieler&quot;;
+      const defaultMailType = audience === &quot;Mitspieler&quot; &amp;&amp; rows.filter(row =&gt; row.email).length &gt;= 4 ? &quot;du_bist_dabei&quot; : &quot;lust_auf_padel&quot;;
+      const selectedMailType = existing?.mailType === &quot;Du bist dabei&quot; || existing?.mailType === &quot;du_bist_dabei&quot; ? &quot;du_bist_dabei&quot; : existing?.mailType === &quot;Lust auf Padel?&quot; || existing?.mailType === &quot;lust_auf_padel&quot; ? &quot;lust_auf_padel&quot; : defaultMailType;
       return `&lt;article class=&quot;create-card is-booking ${selectedToneClass()}&quot;&gt;
         &lt;div class=&quot;badge&quot;&gt;Ich habe gebucht&lt;/div&gt;
         &lt;div class=&quot;create-head&quot;&gt;
@@ -2934,7 +2971,7 @@ main {
         &lt;div class=&quot;email-panel&quot;&gt;
           &lt;span class=&quot;email-block-label&quot;&gt;Teilnehmer / Einladungen&lt;/span&gt;
           &lt;div class=&quot;email-list&quot; id=&quot;emailList&quot;&gt;
-            ${emails.map((email, index) =&gt; emailRowHTML(email, index + 1)).join(&quot;&quot;)}
+            ${rows.map(row =&gt; emailRowHTML(row.email, row.index, row.player)).join(&quot;&quot;)}
           &lt;/div&gt;
           &lt;div class=&quot;actions&quot;&gt;&lt;button class=&quot;btn secondary&quot; type=&quot;button&quot; id=&quot;addEmail&quot;&gt;E-Mail ergänzen&lt;/button&gt;&lt;/div&gt;
           &lt;p class=&quot;small-note&quot;&gt;Die erste Mail-Adresse ist bereits vorausgefüllt. Sie kann gelöscht oder überschrieben werden, wenn du selbst nicht mitspielst.&lt;/p&gt;
@@ -2964,8 +3001,15 @@ main {
           &lt;/div&gt;
           ${groupEditorHTML()}
         &lt;/div&gt;
-        &lt;div class=&quot;actions&quot;&gt;
-          &lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot;&gt;Verabreden / Spieler informieren&lt;/button&gt;
+        &lt;div class=&quot;field invite-mail-choice&quot;&gt;
+          &lt;label&gt;Mail an neue Spieler&lt;/label&gt;
+          ${segmentHTML(&quot;mailType&quot;, [
+            { value:&quot;du_bist_dabei&quot;, label:&quot;Du bist dabei&quot; }, { value:&quot;lust_auf_padel&quot;, label:&quot;Lust auf Padel?&quot; }
+          ], selectedMailType)}
+        &lt;/div&gt;
+        &lt;div class=&quot;actions invite-save-actions&quot;&gt;
+          &lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;saveMeetup&quot;&gt;Änderungen speichern&lt;/button&gt;
+          &lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot;&gt;Spieler informieren&lt;/button&gt;
         &lt;/div&gt;
       &lt;/article&gt;`;
     }
@@ -3070,6 +3114,8 @@ main {
       if (deleteGroupBtn) deleteGroupBtn.addEventListener(&quot;click&quot;, deleteGroup);
       const send = $(&quot;#sendInvite&quot;);
       if (send) send.addEventListener(&quot;click&quot;, sendInvitation);
+      const saveMeetup = $(&quot;#saveMeetup&quot;);
+      if (saveMeetup) saveMeetup.addEventListener(&quot;click&quot;, () =&gt; sendInvitation(false));
       const accept = $(&quot;#acceptInvite&quot;);
       if (accept) accept.addEventListener(&quot;click&quot;, acceptInvitation);
       const withdraw = $(&quot;#withdrawInvite&quot;);
@@ -3110,11 +3156,14 @@ main {
         return true;
       });
     }
-    async function sendInvitation() {
+    async function sendInvitation(sendEmails = true) {
       const item = currentBooking();
       const sendButton = $(&quot;#sendInvite&quot;);
+      const saveButton = $(&quot;#saveMeetup&quot;);
+      const actionButton = sendEmails ? sendButton : saveButton;
       const emails = collectEmails();
       const audience = selectedChip(&quot;audience&quot;);
+      const chosenMailType = selectedChip(&quot;mailType&quot;) || &quot;lust_auf_padel&quot;;
       const selectedGroup = groups.find(group =&gt; group.id === state.selectedGroupId);
       const invalid = emails.filter(email =&gt; !mailOk(email));
       if (invalid.length) {
@@ -3133,9 +3182,9 @@ main {
         toast(&quot;Bitte zuerst eine Gruppe mit E-Mail-Adressen auswählen.&quot;);
         return;
       }
-      if (sendButton) {
-        sendButton.disabled = true;
-        sendButton.textContent = &quot;Verabredung wird gespeichert ...&quot;;
+      if (actionButton) {
+        actionButton.disabled = true;
+        actionButton.textContent = sendEmails ? &quot;Spieler werden informiert ...&quot; : &quot;Änderungen werden gespeichert ...&quot;;
       }
       const playerEmails = emails.slice(0, 4);
       if (embedded) {
@@ -3149,6 +3198,8 @@ main {
             desired_gender: selectedChip(&quot;gender&quot;),
             audience: audience === &quot;Meine Gruppe&quot; ? &quot;gruppe&quot; : audience === &quot;Alle&quot; ? &quot;alle&quot; : &quot;mitspieler&quot;,
             group_id: audience === &quot;Meine Gruppe&quot; ? state.selectedGroupId : null,
+            send_emails: sendEmails,
+            mail_type: chosenMailType,
             slots: playerEmails.map((email, index) =&gt; ({
               slot_no: index + 1,
               email,
@@ -3159,6 +3210,7 @@ main {
           const data = await callMeetupFunction(payload);
           const saved = data.meetup ? ownMatchFromMeetup(data.meetup) : null;
           if (saved) {
+            saved.mailType = chosenMailType === &quot;du_bist_dabei&quot; ? &quot;Du bist dabei&quot; : &quot;Lust auf Padel?&quot;;
             const index = state.ownMatches.findIndex(match =&gt; match.meetupId === saved.meetupId || match.id === saved.id || match.bookingId === saved.bookingId);
             if (index &gt;= 0) state.ownMatches.splice(index, 1, saved);
             else state.ownMatches.push(saved);
@@ -3166,26 +3218,25 @@ main {
           }
           updateUserLevelReferences();
           renderStatus();
-          const successText = data.mails?.length
-            ? &quot;Mitspieler-Einladung ist raus&quot;
-            : audience === &quot;Alle&quot;
-              ? &quot;Offene Einladung gespeichert&quot;
-              : audience === &quot;Meine Gruppe&quot;
-                ? &quot;Gruppen-Einladung gespeichert&quot;
-                : &quot;Mitspieler-Einladung gespeichert&quot;;
-          if (sendButton) {
-            sendButton.classList.remove(&quot;coral&quot;);
-            sendButton.classList.add(&quot;done&quot;);
-            sendButton.textContent = successText;
+          const successText = !sendEmails
+            ? &quot;Änderungen gespeichert&quot;
+            : data.mails?.length
+              ? `${data.mails.length} neue Adresse${data.mails.length === 1 ? &quot;&quot; : &quot;n&quot;} informiert`
+              : &quot;Keine neue Adresse zu informieren&quot;;
+          if (actionButton) {
+            actionButton.classList.remove(&quot;coral&quot;);
+            actionButton.classList.add(&quot;done&quot;);
+            actionButton.textContent = successText;
+            actionButton.disabled = false;
           }
-          toast(data.mails?.length ? `${data.mails.length} neue Adresse${data.mails.length === 1 ? &quot;&quot; : &quot;n&quot;} informiert.` : successText);
+          toast(successText);
           sendMeetHeight();
           return;
         } catch (e) {
           toast(e.message || &quot;Verabredung konnte nicht gespeichert werden.&quot;);
-          if (sendButton) {
-            sendButton.disabled = false;
-            sendButton.textContent = &quot;Verabreden / Spieler informieren&quot;;
+          if (actionButton) {
+            actionButton.disabled = false;
+            actionButton.textContent = sendEmails ? &quot;Spieler informieren&quot; : &quot;Änderungen speichern&quot;;
           }
           return;
         }
@@ -3197,10 +3248,13 @@ main {
         avatar_url: email.toLowerCase() === user.email.toLowerCase() ? user.avatar_url || &quot;&quot; : &quot;&quot;
       }));
       while (players.length &lt; 4) players.push(null);
-      const mailType = audience === &quot;Mitspieler&quot; &amp;&amp; playerEmails.length &gt;= 4 ? &quot;Du bist dabei&quot; : audience === &quot;Mitspieler&quot; ? &quot;noch keine Mail&quot; : &quot;Lust auf Padel?&quot;;
-      const shouldSendMail = mailType !== &quot;noch keine Mail&quot;;
+      const mailType = chosenMailType === &quot;du_bist_dabei&quot; ? &quot;Du bist dabei&quot; : &quot;Lust auf Padel?&quot;;
+      const shouldSendMail = !!sendEmails;
       const notifyPool = audience === &quot;Meine Gruppe&quot; ? uniqueEmails([...emails, ...(selectedGroup?.emails || [])]) : audience === &quot;Alle&quot; ? emails : emails;
-      const existing = state.ownMatches.findIndex(match =&gt; match.bookingId === item.id);
+      const existing = state.ownMatches.findIndex(match =&gt; {
+        const current = ownMatchFor(item);
+        return current &amp;&amp; match === current;
+      });
       const previous = existing &gt;= 0 ? state.ownMatches[existing] : null;
       const previouslySent = previous?.sentEmails || [];
       const sentKeys = previouslySent.map(x =&gt; x.toLowerCase());
@@ -3209,7 +3263,7 @@ main {
         return mailOk(email) &amp;&amp; key !== user.email.toLowerCase() &amp;&amp; !sentKeys.includes(key);
       }) : [];
       const match = {
-        bookingId: item.id,
+        bookingId: item.bookingId || item.id,
         day: item.day,
         date: item.date,
         dateISO: item.dateISO,
@@ -3231,15 +3285,16 @@ main {
       else state.ownMatches.push(match);
       state.ownMatches.sort(sortByDate);
       renderStatus();
-      if (sendButton) {
-        sendButton.classList.remove(&quot;coral&quot;);
-        sendButton.classList.add(&quot;done&quot;);
-        sendButton.textContent = shouldSendMail ? &quot;Mitspieler-Einladung ist raus&quot; : &quot;Mitspieler-Einladung gespeichert&quot;;
+      if (actionButton) {
+        actionButton.classList.remove(&quot;coral&quot;);
+        actionButton.classList.add(&quot;done&quot;);
+        actionButton.textContent = shouldSendMail ? &quot;Spieler informiert&quot; : &quot;Änderungen gespeichert&quot;;
+        actionButton.disabled = false;
       }
-      if (mailType === &quot;noch keine Mail&quot;) {
-        toast(&quot;Liste gespeichert. Die direkte Info-Mail startet erst, wenn vier Personen eingetragen sind.&quot;);
+      if (!sendEmails) {
+        toast(&quot;Änderungen gespeichert. Es wurde keine Mail verschickt.&quot;);
       } else if (audience === &quot;Alle&quot; &amp;&amp; !newRecipients.length) {
-        toast(&quot;Offene Einladung gespeichert. Lust-auf-Padel-Mail/Anzeige vorbereitet.&quot;);
+        toast(&quot;Offene Einladung gespeichert. Keine neue Adresse zu informieren.&quot;);
       } else if (newRecipients.length) {
         toast(`${newRecipients.length} neue Adresse${newRecipients.length === 1 ? &quot;&quot; : &quot;n&quot;}: ${mailType === &quot;Du bist dabei&quot; ? &quot;Du-bist-dabei-Mail&quot; : &quot;Lust-auf-Padel-Mail&quot;} vorbereitet.`);
       } else {
