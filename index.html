@@ -2818,7 +2818,7 @@ main {
             &lt;h2 class=&quot;card-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/h2&gt;
             &lt;p class=&quot;card-sub&quot;&gt;${esc(item.court)} · ${esc(item.duration)} · ${item.mode === &quot;direct&quot; ? &quot;direkte Einladung&quot; : &quot;offene Einladung&quot;}&lt;/p&gt;
           &lt;/div&gt;
-          &lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${filled} von 4&lt;/strong&gt;Mitspielern gefunden&lt;/div&gt;
+          &lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${filled} von 4&lt;/strong&gt;Mitspieler haben bisher zugesagt&lt;/div&gt;
         &lt;/div&gt;
         &lt;div class=&quot;player-grid&quot;&gt;
           ${[0,1,2,3].map(i =&gt; seatHTML(item.players[i], i, true)).join(&quot;&quot;)}
@@ -3150,11 +3150,12 @@ main {
     }
     function miniStatusHTML(item, kind) {
       const players = item.players.filter(Boolean).length;
+      const statusText = `${players} von 4 Mitspieler${players === 1 ? &quot; hat&quot; : &quot; haben&quot;} bisher zugesagt`;
       return `&lt;article class=&quot;pb-card ${kind === &quot;direct&quot; ? &quot;direct&quot; : &quot;&quot;}&quot;&gt;
         &lt;div class=&quot;badge&quot;&gt;${kind === &quot;own&quot; ? &quot;Ich habe eingeladen&quot; : &quot;Ich wurde eingeladen und bin dabei&quot;}&lt;/div&gt;
         &lt;div class=&quot;match-top&quot;&gt;
           &lt;div&gt;&lt;div class=&quot;day&quot;&gt;${esc(item.day)}, ${esc(item.date)}&lt;/div&gt;&lt;div class=&quot;time&quot;&gt;${esc(item.time)}-${esc(item.end)}&lt;/div&gt;&lt;/div&gt;
-          &lt;span class=&quot;status green&quot;&gt;${players} von 4&lt;/span&gt;
+          &lt;span class=&quot;status green&quot;&gt;${esc(statusText)}&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&quot;meta&quot;&gt;&lt;span&gt;${esc(item.court)}&lt;/span&gt;&lt;span&gt;${esc(item.duration)}&lt;/span&gt;${item.mailType ? `&lt;span&gt;${esc(item.mailType)}&lt;/span&gt;` : &quot;&quot;}&lt;/div&gt;
         &lt;div class=&quot;player-grid&quot;&gt;${[0,1,2,3].map(i =&gt; seatHTML(item.players[i], i)).join(&quot;&quot;)}&lt;/div&gt;
