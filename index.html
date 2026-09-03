@@ -2312,6 +2312,12 @@ main {
     const esc = value =&gt; String(value ?? &quot;&quot;).replace(/[&amp;&lt;&gt;&quot;']/g, c =&gt; ({ &quot;&amp;&quot;:&quot;&amp;amp;&quot;, &quot;&lt;&quot;:&quot;&amp;lt;&quot;, &quot;&gt;&quot;:&quot;&amp;gt;&quot;, '&quot;':&quot;&amp;quot;&quot;, &quot;'&quot;:&quot;&amp;#39;&quot; }[c]));
     const initials = value =&gt; String(value || &quot;&quot;).trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part =&gt; part[0].toUpperCase()).join(&quot;&quot;) || &quot;JK&quot;;
     const safeCssUrl = value =&gt; String(value || &quot;&quot;).replace(/[\\&quot;)\n\r]/g, &quot;&quot;);
+    const displayGender = value =&gt; {
+      const raw = String(value || &quot;&quot;).trim().toLowerCase();
+      if (raw === &quot;maennlich&quot; || raw === &quot;mannlich&quot; || raw === &quot;männlich&quot;) return &quot;männlich&quot;;
+      if (raw === &quot;weiblich&quot;) return &quot;weiblich&quot;;
+      return raw || &quot;egal&quot;;
+    };
     const avatarLargeUrl = value =&gt; {
       const clean = String(value || &quot;&quot;).trim();
       return clean ? clean.replace(/\/avatar\.webp(\?[^#]*)?$/, &quot;/avatar-large.webp$1&quot;) : &quot;&quot;;
@@ -2650,7 +2656,7 @@ main {
       $(&quot;#profileLevelLetter&quot;).textContent = user.level;
       $(&quot;#profileLevelTitle&quot;).textContent = meta.title;
       $(&quot;#profileBalls&quot;).dataset.balls = meta.balls;
-      $(&quot;#profileGender&quot;).textContent = user.gender;
+      $(&quot;#profileGender&quot;).textContent = displayGender(user.gender);
       $(&quot;#profileLevelPicker&quot;).innerHTML = Object.keys(levels).map(level =&gt; `&lt;button class=&quot;chip ${level === user.level ? &quot;active&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-profile-level=&quot;${level}&quot;&gt;${level}&lt;/button&gt;`).join(&quot;&quot;);
       $$(&quot;#profileLevelPicker [data-profile-level]&quot;).forEach(btn =&gt; {
         btn.addEventListener(&quot;click&quot;, () =&gt; {
@@ -2954,7 +2960,7 @@ main {
           &lt;/div&gt;
           &lt;div class=&quot;field&quot;&gt;
             &lt;label&gt;Mitspieler&lt;/label&gt;
-            &lt;div class=&quot;seg&quot;&gt;&lt;button class=&quot;chip active&quot; type=&quot;button&quot;&gt;${esc(item.gender)}&lt;/button&gt;&lt;/div&gt;
+            &lt;div class=&quot;seg&quot;&gt;&lt;button class=&quot;chip active&quot; type=&quot;button&quot;&gt;${esc(displayGender(item.gender))}&lt;/button&gt;&lt;/div&gt;
           &lt;/div&gt;
         &lt;/div&gt;
         &lt;div class=&quot;actions&quot;&gt;
@@ -15302,7 +15308,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 <style>
 .pbsp-slot{margin:8px 0 22px;}
 .pbsp-kicker{font-family:"Space Grotesk","Arial Narrow","Impact",sans-serif;font-weight:700;font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:#7A7368;margin:0 0 8px 2px;}
-.pbsp-tile{display:inline-flex;align-items:center;justify-content:center;width:270px;height:123px;padding:0 22px;background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:14px;}
+.pbsp-tile{display:inline-flex;align-items:center;justify-content:center;width:270px;height:123px;padding:0 22px;background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:14px;text-decoration:none;color:inherit;}
+.pbsp-tile[href]{cursor:pointer;}
+.pbsp-tile[href]:hover{border-color:#CFC4B3;box-shadow:0 8px 22px rgba(28,26,23,.08);}
 .pbsp-tile img{max-height:70px;max-width:196px;width:auto;height:auto;object-fit:contain;display:block;}
 .pbsp-tile-action-direct{padding:10px 16px;overflow:hidden;}
 .pbsp-tile-action-direct img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;transform:none;}
@@ -15325,20 +15333,33 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 <script>
 (function(){
   var ROT_KEY='pbSponsorRot';
-  function esc(s){ return String(s==null?'':s).replace(/"/g,'&quot;'); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function normUrl(u){
+    u=String(u||'').trim();
+    if(!u) return '';
+    if(!/^https?:\/\//i.test(u)) u='https://'+u;
+    return /^https?:\/\/[^ ]+\.[^ ]+/i.test(u) ? u : '';
+  }
   function displayLogoUrl(s){
     if(!s) return '';
     return (s.action_logo_mode === 'replace' && s.action_logo_url) ? s.action_logo_url : s.logo_url;
+  }
+  function linkedTile(s, cl, inner){
+    var title=esc(s && s.name ? s.name : 'Partner');
+    var url=normUrl(s && s.website_url);
+    if(url) return '<a class="'+cl+'" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer nofollow" title="'+title+'">'+inner+'</a>';
+    return '<div class="'+cl+'" title="'+title+'">'+inner+'</div>';
   }
   function tile(s, prem){
     var logo=displayLogoUrl(s);
     if(!s || !logo) return '';
     var direct=(s.action_logo_mode === 'replace' && s.action_logo_url);
     var slide=(s.action_logo_mode === 'slideshow' && s.logo_url && s.action_logo_url);
+    var cl='pbsp-tile'+(prem?' pbsp-prem':'')+(direct?' pbsp-tile-action-direct':'')+(slide?' pbsp-tile-slideshow':'');
     if(slide){
-      return '<div class="pbsp-tile'+(prem?' pbsp-prem':'')+' pbsp-tile-slideshow"><img class="pbsp-logo-main" src="'+s.logo_url+'" alt="'+esc(s.name)+'"><span class="pbsp-logo-action"><img class="pbsp-action-motif" src="'+s.action_logo_url+'" alt="'+esc(s.name)+' Aktion"></span></div>';
+      return linkedTile(s, cl, '<img class="pbsp-logo-main" src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'"><span class="pbsp-logo-action"><img class="pbsp-action-motif" src="'+esc(s.action_logo_url)+'" alt="'+esc(s.name)+' Aktion"></span>');
     }
-    return '<div class="pbsp-tile'+(prem?' pbsp-prem':'')+(direct?' pbsp-tile-action-direct':'')+'"><img src="'+logo+'" alt="'+esc(s.name)+'"></div>';
+    return linkedTile(s, cl, '<img src="'+esc(logo)+'" alt="'+esc(s.name)+'">');
   }
   function fill(id, kicker, s, prem){
     var el=document.getElementById(id); if(!el) return;
@@ -15364,8 +15385,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   async function loadSponsorsDisplay(){
     try{
       if(typeof sb==='undefined' || !sb) return;
-      var res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order');
-      if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order');
+      var res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order,website_url');
+      if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
+      if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order,website_url');
+      if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
       if(res.error) throw res.error;
       var rows = res.data || [];
