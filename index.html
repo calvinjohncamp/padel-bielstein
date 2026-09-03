@@ -2026,6 +2026,7 @@ main {
     .btn{border:0;border-radius:10px;padding:13px 16px;background:var(--ink);color:var(--cream);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px}
     .btn.secondary{background:var(--soft);color:var(--ink)}
     .btn.coral{background:var(--coral);color:var(--white)}
+    .btn.done{background:var(--ink);color:var(--cream)}
     .btn:disabled{opacity:.62;cursor:default}
     .cta-large{width:100%;min-height:62px;font-size:18px;padding:18px 22px}
     .group-tools{display:grid;gap:8px}
@@ -2580,6 +2581,7 @@ main {
       const input = $$(&quot;.player-email&quot;, list).at(-1);
       if (input) input.focus();
       refreshEmailIndexes();
+      wireEmailAutofillGuard(list);
     }
     function groupOptionHTML() {
       return groups.map(group =&gt; `&lt;option value=&quot;${esc(group.id)}&quot; ${group.id === state.selectedGroupId ? &quot;selected&quot; : &quot;&quot;}&gt;${esc(group.name)} · ${group.emails.length}&lt;/option&gt;`).join(&quot;&quot;);
@@ -2710,6 +2712,39 @@ main {
         const n = index + 1;
         $(&quot;.seat-index&quot;, row).textContent = n;
         $(&quot;.player-email&quot;, row).setAttribute(&quot;aria-label&quot;, `E-Mail ${n}`);
+      });
+    }
+    let focusedEmailInput = null;
+    function clearAutofilledSiblingEmails(input) {
+      if (!input || !input.matches(&quot;.player-email&quot;)) return;
+      const value = input.value.trim().toLowerCase();
+      if (!value) return;
+      requestAnimationFrame(() =&gt; {
+        $$(&quot;.player-email&quot;).forEach(other =&gt; {
+          if (other === input) return;
+          const previous = String(other.dataset.prevValue || &quot;&quot;).trim();
+          const current = other.value.trim().toLowerCase();
+          if (!previous &amp;&amp; current === value) {
+            other.value = &quot;&quot;;
+            other.dataset.prevValue = &quot;&quot;;
+          }
+        });
+      });
+    }
+    function wireEmailAutofillGuard(root = document) {
+      $$(&quot;.player-email&quot;, root).forEach(input =&gt; {
+        if (input.dataset.autofillGuard === &quot;1&quot;) return;
+        input.dataset.autofillGuard = &quot;1&quot;;
+        input.dataset.prevValue = input.value || &quot;&quot;;
+        input.addEventListener(&quot;focus&quot;, () =&gt; { focusedEmailInput = input; input.dataset.prevValue = input.value || &quot;&quot;; });
+        input.addEventListener(&quot;input&quot;, () =&gt; {
+          clearAutofilledSiblingEmails(focusedEmailInput || input);
+          input.dataset.prevValue = input.value || &quot;&quot;;
+        });
+        input.addEventListener(&quot;change&quot;, () =&gt; {
+          clearAutofilledSiblingEmails(focusedEmailInput || input);
+          input.dataset.prevValue = input.value || &quot;&quot;;
+        });
       });
     }
     function segmentHTML(name, items, active, multi = false) {
@@ -2879,6 +2914,7 @@ main {
       const withdraw = $(&quot;#withdrawInvite&quot;);
       if (withdraw) withdraw.addEventListener(&quot;click&quot;, withdrawInvitation);
       $$(&quot;[data-remove-me]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, withdrawInvitation));
+      wireEmailAutofillGuard($(&quot;#editor&quot;));
       applyBalls($(&quot;#editor&quot;));
     }
     function selectBooking(id) {
@@ -2966,8 +3002,19 @@ main {
             state.ownMatches.sort(sortByDate);
           }
           renderStatus();
-          if (sendButton) sendButton.textContent = data.mails?.length ? &quot;Einladung verschickt&quot; : &quot;Verabredung gespeichert&quot;;
-          toast(data.mails?.length ? `${data.mails.length} neue Adresse${data.mails.length === 1 ? &quot;&quot; : &quot;n&quot;} informiert.` : &quot;Verabredung gespeichert. Keine doppelte Mail verschickt.&quot;);
+          const successText = data.mails?.length
+            ? &quot;Mitspieler-Einladung ist raus&quot;
+            : audience === &quot;Alle&quot;
+              ? &quot;Offene Einladung gespeichert&quot;
+              : audience === &quot;Meine Gruppe&quot;
+                ? &quot;Gruppen-Einladung gespeichert&quot;
+                : &quot;Mitspieler-Einladung gespeichert&quot;;
+          if (sendButton) {
+            sendButton.classList.remove(&quot;coral&quot;);
+            sendButton.classList.add(&quot;done&quot;);
+            sendButton.textContent = successText;
+          }
+          toast(data.mails?.length ? `${data.mails.length} neue Adresse${data.mails.length === 1 ? &quot;&quot; : &quot;n&quot;} informiert.` : successText);
           sendMeetHeight();
           return;
         } catch (e) {
@@ -3019,7 +3066,11 @@ main {
       else state.ownMatches.push(match);
       state.ownMatches.sort(sortByDate);
       renderStatus();
-      if (sendButton) sendButton.textContent = &quot;Verabredung gespeichert&quot;;
+      if (sendButton) {
+        sendButton.classList.remove(&quot;coral&quot;);
+        sendButton.classList.add(&quot;done&quot;);
+        sendButton.textContent = shouldSendMail ? &quot;Mitspieler-Einladung ist raus&quot; : &quot;Mitspieler-Einladung gespeichert&quot;;
+      }
       if (mailType === &quot;noch keine Mail&quot;) {
         toast(&quot;Liste gespeichert. Die direkte Info-Mail startet erst, wenn vier Personen eingetragen sind.&quot;);
       } else if (audience === &quot;Alle&quot; &amp;&amp; !newRecipients.length) {
