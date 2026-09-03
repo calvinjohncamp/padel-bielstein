@@ -2082,18 +2082,20 @@ main {
     .email-panel{margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}
     .email-list{display:grid;gap:8px}
     .email-list .email-row{min-height:78px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.58);display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:12px 14px}
+    .email-list .email-row:not(.has-avatar){min-height:44px;border:0;background:transparent;grid-template-columns:minmax(0,1fr) auto;padding:0;gap:8px}
     .email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto auto}
     .email-list .email-row .mini-avatar{width:48px;height:48px;border:2px solid var(--coral);background:var(--coral);color:var(--ink);font-size:15px}
     .email-list .email-row .mini-avatar.has-photo{color:transparent;background-color:var(--cream)}
     .email-field-wrap{display:grid;gap:2px;min-width:0}
     .email-player-name{color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:17px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}
     .email-list .email-row .text-input{min-height:24px;border:0;background:transparent;padding:0;color:var(--muted);font-size:13px;font-weight:700;box-shadow:none}
+    .email-list .email-row:not(.has-avatar) .text-input{min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--white);padding:10px 12px}
     .email-list .email-row .text-input:focus{background:var(--white);border:1px solid var(--line);border-color:var(--coral);border-radius:8px;padding:8px 10px;box-shadow:0 0 0 3px rgba(255,90,54,.13)}
     .email-profile{display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;color:var(--muted);font-size:14px;font-weight:900;white-space:nowrap}
-    .email-profile .profile-level-letter{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:22px;font-weight:900;line-height:.9;color:var(--coral);top:0}
+    .email-profile .profile-level-letter{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900;line-height:.9;color:var(--coral);top:0}
     .email-profile .profile-level-title{color:var(--ink)}
     .email-profile .balls{display:inline-flex;gap:2px}
-    .email-profile .balls img{width:15px;height:15px}
+    .email-profile .balls img{width:16px;height:16px}
     .seat-index{width:34px;height:34px;border-radius:9px;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
     .invite-save-actions{display:grid;grid-template-columns:1fr 1.25fr;gap:10px;align-items:stretch}
@@ -2157,9 +2159,9 @@ main {
     .seat-name{font-size:17px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}
     .seat-mail{margin-top:2px;color:var(--muted);font-size:13px;font-weight:700;overflow-wrap:anywhere}
     .seat-level{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:14px;font-weight:900;white-space:nowrap}
-    .seat-level-letter{font-family:&quot;Space Grotesk&quot;,sans-serif;color:var(--coral);font-size:22px;font-weight:900;line-height:.9}
+    .seat-level-letter{font-family:&quot;Space Grotesk&quot;,sans-serif;color:var(--coral);font-size:18px;font-weight:900;line-height:.9}
     .seat-level-title{color:var(--ink)}
-    .seat-level .balls img{width:15px;height:15px}
+    .seat-level .balls img{width:16px;height:16px}
     .small-note{margin:10px 0 0;color:var(--muted);font-size:13px;line-height:1.45}
     .pb-card{padding:30px 20px 20px;min-height:246px;display:flex;flex-direction:column}
     .pb-card.own-world{background:#F4EFE5;border-color:#DED2C2}
@@ -2618,7 +2620,13 @@ main {
         })) : groups;
         state.selectedGroupId = groups[0]?.id || &quot;&quot;;
         state.ownMatches = Array.isArray(data.ownMeetups) ? data.ownMeetups.map(ownMatchFromMeetup) : [];
-        invites = Array.isArray(data.invites) ? data.invites.map(inviteFromServer) : [];
+        const ownMeetupIds = new Set(state.ownMatches.map(match =&gt; String(match.meetupId || &quot;&quot;)).filter(Boolean));
+        const ownSourceIds = new Set(state.ownMatches.map(match =&gt; String(match.id || &quot;&quot;)).filter(Boolean));
+        invites = Array.isArray(data.invites) ? data.invites.map(inviteFromServer).filter(invite =&gt; {
+          if (invite.meetupId &amp;&amp; ownMeetupIds.has(String(invite.meetupId))) return false;
+          if (ownSourceIds.has(String(invite.id || &quot;&quot;))) return false;
+          return true;
+        }) : [];
         state.accepted = invites.filter(invite =&gt; invite.inviteStatus === &quot;accepted&quot;).map(invite =&gt; invite.id);
       } catch (e) {
         console.warn(e);
@@ -2781,7 +2789,8 @@ main {
         if (!input) return;
         const existing = row.querySelector('.email-row-avatar');
         const profileName = row.querySelector('.email-player-name')?.textContent || input.value;
-        const html = input.value.trim() ? emailFallbackAvatarHTML(input.value, { name: profileName }) : &quot;&quot;;
+        const profile = profileForEmail(input.value, { name: profileName });
+        const html = input.value.trim() ? emailFallbackAvatarHTML(input.value, profile) : &quot;&quot;;
         row.classList.toggle('has-avatar', !!html);
         if (html &amp;&amp; !existing) input.insertAdjacentHTML('beforebegin', `&lt;span class=&quot;email-row-avatar&quot;&gt;${html}&lt;/span&gt;`);
         else if (html &amp;&amp; existing) existing.innerHTML = html;
