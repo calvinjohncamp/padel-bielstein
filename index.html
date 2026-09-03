@@ -1988,6 +1988,8 @@ main {
     .pick-card{height:360px;display:flex;flex-direction:column}
     .pick-card .list{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px;align-content:start}
     .pick-card{background:#F4F2ED}
+    .world-own{background:#F0ECE3!important;border-color:#DED6C8}
+    .world-invite{background:#EEF3F2!important;border-color:#D5E0DE}
     .create-card{border-color:#9E978A;padding:34px clamp(18px,3vw,30px) 24px;transition:background .18s,border-color .18s,box-shadow .18s}
     .create-card.is-booking,.create-card.is-invite{box-shadow:0 12px 34px rgba(28,26,23,.14)}
     .tone-a{background:#E5E1D8!important}
@@ -2090,6 +2092,8 @@ main {
     .seat-level .balls img{width:12px;height:12px}
     .small-note{margin:10px 0 0;color:var(--muted);font-size:13px;line-height:1.45}
     .pb-card{padding:28px 20px 20px;min-height:246px;display:flex;flex-direction:column}
+    .pb-card.own-world{background:#F4EFE5;border-color:#DED2C2}
+    .pb-card.invite-world{background:#EAF1F0;border-color:#A8BBB7}
     .pb-card.direct{border-color:var(--ink)}
     .match-top{display:flex;justify-content:space-between;gap:14px;margin-bottom:16px}
     .day{font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;color:var(--coral);font-size:13px;letter-spacing:.12em;text-transform:uppercase}
@@ -2130,13 +2134,13 @@ main {
     &lt;/section&gt;
 
     &lt;section class=&quot;top-grid&quot; aria-label=&quot;Terminauswahl&quot;&gt;
-      &lt;article class=&quot;booking-card pick-card&quot;&gt;
+      &lt;article class=&quot;booking-card pick-card world-own&quot;&gt;
         &lt;h2 class=&quot;card-title&quot;&gt;Meine Buchungen&lt;/h2&gt;
         &lt;p class=&quot;card-sub&quot;&gt;Nächste 14 Tage, chronologisch sortiert.&lt;/p&gt;
         &lt;div class=&quot;list&quot; id=&quot;myBookings&quot;&gt;&lt;/div&gt;
       &lt;/article&gt;
 
-      &lt;article class=&quot;booking-card pick-card&quot;&gt;
+      &lt;article class=&quot;booking-card pick-card world-invite&quot;&gt;
         &lt;h2 class=&quot;card-title&quot;&gt;Einladungen für mich&lt;/h2&gt;
         &lt;p class=&quot;card-sub&quot;&gt;Direkte Einladungen zuerst, danach passende offene Termine.&lt;/p&gt;
         &lt;div class=&quot;list&quot; id=&quot;incomingInvites&quot;&gt;&lt;/div&gt;
@@ -2174,13 +2178,13 @@ main {
     &lt;/section&gt;
 
     &lt;section class=&quot;status-grid&quot; aria-label=&quot;Verabredungsstatus&quot;&gt;
-      &lt;article class=&quot;booking-card&quot;&gt;
+      &lt;article class=&quot;booking-card world-own&quot;&gt;
         &lt;h2 class=&quot;card-title&quot;&gt;Meine Verabredungen&lt;/h2&gt;
         &lt;p class=&quot;card-sub&quot;&gt;Buchungen der nächsten 2 Wochen, für die ich schon eingeladen habe.&lt;/p&gt;
         &lt;div class=&quot;list&quot; id=&quot;ownStatus&quot;&gt;&lt;/div&gt;
       &lt;/article&gt;
 
-      &lt;article class=&quot;booking-card&quot;&gt;
+      &lt;article class=&quot;booking-card world-invite&quot;&gt;
         &lt;h2 class=&quot;card-title&quot;&gt;Einladungen für mich&lt;/h2&gt;
         &lt;p class=&quot;card-sub&quot;&gt;Hier erscheinen nur Einladungen, die ich angenommen habe.&lt;/p&gt;
         &lt;div class=&quot;list&quot; id=&quot;acceptedStatus&quot;&gt;&lt;/div&gt;
@@ -2830,6 +2834,7 @@ main {
     function inviteEditorHTML(item) {
       const filled = item.players.filter(Boolean).length;
       const alreadyIn = item.players.some(p =&gt; p &amp;&amp; p.email.toLowerCase() === user.email.toLowerCase());
+      const selfTestAllowed = alreadyIn &amp;&amp; filled &lt; 4 &amp;&amp; item.from === user.name &amp;&amp; !item.players.some(p =&gt; p &amp;&amp; p.testSelf);
       return `&lt;article class=&quot;create-card is-invite ${selectedToneClass()}&quot;&gt;
         &lt;div class=&quot;badge&quot;&gt;Einladung von ${esc(item.from)}&lt;/div&gt;
         &lt;div class=&quot;create-head&quot;&gt;
@@ -2854,6 +2859,7 @@ main {
         &lt;/div&gt;
         &lt;div class=&quot;actions&quot;&gt;
           &lt;button class=&quot;btn ${alreadyIn ? &quot;done&quot; : &quot;coral&quot;} cta-large&quot; type=&quot;button&quot; id=&quot;acceptInvite&quot; ${alreadyIn || filled &gt;= 4 ? &quot;disabled&quot; : &quot;&quot;}&gt;${alreadyIn ? &quot;Du bist dabei&quot; : filled &gt;= 4 ? &quot;Bereits voll&quot; : &quot;Mitspielen&quot;}&lt;/button&gt;
+          ${selfTestAllowed ? '&lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;acceptSelfTestInvite&quot;&gt;Test: zweite Zusage anzeigen&lt;/button&gt;' : ''}
           ${alreadyIn ? '&lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;withdrawInvite&quot;&gt;Teilnahme zurückziehen&lt;/button&gt;' : ''}
         &lt;/div&gt;
       &lt;/article&gt;`;
@@ -2930,6 +2936,8 @@ main {
       if (send) send.addEventListener(&quot;click&quot;, sendInvitation);
       const accept = $(&quot;#acceptInvite&quot;);
       if (accept) accept.addEventListener(&quot;click&quot;, acceptInvitation);
+      const acceptSelfTest = $(&quot;#acceptSelfTestInvite&quot;);
+      if (acceptSelfTest) acceptSelfTest.addEventListener(&quot;click&quot;, acceptSelfTestInvitation);
       const withdraw = $(&quot;#withdrawInvite&quot;);
       if (withdraw) withdraw.addEventListener(&quot;click&quot;, withdrawInvitation);
       $$(&quot;[data-remove-me]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, withdrawInvitation));
@@ -3138,6 +3146,26 @@ main {
       renderStatus();
       toast(&quot;Du bist dabei. Die Einladung erscheint jetzt unten rechts.&quot;);
     }
+    function acceptSelfTestInvitation() {
+      const item = currentInvite();
+      if (!item) return;
+      if (item.players.some(p =&gt; p &amp;&amp; p.testSelf)) {
+        toast(&quot;Die zweite Test-Zusage ist bereits sichtbar.&quot;);
+        return;
+      }
+      const empty = item.players.findIndex(p =&gt; !p);
+      if (empty &lt; 0) {
+        toast(&quot;Diese Verabredung ist bereits voll.&quot;);
+        return;
+      }
+      item.players[empty] = { email: user.email, name: `${user.name} (Test)`, level: user.level, accepted: true, testSelf: true };
+      if (!state.accepted.includes(item.id)) state.accepted.push(item.id);
+      renderPickLists();
+      renderEditor();
+      renderStatus();
+      toast(&quot;Test-Zusage sichtbar. Diese zweite Teilnahme wird nicht dauerhaft gespeichert.&quot;);
+      sendMeetHeight();
+    }
     async function withdrawInvitation() {
       const item = currentInvite();
       if (!item) return;
@@ -3170,7 +3198,8 @@ main {
     }
     function miniStatusHTML(item, kind) {
       const players = item.players.filter(Boolean).length;
-      return `&lt;article class=&quot;pb-card ${kind === &quot;direct&quot; ? &quot;direct&quot; : &quot;&quot;}&quot;&gt;
+      const world = kind === &quot;own&quot; ? &quot;own-world&quot; : &quot;invite-world&quot;;
+      return `&lt;article class=&quot;pb-card ${world} ${kind === &quot;direct&quot; ? &quot;direct&quot; : &quot;&quot;}&quot;&gt;
         &lt;div class=&quot;badge&quot;&gt;${kind === &quot;own&quot; ? &quot;Ich habe eingeladen&quot; : &quot;Ich wurde eingeladen und bin dabei&quot;}&lt;/div&gt;
         &lt;div class=&quot;match-top&quot;&gt;
           &lt;div&gt;&lt;div class=&quot;day&quot;&gt;${esc(item.day)}, ${esc(item.date)}&lt;/div&gt;&lt;div class=&quot;time&quot;&gt;${esc(item.time)}-${esc(item.end)}&lt;/div&gt;&lt;/div&gt;
@@ -4023,6 +4052,35 @@ main {
               <div style="grid-column:1 / -1;">
                 <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Kontakt-E-Mail (schaltet den Rabatt frei)</label>
                 <input id="spContactEmail" type="email" placeholder="kontakt@firma.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
+            <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Vertragsadresse</div>
+            <div style="font-size:0.76rem;color:#7A7368;line-height:1.5;margin-bottom:10px;">
+              Interne Übersicht für Vorstand und Vertragsversand. Diese Angaben erscheinen nicht in der öffentlichen Partner-Anzeige.
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 110px 1fr 150px;gap:10px;">
+              <div>
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Straße / Hausnummer</label>
+                <input id="spAddressStreet" type="text" placeholder="Straße 1" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              </div>
+              <div>
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">PLZ</label>
+                <input id="spAddressZip" type="text" inputmode="numeric" placeholder="51674" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              </div>
+              <div>
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Ort</label>
+                <input id="spAddressCity" type="text" placeholder="Wiehl" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              </div>
+              <div>
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Land</label>
+                <input id="spAddressCountry" type="text" value="Deutschland" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              </div>
+              <div style="grid-column:1 / -1;">
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Notiz Vertrag / Versand</label>
+                <input id="spContractNote" type="text" placeholder="z. B. Vertrag an Geschäftsführung senden" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
               </div>
             </div>
           </div>
@@ -8628,6 +8686,7 @@ async function loadAdminSponsors() {
         ? `<span style="color:#FF5A36;font-weight:800;"> · ${actionLabel}</span>`
         : '';
       const hasContact = s.contact_name || s.contact_email || s.contact_phone;
+      const hasAddress = s.address_street || s.address_zip || s.address_city || s.address_country || s.contract_note;
       const num = getNum(s, idx, tier);
       const canMoveUp = idx > 0;
       const canMoveDown = idx < tierRows.length - 1;
@@ -8640,8 +8699,8 @@ async function loadAdminSponsors() {
           <!-- Rechte Kachel: Aktionslogo (vertikal zentriert) -->
           <div style="display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;min-height:81px;">${actionLogo}</div>
 
-          <!-- Firmen-Info + Kontakt nebeneinander (linksbündig, vertikal zentriert) -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;">
+          <!-- Firmen-Info, Kontakt und Vertragsadresse nebeneinander -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:28px;align-items:center;">
             <!-- Firmen-Info (linksbündig, vertikal zentriert) -->
             <div style="text-align:left;">
               <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
@@ -8656,6 +8715,17 @@ async function loadAdminSponsors() {
                 ${s.contact_email ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;word-break:break-all;">${esc(s.contact_email)}</div>` : ''}
                 ${s.contact_phone ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;">${esc(s.contact_phone)}</div>` : ''}
               ` : ''}
+            </div>
+
+            <!-- Vertragsadresse nur intern im Admin -->
+            <div style="text-align:left;">
+              ${hasAddress ? `
+                <div style="font:800 10px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#FF5A36;margin-bottom:4px;">Vertragsadresse</div>
+                ${s.address_street ? `<div style="font:600 12.1px 'Manrope',sans-serif;color:#1C1A17;line-height:1.35;">${esc(s.address_street)}</div>` : ''}
+                ${(s.address_zip || s.address_city) ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.35;">${esc([s.address_zip, s.address_city].filter(Boolean).join(' '))}</div>` : ''}
+                ${s.address_country ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.35;">${esc(s.address_country)}</div>` : ''}
+                ${s.contract_note ? `<div style="font:700 11.5px 'Manrope',sans-serif;color:#7A7368;line-height:1.35;margin-top:4px;">${esc(s.contract_note)}</div>` : ''}
+              ` : '<div style="font:700 11.5px Manrope,sans-serif;color:#A59D92;">keine Vertragsadresse</div>'}
             </div>
           </div>
 
@@ -8729,6 +8799,11 @@ function editSponsor(id) {
   document.getElementById('spContactName').value  = s.contact_name  || '';
   document.getElementById('spContactEmail').value = s.contact_email || '';
   document.getElementById('spContactPhone').value = s.contact_phone || '';
+  document.getElementById('spAddressStreet').value = s.address_street || '';
+  document.getElementById('spAddressZip').value = s.address_zip || '';
+  document.getElementById('spAddressCity').value = s.address_city || '';
+  document.getElementById('spAddressCountry').value = s.address_country || 'Deutschland';
+  document.getElementById('spContractNote').value = s.contract_note || '';
   document.getElementById('spFile').value     = '';
   document.getElementById('spActionFile').value = '';
   document.getElementById('spActionLogoMode').value = s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
@@ -8750,6 +8825,11 @@ function resetSponsorForm() {
   document.getElementById('spContactName').value  = '';
   document.getElementById('spContactEmail').value = '';
   document.getElementById('spContactPhone').value = '';
+  document.getElementById('spAddressStreet').value = '';
+  document.getElementById('spAddressZip').value = '';
+  document.getElementById('spAddressCity').value = '';
+  document.getElementById('spAddressCountry').value = 'Deutschland';
+  document.getElementById('spContractNote').value = '';
   document.getElementById('spFile').value     = '';
   document.getElementById('spActionFile').value = '';
   document.getElementById('spActionLogoMode').value = 'off';
@@ -8864,6 +8944,12 @@ async function saveSponsor() {
   const contactEmail = document.getElementById('spContactEmail').value.trim();
   const contactPhone = document.getElementById('spContactPhone').value.trim();
   const website      = document.getElementById('spWebsite').value.trim();
+  const addressStreet = document.getElementById('spAddressStreet').value.trim();
+  const addressZip = document.getElementById('spAddressZip').value.trim();
+  const addressCity = document.getElementById('spAddressCity').value.trim();
+  const addressCountry = document.getElementById('spAddressCountry').value.trim();
+  const contractNote = document.getElementById('spContractNote').value.trim();
+  const hasAddressInput = !!(addressStreet || addressZip || addressCity || contractNote || (addressCountry && addressCountry !== 'Deutschland'));
 
   if (!name) { alert('Bitte einen Namen angeben.'); return; }
   if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
@@ -8879,10 +8965,15 @@ async function saveSponsor() {
       p_website_url: website || null,
       p_action_logo_url: actionLogoUrl,
       p_has_action_logo: hasActionLogo,
-      p_action_logo_mode: actionLogoMode
+      p_action_logo_mode: actionLogoMode,
+      p_address_street: addressStreet || null,
+      p_address_zip: addressZip || null,
+      p_address_city: addressCity || null,
+      p_address_country: addressCountry || null,
+      p_contract_note: contractNote || null
     };
     let { error } = await sb.rpc('admin_upsert_sponsor', payload);
-    if (error && !actionLogoUrl && !hasActionLogo && actionLogoMode === 'off') {
+    if (error && !hasAddressInput && !actionLogoUrl && !hasActionLogo && actionLogoMode === 'off') {
       const legacyPayload = {
         p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort,
         p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
