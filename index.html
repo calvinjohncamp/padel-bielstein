@@ -15399,7 +15399,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         txt.style.color = tc;
         txt.innerHTML = window.pbRenderMarked(d.splash_eb_text, hc, bis);
       }
-      if(typeof window.pbSetSplashActionImage==='function'){
+      if(typeof window.pbSetSplashActionImage==='function' && Object.prototype.hasOwnProperty.call(d, 'splash_action_image_url')){
         window.pbSetSplashActionImage(d.splash_action_image_url || d.splash_eb_image_url || window.__splashActionImageUrl || '');
       }
       var actionLabel=document.getElementById('pbSplashActionPrimaryLabel');
@@ -15691,6 +15691,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         if(!isPng) throw new Error('Bitte für die Splash-Aktion eine PNG-Datei auswählen.');
         if(file.size > 5*1024*1024) throw new Error('Die PNG-Datei ist zu groß. Bitte maximal 5 MB verwenden.');
         actionImageUrl = await uploadSponsorLogo(file, 'splash-action');
+      }
+      if(!file && !actionImageUrl){
+        actionImageUrl = (window.__pbSplashActionImageUrl || (window.__splash && window.__splash.splash_action_image_url) || '').trim();
       }
       var payload = {
         p_claim: g('spClaim'),
