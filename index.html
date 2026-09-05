@@ -6218,7 +6218,7 @@ function updateSummary() {
     let body = crow('Normalpreis', `${perHour} € / Stunde`, rp, 'Preis deiner Buchung ohne Rabatt');
     let note = '';
     if (discountInfo.pct > 0 && disc > 0) {
-      body += crow(discountInfo.label, `${discountInfo.pct} %`, disc, 'Das ist dein heutiger Rabatt')
+      body += crow(discountInfo.label, `${discountInfo.pct} %`, disc, 'Rabatt')
             + crow('Dein Buchungspreis', '', p, '','tot');
     } else {
       body += crow('Dein Buchungspreis', '', p, '','tot');
