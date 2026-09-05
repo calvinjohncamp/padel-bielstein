@@ -1315,11 +1315,11 @@ main {
       <!-- Geschlecht wird spaeter freiwillig im Profil gesetzt; bei Registrierung
            bleibt es bewusst leer. Geburtsjahr wird nicht mehr erhoben. -->
       <div class="form-hint" style="margin-bottom:14px;line-height:1.5;">
-        <strong>Mitglied der Tennisfreunde oder Freibad-Dauerkarte?</strong><br>
+        <strong>Mitglied der Tennisfreunde oder Partner?</strong><br>
         Du musst nichts angeben. Sobald du deine E-Mail-Adresse bestätigt hast,
-        erkennen wir die Mitgliedschaft automatisch – dein Rabatt gilt dann
+        erkennen wir deine Berechtigung automatisch – dein Rabatt gilt dann
         bei jeder Buchung. Wichtig: dieselbe Adresse verwenden, die dem Verein
-        bzw. dem Freibad vorliegt.
+        bzw. dem Partnerkontakt vorliegt.
       </div>
       <button class="modal-btn gold" id="regBtn" onclick="doRegister()">Konto erstellen →</button>
     </div>
@@ -5626,7 +5626,29 @@ function sumHourlyFb(priceMap, hour, duration, dateOrNull, isAbo) {
   return total;
 }
 function rawP(h, d) { return sumHourlyFb(prices(d), h, selDur, d, false); }
-function mP(p) { return member ? Math.round(p * (1 - member.discount)) : p; }
+function actionIsEligibleForCurrentUser(eb) {
+  eb = eb || window.__earlybird || {};
+  if (eb.audience === 'all') return true;
+  const srcs = Array.isArray(myMemberSources) ? myMemberSources : [];
+  return !!myPartner || srcs.includes('tfb') || (member && member.discount > 0);
+}
+function bookingDiscountInfo() {
+  const basePct = (member && member.discount > 0) ? Math.round(member.discount * 100) : 0;
+  let bestPct = basePct;
+  let label = basePct > 0 ? 'Mitglieder-/Partnerrabatt' : '';
+  const eb = window.__earlybird || {};
+  const actionForSingle = eb.active && (eb.appliesTo === 'single' || eb.appliesTo === 'both') && actionIsEligibleForCurrentUser(eb);
+  const actionPct = actionForSingle ? Math.round(Number(eb.discount) || 0) : 0;
+  if (actionPct > bestPct) {
+    bestPct = actionPct;
+    label = 'Aktionsrabatt';
+  }
+  return { pct: bestPct, label: label || 'Rabatt' };
+}
+function mP(p) {
+  const info = bookingDiscountInfo();
+  return info.pct > 0 ? Math.round(p * (1 - info.pct / 100)) : p;
+}
 
 // Günstigster Wochenpreis für eine Abo-Dauer (über alle Tage/Zeiten hinweg):
 // kleinste Summe von `dur` aufeinanderfolgenden Stunden in PW und PE.
@@ -6084,8 +6106,9 @@ function renderSlots() {
       // gültigen Auswahl faelschlich wieder als "frei/unausgewählt" gezeigt,
       // nur weil irgendeine spätere Stunde ebenfalls belegt ist.
       const spillover = !bk && !isSel && !isSec && selDur===2 && booked[ct].has(k2);
-      const rp = rawP(h, selDate), p = mP(rp), isMp = member && p < rp;
-      const rp1h = hourP(prices(selDate), h, selDate, false), p1h = mP(rp1h), isMp1h = member && p1h < rp1h;
+      const discountInfo = bookingDiscountInfo();
+      const rp = rawP(h, selDate), p = mP(rp), isMp = discountInfo.pct > 0 && p < rp;
+      const rp1h = hourP(prices(selDate), h, selDate, false), p1h = mP(rp1h), isMp1h = discountInfo.pct > 0 && p1h < rp1h;
       const h1 = `${String(h).padStart(2,"0")}:00`;
       const h2 = `${String(h+1).padStart(2,"0")}:00`;
       const sl = document.createElement("div");
@@ -6138,6 +6161,7 @@ function updateSummary() {
   if (!selSlot) { card.classList.remove("visible"); btn.classList.remove("visible"); restoreBookingButtonVisibility(); return; }
   const {court:ct, hour:h} = selSlot, end = h + selDur;
   const rp = rawP(h, selDate), p = mP(rp), disc = rp - p;
+  const discountInfo = bookingDiscountInfo();
   const ds = new Date(selDate+'T12:00:00').toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
   document.getElementById("sDate").textContent  = ds;
   document.getElementById("sCourt").textContent = `Court #${ct}`;
@@ -6148,7 +6172,7 @@ function updateSummary() {
   document.getElementById("sPer").textContent   = fmt(Math.round(p / 4));
   const sReg = document.getElementById("sReg");
   const sSave = document.getElementById("sSave");
-  if (member && disc > 0) {
+  if (discountInfo.pct > 0 && disc > 0) {
     if (sReg)  sReg.textContent = `statt ${fmt(rp)} regulär`;
     if (sSave) { sSave.textContent = `Du sparst ${fmt(disc)}`; sSave.style.display = ''; }
   } else {
@@ -6172,8 +6196,8 @@ function updateSummary() {
   }
   const sbRab = document.getElementById('sb-rabatt');
   if (sbRab) {
-    if (member && member.discount > 0) {
-      sbRab.textContent = `Dein Rabatt bei dieser Buchung beträgt ${Math.round(member.discount * 100)} %.`;
+    if (discountInfo.pct > 0) {
+      sbRab.textContent = `Dein Rabatt bei dieser Buchung beträgt ${discountInfo.pct} %.`;
     } else {
       sbRab.innerHTML = 'Als Mitglied oder Partner sparst du 10 % – <a href="https://www.tfbielstein.de/anmeldformular/" target="_blank" rel="noopener" style="color:#FF5A36;text-decoration:underline;font-weight:600;">jetzt Mitglied werden</a>.';
     }
@@ -6191,11 +6215,10 @@ function updateSummary() {
     const crow = (pos, mid, betrag, desc, cls) =>
       `<tr class="${cls || ''}"><td class="pos">${pos}</td><td class="mid">${mid || ''}</td>`
       + `<td>${fmt(Math.round(betrag))}</td><td>${fmt(Math.round(betrag / 4))}</td><td class="desc">${desc || ''}</td></tr>`;
-    const durTxt = `${selDur} Stunde${selDur > 1 ? 'n' : ''} ×`;
-    let body = crow(durTxt, `${perHour} € / Stunde`, rp, 'Preis deiner Buchung');
+    let body = crow('Normalpreis', `${perHour} € / Stunde`, rp, 'Preis deiner Buchung ohne Rabatt');
     let note = '';
-    if (member && disc > 0) {
-      body += crow('Mitgliederrabatt', `${Math.round(member.discount * 100)} %`, disc, 'Das ist dein heutiger Rabatt')
+    if (discountInfo.pct > 0 && disc > 0) {
+      body += crow(discountInfo.label, `${discountInfo.pct} %`, disc, 'Das ist dein heutiger Rabatt')
             + crow('Dein Buchungspreis', '', p, '','tot');
     } else {
       body += crow('Dein Buchungspreis', '', p, '','tot');
@@ -6382,6 +6405,9 @@ sb.auth.onAuthStateChange(async (event, session) => {
     currentUser = null;
     currentProfile = null;
     member = null;
+    memberAboDiscount = 0;
+    myMemberSources = [];
+    myPartner = null;
     updateUserBar();
   }
   // Nur bei echten Statuswechseln neu aufbauen. TOKEN_REFRESHED und
@@ -6437,6 +6463,7 @@ async function loadMemberDiscount() {
   member = null;
   memberAboDiscount = 0;
   myMemberSources = [];
+  myPartner = null;
   if (!currentUser) return;
 
   // Partner-Status (Firma) + geschenktes Guthaben einlösen – unabhängig von der
@@ -6464,7 +6491,7 @@ async function loadMemberDiscount() {
     const today = new Date().toISOString().slice(0, 10);
     const { data: rules, error: rErr } = await sb
       .from('discount_rules')
-      .select('rule_type,discount_pct,valid_from,valid_until')
+      .select('rule_type,discount_pct,applies_to,valid_from,valid_until')
       .eq('active', true);
     if (rErr) throw rErr;
 
@@ -6658,7 +6685,7 @@ function welcomeBackMessage() {
     return 'Willkommen zurück! Wir haben dich als Mitglied der Tennisfreunde Bielstein erkannt – dein 10 %-Vorteil ist aktiv. 🎾';
   }
   if (srcs.includes('freibad')) {
-    return 'Willkommen zurück! Deine Freibad-Dauerkarte ist erkannt – dein 10 %-Vorteil ist aktiv. 🎾';
+    return 'Willkommen zurück! Deine Freibad-Dauerkarte ist erkannt. 🎾';
   }
   return 'Willkommen zurück! 🎾';
 }
@@ -11044,9 +11071,9 @@ function profileCardHTML() {
         <span class="acct-check${on ? ' on' : ''}" aria-hidden="true">${on ? '✓' : ''}</span>
         <span class="acct-member-title">${title}</span>
       </div>
-      <div class="acct-member-sub">${on
-        ? '<strong>10 % Rabatt</strong> – erkannt über deine E-Mail-Adresse.'
-        : '<strong>10 % Rabatt</strong> auf alle Buchungen inkl. Abos.'}</div>
+      <div class="acct-member-sub">${title.includes('Freibad')
+        ? (on ? 'Erkannt über deine E-Mail-Adresse.' : 'Wird automatisch über deine E-Mail-Adresse geprüft.')
+        : (on ? '<strong>10 % Rabatt</strong> – erkannt über deine E-Mail-Adresse.' : '<strong>10 % Rabatt</strong> auf alle Buchungen inkl. Abos.')}</div>
       ${on ? '' : `<a class="acct-member-link" href="${link}" target="_blank" rel="noopener">Mitglied werden →</a>`}
     </div>`;
   // Partner-Kontakt? Dann Firmenlogo + Stufen-Badge statt großem Namen/Mitgliedschaft.
@@ -15374,6 +15401,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var su=document.getElementById('pbSplashEbUntil'); if(su) su.textContent=window.ebFmtDate(window.__earlybird.end);
       }
       if(typeof window.fillEarlybirdAdmin==='function') window.fillEarlybirdAdmin();
+      if(typeof updDurPrices==='function') updDurPrices();
+      if(typeof renderSlots==='function') renderSlots();
+      if(typeof updateAboDurPrices==='function') updateAboDurPrices();
+      if(typeof updateAboSummary==='function') updateAboSummary();
     }catch(e){}
   };
 
