@@ -3936,12 +3936,12 @@ main {
     <!-- ── PREISE ── -->
     <div id="adminPrices" style="display:none;">
 
-      <!-- Mitgliederrabatt -->
+      <!-- Mitglieder-/Partnerrabatt -->
       <div class="admin-section">
-        <div class="admin-section-title">Mitgliederrabatt</div>
+        <div class="admin-section-title">Mitglieder-/Partnerrabatt</div>
         <div class="admin-card">
           <div class="admin-row">
-            <span class="admin-label">Rabatt TFB-Mitglieder</span>
+            <span class="admin-label">Rabatt Mitglieder/Partner</span>
             <input class="admin-input" type="number" id="priceDiscount" min="0" max="50" step="1" value="10" style="max-width:80px;"> %
             <span style="font-size:0.75rem;color:#666;margin-left:8px;">Voreinstellung: 10 %</span>
           </div>
@@ -3975,8 +3975,7 @@ main {
               <option value="promo_code">Promo-Code</option>
               <option value="early_bird">Frühbucher</option>
               <option value="intro_offer">Schnupperangebot</option>
-              <option value="member_tfb">TFB-Mitglied (zusätzliche Regel)</option>
-              <option value="member_freibad">Freibad-Mitglied (zusätzliche Regel)</option>
+              <option value="member_tfb">Mitglieder/Partner (zusätzliche Regel)</option>
             </select>
           </div>
           <div class="admin-row"><span class="admin-label">Rabatt %</span><input class="admin-input" type="number" id="newRulePct" min="0" max="100" step="1" style="max-width:80px;"></div>
@@ -6409,9 +6408,11 @@ async function loadProfile(authId) {
 // der Anzeige – abgerechnet wird ausschließlich der serverseitig berechnete Preis.
 let myMemberSources = [];
 let myPartner = null;   // {tier,name,logo_url} wenn die E-Mail ein Partner-Kontakt ist
+let memberAboDiscount = 0;
 
 async function loadMemberDiscount() {
   member = null;
+  memberAboDiscount = 0;
   myMemberSources = [];
   if (!currentUser) return;
 
@@ -6435,24 +6436,42 @@ async function loadMemberDiscount() {
     const { data: sources, error } = await sb.rpc('my_membership');
     if (error) throw error;
     myMemberSources = Array.isArray(sources) ? sources : [];
-    if (!myMemberSources.length) return;
+    if (!myMemberSources.length && !myPartner) return;
 
     const today = new Date().toISOString().slice(0, 10);
     const { data: rules, error: rErr } = await sb
       .from('discount_rules')
       .select('rule_type,discount_pct,valid_from,valid_until')
-      .eq('applies_to', 'single')
       .eq('active', true);
     if (rErr) throw rErr;
 
-    const wanted = myMemberSources.map(s => 'member_' + s);
-    const pcts = (rules || [])
+    const wanted = myMemberSources
+      .filter(s => s === 'tfb')
+      .map(s => 'member_' + s);
+    const validRules = (rules || [])
       .filter(r => wanted.includes(r.rule_type))
       .filter(r => (!r.valid_from || r.valid_from <= today) && (!r.valid_until || r.valid_until >= today))
-      .map(r => parseFloat(r.discount_pct) || 0);
+      .map(r => ({ applies_to: r.applies_to, pct: parseFloat(r.discount_pct) || 0 }));
+
+    const singlePcts = validRules.filter(r => r.applies_to === 'single').map(r => r.pct);
+    const aboPcts = validRules.filter(r => r.applies_to === 'abo').map(r => r.pct);
+
+    if (myPartner) {
+      const partnerSingle = (rules || [])
+        .filter(r => r.rule_type === 'member_tfb' && r.applies_to === 'single')
+        .filter(r => (!r.valid_from || r.valid_from <= today) && (!r.valid_until || r.valid_until >= today))
+        .map(r => parseFloat(r.discount_pct) || 0);
+      const partnerAbo = (rules || [])
+        .filter(r => r.rule_type === 'member_tfb' && r.applies_to === 'abo')
+        .filter(r => (!r.valid_from || r.valid_from <= today) && (!r.valid_until || r.valid_until >= today))
+        .map(r => parseFloat(r.discount_pct) || 0);
+      singlePcts.push(...partnerSingle);
+      aboPcts.push(...partnerAbo);
+    }
 
     // Mehrfache Mitgliedschaft ergibt den HÖCHSTEN Rabatt, nicht die Summe.
-    if (pcts.length) member = { discount: Math.max(...pcts) / 100 };
+    if (singlePcts.length) member = { discount: Math.max(...singlePcts) / 100 };
+    if (aboPcts.length) memberAboDiscount = Math.max(...aboPcts) / 100;
   } catch(e) { console.warn('Mitgliedsrabatt laden fehlgeschlagen', e.message || e); }
 }
 
@@ -8609,7 +8628,14 @@ function updateAboSummary() {
   const {court:ct, hour:h} = aboSlot;
   const priceMap = (aboWd===0||aboWd===6) ? PE : PW;
   const pricePerWeek = sumHourlyFb(priceMap, h, aboDur, null, true);
-  const totalReg = pricePerWeek * 52, totalAbo = pricePerWeek * 30, saved = totalReg - totalAbo;
+  const singleHourPrice = (hh) => {
+    const base = priceMap[hh] || 0;
+    const f = (typeof FREIBAD_PRICE !== 'undefined') ? FREIBAD_PRICE : null;
+    if (!f || !f.enabled || typeof freibadConfig === 'undefined' || !freibadConfig.season_active) return base;
+    return (hh >= freibadConfig.open_hour && hh < freibadConfig.close_hour) ? base + f.surchargeEur : base;
+  };
+  const normalWeek = (() => { let sum = 0; for (let i = 0; i < aboDur; i++) sum += singleHourPrice(h + i); return sum; })();
+  const totalReg = normalWeek * 52, totalAbo = pricePerWeek * 30;
   document.getElementById("as-court").textContent = `Court #${ct}`;
   document.getElementById("as-day").textContent   = WDNAMES[aboWd];
   document.getElementById("as-time").textContent  = `${String(h).padStart(2,"0")}:00 – ${String(h+aboDur).padStart(2,"0")}:00 Uhr`;
@@ -8625,11 +8651,11 @@ function updateAboSummary() {
   const rabattEl   = document.getElementById('as-rabatt');
   const ctaEl      = card.querySelector('.abo-cta');
 
-  if (eb.active) {
+  if (eb.active || eb.preview) {
     const years   = (Number(eb.termMonths) || 24) / 12;
     const disc    = (Number(eb.discount)   || 25) / 100;
     const aboYear = totalAbo;                       // App-Abopreis / Jahr
-    const regTerm = aboYear * years;               // ohne Frühbucher-Rabatt
+    const regTerm = normalWeek * 52 * years;       // Einzelbuchungen ueber die Laufzeit
     const ebTotal = Math.round(aboYear * years * (1 - disc));
     const ebSaved = regTerm - ebTotal;
     const yearsTxt = Number.isInteger(years) ? `${years} Jahre` : `${eb.termMonths} Monate`;
@@ -8639,28 +8665,31 @@ function updateAboSummary() {
     // Wochen über die volle Abo-Laufzeit: 52 pro Jahr → 2 Jahre = 104. Die Zahl
     // ergibt sich aus der Laufzeit, nicht aus 1/2 Stunden (bei 2 Jahren immer 104).
     const weeks = 52 * years;
-    const einzelTerm = pricePerWeek * weeks;         // Einzelbuchung über die volle Laufzeit
+    const einzelTerm = normalWeek * weeks;           // Einzelbuchung über die volle Laufzeit
     document.getElementById("as-reg").textContent   = `anstatt ${fmt(einzelTerm)} bei Einzelbuchung von theoretisch ${weeks} Wochen`;
     document.getElementById("as-total").textContent = fmt(ebTotal);
     document.getElementById("as-save").textContent  = `Du sparst ${fmt(einzelTerm - ebTotal)}`;
     document.getElementById("as-perperson").textContent = fmt(Math.round(ebTotal/4));
     if (ctaEl) ctaEl.textContent = '■ Frühbucher-Abo sichern (Einmalzahlung)';
   } else {
+    const normalDisc = (typeof memberAboDiscount !== 'undefined' && memberAboDiscount > 0) ? memberAboDiscount : 0;
+    const normalDiscountAmount = Math.round(totalAbo * normalDisc);
+    const normalTotal = totalAbo - normalDiscountAmount;
     if (sumTitleEl) sumTitleEl.innerHTML = '<span class="abo-sum-lead">Dein Jahresabo</span><span class="abo-sum-years">(1 Jahr)</span>';
     if (abo52El)    abo52El.textContent = '52 Wochen exklusiv für dich reserviert – du zahlst davon nur 30 Wochen.';
     if (rabattEl) {
       // Außerhalb des Aktionszeitraums (Normalabo): Mitglieder sehen ihren 10 %-Rabatt,
       // Nicht-Mitglieder den Hinweis mit Link zum Mitglied-werden.
-      if (typeof member !== 'undefined' && member && member.discount > 0) {
-        rabattEl.textContent = `Dein Rabatt bei dieser Buchung beträgt ${Math.round(member.discount * 100)} %.`;
+      if (normalDisc > 0) {
+        rabattEl.textContent = `Dein Rabatt bei dieser Buchung beträgt ${Math.round(normalDisc * 100)} %.`;
       } else {
         rabattEl.innerHTML = 'Als Mitglied oder Partner sparst du 10 % – <a href="https://www.tfbielstein.de/anmeldformular/" target="_blank" rel="noopener" style="color:#FF5A36;text-decoration:underline;font-weight:600;">jetzt Mitglied werden</a>.';
       }
     }
     document.getElementById("as-reg").textContent   = `anstatt ${fmt(totalReg)} bei Einzelbuchung von theoretisch 52 Wochen`;
-    document.getElementById("as-total").textContent = fmt(totalAbo);
-    document.getElementById("as-save").textContent  = `Du sparst ${fmt(saved)}`;
-    document.getElementById("as-perperson").textContent = fmt(Math.round(totalAbo/4));
+    document.getElementById("as-total").textContent = fmt(normalTotal);
+    document.getElementById("as-save").textContent  = `Du sparst ${fmt(totalReg - normalTotal)}`;
+    document.getElementById("as-perperson").textContent = fmt(Math.round(normalTotal/4));
     if (ctaEl) ctaEl.textContent = '■ Jahresabo sichern';
   }
 
@@ -8669,7 +8698,7 @@ function updateAboSummary() {
   const hoursEl = document.getElementById('as-hours');
   if (hoursEl) {
     const hourPrices = [];
-    for (let i = 0; i < aboDur; i++) hourPrices.push(hourP(priceMap, h + i, null, true));
+    for (let i = 0; i < aboDur; i++) hourPrices.push(singleHourPrice(h + i));
     if (hourPrices.length === 1) {
       hoursEl.textContent = `Deine Buchung setzt sich zusammen aus einem Einzelstundenpreis in Höhe von ${fmt(hourPrices[0])}.`;
     } else {
@@ -8691,10 +8720,12 @@ function updateAboSummary() {
   // Beschreibung. Alle Zahlen dynamisch aus dem Wochenpreis der gewählten Stunden.
   const calcEl = document.getElementById('as-calc');
   if (calcEl) {
-    const pw = pricePerWeek;                              // Wochenpreis der gebuchten Zeit
+    const pw = pricePerWeek;                              // Abo-Wochenpreis der gebuchten Zeit
+    const normalPw = normalWeek;                          // Einzelbuchungs-Wochenpreis als Vergleich
     const abo30 = pw * 30;
     // Mittelspalte: für 1 Std. „x €/Stunde", für Mehr-Stunden-Buchungen „x €/Woche".
     const midPrice = aboDur === 1 ? `${pw} € / Stunde` : `${pw} € / Woche`;
+    const normalMidPrice = aboDur === 1 ? `${normalPw} € / Stunde` : `${normalPw} € / Woche`;
     // Eine Tabellenzeile mit 5 Spalten (Buchung = Gesamt, pro Spieler = ÷4).
     const crow = (pos, mid, betrag, desc, cls) =>
       `<tr class="${cls || ''}">`
@@ -8704,7 +8735,7 @@ function updateAboSummary() {
       + `<td>${fmt(Math.round(betrag / 4))}</td>`
       + `<td class="desc">${desc || ''}</td></tr>`;
     let body, note = '';
-    if (eb.active) {
+    if (eb.active || eb.preview) {
       const years2 = (Number(eb.termMonths) || 24) / 12;
       const disc2  = (Number(eb.discount)   || 25) / 100;
       const rab    = Math.round(abo30 * disc2);
@@ -8712,17 +8743,21 @@ function updateAboSummary() {
       const twoYr  = paJahr * years2;
       const sy = eb.aboStart ? new Date(eb.aboStart).getFullYear() : (new Date().getFullYear() + 1);
       const ey = sy + Math.max(1, Math.round(years2)) - 1;
-      body = crow('52 Wochen ×', midPrice, pw * 52, 'Preis bei 52 Einzelbuchungen')
+      body = crow('52 Wochen ×', normalMidPrice, normalPw * 52, 'Preis bei 52 Einzelbuchungen')
            + crow('30 Wochen ×', midPrice, abo30, 'Du bezahlst im Abo nur 30 Wochen')
-           + crow('Rabatt', `${Math.round(disc2 * 100)} %`, rab, 'Das ist dein heutiger Rabatt')
+           + crow('Dein Rabatt', `${Math.round(disc2 * 100)} %`, rab, '')
            + crow('Dein Abo-Preis p.a.', '', paJahr, '','res')
            + '<tr class="spacer"><td colspan="5"></td></tr>'
            + crow('2-Jahres-Abo', '', twoYr, `Dein Preis für das Frühbucher-Abo ${sy}/${ey}`, 'tot');
     } else {
-      body = crow('52 Wochen ×', midPrice, pw * 52, 'Preis bei 52 Einzelbuchungen')
-           + crow('30 Wochen ×', midPrice, abo30, 'Du bezahlst im Abo nur 30 Wochen')
-           + crow('Dein Abo-Preis p.a.', '', abo30, '','tot');
-      note = '<div class="abo-calc-note">Mitglieder &amp; Partner erhalten an der Kasse zusätzlich 10&nbsp;% Rabatt.</div>';
+      const disc3 = (typeof memberAboDiscount !== 'undefined' && memberAboDiscount > 0) ? memberAboDiscount : 0;
+      const rab3 = Math.round(abo30 * disc3);
+      const paJahr3 = abo30 - rab3;
+      body = crow('52 Wochen ×', normalMidPrice, normalPw * 52, 'Preis bei 52 Einzelbuchungen')
+           + crow('30 Wochen ×', midPrice, abo30, 'Du bezahlst im Abo nur 30 Wochen');
+      if (rab3 > 0) body += crow('Dein Rabatt', `${Math.round(disc3 * 100)} %`, rab3, '');
+      body += crow('Dein Abo-Preis p.a.', '', paJahr3, '','tot');
+      if (!rab3) note = '<div class="abo-calc-note">Mitglieder &amp; Partner erhalten an der Kasse zusätzlich 10&nbsp;% Rabatt.</div>';
     }
     calcEl.innerHTML =
       '<div class="abo-calc-h">Transparenz – So setzt sich dein Abopreis zusammen</div>'
@@ -10336,7 +10371,7 @@ async function saveDiscountRule(id) {
     });
     if (!res.ok) throw new Error(await res.text());
     okEl.textContent = '✓ Gespeichert';
-    if (member) await loadMemberDiscount();
+    await loadMemberDiscount();
   } catch(e) {
     errEl.textContent = 'Fehler: ' + e.message;
   }
@@ -10475,13 +10510,13 @@ async function saveDiscount() {
   if (isNaN(pct) || pct < 0 || pct > 50) {
     showAdminMsg('discountErr', 'Bitte Wert zwischen 0 und 50 eingeben.'); return;
   }
-  // Aktualisiert den TFB- und Freibad-Mitgliederrabatt (Einzelbuchung + Abo) gleichzeitig.
+  // Aktualisiert den Mitglieder-/Partnerrabatt (Einzelbuchung + Abo) gleichzeitig.
   // Fuer Frühbucher-/Schnupper-/Promo-Rabatte mit eigenem Prozentsatz oder Zeitfenster:
   // direkt in discount_rules per SQL Editor pflegen.
   try {
     const headers = await authHeaders();
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/discount_rules?rule_type=in.(member_tfb,member_freibad)`,
+      `${SUPABASE_URL}/rest/v1/discount_rules?rule_type=eq.member_tfb`,
       {
         method: 'PATCH',
         headers: { ...headers, 'Prefer': 'return=minimal' },
@@ -10490,8 +10525,10 @@ async function saveDiscount() {
     );
     if (!res.ok) throw new Error(await res.text());
     // Lokalen member-Rabatt aktualisieren falls eingeloggt
-    if (member) { member.discount = pct / 100; updDurPrices(); renderSlots(); }
-    showAdminMsg('discountOk', `✓ TFB- und Freibad-Mitgliederrabatt auf ${pct} % gesetzt`);
+    if (member || myPartner) member = { discount: pct / 100 };
+    memberAboDiscount = pct / 100;
+    updDurPrices(); renderSlots(); updateAboSummary();
+    showAdminMsg('discountOk', `✓ Mitglieder-/Partnerrabatt auf ${pct} % gesetzt`);
   } catch(e) {
     showAdminMsg('discountErr', 'Fehler: ' + e.message);
   }
