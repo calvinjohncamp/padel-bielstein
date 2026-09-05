@@ -844,9 +844,10 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .pbp-lbl { flex:0 0 auto; font-family:"Space Grotesk","Arial Narrow",sans-serif; font-weight:800; color:#FF5A36; text-transform:uppercase; letter-spacing:.16em; font-size:clamp(12px,1.6vw,16px); white-space:nowrap; }
 .pbp-thanks .pbp-lbl { font-weight:700; letter-spacing:.13em; font-size:clamp(11px,1.5vw,15px); text-align:center; }
 .pbp-premwrap { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(12px,1.8vw,18px); margin-bottom:2px; }
-.pbp-premwrap .pbp-tile:only-child { grid-column:1 / -1; }
 .pbp-tile { background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,.28); max-width:100%; box-sizing:border-box; }
 .pbp-tile img { max-width:82%; max-height:66%; width:auto; height:auto; object-fit:contain; display:block; }
+.pbp-tile-prem-empty { background:#242019; border:1.5px dashed rgba(255,90,54,.55); color:#FF5A36; box-shadow:none; text-align:center; font:800 clamp(12px,1.25vw,15px)/1.25 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.12em; text-transform:uppercase; }
+.pbp-tile-prem-empty span { display:block; color:#8A8276; font-size:.72em; letter-spacing:.16em; margin-top:6px; }
 .pbp-tile-action { position:relative; }
 .pbp-tile-action img { transition:opacity .16s ease; }
 .pbp-tile .pbp-action-motif { width:100%; height:100%; object-fit:contain; display:block; transform:scale(1.3); }
@@ -881,7 +882,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .pbp-grid .pbp-tile img { max-width:80%; max-height:62%; width:auto; height:auto; object-fit:contain; }
 .pbp-grid-partner, .pbp-grid-regional { grid-template-columns:repeat(6,1fr); }
 @media (max-width:820px){ .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(3,1fr); } .pbp-grid .pbp-tile { height:96px; } .pbp-tile-prem img { max-width:52%; } .pbp-wtop { white-space:normal; } }
-@media (max-width:520px){ .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(2,1fr); } .pbp-grid .pbp-tile { height:66px; } .pbp-tile-prem img { max-width:64%; } .pbp-tile-prem { height:116px; } .pbp-head { gap:14px; } }
+@media (max-width:520px){ .pbp-premwrap { grid-template-columns:1fr; } .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(2,1fr); } .pbp-grid .pbp-tile { height:66px; } .pbp-tile-prem img { max-width:64%; } .pbp-tile-prem { height:116px; } .pbp-head { gap:14px; } }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
 .door-log-icon { font-size: 1rem; }
@@ -1449,6 +1450,13 @@ main {
       </div>
       <div class="pb-splash-tfb"><span class="pb-splash-dot"></span><span>TFB</span></div>
     </div>
+    <div class="pb-splash-action" id="pbSplashAction">
+      <div class="pb-splash-early" id="pbSplashEarly">
+        <div class="kick">Exklusiv · Frühbucherphase</div>
+        <div class="txt">Jetzt <strong>2 Jahre</strong> deinen festen Platz sichern — <span class="hi">25&nbsp;% Start-Rabatt</span>. Nur für <strong>TFB-Mitglieder &amp; Partner</strong>, bis <span id="pbSplashEbUntil">—</span>.</div>
+      </div>
+      <button type="button" class="pb-splash-action-btn">Aktion</button>
+    </div>
     <div>
       <h1 class="pb-splash-h1">PADEL<br><span>BIELSTEIN</span></h1>
       <p class="pb-splash-claim">Zwei Courts, eine App. Buche deinen Slot, sichere dir dein Jahresabo und behalte dein Guthaben im Blick.</p>
@@ -1456,14 +1464,9 @@ main {
     <div>
       <button type="button" class="pb-splash-cta" id="pbSplashCta"><span>Jetzt loslegen</span><span aria-hidden="true">→</span></button>
       <p class="pb-splash-foot">Ab Frühjahr 2027 in Bielstein</p>
-      <!-- Premium-Partner + Frühbucher-Kachel nebeneinander (gleiche Größe).
-           Die Frühbucher-Kachel erscheint nur bei aktiver Phase/Vorschau. -->
+      <!-- Zwei Premium-Partner unten auf dem Splash. Die Aktion sitzt separat oben. -->
       <div class="pb-splash-duo">
         <div id="pbSplashSponsor"></div>
-        <div class="pb-splash-early" id="pbSplashEarly">
-          <div class="kick">Exklusiv · Frühbucherphase</div>
-          <div class="txt">Jetzt <strong>2 Jahre</strong> deinen festen Platz sichern — <span class="hi">25&nbsp;% Start-Rabatt</span>. Nur für <strong>TFB-Mitglieder &amp; Partner</strong>, bis <span id="pbSplashEbUntil">—</span>.</div>
-        </div>
       </div>
     </div>
   </div>
@@ -14427,6 +14430,13 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   font-family: "Space Grotesk",sans-serif; font-weight: 600; font-size: 20px;
   letter-spacing: 0.14em; text-transform: uppercase; color: #B8B0A2;
 }
+.pb-splash-action { display:none; align-items:center; justify-content:center; flex-direction:column; gap:10px; margin:-12px auto 2px; width:min(100%, 430px); }
+.pb-splash-action.show { display:flex; }
+.pb-splash-action-btn {
+  width:100%; min-height:48px; padding:12px 18px; border:1.5px solid #F6F1E7; border-radius:14px;
+  background:transparent; color:#FF5A36; font-family:"Space Grotesk",sans-serif; font-weight:800;
+  font-size:15px; letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
+}
 .pb-splash-h1 {
   font-family: "Space Grotesk",sans-serif; font-weight: 700;
   font-size: clamp(48px,11vw,88px); line-height: 0.92; margin: 0; color: #F6F1E7;
@@ -14444,21 +14454,13 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pb-splash-foot {
   font-family: "Manrope",sans-serif; text-align: center; font-size: 13px; color: #7A7368; margin: 16px 0 0;
 }
-/* Premium-Partner + Frühbucher NEBENEINANDER (gleiche Größe), App-CI-Look.
-   Rahmen/Abstand liegt am Duo, nicht mehr am Sponsor. Frühbucher nur bei Phase/Vorschau. */
-.pb-splash-duo { display: flex; gap: 30px; align-items: stretch; border-top: 1px solid #3A362F; margin-top: 38px; padding-top: 26px; }
-.pb-splash-duo > #pbSplashSponsor { border-top: 0; margin-top: 0; padding-top: 0; flex: 1.4 1 0; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
-.pb-splash-duo > .pb-splash-early { flex: 1 1 0; min-width: 0; }
-/* Nur wenn die Frühbucher-Kachel sichtbar ist: Premium-Tile füllt seine Spalte
-   (dann sind beide gleich groß). Sonst bleibt die Premium-Kachel natürlich. */
-.pb-splash-duo:has(.pb-splash-early.show) #pbSplashSponsor .pbsp-tile.pbsp-prem { width: 100%; height: auto; flex: 1 1 auto; padding: 22px 22px; box-sizing: border-box; }
-.pb-splash-early { display: none; flex-direction: column; justify-content: center; padding: 12px 15px; border: 1px solid #3A352E; border-radius: 13px; background: rgba(246,241,231,.04); }
-.pb-splash-early.show { display: flex; }
+.pb-splash-duo { border-top: 1px solid #3A362F; margin-top: 38px; padding-top: 26px; }
+.pb-splash-duo > #pbSplashSponsor { border-top: 0; margin-top: 0; padding-top: 0; width:100%; min-width:0; }
+.pb-splash-early { display:flex; width:100%; flex-direction: column; justify-content: center; padding: 12px 15px; border: 1px solid #3A352E; border-radius: 13px; background: rgba(246,241,231,.04); }
 .pb-splash-early .kick { font: 800 .84rem/1.2 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #FF5A36; margin-bottom: 8px; }
 .pb-splash-early .txt { font: 500 .86rem/1.5 "Manrope","Arial",sans-serif; color: #B8B0A2; }
 .pb-splash-early .txt strong { color: #F6F1E7; font-weight: 700; }
 .pb-splash-early .txt .hi { color: #FF5A36; font-weight: 800; white-space: nowrap; }
-@media (max-width: 560px) { .pb-splash-duo { flex-direction: column; } }
 
 /* Splash im mobilen Safari: echte Scrollseite statt App-Vollbild-Pressung. */
 @media (max-width: 560px) {
@@ -14476,6 +14478,17 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     padding: calc(30px + env(safe-area-inset-top, 0px)) 28px calc(96px + env(safe-area-inset-bottom, 0px)) !important;
   }
   .pb-splash-top { margin-bottom: clamp(72px, 11vh, 104px) !important; }
+  .pb-splash-action {
+    width:100% !important;
+    margin:-48px auto 42px !important;
+    gap:8px !important;
+  }
+  .pb-splash-action-btn {
+    min-height:44px !important;
+    padding:11px 16px !important;
+    font-size:13px !important;
+    border-radius:13px !important;
+  }
   .pb-splash-h1 {
     font-size: clamp(50px, 14.2vw, 64px) !important;
     line-height: .92 !important;
@@ -14494,18 +14507,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   .pb-splash-foot { margin-top: 18px !important; }
   .pb-splash-duo {
-    flex-direction: row !important;
-    align-items: stretch !important;
-    gap: 12px !important;
     margin-top: 42px !important;
     padding-top: 26px !important;
   }
-  .pb-splash-duo > #pbSplashSponsor,
-  .pb-splash-duo > .pb-splash-early {
-    flex: 0 0 calc(50% - 6px) !important;
-    width: calc(50% - 6px) !important;
-    max-width: calc(50% - 6px) !important;
-    min-width: 0 !important;
+  .pb-splash-duo > #pbSplashSponsor {
+    width: 100% !important;
+    max-width: none !important;
   }
   #pbSplashSponsor .pbsp-kicker {
     min-height: 24px !important;
@@ -14514,7 +14521,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     letter-spacing: .16em !important;
     line-height: 1.35 !important;
   }
-  .pb-splash-duo #pbSplashSponsor .pbsp-tile.pbsp-prem,
+  #pbSplashSponsor .pbsp-duo {
+    gap: 12px !important;
+    max-width: none !important;
+  }
   #pbSplashSponsor .pbsp-tile {
     width: 100% !important;
     height: 108px !important;
@@ -14542,9 +14552,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 @media (max-width: 380px) {
   .pb-splash > .pb-splash-inner { padding-left: 22px !important; padding-right: 22px !important; }
   .pb-splash-top { margin-bottom: 60px !important; }
+  .pb-splash-action { margin:-32px auto 34px !important; }
   .pb-splash-cta { margin-top: 52px !important; }
-  .pb-splash-duo { gap: 10px !important; margin-top: 34px !important; }
-  .pb-splash-duo #pbSplashSponsor .pbsp-tile.pbsp-prem,
+  .pb-splash-duo { margin-top: 34px !important; }
+  #pbSplashSponsor .pbsp-duo { gap: 10px !important; }
   #pbSplashSponsor .pbsp-tile { height: 96px !important; }
   #pbSplashSponsor .pbsp-tile img { max-height: 58px !important; }
   .pb-splash-early .txt { font-size: 11.4px !important; }
@@ -14565,6 +14576,16 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     padding: calc(28px + env(safe-area-inset-top, 0px)) 34px calc(72px + env(safe-area-inset-bottom, 0px)) !important;
   }
   .pb-splash-top { margin-bottom: 54px !important; }
+  .pb-splash-action {
+    width:min(100%, 430px) !important;
+    margin:-26px auto 34px !important;
+    gap:8px !important;
+  }
+  .pb-splash-action-btn {
+    min-height:44px !important;
+    padding:11px 16px !important;
+    font-size:13px !important;
+  }
   .pb-splash-h1 {
     font-size: clamp(54px, 12vw, 72px) !important;
     line-height: .9 !important;
@@ -14587,17 +14608,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     font-size: 13px !important;
   }
   .pb-splash-duo {
-    flex-direction: row !important;
-    gap: 28px !important;
     margin-top: 50px !important;
     padding-top: 30px !important;
   }
-  .pb-splash-duo > #pbSplashSponsor,
-  .pb-splash-duo > .pb-splash-early {
-    flex: 0 0 calc(50% - 14px) !important;
-    width: calc(50% - 14px) !important;
-    max-width: calc(50% - 14px) !important;
-    min-width: 0 !important;
+  .pb-splash-duo > #pbSplashSponsor {
+    width: 100% !important;
+    max-width: none !important;
   }
   #pbSplashSponsor .pbsp-kicker {
     min-height: 0 !important;
@@ -14606,7 +14622,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     letter-spacing: .18em !important;
     line-height: 1.28 !important;
   }
-  .pb-splash-duo #pbSplashSponsor .pbsp-tile.pbsp-prem,
+  #pbSplashSponsor .pbsp-duo {
+    gap: 28px !important;
+    max-width: none !important;
+  }
   #pbSplashSponsor .pbsp-tile {
     height: 118px !important;
     padding: 14px 16px !important;
@@ -14836,6 +14855,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       return '<div class="'+cl+'">'+img+'</div>'; };
     var label=function(t){ return '<div class="pbp-seclabel"><span class="pbp-line"></span>'
       +'<span class="pbp-lbl">'+t+'</span><span class="pbp-line"></span></div>'; };
+    var premiumPlaceholder=function(n){
+      return '<div class="pbp-tile pbp-tile-prem pbp-tile-prem-empty">Premium-Partner '+n+'<span>frei</span></div>';
+    };
     try{
       if(typeof sb==='undefined' || !sb){ host.innerHTML=''; return; }
       var res=await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,has_action_logo,sort_order,website_url');
@@ -14860,7 +14882,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         +'<div style="font-weight:700;margin-bottom:6px;">⚠️ Testphase: Beispielfirmen</div>'
         +'<div>Die aktuell in unserer Buchungsapp angezeigten Partner dienen nur zu Demonstrationszwecken in der Entwicklungsphase. Die tatsächlichen Partner werden wir vor dem offiziellen Start vorstellen.</div>'
         +'</div>';
-      if(prem.length) h+=label('Premium-Partner')+'<div class="pbp-premwrap">'+prem.slice(0,2).map(function(s){return tile(s,'pbp-tile-prem');}).join('')+'</div>';
+      if(prem.length){
+        var premiumTiles=prem.slice(0,2).map(function(s){return tile(s,'pbp-tile-prem');});
+        while(premiumTiles.length<2) premiumTiles.push(premiumPlaceholder(premiumTiles.length+1));
+        h+=label('Premium-Partner')+'<div class="pbp-premwrap">'+premiumTiles.join('')+'</div>';
+      }
       if(part.length) h+=label('Partner')+'<div class="pbp-grid pbp-grid-partner">'+part.map(function(s){return tile(s);}).join('')+'</div>';
       if(reg.length)  h+=label('Regionale Partner')+'<div class="pbp-grid pbp-grid-regional">'+reg.map(function(s){return tile(s);}).join('')+'</div>';
       h+='<div class="pbp-thanks"><span class="pbp-line"></span>'
@@ -15063,8 +15089,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var u=document.getElementById('ebUntil'); if(u) u.textContent=window.ebFmtDate(window.__earlybird.start);
         var s=document.getElementById('ebStart'); if(s) s.textContent=window.ebFmtDate(window.__earlybird.aboStart);
       }
-      // Dezente Frühbucher-Karte auf der Splash-Seite (unten/rechts).
-      var sp=document.getElementById('pbSplashEarly');
+      // Aktion auf der Splash-Seite: oben zwischen Logozeile und Wortmarke.
+      var sp=document.getElementById('pbSplashAction');
       if(sp){
         sp.classList.toggle('show', window.__earlybird.active || window.__earlybird.preview);
         var su=document.getElementById('pbSplashEbUntil'); if(su) su.textContent=window.ebFmtDate(window.__earlybird.end);
@@ -15527,8 +15553,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(window.__pbReleaseBoot) window.__pbReleaseBoot();
     var cta = document.getElementById('pbSplashCta');
     if(cta) cta.addEventListener('click', function(){ leave(splash); });
-    // Frühbucher-Kachel verlinkt direkt auf die „Jahresabo sichern"-Seite.
-    var ebTile = document.getElementById('pbSplashEarly');
+    // Aktionsbereich verlinkt direkt auf die „Jahresabo sichern"-Seite.
+    var ebTile = document.getElementById('pbSplashAction');
     if(ebTile){
       ebTile.style.cursor = 'pointer';
       ebTile.addEventListener('click', function(){ try{ setMode('abo'); }catch(e){} leave(splash); });
@@ -15577,8 +15603,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pbsp-duo .pbsp-tile{flex:1 1 0;min-width:0;width:auto;height:123px;padding:0 16px;}
 .pbsp-duo .pbsp-tile img{max-height:70px;max-width:88%;}
 .pbsp-duo .pbsp-tile-slideshow .pbsp-action-motif{width:100%;height:100%;max-width:none;max-height:none;}
-#pbSplashSponsor{border-top:1px solid #3A362F;margin-top:38px;padding-top:26px;}
+.pbsp-tile-empty{background:#242019;border:1.5px dashed rgba(255,90,54,.55);color:#FF5A36;box-shadow:none;text-align:center;font:800 12px/1.25 "Space Grotesk","Arial Narrow",sans-serif;letter-spacing:.12em;text-transform:uppercase;}
+.pbsp-tile-empty span{display:block;color:#8A8276;font-size:.72em;letter-spacing:.16em;margin-top:5px;}
+#pbSplashSponsor{border-top:0;margin-top:0;padding-top:0;}
 #pbSplashSponsor .pbsp-kicker{color:#8A8276;letter-spacing:0.2em;font-weight:600;margin-bottom:16px;}
+#pbSplashSponsor .pbsp-duo{max-width:none;width:100%;}
 .pb-splash-inner{padding-bottom:clamp(40px,4.5vh,60px);}
 .pb-splash-foot{text-align:left;margin-left:2px;}
 .pb-splash-cta{display:flex;align-items:center;justify-content:space-between;text-align:left;gap:12px;}
@@ -15625,6 +15654,15 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var inner=(a||b) ? ('<div class="pbsp-duo">'+a+b+'</div>') : '';
     el.innerHTML = inner ? ('<div class="pbsp-kicker">'+kicker+'</div>'+inner) : '';
   }
+  function emptyPremiumTile(n){
+    return '<div class="pbsp-tile pbsp-prem pbsp-tile-empty">Premium-Partner '+n+'<span>frei</span></div>';
+  }
+  function fillPremiumDuo(id, kicker, premiumRows){
+    var el=document.getElementById(id); if(!el) return;
+    var items=(premiumRows||[]).slice(0,2).map(function(s){ return tile(s,true); }).filter(Boolean);
+    while(items.length<2) items.push(emptyPremiumTile(items.length+1));
+    el.innerHTML = '<div class="pbsp-kicker">'+kicker+'</div><div class="pbsp-duo">'+items.join('')+'</div>';
+  }
   function pushWeighted(list, rows, weight){
     var w=Math.max(parseInt(weight,10)||0,0);
     for(var i=0;i<w;i++) rows.forEach(function(c){ list.push(c); });
@@ -15651,8 +15689,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       var idx=parseInt(localStorage.getItem(ROT_KEY)||'0',10)||0;
       try{ localStorage.setItem(ROT_KEY, String(idx+1)); }catch(e){}
 
-      // Splash: Premium exklusiv.
-      if(prem.length) fill('pbSplashSponsor', 'Präsentiert von unserem Premium-Partner', prem[0], true);
+      // Splash: zwei gleichwertige Premium-Partnerplaetze.
+      if(prem.length) fillPremiumDuo('pbSplashSponsor', 'Präsentiert von unseren Premium-Partnern', prem);
 
       // Gewichtete Reihum-Liste nach den Admin-Werten.
       var wM=15, wP=3, wR=1, playlist=[];
