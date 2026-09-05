@@ -4173,7 +4173,7 @@ main {
       </div>
 
       <div class="admin-section">
-        <div class="admin-section-title">⏱ Aktion 1</div>
+        <div class="admin-section-title">Aktion 1 – Einstellungen</div>
         <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
           Wiederverwendbarer Aktionsplatz für die Splash-Seite und die dazugehörige Aktion. Aktuell nutzt ihn die Frühbucher-/2-Jahres-Abo-Aktion; später kann hier auch eine andere Aktion stehen.
         </div>
@@ -4184,6 +4184,21 @@ main {
             <div><label class="eb-adm-lbl">Sonder-Rabatt (%)</label><input type="number" id="ebAdmDiscount" min="0" max="100" step="1" class="eb-adm-inp"></div>
             <div><label class="eb-adm-lbl">Laufzeit (Monate)</label><input type="number" id="ebAdmTerm" min="1" step="1" class="eb-adm-inp"></div>
             <div><label class="eb-adm-lbl">Saisonstart (Abo-Beginn)</label><input type="date" id="ebAdmAboStart" class="eb-adm-inp"></div>
+            <div>
+              <label class="eb-adm-lbl">Zielgruppe</label>
+              <select id="ebAdmAudience" class="eb-adm-inp">
+                <option value="members_partners">Mitglieder und Partner</option>
+                <option value="all">Alle</option>
+              </select>
+            </div>
+            <div>
+              <label class="eb-adm-lbl">Gilt für</label>
+              <select id="ebAdmAppliesTo" class="eb-adm-inp">
+                <option value="abo">Abos</option>
+                <option value="single">Einzelbuchungen</option>
+                <option value="both">Abos und Einzelbuchungen</option>
+              </select>
+            </div>
           </div>
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid #EFE9DC;">
             <label style="display:flex;align-items:center;gap:8px;font:800 11px Manrope,sans-serif;color:#5C564C;text-transform:uppercase;letter-spacing:.08em;">
@@ -4199,7 +4214,7 @@ main {
                 <button type="button" id="ebAdmOn" class="seg-btn" onclick="setEarlybirdEnabled(true)">An</button>
               </div>
             </div>
-            <button type="button" class="admin-save-btn" onclick="saveEarlybird()" style="margin-left:auto;">Aktionszeitraum speichern</button>
+            <button type="button" class="admin-save-btn" onclick="saveEarlybird()" style="margin-left:auto;">Aktion 1 speichern</button>
           </div>
           <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #EFE9DC;">
             <div style="flex:1 1 220px;font-size:0.78rem;color:#7A7368;line-height:1.45;">
@@ -4214,7 +4229,7 @@ main {
       </div>
 
       <div class="admin-section">
-        <div class="admin-section-title">Aktion 1 – Splash-Hinweis und Fenster</div>
+        <div class="admin-section-title">Aktion 1 – Aktionshinweis auf der Splash-Seite</div>
         <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
           PNG-Hinweis auf der Splash-Seite und Inhalt des Fensters nach dem Klick. Diese Aktion kann später inhaltlich neu belegt werden.
         </div>
@@ -4269,7 +4284,7 @@ main {
         </div>
       </div>
       <div class="admin-section">
-        <div class="admin-section-title">📋 „Jahresabo sichern"-Seite – Kachel oben</div>
+        <div class="admin-section-title">Aktion 1 – Aktionshinweis auf der Jahresabo-Seite</div>
         <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
           Inhalt der Aktion auf der Seite „Jahresabo sichern". Alle Texte einzeln editierbar, Farben aus der Marken-Palette. Die <strong>Datumswerte</strong> kommen aus Aktion 1: Start der Aktion, Ende der Aktion und Saisonstart.
         </div>
@@ -8388,7 +8403,7 @@ async function submitAbo(skipAuthCheck) {
   // Mitglieder-/Partner-Prüfung macht ausschließlich der Server; hier wird nur
   // umgeschaltet. (Die Vorschau zählt bewusst nicht – nur die echte Phase.)
   const eb = window.__earlybird || {};
-  if (eb.active) {
+  if (eb.active && (!eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both')) {
     const pendingEb = {
       booking_type: 'earlybird_abo',
       is_earlybird: true,
@@ -8660,7 +8675,7 @@ function updateAboSummary() {
   const actionNoteEl = document.getElementById('as-eb-note');
   const ctaEl      = card.querySelector('.abo-cta');
 
-  if (eb.active || eb.preview) {
+  if ((eb.active || eb.preview) && (!eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both')) {
     const years   = (Number(eb.termMonths) || 24) / 12;
     const disc    = (Number(eb.discount)   || 25) / 100;
     const aboYear = totalAbo;                       // App-Abopreis / Jahr
@@ -8752,7 +8767,7 @@ function updateAboSummary() {
       + `<td>${fmt(Math.round(betrag / 4))}</td>`
       + `<td class="desc">${desc || ''}</td></tr>`;
     let body, note = '';
-    if (eb.active || eb.preview) {
+    if ((eb.active || eb.preview) && (!eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both')) {
       const years2 = (Number(eb.termMonths) || 24) / 12;
       const disc2  = (Number(eb.discount)   || 25) / 100;
       const rab    = Math.round(abo30 * disc2);
@@ -15319,13 +15334,17 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   /* Exklusiv-Frühbucherphase: Konfig aus app_flags lesen und die Kachel auf der
      Abo-Seite schalten. Defensiv: fehlt Skript 41 (Spalten), passiert nichts. */
   window.__earlybirdExtraNoteDefault = 'Sollten zu Saisonbeginn günstigere Preise für Einzelstunden gelten, setzt sich dein Abo-Preis nachträglich aus eben diesen Preisen zusammen und du erhältst die Differenz zu deinem ursprünglichen Rechnungsbetrag als Spielguthaben gutgeschrieben.';
-  window.__earlybird = { active:false, discount:25, termMonths:24, extraNoteVisible:true, extraNoteText:window.__earlybirdExtraNoteDefault };
+  window.__earlybird = { active:false, discount:25, termMonths:24, audience:'members_partners', appliesTo:'abo', extraNoteVisible:true, extraNoteText:window.__earlybirdExtraNoteDefault };
+  window.pbActionAppliesToAbo = function(eb){
+    eb = eb || window.__earlybird || {};
+    return !eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both';
+  };
   window.ebFmtDate = function(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return '—'; } };
   window.loadEarlybird = async function(){
     try{
       if(typeof sb==='undefined' || !sb) return;
-      var r=await sb.from('app_flags').select('earlybird_active,earlybird_enabled,earlybird_preview,earlybird_start,earlybird_end,earlybird_abo_start,earlybird_discount_pct,earlybird_term_months,earlybird_extra_note_visible,earlybird_extra_note_text').maybeSingle();
-      if(r.error && /earlybird_extra_note|column|schema cache/i.test(r.error.message || '')){
+      var r=await sb.from('app_flags').select('earlybird_active,earlybird_enabled,earlybird_preview,earlybird_start,earlybird_end,earlybird_abo_start,earlybird_discount_pct,earlybird_term_months,earlybird_audience,earlybird_applies_to,earlybird_extra_note_visible,earlybird_extra_note_text').maybeSingle();
+      if(r.error && /earlybird_extra_note|earlybird_audience|earlybird_applies_to|column|schema cache/i.test(r.error.message || '')){
         r=await sb.from('app_flags').select('earlybird_active,earlybird_enabled,earlybird_preview,earlybird_start,earlybird_end,earlybird_abo_start,earlybird_discount_pct,earlybird_term_months').maybeSingle();
       }
       if(r.error || !r.data) return;
@@ -15334,13 +15353,15 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         active: !!d.earlybird_active, enabled: !!d.earlybird_enabled, preview: !!d.earlybird_preview,
         start: d.earlybird_start, end: d.earlybird_end, aboStart: d.earlybird_abo_start,
         discount: Number(d.earlybird_discount_pct)||25, termMonths: Number(d.earlybird_term_months)||24,
+        audience: d.earlybird_audience || 'members_partners',
+        appliesTo: d.earlybird_applies_to || 'abo',
         extraNoteVisible: d.earlybird_extra_note_visible !== false,
         extraNoteText: (d.earlybird_extra_note_text || window.__earlybirdExtraNoteDefault || '').trim()
       };
       var b=document.getElementById('earlybirdBanner');
       if(b){
         // Jahresabo-Kachel nur im Zeitraum oder in der manuellen Vorschau zeigen.
-        b.classList.toggle('show', window.__earlybird.active || window.__earlybird.preview);
+        b.classList.toggle('show', (window.__earlybird.active || window.__earlybird.preview) && window.pbActionAppliesToAbo(window.__earlybird));
         var as=document.getElementById('ebActionStart'); if(as) as.textContent=window.ebFmtDate(window.__earlybird.start);
         var ae=document.getElementById('ebActionEnd'); if(ae) ae.textContent=window.ebFmtDate(window.__earlybird.end);
         var s=document.getElementById('ebStart'); if(s) s.textContent=window.ebFmtDate(window.__earlybird.aboStart);
@@ -15932,6 +15953,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     set('ebAdmDiscount', eb.discount!=null?eb.discount:25);
     set('ebAdmTerm', eb.termMonths!=null?eb.termMonths:24);
     set('ebAdmAboStart', eb.aboStart? String(eb.aboStart).slice(0,10):'');
+    set('ebAdmAudience', eb.audience || 'members_partners');
+    set('ebAdmAppliesTo', eb.appliesTo || 'abo');
     var noteOn=document.getElementById('ebAdmExtraNoteVisible');
     if(noteOn) noteOn.checked = eb.extraNoteVisible !== false;
     set('ebAdmExtraNoteText', eb.extraNoteText || window.__earlybirdExtraNoteDefault || '');
@@ -15949,11 +15972,15 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         p_discount_pct: Number(g('ebAdmDiscount'))||null,
         p_abo_start: g('ebAdmAboStart')||null,
         p_term_months: Number(g('ebAdmTerm'))||null,
+        p_audience: g('ebAdmAudience') || 'members_partners',
+        p_applies_to: g('ebAdmAppliesTo') || 'abo',
         p_extra_note_visible: !!document.getElementById('ebAdmExtraNoteVisible')?.checked,
         p_extra_note_text: g('ebAdmExtraNoteText') || null
       };
       var r=await sb.rpc('admin_set_earlybird', payload);
-      if(r.error && /schema cache|Could not find the function|p_extra_note/i.test(r.error.message || '')){
+      if(r.error && /schema cache|Could not find the function|p_extra_note|p_audience|p_applies_to/i.test(r.error.message || '')){
+        delete payload.p_audience;
+        delete payload.p_applies_to;
         delete payload.p_extra_note_visible;
         delete payload.p_extra_note_text;
         r=await sb.rpc('admin_set_earlybird', payload);
