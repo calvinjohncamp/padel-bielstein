@@ -1451,11 +1451,7 @@ main {
       <div class="pb-splash-tfb"><span class="pb-splash-dot"></span><span>TFB</span></div>
     </div>
     <div class="pb-splash-action" id="pbSplashAction">
-      <div class="pb-splash-early" id="pbSplashEarly">
-        <div class="kick">Exklusiv · Frühbucherphase</div>
-        <div class="txt">Jetzt <strong>2 Jahre</strong> deinen festen Platz sichern — <span class="hi">25&nbsp;% Start-Rabatt</span>. Nur für <strong>TFB-Mitglieder &amp; Partner</strong>, bis <span id="pbSplashEbUntil">—</span>.</div>
-      </div>
-      <button type="button" class="pb-splash-action-btn">Aktion</button>
+      <button type="button" class="pb-splash-action-btn" id="pbSplashActionBtn">Aktion</button>
     </div>
     <div>
       <h1 class="pb-splash-h1">PADEL<br><span>BIELSTEIN</span></h1>
@@ -1468,6 +1464,20 @@ main {
       <div class="pb-splash-duo">
         <div id="pbSplashSponsor"></div>
       </div>
+    </div>
+  </div>
+  <div class="pb-splash-action-overlay" id="pbSplashActionOverlay" aria-hidden="true">
+    <button type="button" class="pb-splash-action-backdrop" id="pbSplashActionCloseBg" aria-label="Aktion schliessen"></button>
+    <div class="pb-splash-action-modal" role="dialog" aria-modal="true" aria-label="Aktion">
+      <button type="button" class="pb-splash-action-close" id="pbSplashActionClose" aria-label="Aktion schliessen">×</button>
+      <div class="pb-splash-action-image" id="pbSplashActionImageWrap" hidden>
+        <img id="pbSplashActionImage" src="" alt="Aktion">
+      </div>
+      <div class="pb-splash-early" id="pbSplashEarly">
+        <div class="kick">Exklusiv · Frühbucherphase</div>
+        <div class="txt">Jetzt <strong>2 Jahre</strong> deinen festen Platz sichern — <span class="hi">25&nbsp;% Start-Rabatt</span>. Nur für <strong>TFB-Mitglieder &amp; Partner</strong>, bis <span id="pbSplashEbUntil">—</span>.</div>
+      </div>
+      <button type="button" class="pb-splash-action-primary" id="pbSplashActionPrimary"><span>Mehr anzeigen</span><span aria-hidden="true">→</span></button>
     </div>
   </div>
 </div>
@@ -4150,7 +4160,7 @@ main {
             </div>
           </div>
           <div style="border-top:1px solid #EFE9DC;padding-top:14px;">
-            <label class="eb-adm-lbl" style="margin-bottom:10px;">Frühbucher-Kachel (unten rechts)</label>
+            <label class="eb-adm-lbl" style="margin-bottom:10px;">Aktions-Kachel nach Klick auf „Aktion"</label>
             <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
               <div><label class="eb-adm-lbl" style="font-size:10px;">Überschrift</label><input type="text" id="spEbKicker" class="eb-adm-inp"></div>
               <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Überschrift</label><select id="spEbKickerColor" class="eb-adm-inp"></select></div>
@@ -4162,6 +4172,16 @@ main {
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
               <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Text</label><select id="spEbTextColor" class="eb-adm-inp"></select></div>
               <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Hervorhebung</label><select id="spEbHiColor" class="eb-adm-inp"></select></div>
+            </div>
+            <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:center;margin-top:12px;">
+              <div id="spActionImagePreview" style="height:86px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;overflow:hidden;">
+                <span style="font:700 9px Manrope,sans-serif;color:#A59D92;">kein PNG</span>
+              </div>
+              <div>
+                <label class="eb-adm-lbl" style="font-size:10px;">Optionales Aktions-PNG</label>
+                <input type="url" id="spActionImageUrl" class="eb-adm-inp" placeholder="https://.../aktion.png" oninput="previewSplashActionImage()">
+                <input type="file" id="spActionImageFile" accept="image/png" class="eb-adm-inp" style="margin-top:8px;" onchange="previewSplashActionImage()">
+              </div>
             </div>
           </div>
           <div style="display:flex;justify-content:flex-end;">
@@ -14430,13 +14450,15 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   font-family: "Space Grotesk",sans-serif; font-weight: 600; font-size: 20px;
   letter-spacing: 0.14em; text-transform: uppercase; color: #B8B0A2;
 }
-.pb-splash-action { display:none; align-items:center; justify-content:center; flex-direction:column; gap:10px; margin:-12px auto 2px; width:min(100%, 430px); }
+.pb-splash-action { display:none; align-items:center; justify-content:center; margin:-8px auto 18px; }
 .pb-splash-action.show { display:flex; }
 .pb-splash-action-btn {
-  width:100%; min-height:48px; padding:12px 18px; border:1.5px solid #F6F1E7; border-radius:14px;
+  min-width:132px; min-height:38px; padding:9px 22px; border:1.5px solid rgba(246,241,231,.92); border-radius:999px;
   background:transparent; color:#FF5A36; font-family:"Space Grotesk",sans-serif; font-weight:800;
-  font-size:15px; letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
+  font-size:12px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer;
+  transition:transform .16s ease, background .16s ease, border-color .16s ease;
 }
+.pb-splash-action-btn:hover { background:rgba(255,90,54,.08); border-color:#FF5A36; transform:translateY(-1px); }
 .pb-splash-h1 {
   font-family: "Space Grotesk",sans-serif; font-weight: 700;
   font-size: clamp(48px,11vw,88px); line-height: 0.92; margin: 0; color: #F6F1E7;
@@ -14456,11 +14478,30 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 }
 .pb-splash-duo { border-top: 1px solid #3A362F; margin-top: 38px; padding-top: 26px; }
 .pb-splash-duo > #pbSplashSponsor { border-top: 0; margin-top: 0; padding-top: 0; width:100%; min-width:0; }
-.pb-splash-early { display:flex; width:100%; flex-direction: column; justify-content: center; padding: 12px 15px; border: 1px solid #3A352E; border-radius: 13px; background: rgba(246,241,231,.04); }
+.pb-splash-action-overlay { display:none; position:fixed; inset:0; z-index:8600; align-items:flex-end; justify-content:center; padding:18px; }
+.pb-splash-action-overlay.open { display:flex; }
+.pb-splash-action-backdrop { position:absolute; inset:0; border:0; background:rgba(0,0,0,.76); backdrop-filter:blur(8px); cursor:pointer; }
+.pb-splash-action-modal {
+  position:relative; z-index:1; width:min(92vw, 430px); max-height:min(82vh, 620px); overflow:auto;
+  display:flex; flex-direction:column; gap:12px; padding:14px; border:1px solid rgba(246,241,231,.16);
+  border-radius:18px; background:#1C1A17; box-shadow:0 28px 80px rgba(0,0,0,.46);
+}
+.pb-splash-action-close {
+  position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:999px; border:1px solid rgba(246,241,231,.18);
+  background:rgba(246,241,231,.06); color:#F6F1E7; font-size:22px; line-height:1; cursor:pointer;
+}
+.pb-splash-action-image { border-radius:14px; overflow:hidden; background:#F6F1E7; border:1px solid rgba(246,241,231,.18); }
+.pb-splash-action-image img { display:block; width:100%; max-height:260px; object-fit:contain; }
+.pb-splash-early { display:flex; width:100%; flex-direction: column; justify-content: center; padding: 18px 18px; border: 1px solid #3A352E; border-radius: 14px; background: rgba(246,241,231,.04); }
 .pb-splash-early .kick { font: 800 .84rem/1.2 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #FF5A36; margin-bottom: 8px; }
 .pb-splash-early .txt { font: 500 .86rem/1.5 "Manrope","Arial",sans-serif; color: #B8B0A2; }
 .pb-splash-early .txt strong { color: #F6F1E7; font-weight: 700; }
 .pb-splash-early .txt .hi { color: #FF5A36; font-weight: 800; white-space: nowrap; }
+.pb-splash-action-primary {
+  width:100%; padding:15px 16px; border:0; border-radius:14px; background:#FF5A36; color:#1C1A17;
+  font-family:"Space Grotesk",sans-serif; font-size:15px; font-weight:800; cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
 
 /* Splash im mobilen Safari: echte Scrollseite statt App-Vollbild-Pressung. */
 @media (max-width: 560px) {
@@ -14479,15 +14520,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   .pb-splash-top { margin-bottom: clamp(72px, 11vh, 104px) !important; }
   .pb-splash-action {
-    width:100% !important;
-    margin:-48px auto 42px !important;
-    gap:8px !important;
+    margin:-40px auto 34px !important;
   }
   .pb-splash-action-btn {
-    min-height:44px !important;
-    padding:11px 16px !important;
-    font-size:13px !important;
-    border-radius:13px !important;
+    min-width:118px !important;
+    min-height:36px !important;
+    padding:8px 18px !important;
+    font-size:11px !important;
+    border-radius:999px !important;
   }
   .pb-splash-h1 {
     font-size: clamp(50px, 14.2vw, 64px) !important;
@@ -14548,11 +14588,19 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     font-size: 12px !important;
     line-height: 1.42 !important;
   }
+  .pb-splash-action-overlay {
+    align-items:flex-end !important;
+    padding:12px !important;
+  }
+  .pb-splash-action-modal {
+    width:100% !important;
+    border-radius:17px !important;
+  }
 }
 @media (max-width: 380px) {
   .pb-splash > .pb-splash-inner { padding-left: 22px !important; padding-right: 22px !important; }
   .pb-splash-top { margin-bottom: 60px !important; }
-  .pb-splash-action { margin:-32px auto 34px !important; }
+  .pb-splash-action { margin:-28px auto 30px !important; }
   .pb-splash-cta { margin-top: 52px !important; }
   .pb-splash-duo { margin-top: 34px !important; }
   #pbSplashSponsor .pbsp-duo { gap: 10px !important; }
@@ -14577,14 +14625,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   .pb-splash-top { margin-bottom: 54px !important; }
   .pb-splash-action {
-    width:min(100%, 430px) !important;
-    margin:-26px auto 34px !important;
-    gap:8px !important;
+    margin:-22px auto 28px !important;
   }
   .pb-splash-action-btn {
-    min-height:44px !important;
-    padding:11px 16px !important;
-    font-size:13px !important;
+    min-width:118px !important;
+    min-height:36px !important;
+    padding:8px 18px !important;
+    font-size:11px !important;
+    border-radius:999px !important;
   }
   .pb-splash-h1 {
     font-size: clamp(54px, 12vw, 72px) !important;
@@ -15115,10 +15163,22 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     return s;
   };
   window.__splash = {};
+  window.pbSetSplashActionImage = function(url){
+    var wrap=document.getElementById('pbSplashActionImageWrap');
+    var img=document.getElementById('pbSplashActionImage');
+    var clean=String(url||'').trim();
+    if(!wrap || !img) return;
+    if(clean){ img.src=clean; wrap.hidden=false; }
+    else { img.removeAttribute('src'); wrap.hidden=true; }
+  };
   window.loadSplash = async function(){
     try{
       if(typeof sb==='undefined' || !sb) return;
-      var r = await sb.from('app_flags').select('splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,earlybird_end').maybeSingle();
+      var splashFields='splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,splash_action_image_url,earlybird_end';
+      var r = await sb.from('app_flags').select(splashFields).maybeSingle();
+      if(r.error){
+        r = await sb.from('app_flags').select('splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,earlybird_end').maybeSingle();
+      }
       if(r.error || !r.data) return;
       var d = r.data; window.__splash = d;
       // 1) Claim (bis 4 Zeilen; Umbrüche des Editors übernehmen)
@@ -15143,6 +15203,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var hc = window.pbPaletteColor(d.splash_eb_hi_color,'coral');
         txt.style.color = tc;
         txt.innerHTML = window.pbRenderMarked(d.splash_eb_text, hc, bis);
+      }
+      if(typeof window.pbSetSplashActionImage==='function'){
+        window.pbSetSplashActionImage(d.splash_action_image_url || d.splash_eb_image_url || window.__splashActionImageUrl || '');
       }
       if(typeof window.fillSplashAdmin==='function') window.fillSplashAdmin();
     }catch(e){}
@@ -15173,12 +15236,29 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     setv('spEbKickerColor', d.splash_eb_kicker_color || 'coral');
     setv('spEbTextColor', d.splash_eb_text_color || 'beige');
     setv('spEbHiColor', d.splash_eb_hi_color || 'coral');
+    setv('spActionImageUrl', d.splash_action_image_url);
+    if(typeof window.previewSplashActionImage==='function') window.previewSplashActionImage();
     window.setSublineVisible(d.splash_subline_visible!==false);
+  };
+  window.previewSplashActionImage = function(){
+    var fileEl=document.getElementById('spActionImageFile');
+    var urlEl=document.getElementById('spActionImageUrl');
+    var previewUrl=(fileEl && fileEl.files && fileEl.files[0]) ? URL.createObjectURL(fileEl.files[0]) : (urlEl && urlEl.value || '');
+    if(typeof renderLogoPreview==='function') renderLogoPreview(previewUrl, 'spActionImagePreview');
   };
   window.saveSplash = async function(){
     try{
       var g=function(id){ var el=document.getElementById(id); return el?el.value:''; };
-      var r=await sb.rpc('admin_set_splash', {
+      var actionImageUrl = g('spActionImageUrl').trim();
+      var actionImageFile = document.getElementById('spActionImageFile');
+      var file = actionImageFile && actionImageFile.files && actionImageFile.files[0];
+      if(file){
+        var isPng = file.type === 'image/png' || /\.png$/i.test(file.name || '');
+        if(!isPng) throw new Error('Bitte für die Splash-Aktion eine PNG-Datei auswählen.');
+        if(file.size > 5*1024*1024) throw new Error('Die PNG-Datei ist zu groß. Bitte maximal 5 MB verwenden.');
+        actionImageUrl = await uploadSponsorLogo(file, 'splash-action');
+      }
+      var payload = {
         p_claim: g('spClaim'),
         p_subline: g('spSubline'),
         p_subline_visible: !!window.__spSubVisible,
@@ -15186,9 +15266,18 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         p_eb_kicker_color: g('spEbKickerColor'),
         p_eb_text: g('spEbText'),
         p_eb_text_color: g('spEbTextColor'),
-        p_eb_hi_color: g('spEbHiColor')
-      });
+        p_eb_hi_color: g('spEbHiColor'),
+        p_action_image_url: actionImageUrl || null
+      };
+      var r=await sb.rpc('admin_set_splash', payload);
+      if(r.error && !actionImageUrl){
+        delete payload.p_action_image_url;
+        r=await sb.rpc('admin_set_splash', payload);
+      }
       if(r.error) throw r.error;
+      var urlEl=document.getElementById('spActionImageUrl');
+      if(urlEl) urlEl.value = actionImageUrl || '';
+      if(actionImageFile) actionImageFile.value = '';
       if(typeof showToast==='function') showToast('Splash-Texte gespeichert.');
       if(typeof loadSplash==='function') await loadSplash();
     }catch(e){ alert('Speichern fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
@@ -15553,14 +15642,30 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(window.__pbReleaseBoot) window.__pbReleaseBoot();
     var cta = document.getElementById('pbSplashCta');
     if(cta) cta.addEventListener('click', function(){ leave(splash); });
-    // Aktionsbereich verlinkt direkt auf die „Jahresabo sichern"-Seite.
-    var ebTile = document.getElementById('pbSplashAction');
-    if(ebTile){
-      ebTile.style.cursor = 'pointer';
-      ebTile.addEventListener('click', function(){ try{ setMode('abo'); }catch(e){} leave(splash); });
+    var actionOverlay = document.getElementById('pbSplashActionOverlay');
+    var actionBtn = document.getElementById('pbSplashActionBtn');
+    var actionClose = document.getElementById('pbSplashActionClose');
+    var actionCloseBg = document.getElementById('pbSplashActionCloseBg');
+    var actionPrimary = document.getElementById('pbSplashActionPrimary');
+    function openSplashAction(){
+      if(!actionOverlay) return;
+      actionOverlay.classList.add('open');
+      actionOverlay.setAttribute('aria-hidden','false');
     }
+    function closeSplashAction(){
+      if(!actionOverlay) return;
+      actionOverlay.classList.remove('open');
+      actionOverlay.setAttribute('aria-hidden','true');
+    }
+    if(actionBtn) actionBtn.addEventListener('click', function(e){ e.preventDefault(); openSplashAction(); });
+    if(actionClose) actionClose.addEventListener('click', closeSplashAction);
+    if(actionCloseBg) actionCloseBg.addEventListener('click', closeSplashAction);
+    if(actionPrimary) actionPrimary.addEventListener('click', function(){ try{ setMode('abo'); }catch(e){} closeSplashAction(); leave(splash); });
     document.addEventListener('keydown', function esc(e){
-      if(e.key === 'Escape'){ leave(splash); document.removeEventListener('keydown', esc); }
+      if(e.key === 'Escape'){
+        if(actionOverlay && actionOverlay.classList.contains('open')){ closeSplashAction(); return; }
+        leave(splash); document.removeEventListener('keydown', esc);
+      }
     });
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
