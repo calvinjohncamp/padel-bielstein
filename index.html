@@ -14582,6 +14582,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pb-action-designer-stage { padding:18px; display:flex; justify-content:center; overflow:auto; }
 .pb-action-designer-splash { position:relative; width:min(100%,720px); min-height:820px; padding:48px 32px; box-sizing:border-box; background:#1C1A17; color:#F6F1E7; overflow:hidden; }
 .pb-action-designer-splash > :not(.pb-action-designer-action) { pointer-events:none; }
+.pb-action-designer-splash .pb-splash-sponsor-preview{border-top:0;margin-top:0;padding-top:0;width:100%;min-width:0;}
+.pb-action-designer-splash .pb-splash-sponsor-preview .pbsp-kicker{color:#8A8276;letter-spacing:0.2em;font-weight:600;margin-bottom:16px;}
+.pb-action-designer-splash .pb-splash-sponsor-preview .pbsp-duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-width:none;width:100%;}
 .pb-action-designer-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:122px; }
 .pb-action-designer-logo { width:110px; height:110px; border:1px solid #F6F1E7; border-radius:12px; overflow:hidden; }
 .pb-action-designer-logo img { width:100%; height:100%; object-fit:cover; display:block; }
@@ -14627,6 +14630,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   .pb-splash-action-art img {
     max-height:54px !important;
+  }
+  .pb-splash-action-art img,
+  .pb-splash-action-art span {
+    transform:rotate(var(--pb-action-rot, 0deg)) scale(calc(var(--pb-action-scale, 1) * .8)) !important;
   }
   .pb-splash-h1 {
     font-size: clamp(50px, 14.2vw, 64px) !important;
@@ -14744,6 +14751,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   .pb-splash-action-art img {
     max-height:54px !important;
+  }
+  .pb-splash-action-art img,
+  .pb-splash-action-art span {
+    transform:rotate(var(--pb-action-rot, 0deg)) scale(calc(var(--pb-action-scale, 1) * .8)) !important;
   }
   .pb-splash-h1 {
     font-size: clamp(54px, 12vw, 72px) !important;
@@ -15458,19 +15469,38 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var src=document.querySelector('#pbSplash .pb-splash-inner');
     var dst=document.getElementById('pbActionDesignerSplash');
     if(!src||!dst) return;
-    var rect=src.getBoundingClientRect();
-    if(rect.width < 120 || rect.height < 240) return;
-    var cs=getComputedStyle(src);
+    var probe=document.createElement('div');
+    probe.className='pb-splash';
+    probe.style.cssText='position:fixed;inset:0;visibility:hidden;pointer-events:none;z-index:-1;';
+    var probeInner=document.createElement('div');
+    probeInner.className='pb-splash-inner';
+    probe.appendChild(probeInner);
+    document.body.appendChild(probe);
+    var rect=probeInner.getBoundingClientRect();
+    var cs=getComputedStyle(probeInner);
+    if(rect.width < 120 || rect.height < 240){
+      rect=src.getBoundingClientRect();
+      cs=getComputedStyle(src);
+    }
+    if(rect.width < 120 || rect.height < 240){
+      probe.remove();
+      return;
+    }
     dst.style.width=Math.round(rect.width)+'px';
+    dst.style.height=Math.round(rect.height)+'px';
     dst.style.minHeight=Math.round(rect.height)+'px';
     dst.style.padding=cs.paddingTop+' '+cs.paddingRight+' '+cs.paddingBottom+' '+cs.paddingLeft;
     dst.style.display=cs.display;
     dst.style.flexDirection=cs.flexDirection;
     dst.style.justifyContent=cs.justifyContent;
     dst.style.boxSizing=cs.boxSizing;
+    probe.remove();
     dst.innerHTML=src.innerHTML;
     dst.querySelectorAll('.pb-splash-action').forEach(function(el){ el.remove(); });
-    dst.querySelectorAll('[id]').forEach(function(el){ el.removeAttribute('id'); });
+    dst.querySelectorAll('[id]').forEach(function(el){
+      if(el.id === 'pbSplashSponsor') el.classList.add('pb-splash-sponsor-preview');
+      el.removeAttribute('id');
+    });
     dst.querySelectorAll('button').forEach(function(btn){ btn.type='button'; });
     var action=document.createElement('div');
     action.className='pb-action-designer-action';
