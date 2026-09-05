@@ -1477,7 +1477,7 @@ main {
         <div class="kick">Exklusiv · Frühbucherphase</div>
         <div class="txt">Jetzt <strong>2 Jahre</strong> deinen festen Platz sichern — <span class="hi">25&nbsp;% Start-Rabatt</span>. Nur für <strong>TFB-Mitglieder &amp; Partner</strong>, bis <span id="pbSplashEbUntil">—</span>.</div>
       </div>
-      <button type="button" class="pb-splash-action-primary" id="pbSplashActionPrimary"><span>Mehr anzeigen</span><span aria-hidden="true">→</span></button>
+      <button type="button" class="pb-splash-action-primary" id="pbSplashActionPrimary"><span id="pbSplashActionPrimaryLabel">Mehr anzeigen</span><span aria-hidden="true">→</span></button>
     </div>
   </div>
 </div>
@@ -1499,7 +1499,7 @@ main {
       </div>
     </div>
     <div class="pb-action-designer-stage" id="pbActionDesignerStage">
-      <div class="pb-action-designer-splash">
+      <div class="pb-action-designer-splash" id="pbActionDesignerSplash">
         <div class="pb-action-designer-top">
           <div class="pb-action-designer-logo"><img src="assets/icons/logo-mark-2027-dark.png?v=20260721b" alt=""></div>
           <div class="pb-action-designer-tfb"><span></span><strong>TFB</strong></div>
@@ -4205,6 +4205,10 @@ main {
               <label class="eb-adm-lbl" style="font-size:10px;">Text &nbsp;·&nbsp; Hervorhebung mit *Sternchen*, <code>{bis}</code> = Enddatum der Phase</label>
               <textarea id="spEbText" rows="3" class="eb-adm-inp" style="resize:vertical;line-height:1.5;"></textarea>
             </div>
+            <div style="margin-top:10px;">
+              <label class="eb-adm-lbl" style="font-size:10px;">Button-Text in der Aktionskachel</label>
+              <input type="text" id="spActionCtaLabel" class="eb-adm-inp" placeholder="Mehr anzeigen">
+            </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
               <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Text</label><select id="spEbTextColor" class="eb-adm-inp"></select></div>
               <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Hervorhebung</label><select id="spEbHiColor" class="eb-adm-inp"></select></div>
@@ -4226,8 +4230,10 @@ main {
                   <div><label class="eb-adm-lbl" style="font-size:10px;">Größe (%)</label><input type="number" id="spActionScale" class="eb-adm-inp" min="50" max="220" step="5" value="100" oninput="previewSplashActionImage()"></div>
                   <div><label class="eb-adm-lbl" style="font-size:10px;">Rotation (°)</label><input type="number" id="spActionRotation" class="eb-adm-inp" min="-180" max="180" step="1" value="0" oninput="previewSplashActionImage()"></div>
                 </div>
-                <input type="hidden" id="spActionX" value="50">
-                <input type="hidden" id="spActionY" value="22">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+                  <div><label class="eb-adm-lbl" style="font-size:10px;">Position X (%)</label><input type="number" id="spActionX" class="eb-adm-inp" min="8" max="92" step="0.5" value="50"></div>
+                  <div><label class="eb-adm-lbl" style="font-size:10px;">Position Y (%)</label><input type="number" id="spActionY" class="eb-adm-inp" min="8" max="60" step="0.5" value="22"></div>
+                </div>
                 <input type="file" id="spActionImageFile" accept="image/png" class="eb-adm-inp" style="margin-top:8px;" onchange="previewSplashActionImage()">
                 <button type="button" class="admin-save-btn" style="margin-top:8px;padding:10px 12px;font-size:11px;" onclick="openSplashActionDesigner()">Live auf Splash-Seite bearbeiten</button>
               </div>
@@ -14432,6 +14438,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 }
 .pb-splash[hidden] { display: none !important; }
 .pb-splash-inner {
+  position: relative;
   width: 100%; max-width: 720px; min-height: 100vh;
   display: flex; flex-direction: column; justify-content: space-between;
   padding: 48px 32px; box-sizing: border-box;
@@ -14538,21 +14545,21 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 }
 .pb-splash-duo { border-top: 1px solid #3A362F; margin-top: 38px; padding-top: 26px; }
 .pb-splash-duo > #pbSplashSponsor { border-top: 0; margin-top: 0; padding-top: 0; width:100%; min-width:0; }
-.pb-splash-action-overlay { display:none; position:fixed; inset:0; z-index:8600; align-items:flex-end; justify-content:center; padding:18px; }
+.pb-splash-action-overlay { display:none; position:fixed; inset:0; z-index:8600; align-items:center; justify-content:center; padding:18px; }
 .pb-splash-action-overlay.open { display:flex; }
 .pb-splash-action-backdrop { position:absolute; inset:0; border:0; background:rgba(0,0,0,.76); backdrop-filter:blur(8px); cursor:pointer; }
 .pb-splash-action-modal {
-  position:relative; z-index:1; width:min(92vw, 430px); max-height:min(82vh, 620px); overflow:auto;
-  display:flex; flex-direction:column; gap:12px; padding:14px; border:1px solid rgba(246,241,231,.16);
+  position:relative; z-index:1; width:min(92vw, 520px); max-height:min(82vh, 620px); overflow:auto;
+  display:flex; flex-direction:column; gap:14px; padding:18px; border:1px solid rgba(246,241,231,.16);
   border-radius:18px; background:#1C1A17; box-shadow:0 28px 80px rgba(0,0,0,.46);
 }
 .pb-splash-action-close {
   position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:999px; border:1px solid rgba(246,241,231,.18);
   background:rgba(246,241,231,.06); color:#F6F1E7; font-size:22px; line-height:1; cursor:pointer;
 }
-.pb-splash-early { display:flex; width:100%; flex-direction: column; justify-content: center; padding: 18px 18px; border: 1px solid #3A352E; border-radius: 14px; background: rgba(246,241,231,.04); }
-.pb-splash-early .kick { font: 800 .84rem/1.2 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #FF5A36; margin-bottom: 8px; }
-.pb-splash-early .txt { font: 500 .86rem/1.5 "Manrope","Arial",sans-serif; color: #B8B0A2; }
+.pb-splash-early { display:flex; width:100%; min-height:168px; flex-direction: column; align-items:center; justify-content: center; text-align:center; padding: 26px 24px; border: 1px solid #3A352E; border-radius: 14px; background: rgba(246,241,231,.04); }
+.pb-splash-early .kick { font: 800 1rem/1.28 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #FF5A36; margin-bottom: 12px; max-width:92%; }
+.pb-splash-early .txt { font: 500 1.12rem/1.48 "Manrope","Arial",sans-serif; color: #B8B0A2; max-width:440px; }
 .pb-splash-early .txt strong { color: #F6F1E7; font-weight: 700; }
 .pb-splash-early .txt .hi { color: #FF5A36; font-weight: 800; white-space: nowrap; }
 .pb-splash-action-primary {
@@ -14573,7 +14580,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pb-action-designer-tools button { height:34px; padding:0 12px; border:1px solid rgba(246,241,231,.18); border-radius:8px; background:rgba(246,241,231,.06); color:#F6F1E7; font:800 11px "Space Grotesk",sans-serif; cursor:pointer; }
 .pb-action-designer-tools button.done { background:#FF5A36; border-color:#FF5A36; color:#1C1A17; }
 .pb-action-designer-stage { padding:18px; display:flex; justify-content:center; overflow:auto; }
-.pb-action-designer-splash { position:relative; width:min(100%,760px); min-height:820px; padding:58px 56px; background:#1C1A17; color:#F6F1E7; overflow:hidden; }
+.pb-action-designer-splash { position:relative; width:min(100%,720px); min-height:820px; padding:48px 32px; box-sizing:border-box; background:#1C1A17; color:#F6F1E7; overflow:hidden; }
 .pb-action-designer-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:122px; }
 .pb-action-designer-logo { width:110px; height:110px; border:1px solid #F6F1E7; border-radius:12px; overflow:hidden; }
 .pb-action-designer-logo img { width:100%; height:100%; object-fit:cover; display:block; }
@@ -14583,9 +14590,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pb-action-designer-splash h2 span { color:#FF5A36; }
 .pb-action-designer-splash p { max-width:420px; margin:28px 0 0; color:#C9C2B6; font:500 18px/1.5 "Manrope",sans-serif; }
 .pb-action-designer-cta { margin-top:46px; width:100%; padding:20px; border-radius:16px; background:#FF5A36; color:#1C1A17; font:800 18px "Space Grotesk",sans-serif; display:flex; justify-content:space-between; }
-.pb-action-designer-action { position:absolute; left:50%; top:184px; width:190px; height:68px; cursor:move; touch-action:none; display:flex; align-items:center; justify-content:center; border:1px dashed rgba(255,90,54,.48); border-radius:10px; }
-.pb-action-designer-action img { display:block; max-width:100%; max-height:100%; object-fit:contain; pointer-events:none; }
+.pb-action-designer-action { position:absolute; left:50%; top:22%; width:min(190px,42vw); min-height:42px; cursor:move; touch-action:none; display:flex; align-items:center; justify-content:center; border:1px dashed rgba(255,90,54,.48); border-radius:10px; transform:translate(-50%,-50%); }
+.pb-action-designer-action img { display:block; max-width:100%; max-height:68px; object-fit:contain; pointer-events:none; transform:rotate(var(--pb-design-rot,0deg)) scale(var(--pb-design-scale,1)); transform-origin:center; }
 .pb-action-designer-action > span { position:absolute; inset:0; display:none; background:#FF5A36; pointer-events:none; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; -webkit-mask-size:contain; mask-size:contain; }
+.pb-action-designer-action img,
+.pb-action-designer-action > span { transform:rotate(var(--pb-design-rot,0deg)) scale(var(--pb-design-scale,1)); transform-origin:center; }
 .pb-action-designer-action.tint img { opacity:0; }
 .pb-action-designer-action.tint > span { display:block; }
 .pb-action-designer-handle { position:absolute; border:0; cursor:pointer; }
@@ -14651,39 +14660,50 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     line-height: 1.35 !important;
   }
   #pbSplashSponsor .pbsp-duo {
-    gap: 12px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 10px !important;
     max-width: none !important;
+    width: 100% !important;
   }
   #pbSplashSponsor .pbsp-tile {
-    width: 100% !important;
-    height: 108px !important;
-    padding: 10px 12px !important;
-    flex: 0 0 auto !important;
+    width: auto !important;
+    height: 92px !important;
+    padding: 9px 8px !important;
+    flex: none !important;
   }
   #pbSplashSponsor .pbsp-tile img {
-    max-width: 92% !important;
-    max-height: 66px !important;
+    max-width: 94% !important;
+    max-height: 56px !important;
   }
   .pb-splash-early {
-    padding: 12px 13px !important;
-    border-radius: 13px !important;
+    min-height: 190px !important;
+    padding: 30px 20px 24px !important;
+    border-radius: 16px !important;
   }
   .pb-splash-early .kick {
-    font-size: 10px !important;
+    font-size: 14px !important;
+    line-height: 1.3 !important;
     letter-spacing: .12em !important;
-    margin-bottom: 7px !important;
+    margin-bottom: 13px !important;
   }
   .pb-splash-early .txt {
-    font-size: 12px !important;
-    line-height: 1.42 !important;
+    font-size: 18px !important;
+    line-height: 1.48 !important;
   }
   .pb-splash-action-overlay {
-    align-items:flex-end !important;
+    align-items:center !important;
     padding:12px !important;
   }
   .pb-splash-action-modal {
-    width:100% !important;
+    width:min(100%, 430px) !important;
+    padding:20px !important;
     border-radius:17px !important;
+  }
+  .pb-splash-action-primary {
+    padding:18px 18px !important;
+    font-size:18px !important;
+    border-radius:16px !important;
   }
 }
 @media (max-width: 380px) {
@@ -14692,10 +14712,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   .pb-splash-action { margin:0 !important; }
   .pb-splash-cta { margin-top: 52px !important; }
   .pb-splash-duo { margin-top: 34px !important; }
-  #pbSplashSponsor .pbsp-duo { gap: 10px !important; }
-  #pbSplashSponsor .pbsp-tile { height: 96px !important; }
-  #pbSplashSponsor .pbsp-tile img { max-height: 58px !important; }
-  .pb-splash-early .txt { font-size: 11.4px !important; }
+  #pbSplashSponsor .pbsp-duo { gap: 8px !important; }
+  #pbSplashSponsor .pbsp-tile { height: 86px !important; padding:8px 6px !important; }
+  #pbSplashSponsor .pbsp-tile img { max-height: 52px !important; max-width:96% !important; }
+  .pb-splash-early .kick { font-size: 12px !important; }
+  .pb-splash-early .txt { font-size: 16px !important; }
 }
 
 /* iPhone quer im Safari-Browser: ebenfalls scrollbar und mit ruhiger Luft. */
@@ -14760,29 +14781,36 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     line-height: 1.28 !important;
   }
   #pbSplashSponsor .pbsp-duo {
-    gap: 28px !important;
+    display:grid !important;
+    grid-template-columns:minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 16px !important;
     max-width: none !important;
+    width:100% !important;
   }
   #pbSplashSponsor .pbsp-tile {
-    height: 118px !important;
-    padding: 14px 16px !important;
+    width:auto !important;
+    height: 112px !important;
+    padding: 12px 14px !important;
+    flex:none !important;
   }
   #pbSplashSponsor .pbsp-tile img {
     max-height: 76px !important;
     max-width: 90% !important;
   }
   .pb-splash-early {
-    padding: 16px 18px !important;
+    min-height:150px !important;
+    padding: 24px 22px !important;
     border-radius: 13px !important;
   }
   .pb-splash-early .kick {
-    font-size: 11px !important;
+    font-size: 13px !important;
+    line-height:1.3 !important;
     letter-spacing: .12em !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 12px !important;
   }
   .pb-splash-early .txt {
-    font-size: 13px !important;
-    line-height: 1.42 !important;
+    font-size: 17px !important;
+    line-height: 1.46 !important;
   }
 }
 </style>
@@ -15310,7 +15338,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   window.loadSplash = async function(){
     try{
       if(typeof sb==='undefined' || !sb) return;
-      var splashFields='splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,splash_action_image_url,splash_action_image_tint,splash_action_tint_enabled,splash_action_tint_color,splash_action_scale_pct,splash_action_rotation_deg,splash_action_x_pct,splash_action_y_pct,earlybird_end';
+      var splashFields='splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,splash_action_cta_label,splash_action_image_url,splash_action_image_tint,splash_action_tint_enabled,splash_action_tint_color,splash_action_scale_pct,splash_action_rotation_deg,splash_action_x_pct,splash_action_y_pct,earlybird_end';
       var r = await sb.from('app_flags').select(splashFields).maybeSingle();
       if(r.error){
         r = await sb.from('app_flags').select('splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,earlybird_end').maybeSingle();
@@ -15343,6 +15371,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(typeof window.pbSetSplashActionImage==='function'){
         window.pbSetSplashActionImage(d.splash_action_image_url || d.splash_eb_image_url || window.__splashActionImageUrl || '');
       }
+      var actionLabel=document.getElementById('pbSplashActionPrimaryLabel');
+      if(actionLabel) actionLabel.textContent = String(d.splash_action_cta_label || 'Mehr anzeigen').trim() || 'Mehr anzeigen';
       if(typeof window.pbApplySplashActionStyle==='function') window.pbApplySplashActionStyle(d);
       if(typeof window.fillSplashAdmin==='function') window.fillSplashAdmin();
     }catch(e){}
@@ -15370,6 +15400,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     setv('spSubline', d.splash_subline);
     setv('spEbKicker', d.splash_eb_kicker);
     setv('spEbText', d.splash_eb_text);
+    setv('spActionCtaLabel', d.splash_action_cta_label || 'Mehr anzeigen');
     setv('spEbKickerColor', d.splash_eb_kicker_color || 'coral');
     setv('spEbTextColor', d.splash_eb_text_color || 'beige');
     setv('spEbHiColor', d.splash_eb_hi_color || 'coral');
@@ -15422,6 +15453,17 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var urlEl=document.getElementById('spActionImageUrl');
     return (fileEl && fileEl.files && fileEl.files[0]) ? URL.createObjectURL(fileEl.files[0]) : (urlEl && urlEl.value || '');
   };
+  window.syncSplashDesignerFrame = function(){
+    var src=document.querySelector('#pbSplash .pb-splash-inner');
+    var dst=document.getElementById('pbActionDesignerSplash');
+    if(!src||!dst) return;
+    var rect=src.getBoundingClientRect();
+    if(rect.width < 120 || rect.height < 240) return;
+    var cs=getComputedStyle(src);
+    dst.style.width=Math.round(rect.width)+'px';
+    dst.style.minHeight=Math.round(rect.height)+'px';
+    dst.style.padding=cs.paddingTop+' '+cs.paddingRight+' '+cs.paddingBottom+' '+cs.paddingLeft;
+  };
   window.paintSplashDesigner = function(){
     var st=window.__splashDesigner;
     var action=document.getElementById('pbActionDesignerAction');
@@ -15434,9 +15476,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(action){
       action.style.left=st.x+'%';
       action.style.top=st.y+'%';
-      action.style.width=(190*(st.scale/100))+'px';
-      action.style.height=(68*(st.scale/100))+'px';
-      action.style.transform='translate(-50%,-50%) rotate('+st.rotation+'deg)';
+      action.style.setProperty('--pb-design-scale', (st.scale/100));
+      action.style.setProperty('--pb-design-rot', st.rotation+'deg');
       action.classList.toggle('tint', !!(on&&on.checked));
     }
     if(tint){
@@ -15465,6 +15506,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(hex&&srcHex) hex.value=srcHex.value;
     document.getElementById('pbActionDesigner')?.classList.add('open');
     document.getElementById('pbActionDesigner')?.setAttribute('aria-hidden','false');
+    window.syncSplashDesignerFrame();
     window.paintSplashDesigner();
   };
   window.closeSplashActionDesigner = function(){
@@ -15595,6 +15637,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         p_eb_text: g('spEbText'),
         p_eb_text_color: g('spEbTextColor'),
         p_eb_hi_color: g('spEbHiColor'),
+        p_action_cta_label: (g('spActionCtaLabel').trim() || 'Mehr anzeigen'),
         p_action_image_url: actionImageUrl || null,
         p_action_tint_enabled: !!(document.getElementById('spActionTintEnabled') && document.getElementById('spActionTintEnabled').checked),
         p_action_tint_color: window.pbSplashActionHexColor(g('spActionTintHex'), '#FF5A36'),
@@ -15604,6 +15647,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         p_action_y_pct: window.pbClampActionNumber(g('spActionY'), 22, 8, 60)
       };
       var r=await sb.rpc('admin_set_splash', payload);
+      if(r.error){
+        var withoutCta={...payload};
+        delete withoutCta.p_action_cta_label;
+        r=await sb.rpc('admin_set_splash', withoutCta);
+      }
       if(r.error && !actionImageUrl){
         delete payload.p_action_image_url;
         delete payload.p_action_tint_enabled;
@@ -15612,10 +15660,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         delete payload.p_action_rotation_deg;
         delete payload.p_action_x_pct;
         delete payload.p_action_y_pct;
+        delete payload.p_action_cta_label;
         r=await sb.rpc('admin_set_splash', payload);
       }
       if(r.error){
         var compat={...payload, p_action_image_tint:(payload.p_action_tint_enabled ? 'coral' : 'original')};
+        delete compat.p_action_cta_label;
         delete compat.p_action_tint_enabled;
         delete compat.p_action_tint_color;
         delete compat.p_action_scale_pct;
@@ -16068,7 +16118,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pbsp-tile-empty span{display:block;color:#8A8276;font-size:.72em;letter-spacing:.16em;margin-top:5px;}
 #pbSplashSponsor{border-top:0;margin-top:0;padding-top:0;}
 #pbSplashSponsor .pbsp-kicker{color:#8A8276;letter-spacing:0.2em;font-weight:600;margin-bottom:16px;}
-#pbSplashSponsor .pbsp-duo{max-width:none;width:100%;}
+#pbSplashSponsor .pbsp-duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-width:none;width:100%;}
 .pb-splash-inner{padding-bottom:clamp(40px,4.5vh,60px);}
 .pb-splash-foot{text-align:left;margin-left:2px;}
 .pb-splash-cta{display:flex;align-items:center;justify-content:space-between;text-align:left;gap:12px;}
