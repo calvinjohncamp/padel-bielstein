@@ -5645,8 +5645,30 @@ function bookingDiscountInfo() {
   }
   return { pct: bestPct, label: label || 'Rabatt' };
 }
+function aboDiscountInfo() {
+  const basePct = (typeof memberAboDiscount !== 'undefined' && memberAboDiscount > 0)
+    ? Math.round(memberAboDiscount * 100)
+    : 0;
+  let bestPct = basePct;
+  let label = basePct > 0 ? 'Mitglieder-/Partnerrabatt' : '';
+  let kind = basePct > 0 ? 'member' : 'none';
+  const eb = window.__earlybird || {};
+  const actionVisible = !!(eb.active || eb.preview);
+  const actionForAbo = actionVisible && (!eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both') && actionIsEligibleForCurrentUser(eb);
+  const actionPct = actionForAbo ? Math.round(Number(eb.discount) || 0) : 0;
+  if (actionPct > bestPct) {
+    bestPct = actionPct;
+    label = 'Aktionsrabatt';
+    kind = 'action';
+  }
+  return { pct: bestPct, label: label || 'Rabatt', kind };
+}
 function mP(p) {
   const info = bookingDiscountInfo();
+  return info.pct > 0 ? Math.round(p * (1 - info.pct / 100)) : p;
+}
+function aboP(p) {
+  const info = aboDiscountInfo();
   return info.pct > 0 ? Math.round(p * (1 - info.pct / 100)) : p;
 }
 
@@ -5668,8 +5690,8 @@ function cheapestAboWeek(dur) {
 function updateAboDurPrices() {
   const b1 = document.querySelector('#adur1 .dprice');
   const b2 = document.querySelector('#adur2 .dprice');
-  if (b1) b1.textContent = `ab ${cheapestAboWeek(1)} €/Woche`;
-  if (b2) b2.textContent = `ab ${cheapestAboWeek(2)} €/Woche`;
+  if (b1) b1.textContent = `ab ${aboP(cheapestAboWeek(1))} €/Woche`;
+  if (b2) b2.textContent = `ab ${aboP(cheapestAboWeek(2))} €/Woche`;
 }
 function showLoader(on) { document.getElementById('loadingBar').classList.toggle('active', on); }
 
@@ -8430,7 +8452,7 @@ async function submitAbo(skipAuthCheck) {
   // Mitglieder-/Partner-Prüfung macht ausschließlich der Server; hier wird nur
   // umgeschaltet. (Die Vorschau zählt bewusst nicht – nur die echte Phase.)
   const eb = window.__earlybird || {};
-  if (eb.active && (!eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both')) {
+  if (eb.active && (!eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both') && actionIsEligibleForCurrentUser(eb)) {
     const pendingEb = {
       booking_type: 'earlybird_abo',
       is_earlybird: true,
@@ -8633,8 +8655,10 @@ function renderAboSlots() {
       // würde die zweite Stunde einer gültigen Auswahl fälschlich wieder als
       // "frei/unausgewählt" markiert.
       const conflictsWithNextHour = aboDur === 2 && !isOccupiedHour && !isSel && !isSec && aboBooked[ct].has(abKey2);
-      const p = sumHourlyFb(priceMap, h, aboDur, null, true);
-      const p1h = hourP(priceMap, h, null, true);
+      const pGross = sumHourlyFb(priceMap, h, aboDur, null, true);
+      const p = aboP(pGross);
+      const p1hGross = hourP(priceMap, h, null, true);
+      const p1h = aboP(p1hGross);
       const h1 = `${String(h).padStart(2,"0")}:00`;
       const h2 = `${String(h+1).padStart(2,"0")}:00`;
       const sl = document.createElement("div");
@@ -8701,10 +8725,12 @@ function updateAboSummary() {
   const rabattEl   = document.getElementById('as-rabatt');
   const actionNoteEl = document.getElementById('as-eb-note');
   const ctaEl      = card.querySelector('.abo-cta');
+  const aboDiscInfo = aboDiscountInfo();
+  const aboActionOn = aboDiscInfo.kind === 'action';
 
-  if ((eb.active || eb.preview) && (!eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both')) {
+  if (aboActionOn) {
     const years   = (Number(eb.termMonths) || 24) / 12;
-    const disc    = (Number(eb.discount)   || 25) / 100;
+    const disc    = aboDiscInfo.pct / 100;
     const aboYear = totalAbo;                       // App-Abopreis / Jahr
     const regTerm = normalWeek * 52 * years;       // Einzelbuchungen ueber die Laufzeit
     const ebTotal = Math.round(aboYear * years * (1 - disc));
@@ -8730,7 +8756,7 @@ function updateAboSummary() {
     }
     if (ctaEl) ctaEl.textContent = '■ Frühbucher-Abo sichern (Einmalzahlung)';
   } else {
-    const normalDisc = (typeof memberAboDiscount !== 'undefined' && memberAboDiscount > 0) ? memberAboDiscount : 0;
+    const normalDisc = aboDiscInfo.kind === 'member' ? aboDiscInfo.pct / 100 : 0;
     const normalDiscountAmount = Math.round(totalAbo * normalDisc);
     const normalTotal = totalAbo - normalDiscountAmount;
     if (sumTitleEl) sumTitleEl.innerHTML = '<span class="abo-sum-lead">Dein Jahresabo</span><span class="abo-sum-years">(1 Jahr)</span>';
@@ -8794,9 +8820,9 @@ function updateAboSummary() {
       + `<td>${fmt(Math.round(betrag / 4))}</td>`
       + `<td class="desc">${desc || ''}</td></tr>`;
     let body, note = '';
-    if ((eb.active || eb.preview) && (!eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both')) {
+    if (aboActionOn) {
       const years2 = (Number(eb.termMonths) || 24) / 12;
-      const disc2  = (Number(eb.discount)   || 25) / 100;
+      const disc2  = aboDiscInfo.pct / 100;
       const rab    = Math.round(abo30 * disc2);
       const paJahr = abo30 - rab;
       const twoYr  = paJahr * years2;
