@@ -843,7 +843,8 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .pbp-line { flex:1 1 auto; height:1.5px; background:#FF5A36; opacity:.85; }
 .pbp-lbl { flex:0 0 auto; font-family:"Space Grotesk","Arial Narrow",sans-serif; font-weight:800; color:#FF5A36; text-transform:uppercase; letter-spacing:.16em; font-size:clamp(12px,1.6vw,16px); white-space:nowrap; }
 .pbp-thanks .pbp-lbl { font-weight:700; letter-spacing:.13em; font-size:clamp(11px,1.5vw,15px); text-align:center; }
-.pbp-premwrap { margin-bottom:2px; }
+.pbp-premwrap { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(12px,1.8vw,18px); margin-bottom:2px; }
+.pbp-premwrap .pbp-tile:only-child { grid-column:1 / -1; }
 .pbp-tile { background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,.28); max-width:100%; box-sizing:border-box; }
 .pbp-tile img { max-width:82%; max-height:66%; width:auto; height:auto; object-fit:contain; display:block; }
 .pbp-tile-action { position:relative; }
@@ -4263,7 +4264,7 @@ main {
       <div class="admin-section">
         <div class="admin-section-title">🤝 Sponsor anlegen / bearbeiten</div>
         <div style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5;">
-          <strong>Premium</strong> erscheint exklusiv auf der Startseite.
+          <strong>Premium</strong> erscheint bis zu zweimal oben auf der Partner-Seite; auf der Startseite bleibt der erste aktive Premium-Partner exklusiv.
           In App und Mails rotieren <strong>Premium</strong>, <strong>Partner</strong> und <strong>Regional-Partner</strong> nach den unten eingestellten Gewichten.
           Logo als PNG/JPG/SVG mit möglichst wenig Rand hochladen – es wird in eine feste Kachel (140 × 64) eingepasst.
         </div>
@@ -4277,7 +4278,7 @@ main {
               <select id="spTier" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
                 <option value="partner">Partner (1.000 €)</option>
                 <option value="regional">Regional (300 €)</option>
-                <option value="premium">Premium (5.000 € · Home + Rotation)</option>
+                <option value="premium">Premium (5.000 € · bis zu 2 Plätze)</option>
               </select>
             </div>
             <div>
@@ -8935,7 +8936,7 @@ async function loadAdminSponsors() {
 
   // Nummerierungshelfer
   const getNum = (sponsor, index, tier) => {
-    if (tier === 'premium') return 'PP';
+    if (tier === 'premium') return `PP${index + 1}`;
     if (tier === 'partner') return `P${index + 1}`;
     if (tier === 'regional') return `RP${index + 1}`;
     return '?';
@@ -9256,6 +9257,13 @@ async function saveSponsor() {
 
   if (!name) { alert('Bitte eine Marke angeben.'); return; }
   if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
+  if (tier === 'premium' && active) {
+    const activePremiumCount = (window.__sponsorRows || []).filter(s => s.tier === 'premium' && s.active && s.id !== id).length;
+    if (activePremiumCount >= 2) {
+      alert('Es können maximal zwei aktive Premium-Partner gepflegt werden. Bitte zuerst einen Premium-Partner deaktivieren oder ändern.');
+      return;
+    }
+  }
 
   const prev = btn.textContent;
   btn.disabled = true; btn.textContent = 'Speichert …';
@@ -14852,7 +14860,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         +'<div style="font-weight:700;margin-bottom:6px;">⚠️ Testphase: Beispielfirmen</div>'
         +'<div>Die aktuell in unserer Buchungsapp angezeigten Partner dienen nur zu Demonstrationszwecken in der Entwicklungsphase. Die tatsächlichen Partner werden wir vor dem offiziellen Start vorstellen.</div>'
         +'</div>';
-      if(prem.length) h+=label('Premium-Partner')+'<div class="pbp-premwrap">'+tile(prem[0],'pbp-tile-prem')+'</div>';
+      if(prem.length) h+=label('Premium-Partner')+'<div class="pbp-premwrap">'+prem.slice(0,2).map(function(s){return tile(s,'pbp-tile-prem');}).join('')+'</div>';
       if(part.length) h+=label('Partner')+'<div class="pbp-grid pbp-grid-partner">'+part.map(function(s){return tile(s);}).join('')+'</div>';
       if(reg.length)  h+=label('Regionale Partner')+'<div class="pbp-grid pbp-grid-regional">'+reg.map(function(s){return tile(s);}).join('')+'</div>';
       h+='<div class="pbp-thanks"><span class="pbp-line"></span>'
