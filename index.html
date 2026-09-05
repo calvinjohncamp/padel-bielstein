@@ -14557,9 +14557,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:999px; border:1px solid rgba(246,241,231,.18);
   background:rgba(246,241,231,.06); color:#F6F1E7; font-size:22px; line-height:1; cursor:pointer;
 }
-.pb-splash-early { display:flex; width:100%; min-height:168px; flex-direction: column; align-items:center; justify-content: center; text-align:center; padding: 26px 24px; border: 1px solid #3A352E; border-radius: 14px; background: rgba(246,241,231,.04); }
-.pb-splash-early .kick { font: 800 1rem/1.28 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #FF5A36; margin-bottom: 12px; max-width:92%; }
-.pb-splash-early .txt { font: 500 1.12rem/1.48 "Manrope","Arial",sans-serif; color: #B8B0A2; max-width:440px; }
+.pb-splash-early { display:flex; width:100%; min-height:168px; flex-direction: column; align-items:flex-start; justify-content: center; text-align:left; padding: 26px 24px; border: 1px solid #3A352E; border-radius: 14px; background: rgba(246,241,231,.04); }
+.pb-splash-early .kick { font: 800 1rem/1.28 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #FF5A36; margin-bottom: 12px; max-width:100%; }
+.pb-splash-early .txt { font: 500 1.12rem/1.48 "Manrope","Arial",sans-serif; color: #B8B0A2; max-width:440px; text-align:left; }
 .pb-splash-early .txt strong { color: #F6F1E7; font-weight: 700; }
 .pb-splash-early .txt .hi { color: #FF5A36; font-weight: 800; white-space: nowrap; }
 .pb-splash-action-primary {
@@ -14633,7 +14633,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   .pb-splash-action-art img,
   .pb-splash-action-art span {
-    transform:rotate(var(--pb-action-rot, 0deg)) scale(calc(var(--pb-action-scale, 1) * .8)) !important;
+    transform:rotate(var(--pb-action-rot, 0deg)) scale(calc(var(--pb-action-scale, 1) * .7)) !important;
   }
   .pb-splash-h1 {
     font-size: clamp(50px, 14.2vw, 64px) !important;
@@ -14744,6 +14744,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   .pb-splash-top { margin-bottom: 54px !important; }
   .pb-splash-action {
     margin:0 !important;
+    top:clamp(118px, 34%, 156px) !important;
   }
   .pb-splash-action-art {
     width:min(170px, 36vw) !important;
@@ -14754,7 +14755,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   .pb-splash-action-art img,
   .pb-splash-action-art span {
-    transform:rotate(var(--pb-action-rot, 0deg)) scale(calc(var(--pb-action-scale, 1) * .8)) !important;
+    transform:rotate(var(--pb-action-rot, 0deg)) scale(calc(var(--pb-action-scale, 1) * .7)) !important;
   }
   .pb-splash-h1 {
     font-size: clamp(54px, 12vw, 72px) !important;
