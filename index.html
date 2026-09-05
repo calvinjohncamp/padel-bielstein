@@ -14581,6 +14581,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 .pb-action-designer-tools button.done { background:#FF5A36; border-color:#FF5A36; color:#1C1A17; }
 .pb-action-designer-stage { padding:18px; display:flex; justify-content:center; overflow:auto; }
 .pb-action-designer-splash { position:relative; width:min(100%,720px); min-height:820px; padding:48px 32px; box-sizing:border-box; background:#1C1A17; color:#F6F1E7; overflow:hidden; }
+.pb-action-designer-splash > :not(.pb-action-designer-action) { pointer-events:none; }
 .pb-action-designer-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:122px; }
 .pb-action-designer-logo { width:110px; height:110px; border:1px solid #F6F1E7; border-radius:12px; overflow:hidden; }
 .pb-action-designer-logo img { width:100%; height:100%; object-fit:cover; display:block; }
@@ -15463,6 +15464,20 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     dst.style.width=Math.round(rect.width)+'px';
     dst.style.minHeight=Math.round(rect.height)+'px';
     dst.style.padding=cs.paddingTop+' '+cs.paddingRight+' '+cs.paddingBottom+' '+cs.paddingLeft;
+    dst.style.display=cs.display;
+    dst.style.flexDirection=cs.flexDirection;
+    dst.style.justifyContent=cs.justifyContent;
+    dst.style.boxSizing=cs.boxSizing;
+    dst.innerHTML=src.innerHTML;
+    dst.querySelectorAll('.pb-splash-action').forEach(function(el){ el.remove(); });
+    dst.querySelectorAll('[id]').forEach(function(el){ el.removeAttribute('id'); });
+    dst.querySelectorAll('button').forEach(function(btn){ btn.type='button'; });
+    var action=document.createElement('div');
+    action.className='pb-action-designer-action';
+    action.id='pbActionDesignerAction';
+    action.innerHTML='<img id="pbActionDesignerImg" src="" alt=""><span id="pbActionDesignerTint" aria-hidden="true"></span><button type="button" class="pb-action-designer-handle resize" aria-label="Größe ändern"></button><button type="button" class="pb-action-designer-handle rotate" aria-label="Drehen">↻</button>';
+    dst.appendChild(action);
+    window.initSplashActionDesigner();
   };
   window.paintSplashDesigner = function(){
     var st=window.__splashDesigner;
