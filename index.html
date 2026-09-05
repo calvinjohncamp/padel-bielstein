@@ -822,7 +822,7 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .eb-body .eb-hi { color:#FF5A36; font-weight:800; white-space:nowrap; }
 .eb-body-2 { margin-top:-6px; }
 .eb-meta { display:flex; flex-wrap:wrap; align-items:center; gap:16px; margin:0 0 4px; }
-.eb-meta-boxes { display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:0 1 auto; }
+.eb-meta-boxes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; flex:0 1 auto; }
 .eb-meta-item { background:#242019; border:1px solid #332F27; border-radius:11px; padding:10px 14px; }
 .eb-meta-lbl { display:block; font:700 .6rem/1.15 "Space Grotesk",sans-serif; letter-spacing:.11em; text-transform:uppercase; color:#8A867E; margin-bottom:6px; }
 .eb-meta-val { font:800 1.02rem/1 "Space Grotesk",sans-serif; color:#F6F1E7; }
@@ -830,6 +830,10 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .eb-foot { font-family:"Manrope","Arial",sans-serif; font-weight:500; font-size:.76rem; line-height:1.5; color:#8A867E; border-top:1px solid #2A2723; padding-top:12px; }
 .eb-adm-lbl { display:block; font:700 11px "Space Grotesk",sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#7A7368; margin-bottom:6px; }
 .eb-adm-inp { width:100%; padding:9px 11px; border:1.5px solid #E2DACB; border-radius:8px; font:500 14px "Manrope",sans-serif; background:#fff; color:#1C1A17; box-sizing:border-box; }
+@media (max-width:620px){
+  .eb-meta-boxes{grid-template-columns:repeat(2,minmax(0,1fr));width:100%;}
+  .eb-meta-boxes .eb-meta-item:nth-child(3){grid-column:1/-1;}
+}
 /* ── PARTNER-SEITE (Galerie im Look der Eingangs-Displays) ── */
 .pbp-board { background:#1C1A17; border-radius:18px; color:#F6F1E7; padding:clamp(18px,3.5vw,40px) clamp(16px,3.5vw,36px) clamp(24px,4vw,44px); }
 .pbp-head { display:flex; align-items:center; gap:clamp(21px,4.5vw,45px); padding:2px 0 clamp(12px,1.9vw,20px); }
@@ -1878,8 +1882,9 @@ main {
       <div class="eb-body eb-body-2"><strong>Dieser Court gehört für 2 Jahre</strong> an den von dir gebuchten Tagen und zu den von dir gebuchten Stunden <strong>allein dir.</strong></div>
       <div class="eb-meta">
         <div class="eb-meta-boxes">
-          <div class="eb-meta-item"><span class="eb-meta-lbl">Start der Aktion</span><span class="eb-meta-val" id="ebUntil">—</span></div>
-          <div class="eb-meta-item"><span class="eb-meta-lbl">Saisonstart (voraussichtlich)</span><span class="eb-meta-val" id="ebStart">—</span></div>
+          <div class="eb-meta-item"><span class="eb-meta-lbl">Start der Aktion</span><span class="eb-meta-val" id="ebActionStart">—</span></div>
+          <div class="eb-meta-item"><span class="eb-meta-lbl">Ende der Aktion</span><span class="eb-meta-val" id="ebActionEnd">—</span></div>
+          <div class="eb-meta-item"><span class="eb-meta-lbl">Saisonstart</span><span class="eb-meta-val" id="ebStart">—</span></div>
         </div>
         <div class="eb-meta-note">Dein Abo startet automatisch am Eröffnungstag unserer neuen Anlage.</div>
       </div>
@@ -4139,46 +4144,12 @@ main {
       </div>
     </div><!-- /adminWeather -->
 
-    <!-- ── SPONSOREN (Skript 24: sponsors + admin_* Funktionen) ── -->
+    <!-- ── AKTIONEN / SPLASH / JAHRESABO-KACHEL ── -->
     <div id="adminAktionen" style="display:none;">
       <div class="admin-section">
-        <div class="admin-section-title">⏱ Exklusiv-Frühbucherphase (2-Jahres-Abos)</div>
+        <div class="admin-section-title">🖼 Splash-Startseite</div>
         <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
-          Befristetes Fenster, in dem <strong>nur TFB-Mitglieder + Partner</strong> ein <strong>2-Jahres-Abo</strong> mit Sonder-Rabatt abschließen können (Einmalzahlung vorab). Solange „Aus", ändert sich für Nutzer nichts. Die Frühbucher-Kachel erscheint automatisch nur im eingestellten Zeitraum.
-        </div>
-        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div><label class="eb-adm-lbl">Start der Phase</label><input type="datetime-local" id="ebAdmStart" class="eb-adm-inp"></div>
-            <div><label class="eb-adm-lbl">Ende der Phase</label><input type="datetime-local" id="ebAdmEnd" class="eb-adm-inp"></div>
-            <div><label class="eb-adm-lbl">Sonder-Rabatt (%)</label><input type="number" id="ebAdmDiscount" min="0" max="100" step="1" class="eb-adm-inp"></div>
-            <div><label class="eb-adm-lbl">Laufzeit (Monate)</label><input type="number" id="ebAdmTerm" min="1" step="1" class="eb-adm-inp"></div>
-            <div><label class="eb-adm-lbl">Saisonstart (Abo-Beginn)</label><input type="date" id="ebAdmAboStart" class="eb-adm-inp"></div>
-          </div>
-          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:14px;">
-            <div style="flex:0 0 auto;"><label class="eb-adm-lbl">Phase</label>
-              <div class="seg-toggle">
-                <button type="button" id="ebAdmOff" class="seg-btn seg-active" onclick="setEarlybirdEnabled(false)">Aus</button>
-                <button type="button" id="ebAdmOn" class="seg-btn" onclick="setEarlybirdEnabled(true)">An</button>
-              </div>
-            </div>
-            <button type="button" class="admin-save-btn" onclick="saveEarlybird()" style="margin-left:auto;">Speichern</button>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #EFE9DC;">
-            <div style="flex:1 1 220px;font-size:0.78rem;color:#7A7368;line-height:1.45;">
-              <strong>Vorschau (für Präsentation):</strong> zeigt die Kachel <em>sofort</em> an – unabhängig vom Zeitraum, ohne Kauf-Funktion. Wirkt ohne „Speichern". Danach wieder ausschalten.
-            </div>
-            <div class="seg-toggle">
-              <button type="button" id="ebPrevOff" class="seg-btn seg-active" onclick="setEarlybirdPreview(false)">Aus</button>
-              <button type="button" id="ebPrevOn"  class="seg-btn" onclick="setEarlybirdPreview(true)">Kachel zeigen</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="admin-section">
-        <div class="admin-section-title">🖼 Splash-Startseite – Texte</div>
-        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
-          Der Kopf (Logo, „PADEL BIELSTEIN", TFB) bleibt fest. Hier bearbeitest du die Texte darunter. <strong>Speichern</strong> wirkt sofort für alle Besucher – kein Code-Upload nötig.
+          Einstieg der App mit Logo, Claim, Startbutton und Premium-Partnern. Der Aktions-Hinweis wird in „Aktion 1" gepflegt.
         </div>
         <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:16px;">
           <div>
@@ -4195,14 +4166,60 @@ main {
               </div>
             </div>
           </div>
-          <div style="border-top:1px solid #EFE9DC;padding-top:14px;">
-            <label class="eb-adm-lbl" style="margin-bottom:10px;">Aktions-Kachel nach Klick auf „Aktion"</label>
+          <div style="display:flex;justify-content:flex-end;">
+            <button type="button" class="admin-save-btn" onclick="saveSplash()">Splash speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">⏱ Aktion 1</div>
+        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
+          Wiederverwendbarer Aktionsplatz für die Splash-Seite und die dazugehörige Aktion. Aktuell nutzt ihn die Frühbucher-/2-Jahres-Abo-Aktion; später kann hier auch eine andere Aktion stehen.
+        </div>
+        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label class="eb-adm-lbl">Start der Aktion</label><input type="datetime-local" id="ebAdmStart" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl">Ende der Aktion</label><input type="datetime-local" id="ebAdmEnd" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl">Sonder-Rabatt (%)</label><input type="number" id="ebAdmDiscount" min="0" max="100" step="1" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl">Laufzeit (Monate)</label><input type="number" id="ebAdmTerm" min="1" step="1" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl">Saisonstart (Abo-Beginn)</label><input type="date" id="ebAdmAboStart" class="eb-adm-inp"></div>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:14px;">
+            <div style="flex:0 0 auto;"><label class="eb-adm-lbl">Aktion</label>
+              <div class="seg-toggle">
+                <button type="button" id="ebAdmOff" class="seg-btn seg-active" onclick="setEarlybirdEnabled(false)">Aus</button>
+                <button type="button" id="ebAdmOn" class="seg-btn" onclick="setEarlybirdEnabled(true)">An</button>
+              </div>
+            </div>
+            <button type="button" class="admin-save-btn" onclick="saveEarlybird()" style="margin-left:auto;">Aktionszeitraum speichern</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #EFE9DC;">
+            <div style="flex:1 1 220px;font-size:0.78rem;color:#7A7368;line-height:1.45;">
+              <strong>Vorschau:</strong> zeigt Aktion 1 <em>sofort</em> an – unabhängig vom Zeitraum, ohne Kauf-Funktion. Wirkt ohne „Speichern". Danach wieder ausschalten.
+            </div>
+            <div class="seg-toggle">
+              <button type="button" id="ebPrevOff" class="seg-btn seg-active" onclick="setEarlybirdPreview(false)">Aus</button>
+              <button type="button" id="ebPrevOn"  class="seg-btn" onclick="setEarlybirdPreview(true)">Aktion zeigen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Aktion 1 – Splash-Hinweis und Fenster</div>
+        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
+          PNG-Hinweis auf der Splash-Seite und Inhalt des Fensters nach dem Klick. Diese Aktion kann später inhaltlich neu belegt werden.
+        </div>
+        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <label class="eb-adm-lbl" style="margin-bottom:10px;">Fenster nach Klick auf das Aktions-PNG</label>
             <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
               <div><label class="eb-adm-lbl" style="font-size:10px;">Überschrift</label><input type="text" id="spEbKicker" class="eb-adm-inp"></div>
               <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Überschrift</label><select id="spEbKickerColor" class="eb-adm-inp"></select></div>
             </div>
             <div style="margin-top:10px;">
-              <label class="eb-adm-lbl" style="font-size:10px;">Text &nbsp;·&nbsp; Hervorhebung mit *Sternchen*, <code>{bis}</code> = Enddatum der Phase</label>
+              <label class="eb-adm-lbl" style="font-size:10px;">Text &nbsp;·&nbsp; Hervorhebung mit *Sternchen*, <code>{bis}</code> = Ende der Aktion</label>
               <textarea id="spEbText" rows="3" class="eb-adm-inp" style="resize:vertical;line-height:1.5;"></textarea>
             </div>
             <div style="margin-top:10px;">
@@ -4240,14 +4257,14 @@ main {
             </div>
           </div>
           <div style="display:flex;justify-content:flex-end;">
-            <button type="button" class="admin-save-btn" onclick="saveSplash()">Splash speichern</button>
+            <button type="button" class="admin-save-btn" onclick="saveSplash()">Aktionstexte und PNG speichern</button>
           </div>
         </div>
       </div>
       <div class="admin-section">
         <div class="admin-section-title">📋 „Jahresabo sichern"-Seite – Kachel oben</div>
         <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
-          Die große Frühbucher-Kachel oben auf „Jahresabo sichern". Alle Texte einzeln editierbar, Farben aus der Marken-Palette. Die <strong>Datumswerte</strong> (Aktion läuft bis / Saisonstart) kommen automatisch aus der Frühbucher-Konfiguration oben.
+          Inhalt der Aktion auf der Seite „Jahresabo sichern". Alle Texte einzeln editierbar, Farben aus der Marken-Palette. Die <strong>Datumswerte</strong> kommen aus Aktion 1: Start der Aktion, Ende der Aktion und Saisonstart.
         </div>
         <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:16px;">
           <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
@@ -4267,11 +4284,11 @@ main {
             </div>
           </div>
           <div style="border-top:1px solid #EFE9DC;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Kachel 1 – Beschriftung</label><input type="text" id="abBox1" class="eb-adm-inp"></div>
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Kachel 2 – Beschriftung</label><input type="text" id="abBox2" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Start-Box – Beschriftung</label><input type="text" id="abBox1" class="eb-adm-inp"></div>
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Ende-Box – Beschriftung</label><input type="text" id="abBox2" class="eb-adm-inp"></div>
           </div>
           <div>
-            <label class="eb-adm-lbl" style="font-size:10px;">Text neben Kachel 2</label>
+            <label class="eb-adm-lbl" style="font-size:10px;">Hinweis neben den Datumsboxen</label>
             <input type="text" id="abNote" class="eb-adm-inp">
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -15264,7 +15281,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(b){
         // Kachel zeigen, wenn die Phase aktiv ist ODER die manuelle Vorschau an ist.
         b.classList.toggle('show', window.__earlybird.active || window.__earlybird.preview);
-        var u=document.getElementById('ebUntil'); if(u) u.textContent=window.ebFmtDate(window.__earlybird.start);
+        var as=document.getElementById('ebActionStart'); if(as) as.textContent=window.ebFmtDate(window.__earlybird.start);
+        var ae=document.getElementById('ebActionEnd'); if(ae) ae.textContent=window.ebFmtDate(window.__earlybird.end);
         var s=document.getElementById('ebStart'); if(s) s.textContent=window.ebFmtDate(window.__earlybird.aboStart);
       }
       // Aktion auf der Splash-Seite: nur als anklickbares PNG.
@@ -15760,8 +15778,13 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
       if(b2){ b2.style.display='none'; }   // 2. Absatz steckt jetzt im Fließtext-Feld
       var lbls = document.querySelectorAll('#earlybirdBanner .eb-meta-item .eb-meta-lbl');
-      if(lbls[0] && d.ab_box1_label!=null) lbls[0].textContent=d.ab_box1_label;
-      if(lbls[1] && d.ab_box2_label!=null) lbls[1].textContent=d.ab_box2_label;
+      var box1Label = d.ab_box1_label || 'Start der Aktion';
+      var box2Label = d.ab_box2_label || 'Ende der Aktion';
+      if(box1Label === 'Aktion läuft bis') box1Label = 'Start der Aktion';
+      if(box2Label === 'Saisonstart (voraussichtlich)') box2Label = 'Ende der Aktion';
+      if(lbls[0]) lbls[0].textContent=box1Label;
+      if(lbls[1]) lbls[1].textContent=box2Label;
+      if(lbls[2]) lbls[2].textContent='Saisonstart';
       var note = q('#earlybirdBanner .eb-meta-note');
       if(note && d.ab_note!=null) note.textContent=d.ab_note;
       var lc = col(d.ab_label_color,'ash');
@@ -15786,8 +15809,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     setv('abKicker', d.ab_kicker);
     setv('abTitle', d.ab_title);
     setv('abBody', d.ab_body);
-    setv('abBox1', d.ab_box1_label);
-    setv('abBox2', d.ab_box2_label);
+    var box1Label = d.ab_box1_label || 'Start der Aktion';
+    var box2Label = d.ab_box2_label || 'Ende der Aktion';
+    if(box1Label === 'Aktion läuft bis') box1Label = 'Start der Aktion';
+    if(box2Label === 'Saisonstart (voraussichtlich)') box2Label = 'Ende der Aktion';
+    setv('abBox1', box1Label);
+    setv('abBox2', box2Label);
     setv('abNote', d.ab_note);
     setv('abKickerColor', d.ab_kicker_color || 'coral');
     setv('abTitleColor', d.ab_title_color || 'cream');
@@ -15846,7 +15873,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         p_term_months: Number(g('ebAdmTerm'))||null
       });
       if(r.error) throw r.error;
-      if(typeof showToast==='function') showToast('Frühbucherphase gespeichert.');
+      if(typeof showToast==='function') showToast('Aktion 1 gespeichert.');
       if(typeof loadEarlybird==='function') await loadEarlybird();
     }catch(e){ alert('Speichern fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
   };
