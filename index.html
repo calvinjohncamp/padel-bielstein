@@ -4196,7 +4196,7 @@ main {
           </div>
           <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #EFE9DC;">
             <div style="flex:1 1 220px;font-size:0.78rem;color:#7A7368;line-height:1.45;">
-              <strong>Vorschau:</strong> zeigt Aktion 1 <em>sofort</em> an – unabhängig vom Zeitraum, ohne Kauf-Funktion. Wirkt ohne „Speichern". Danach wieder ausschalten.
+              <strong>Vorschau:</strong> zeigt Aktion 1 <em>sofort</em> an – unabhängig vom Zeitraum, ohne Kauf-Funktion. Der Splash-Hinweis erscheint bereits, wenn Aktion 1 auf „An" steht. Wirkt ohne „Speichern". Danach wieder ausschalten.
             </div>
             <div class="seg-toggle">
               <button type="button" id="ebPrevOff" class="seg-btn seg-active" onclick="setEarlybirdPreview(false)">Aus</button>
@@ -15279,16 +15279,16 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       };
       var b=document.getElementById('earlybirdBanner');
       if(b){
-        // Kachel zeigen, wenn die Phase aktiv ist ODER die manuelle Vorschau an ist.
+        // Jahresabo-Kachel nur im Zeitraum oder in der manuellen Vorschau zeigen.
         b.classList.toggle('show', window.__earlybird.active || window.__earlybird.preview);
         var as=document.getElementById('ebActionStart'); if(as) as.textContent=window.ebFmtDate(window.__earlybird.start);
         var ae=document.getElementById('ebActionEnd'); if(ae) ae.textContent=window.ebFmtDate(window.__earlybird.end);
         var s=document.getElementById('ebStart'); if(s) s.textContent=window.ebFmtDate(window.__earlybird.aboStart);
       }
-      // Aktion auf der Splash-Seite: nur als anklickbares PNG.
+      // Splash-Hinweis zeigen, wenn Aktion 1 eingeschaltet ist oder die Vorschau laeuft.
       var sp=document.getElementById('pbSplashAction');
       if(sp){
-        window.__pbSplashActionPhaseOn = window.__earlybird.active || window.__earlybird.preview;
+        window.__pbSplashActionPhaseOn = window.__earlybird.enabled || window.__earlybird.preview;
         if(typeof window.pbRefreshSplashActionVisibility==='function') window.pbRefreshSplashActionVisibility();
         var su=document.getElementById('pbSplashEbUntil'); if(su) su.textContent=window.ebFmtDate(window.__earlybird.end);
       }
