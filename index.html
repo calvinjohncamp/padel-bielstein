@@ -1451,7 +1451,10 @@ main {
       <div class="pb-splash-tfb"><span class="pb-splash-dot"></span><span>TFB</span></div>
     </div>
     <div class="pb-splash-action" id="pbSplashAction">
-      <button type="button" class="pb-splash-action-btn" id="pbSplashActionBtn">Aktion</button>
+      <button type="button" class="pb-splash-action-art" id="pbSplashActionArt" aria-label="Aktion öffnen" hidden>
+        <img id="pbSplashActionTeaserImage" src="" alt="">
+        <span id="pbSplashActionTeaserTint" aria-hidden="true"></span>
+      </button>
     </div>
     <div>
       <h1 class="pb-splash-h1">PADEL<br><span>BIELSTEIN</span></h1>
@@ -1470,9 +1473,6 @@ main {
     <button type="button" class="pb-splash-action-backdrop" id="pbSplashActionCloseBg" aria-label="Aktion schliessen"></button>
     <div class="pb-splash-action-modal" role="dialog" aria-modal="true" aria-label="Aktion">
       <button type="button" class="pb-splash-action-close" id="pbSplashActionClose" aria-label="Aktion schliessen">×</button>
-      <div class="pb-splash-action-image" id="pbSplashActionImageWrap" hidden>
-        <img id="pbSplashActionImage" src="" alt="Aktion">
-      </div>
       <div class="pb-splash-early" id="pbSplashEarly">
         <div class="kick">Exklusiv · Frühbucherphase</div>
         <div class="txt">Jetzt <strong>2 Jahre</strong> deinen festen Platz sichern — <span class="hi">25&nbsp;% Start-Rabatt</span>. Nur für <strong>TFB-Mitglieder &amp; Partner</strong>, bis <span id="pbSplashEbUntil">—</span>.</div>
@@ -4180,6 +4180,16 @@ main {
               <div>
                 <label class="eb-adm-lbl" style="font-size:10px;">Optionales Aktions-PNG</label>
                 <input type="url" id="spActionImageUrl" class="eb-adm-inp" placeholder="https://.../aktion.png" oninput="previewSplashActionImage()">
+                <div style="display:grid;grid-template-columns:auto 46px 1fr auto;gap:8px;align-items:center;margin-top:8px;">
+                  <label style="display:flex;align-items:center;gap:6px;font:700 11px Manrope,sans-serif;color:#5C564C;"><input type="checkbox" id="spActionTintEnabled" onchange="previewSplashActionImage()"> einfärben</label>
+                  <input type="color" id="spActionTintColor" value="#FF5A36" class="eb-adm-inp" style="height:40px;padding:3px;" oninput="syncSplashActionHexFromColor()">
+                  <input type="text" id="spActionTintHex" class="eb-adm-inp" value="#FF5A36" placeholder="#FF5A36" oninput="syncSplashActionColorFromHex()">
+                  <button type="button" class="admin-save-btn" style="padding:10px 12px;font-size:11px;" onclick="pickSplashActionTint()">Pipette</button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+                  <div><label class="eb-adm-lbl" style="font-size:10px;">Größe (%)</label><input type="number" id="spActionScale" class="eb-adm-inp" min="50" max="220" step="5" value="100" oninput="previewSplashActionImage()"></div>
+                  <div><label class="eb-adm-lbl" style="font-size:10px;">Rotation (°)</label><input type="number" id="spActionRotation" class="eb-adm-inp" min="-180" max="180" step="1" value="0" oninput="previewSplashActionImage()"></div>
+                </div>
                 <input type="file" id="spActionImageFile" accept="image/png" class="eb-adm-inp" style="margin-top:8px;" onchange="previewSplashActionImage()">
               </div>
             </div>
@@ -14452,13 +14462,24 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 }
 .pb-splash-action { display:none; align-items:center; justify-content:center; margin:-8px auto 18px; }
 .pb-splash-action.show { display:flex; }
-.pb-splash-action-btn {
-  min-width:132px; min-height:38px; padding:9px 22px; border:1.5px solid rgba(246,241,231,.92); border-radius:999px;
-  background:transparent; color:#FF5A36; font-family:"Space Grotesk",sans-serif; font-weight:800;
-  font-size:12px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer;
-  transition:transform .16s ease, background .16s ease, border-color .16s ease;
+.pb-splash-action-art {
+  position:relative; display:flex; align-items:center; justify-content:center; width:min(190px, 42vw); min-height:42px;
+  padding:0; border:0; background:transparent; cursor:pointer; filter:drop-shadow(0 7px 18px rgba(0,0,0,.24));
+  transition:transform .16s ease, filter .16s ease;
 }
-.pb-splash-action-btn:hover { background:rgba(255,90,54,.08); border-color:#FF5A36; transform:translateY(-1px); }
+.pb-splash-action-art[hidden] { display:none; }
+.pb-splash-action-art:hover { transform:translateY(-1px) scale(1.015); filter:drop-shadow(0 10px 22px rgba(255,90,54,.2)); }
+.pb-splash-action-art img { display:block; max-width:100%; max-height:68px; object-fit:contain; }
+.pb-splash-action-art img,
+.pb-splash-action-art span { transform:rotate(var(--pb-action-rot, 0deg)) scale(var(--pb-action-scale, 1)); transform-origin:center; }
+.pb-splash-action-art span {
+  position:absolute; inset:0; display:none; background:#FF5A36;
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+  -webkit-mask-position:center; mask-position:center;
+  -webkit-mask-size:contain; mask-size:contain;
+}
+.pb-splash-action-art[data-tint]:not([data-tint="original"]) img { opacity:0; }
+.pb-splash-action-art[data-tint]:not([data-tint="original"]) span { display:block; }
 .pb-splash-h1 {
   font-family: "Space Grotesk",sans-serif; font-weight: 700;
   font-size: clamp(48px,11vw,88px); line-height: 0.92; margin: 0; color: #F6F1E7;
@@ -14490,8 +14511,6 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:999px; border:1px solid rgba(246,241,231,.18);
   background:rgba(246,241,231,.06); color:#F6F1E7; font-size:22px; line-height:1; cursor:pointer;
 }
-.pb-splash-action-image { border-radius:14px; overflow:hidden; background:#F6F1E7; border:1px solid rgba(246,241,231,.18); }
-.pb-splash-action-image img { display:block; width:100%; max-height:260px; object-fit:contain; }
 .pb-splash-early { display:flex; width:100%; flex-direction: column; justify-content: center; padding: 18px 18px; border: 1px solid #3A352E; border-radius: 14px; background: rgba(246,241,231,.04); }
 .pb-splash-early .kick { font: 800 .84rem/1.2 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #FF5A36; margin-bottom: 8px; }
 .pb-splash-early .txt { font: 500 .86rem/1.5 "Manrope","Arial",sans-serif; color: #B8B0A2; }
@@ -14522,12 +14541,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   .pb-splash-action {
     margin:-40px auto 34px !important;
   }
-  .pb-splash-action-btn {
-    min-width:118px !important;
-    min-height:36px !important;
-    padding:8px 18px !important;
-    font-size:11px !important;
-    border-radius:999px !important;
+  .pb-splash-action-art {
+    width:min(170px, 48vw) !important;
+    min-height:34px !important;
+  }
+  .pb-splash-action-art img {
+    max-height:54px !important;
   }
   .pb-splash-h1 {
     font-size: clamp(50px, 14.2vw, 64px) !important;
@@ -14627,12 +14646,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   .pb-splash-action {
     margin:-22px auto 28px !important;
   }
-  .pb-splash-action-btn {
-    min-width:118px !important;
-    min-height:36px !important;
-    padding:8px 18px !important;
-    font-size:11px !important;
-    border-radius:999px !important;
+  .pb-splash-action-art {
+    width:min(170px, 36vw) !important;
+    min-height:34px !important;
+  }
+  .pb-splash-action-art img {
+    max-height:54px !important;
   }
   .pb-splash-h1 {
     font-size: clamp(54px, 12vw, 72px) !important;
@@ -15137,10 +15156,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var u=document.getElementById('ebUntil'); if(u) u.textContent=window.ebFmtDate(window.__earlybird.start);
         var s=document.getElementById('ebStart'); if(s) s.textContent=window.ebFmtDate(window.__earlybird.aboStart);
       }
-      // Aktion auf der Splash-Seite: oben zwischen Logozeile und Wortmarke.
+      // Aktion auf der Splash-Seite: nur als anklickbares PNG.
       var sp=document.getElementById('pbSplashAction');
       if(sp){
-        sp.classList.toggle('show', window.__earlybird.active || window.__earlybird.preview);
+        window.__pbSplashActionPhaseOn = window.__earlybird.active || window.__earlybird.preview;
+        if(typeof window.pbRefreshSplashActionVisibility==='function') window.pbRefreshSplashActionVisibility();
         var su=document.getElementById('pbSplashEbUntil'); if(su) su.textContent=window.ebFmtDate(window.__earlybird.end);
       }
       if(typeof window.fillEarlybirdAdmin==='function') window.fillEarlybirdAdmin();
@@ -15163,18 +15183,60 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     return s;
   };
   window.__splash = {};
+  window.pbSplashActionHexColor = function(value, fallback){
+    var s=String(value||'').trim();
+    if(/^#[0-9a-fA-F]{6}$/.test(s)) return s;
+    if(/^[0-9a-fA-F]{6}$/.test(s)) return '#'+s;
+    return fallback || '#FF5A36';
+  };
+  window.pbClampActionNumber = function(value, fallback, min, max){
+    var n=Number(value);
+    if(!Number.isFinite(n)) n=fallback;
+    return Math.max(min, Math.min(max, n));
+  };
+  window.pbApplySplashActionStyle = function(cfg){
+    cfg=cfg || window.__splash || {};
+    var art=document.getElementById('pbSplashActionArt');
+    var tint=document.getElementById('pbSplashActionTeaserTint');
+    var enabled=!!cfg.splash_action_tint_enabled;
+    var color=window.pbSplashActionHexColor(cfg.splash_action_tint_color || cfg.splash_action_image_tint, '#FF5A36');
+    var scale=window.pbClampActionNumber(cfg.splash_action_scale_pct, 100, 50, 220) / 100;
+    var rotation=window.pbClampActionNumber(cfg.splash_action_rotation_deg, 0, -180, 180);
+    if(art){
+      art.dataset.tint = enabled ? 'custom' : 'original';
+      art.style.setProperty('--pb-action-scale', scale);
+      art.style.setProperty('--pb-action-rot', rotation+'deg');
+    }
+    if(tint){
+      tint.style.backgroundColor = color || '';
+      var url=window.__pbSplashActionImageUrl || '';
+      var mask=url ? 'url("'+url.replace(/"/g,'%22').replace(/'/g,'%27')+'")' : '';
+      tint.style.webkitMaskImage = mask;
+      tint.style.maskImage = mask;
+    }
+  };
+  window.pbRefreshSplashActionVisibility = function(){
+    var sp=document.getElementById('pbSplashAction');
+    var art=document.getElementById('pbSplashActionArt');
+    var show=!!(window.__pbSplashActionPhaseOn && window.__pbSplashActionImageUrl);
+    if(sp) sp.classList.toggle('show', show);
+    if(art) art.hidden = !show;
+  };
   window.pbSetSplashActionImage = function(url){
-    var wrap=document.getElementById('pbSplashActionImageWrap');
-    var img=document.getElementById('pbSplashActionImage');
+    var teaser=document.getElementById('pbSplashActionTeaserImage');
     var clean=String(url||'').trim();
-    if(!wrap || !img) return;
-    if(clean){ img.src=clean; wrap.hidden=false; }
-    else { img.removeAttribute('src'); wrap.hidden=true; }
+    window.__pbSplashActionImageUrl = clean;
+    if(teaser){
+      if(clean){ teaser.src=clean; }
+      else { teaser.removeAttribute('src'); }
+    }
+    window.pbApplySplashActionStyle(window.__splash||{});
+    window.pbRefreshSplashActionVisibility();
   };
   window.loadSplash = async function(){
     try{
       if(typeof sb==='undefined' || !sb) return;
-      var splashFields='splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,splash_action_image_url,earlybird_end';
+      var splashFields='splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,splash_action_image_url,splash_action_image_tint,splash_action_tint_enabled,splash_action_tint_color,splash_action_scale_pct,splash_action_rotation_deg,earlybird_end';
       var r = await sb.from('app_flags').select(splashFields).maybeSingle();
       if(r.error){
         r = await sb.from('app_flags').select('splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,earlybird_end').maybeSingle();
@@ -15207,6 +15269,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(typeof window.pbSetSplashActionImage==='function'){
         window.pbSetSplashActionImage(d.splash_action_image_url || d.splash_eb_image_url || window.__splashActionImageUrl || '');
       }
+      if(typeof window.pbApplySplashActionStyle==='function') window.pbApplySplashActionStyle(d);
       if(typeof window.fillSplashAdmin==='function') window.fillSplashAdmin();
     }catch(e){}
   };
@@ -15237,14 +15300,72 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     setv('spEbTextColor', d.splash_eb_text_color || 'beige');
     setv('spEbHiColor', d.splash_eb_hi_color || 'coral');
     setv('spActionImageUrl', d.splash_action_image_url);
+    var tintOn=document.getElementById('spActionTintEnabled');
+    var tintColor=document.getElementById('spActionTintColor');
+    var tintHex=document.getElementById('spActionTintHex');
+    var color=window.pbSplashActionHexColor(d.splash_action_tint_color || d.splash_action_image_tint, '#FF5A36');
+    if(tintOn) tintOn.checked = !!d.splash_action_tint_enabled;
+    if(tintColor) tintColor.value = color;
+    if(tintHex) tintHex.value = color;
+    setv('spActionScale', d.splash_action_scale_pct || 100);
+    setv('spActionRotation', d.splash_action_rotation_deg || 0);
     if(typeof window.previewSplashActionImage==='function') window.previewSplashActionImage();
     window.setSublineVisible(d.splash_subline_visible!==false);
+  };
+  window.syncSplashActionHexFromColor = function(){
+    var color=document.getElementById('spActionTintColor'), hex=document.getElementById('spActionTintHex');
+    if(color && hex) hex.value = window.pbSplashActionHexColor(color.value, '#FF5A36');
+    window.previewSplashActionImage();
+  };
+  window.syncSplashActionColorFromHex = function(){
+    var color=document.getElementById('spActionTintColor'), hex=document.getElementById('spActionTintHex');
+    var clean=window.pbSplashActionHexColor(hex && hex.value, '');
+    if(color && clean) color.value = clean;
+    window.previewSplashActionImage();
+  };
+  window.pickSplashActionTint = async function(){
+    if(!window.EyeDropper){
+      if(typeof showToast==='function') showToast('Pipette nur in Chrome/Edge verfügbar.');
+      else alert('Pipette nur in Chrome/Edge verfügbar.');
+      return;
+    }
+    try{
+      var res=await new EyeDropper().open();
+      if(res && res.sRGBHex){
+        var color=document.getElementById('spActionTintColor'), hex=document.getElementById('spActionTintHex'), on=document.getElementById('spActionTintEnabled');
+        if(color) color.value=res.sRGBHex;
+        if(hex) hex.value=res.sRGBHex;
+        if(on) on.checked=true;
+        window.previewSplashActionImage();
+      }
+    }catch(e){}
+  };
+  window.renderSplashActionImagePreview = function(url, enabled, color, scalePct, rotationDeg){
+    var box=document.getElementById('spActionImagePreview');
+    if(!box) return;
+    var clean=String(url||'').trim();
+    if(!clean){
+      box.innerHTML='<span style="font:700 9px Manrope,sans-serif;color:#A59D92;">kein PNG</span>';
+      return;
+    }
+    var scale=window.pbClampActionNumber(scalePct, 100, 50, 220) / 100;
+    var rot=window.pbClampActionNumber(rotationDeg, 0, -180, 180);
+    var transform='transform:rotate('+rot+'deg) scale('+scale+');transform-origin:center;';
+    if(enabled){
+      box.innerHTML='<span style="width:150px;height:66px;background:'+window.pbSplashActionHexColor(color,'#FF5A36')+';display:block;'+transform+'-webkit-mask:url(&quot;'+clean.replace(/"/g,'%22')+'&quot;) center/contain no-repeat;mask:url(&quot;'+clean.replace(/"/g,'%22')+'&quot;) center/contain no-repeat;"></span>';
+    }else{
+      box.innerHTML='<img src="'+clean.replace(/"/g,'&quot;')+'" style="max-height:75px;max-width:170px;width:auto;height:auto;object-fit:contain;display:block;margin:auto;'+transform+'">';
+    }
   };
   window.previewSplashActionImage = function(){
     var fileEl=document.getElementById('spActionImageFile');
     var urlEl=document.getElementById('spActionImageUrl');
+    var tintOn=document.getElementById('spActionTintEnabled');
+    var hexEl=document.getElementById('spActionTintHex');
+    var scaleEl=document.getElementById('spActionScale');
+    var rotEl=document.getElementById('spActionRotation');
     var previewUrl=(fileEl && fileEl.files && fileEl.files[0]) ? URL.createObjectURL(fileEl.files[0]) : (urlEl && urlEl.value || '');
-    if(typeof renderLogoPreview==='function') renderLogoPreview(previewUrl, 'spActionImagePreview');
+    window.renderSplashActionImagePreview(previewUrl, !!(tintOn&&tintOn.checked), hexEl&&hexEl.value, scaleEl&&scaleEl.value, rotEl&&rotEl.value);
   };
   window.saveSplash = async function(){
     try{
@@ -15267,11 +15388,19 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         p_eb_text: g('spEbText'),
         p_eb_text_color: g('spEbTextColor'),
         p_eb_hi_color: g('spEbHiColor'),
-        p_action_image_url: actionImageUrl || null
+        p_action_image_url: actionImageUrl || null,
+        p_action_tint_enabled: !!(document.getElementById('spActionTintEnabled') && document.getElementById('spActionTintEnabled').checked),
+        p_action_tint_color: window.pbSplashActionHexColor(g('spActionTintHex'), '#FF5A36'),
+        p_action_scale_pct: window.pbClampActionNumber(g('spActionScale'), 100, 50, 220),
+        p_action_rotation_deg: window.pbClampActionNumber(g('spActionRotation'), 0, -180, 180)
       };
       var r=await sb.rpc('admin_set_splash', payload);
       if(r.error && !actionImageUrl){
         delete payload.p_action_image_url;
+        delete payload.p_action_tint_enabled;
+        delete payload.p_action_tint_color;
+        delete payload.p_action_scale_pct;
+        delete payload.p_action_rotation_deg;
         r=await sb.rpc('admin_set_splash', payload);
       }
       if(r.error) throw r.error;
@@ -15643,7 +15772,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var cta = document.getElementById('pbSplashCta');
     if(cta) cta.addEventListener('click', function(){ leave(splash); });
     var actionOverlay = document.getElementById('pbSplashActionOverlay');
-    var actionBtn = document.getElementById('pbSplashActionBtn');
+    var actionBtn = document.getElementById('pbSplashActionArt');
     var actionClose = document.getElementById('pbSplashActionClose');
     var actionCloseBg = document.getElementById('pbSplashActionCloseBg');
     var actionPrimary = document.getElementById('pbSplashActionPrimary');
