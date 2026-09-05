@@ -15285,10 +15285,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var ae=document.getElementById('ebActionEnd'); if(ae) ae.textContent=window.ebFmtDate(window.__earlybird.end);
         var s=document.getElementById('ebStart'); if(s) s.textContent=window.ebFmtDate(window.__earlybird.aboStart);
       }
-      // Splash-Hinweis zeigen, wenn Aktion 1 eingeschaltet ist oder die Vorschau laeuft.
+      // Aktion 1 liefert die Datumswerte. Die Splash-PNG selbst wird separat ueber ihre URL gesteuert.
       var sp=document.getElementById('pbSplashAction');
       if(sp){
-        window.__pbSplashActionPhaseOn = window.__earlybird.enabled || window.__earlybird.preview;
+        window.__pbSplashActionPhaseOn = true;
         if(typeof window.pbRefreshSplashActionVisibility==='function') window.pbRefreshSplashActionVisibility();
         var su=document.getElementById('pbSplashEbUntil'); if(su) su.textContent=window.ebFmtDate(window.__earlybird.end);
       }
@@ -15351,7 +15351,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   window.pbRefreshSplashActionVisibility = function(){
     var sp=document.getElementById('pbSplashAction');
     var art=document.getElementById('pbSplashActionArt');
-    var show=!!(window.__pbSplashActionPhaseOn && window.__pbSplashActionImageUrl);
+    var show=!!window.__pbSplashActionImageUrl;
     if(sp) sp.classList.toggle('show', show);
     if(art) art.hidden = !show;
   };
@@ -15691,6 +15691,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         if(!isPng) throw new Error('Bitte für die Splash-Aktion eine PNG-Datei auswählen.');
         if(file.size > 5*1024*1024) throw new Error('Die PNG-Datei ist zu groß. Bitte maximal 5 MB verwenden.');
         actionImageUrl = await uploadSponsorLogo(file, 'splash-action');
+        var uploadedUrlEl=document.getElementById('spActionImageUrl');
+        if(uploadedUrlEl) uploadedUrlEl.value = actionImageUrl;
+        if(typeof window.pbSetSplashActionImage==='function') window.pbSetSplashActionImage(actionImageUrl);
+        window.__splash = Object.assign({}, window.__splash || {}, { splash_action_image_url: actionImageUrl });
       }
       if(!file && !actionImageUrl){
         actionImageUrl = (window.__pbSplashActionImageUrl || (window.__splash && window.__splash.splash_action_image_url) || '').trim();
@@ -15713,6 +15717,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         p_action_x_pct: window.pbClampActionNumber(g('spActionX'), 50, 8, 92),
         p_action_y_pct: window.pbClampActionNumber(g('spActionY'), 22, 8, 60)
       };
+      var wantsActionImage = !!actionImageUrl;
       var r=await sb.rpc('admin_set_splash', payload);
       if(r.error){
         var withoutCta={...payload};
@@ -15730,7 +15735,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         delete payload.p_action_cta_label;
         r=await sb.rpc('admin_set_splash', payload);
       }
-      if(r.error){
+      if(r.error && !wantsActionImage){
         var compat={...payload, p_action_image_tint:(payload.p_action_tint_enabled ? 'coral' : 'original')};
         delete compat.p_action_cta_label;
         delete compat.p_action_tint_enabled;
@@ -15742,14 +15747,21 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         r=await sb.rpc('admin_set_splash', compat);
       }
       if(r.error) throw r.error;
+      if(wantsActionImage){
+        var saved=await sb.from('app_flags').select('splash_action_image_url').limit(1).maybeSingle();
+        if(saved.error) throw saved.error;
+        if(!saved.data || !saved.data.splash_action_image_url){
+          throw new Error('Die PNG-Datei wurde hochgeladen, aber die Bildadresse wurde nicht in der Datenbank gespeichert.');
+        }
+      }
       var urlEl=document.getElementById('spActionImageUrl');
       if(urlEl) urlEl.value = actionImageUrl || '';
       if(actionImageFile) actionImageFile.value = '';
-      if(typeof showToast==='function') showToast('Splash-Texte gespeichert.');
+      if(typeof showToast==='function') showToast(wantsActionImage ? 'Aktionstexte und PNG gespeichert.' : 'Splash-Texte gespeichert.');
       if(typeof loadSplash==='function') await loadSplash();
     }catch(e){
       var msg = e && e.message ? e.message : 'Unbekannter Fehler';
-      if(/admin_set_splash|schema cache|Could not find the function/i.test(msg)){
+      if(/admin_set_splash|schema cache|Could not find the function|splash_action_image_url|Bildadresse/i.test(msg)){
         msg = 'Die Datenbank kennt die neue Splash-Aktions-Funktion noch nicht. Bitte die aktualisierte Datei 79_splash_action_png.sql in Supabase ausführen und die App danach neu laden.';
       }
       alert('Speichern fehlgeschlagen: ' + msg);
