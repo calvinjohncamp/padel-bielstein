@@ -1482,6 +1482,42 @@ main {
   </div>
 </div>
 
+<div class="pb-action-designer" id="pbActionDesigner" aria-hidden="true">
+  <div class="pb-action-designer-modal">
+    <div class="pb-action-designer-toolbar">
+      <div>
+        <div class="pb-action-designer-title">Splash-Aktion bearbeiten</div>
+        <div class="pb-action-designer-sub">PNG ziehen, drehen, skalieren und einfärben</div>
+      </div>
+      <div class="pb-action-designer-tools">
+        <label><input type="checkbox" id="pbDesignTintEnabled" onchange="syncSplashDesignerFromControls()"> einfärben</label>
+        <input type="color" id="pbDesignTintColor" value="#FF5A36" oninput="syncSplashDesignerColorHex()">
+        <input type="text" id="pbDesignTintHex" value="#FF5A36" oninput="syncSplashDesignerHexColor()">
+        <button type="button" onclick="pickSplashDesignerTint()">Pipette</button>
+        <button type="button" onclick="closeSplashActionDesigner()">Abbrechen</button>
+        <button type="button" class="done" onclick="applySplashActionDesigner()">Übernehmen</button>
+      </div>
+    </div>
+    <div class="pb-action-designer-stage" id="pbActionDesignerStage">
+      <div class="pb-action-designer-splash">
+        <div class="pb-action-designer-top">
+          <div class="pb-action-designer-logo"><img src="assets/icons/logo-mark-2027-dark.png?v=20260721b" alt=""></div>
+          <div class="pb-action-designer-tfb"><span></span><strong>TFB</strong></div>
+        </div>
+        <div class="pb-action-designer-action" id="pbActionDesignerAction">
+          <img id="pbActionDesignerImg" src="" alt="">
+          <span id="pbActionDesignerTint" aria-hidden="true"></span>
+          <button type="button" class="pb-action-designer-handle resize" aria-label="Größe ändern"></button>
+          <button type="button" class="pb-action-designer-handle rotate" aria-label="Drehen">↻</button>
+        </div>
+        <h2>PADEL<br><span>BIELSTEIN</span></h2>
+        <p>Zwei Courts, eine App. Buche deinen Slot, sichere dir dein Jahresabo und behalte dein Guthaben im Blick.</p>
+        <div class="pb-action-designer-cta">Jetzt loslegen <span>→</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <header class="appbar" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');">
   <button class="appbar-brand" type="button" onclick="event.stopPropagation(); goHome();" aria-label="Zur Startseite">
     <span class="appbar-wordmark"><span class="wm-a">PADEL</span> <span class="wm-b">BIELSTEIN</span></span>
@@ -4190,7 +4226,10 @@ main {
                   <div><label class="eb-adm-lbl" style="font-size:10px;">Größe (%)</label><input type="number" id="spActionScale" class="eb-adm-inp" min="50" max="220" step="5" value="100" oninput="previewSplashActionImage()"></div>
                   <div><label class="eb-adm-lbl" style="font-size:10px;">Rotation (°)</label><input type="number" id="spActionRotation" class="eb-adm-inp" min="-180" max="180" step="1" value="0" oninput="previewSplashActionImage()"></div>
                 </div>
+                <input type="hidden" id="spActionX" value="50">
+                <input type="hidden" id="spActionY" value="22">
                 <input type="file" id="spActionImageFile" accept="image/png" class="eb-adm-inp" style="margin-top:8px;" onchange="previewSplashActionImage()">
+                <button type="button" class="admin-save-btn" style="margin-top:8px;padding:10px 12px;font-size:11px;" onclick="openSplashActionDesigner()">Live auf Splash-Seite bearbeiten</button>
               </div>
             </div>
           </div>
@@ -14460,7 +14499,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   font-family: "Space Grotesk",sans-serif; font-weight: 600; font-size: 20px;
   letter-spacing: 0.14em; text-transform: uppercase; color: #B8B0A2;
 }
-.pb-splash-action { display:none; align-items:center; justify-content:center; margin:-8px auto 18px; }
+.pb-splash-action { display:none; position:absolute; left:50%; top:22%; z-index:3; align-items:center; justify-content:center; margin:0; transform:translate(-50%,-50%); }
 .pb-splash-action.show { display:flex; }
 .pb-splash-action-art {
   position:relative; display:flex; align-items:center; justify-content:center; width:min(190px, 42vw); min-height:42px;
@@ -14521,6 +14560,37 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   font-family:"Space Grotesk",sans-serif; font-size:15px; font-weight:800; cursor:pointer;
   display:flex; align-items:center; justify-content:space-between; gap:14px;
 }
+.pb-action-designer { display:none; position:fixed; inset:0; z-index:9300; background:rgba(0,0,0,.86); backdrop-filter:blur(8px); padding:16px; }
+.pb-action-designer.open { display:flex; align-items:center; justify-content:center; }
+.pb-action-designer-modal { width:min(96vw,1180px); max-height:96vh; overflow:auto; border:1px solid rgba(246,241,231,.14); border-radius:16px; background:#15130F; box-shadow:0 30px 90px rgba(0,0,0,.55); }
+.pb-action-designer-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px; border-bottom:1px solid rgba(246,241,231,.12); }
+.pb-action-designer-title { font:800 16px "Space Grotesk",sans-serif; color:#F6F1E7; }
+.pb-action-designer-sub { margin-top:3px; font:600 11px "Manrope",sans-serif; color:#8A8276; }
+.pb-action-designer-tools { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.pb-action-designer-tools label { display:flex; align-items:center; gap:6px; font:700 12px "Manrope",sans-serif; color:#CBC3B6; }
+.pb-action-designer-tools input[type=color] { width:42px; height:34px; padding:2px; border:1px solid rgba(246,241,231,.18); border-radius:8px; background:#221F1A; }
+.pb-action-designer-tools input[type=text] { width:96px; height:34px; padding:0 9px; border:1px solid rgba(246,241,231,.18); border-radius:8px; background:#221F1A; color:#F6F1E7; font:700 12px "Manrope",sans-serif; }
+.pb-action-designer-tools button { height:34px; padding:0 12px; border:1px solid rgba(246,241,231,.18); border-radius:8px; background:rgba(246,241,231,.06); color:#F6F1E7; font:800 11px "Space Grotesk",sans-serif; cursor:pointer; }
+.pb-action-designer-tools button.done { background:#FF5A36; border-color:#FF5A36; color:#1C1A17; }
+.pb-action-designer-stage { padding:18px; display:flex; justify-content:center; overflow:auto; }
+.pb-action-designer-splash { position:relative; width:min(100%,760px); min-height:820px; padding:58px 56px; background:#1C1A17; color:#F6F1E7; overflow:hidden; }
+.pb-action-designer-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:122px; }
+.pb-action-designer-logo { width:110px; height:110px; border:1px solid #F6F1E7; border-radius:12px; overflow:hidden; }
+.pb-action-designer-logo img { width:100%; height:100%; object-fit:cover; display:block; }
+.pb-action-designer-tfb { display:flex; align-items:center; gap:10px; color:#B8B0A2; font:700 20px "Space Grotesk",sans-serif; letter-spacing:.14em; }
+.pb-action-designer-tfb span { width:15px; height:15px; border-radius:50%; background:#FF5A36; }
+.pb-action-designer-splash h2 { margin:0; font:700 86px/.92 "Space Grotesk",sans-serif; letter-spacing:0; color:#F6F1E7; }
+.pb-action-designer-splash h2 span { color:#FF5A36; }
+.pb-action-designer-splash p { max-width:420px; margin:28px 0 0; color:#C9C2B6; font:500 18px/1.5 "Manrope",sans-serif; }
+.pb-action-designer-cta { margin-top:46px; width:100%; padding:20px; border-radius:16px; background:#FF5A36; color:#1C1A17; font:800 18px "Space Grotesk",sans-serif; display:flex; justify-content:space-between; }
+.pb-action-designer-action { position:absolute; left:50%; top:184px; width:190px; height:68px; cursor:move; touch-action:none; display:flex; align-items:center; justify-content:center; border:1px dashed rgba(255,90,54,.48); border-radius:10px; }
+.pb-action-designer-action img { display:block; max-width:100%; max-height:100%; object-fit:contain; pointer-events:none; }
+.pb-action-designer-action > span { position:absolute; inset:0; display:none; background:#FF5A36; pointer-events:none; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; -webkit-mask-size:contain; mask-size:contain; }
+.pb-action-designer-action.tint img { opacity:0; }
+.pb-action-designer-action.tint > span { display:block; }
+.pb-action-designer-handle { position:absolute; border:0; cursor:pointer; }
+.pb-action-designer-handle.resize { right:-8px; bottom:-8px; width:18px; height:18px; border-radius:50%; background:#FF5A36; }
+.pb-action-designer-handle.rotate { left:50%; bottom:-38px; transform:translateX(-50%); width:30px; height:30px; border-radius:50%; border:1px solid rgba(246,241,231,.28); background:#221F1A; color:#FF5A36; font:800 15px/1 "Space Grotesk",sans-serif; }
 
 /* Splash im mobilen Safari: echte Scrollseite statt App-Vollbild-Pressung. */
 @media (max-width: 560px) {
@@ -14539,7 +14609,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   .pb-splash-top { margin-bottom: clamp(72px, 11vh, 104px) !important; }
   .pb-splash-action {
-    margin:-40px auto 34px !important;
+    margin:0 !important;
   }
   .pb-splash-action-art {
     width:min(170px, 48vw) !important;
@@ -14619,7 +14689,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 @media (max-width: 380px) {
   .pb-splash > .pb-splash-inner { padding-left: 22px !important; padding-right: 22px !important; }
   .pb-splash-top { margin-bottom: 60px !important; }
-  .pb-splash-action { margin:-28px auto 30px !important; }
+  .pb-splash-action { margin:0 !important; }
   .pb-splash-cta { margin-top: 52px !important; }
   .pb-splash-duo { margin-top: 34px !important; }
   #pbSplashSponsor .pbsp-duo { gap: 10px !important; }
@@ -14644,7 +14714,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   .pb-splash-top { margin-bottom: 54px !important; }
   .pb-splash-action {
-    margin:-22px auto 28px !important;
+    margin:0 !important;
   }
   .pb-splash-action-art {
     width:min(170px, 36vw) !important;
@@ -15202,6 +15272,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var color=window.pbSplashActionHexColor(cfg.splash_action_tint_color || cfg.splash_action_image_tint, '#FF5A36');
     var scale=window.pbClampActionNumber(cfg.splash_action_scale_pct, 100, 50, 220) / 100;
     var rotation=window.pbClampActionNumber(cfg.splash_action_rotation_deg, 0, -180, 180);
+    var x=window.pbClampActionNumber(cfg.splash_action_x_pct, 50, 8, 92);
+    var y=window.pbClampActionNumber(cfg.splash_action_y_pct, 22, 8, 60);
+    var sp=document.getElementById('pbSplashAction');
+    if(sp){ sp.style.left=x+'%'; sp.style.top=y+'%'; }
     if(art){
       art.dataset.tint = enabled ? 'custom' : 'original';
       art.style.setProperty('--pb-action-scale', scale);
@@ -15236,7 +15310,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   window.loadSplash = async function(){
     try{
       if(typeof sb==='undefined' || !sb) return;
-      var splashFields='splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,splash_action_image_url,splash_action_image_tint,splash_action_tint_enabled,splash_action_tint_color,splash_action_scale_pct,splash_action_rotation_deg,earlybird_end';
+      var splashFields='splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,splash_action_image_url,splash_action_image_tint,splash_action_tint_enabled,splash_action_tint_color,splash_action_scale_pct,splash_action_rotation_deg,splash_action_x_pct,splash_action_y_pct,earlybird_end';
       var r = await sb.from('app_flags').select(splashFields).maybeSingle();
       if(r.error){
         r = await sb.from('app_flags').select('splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,earlybird_end').maybeSingle();
@@ -15309,6 +15383,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(tintHex) tintHex.value = color;
     setv('spActionScale', d.splash_action_scale_pct || 100);
     setv('spActionRotation', d.splash_action_rotation_deg || 0);
+    setv('spActionX', d.splash_action_x_pct || 50);
+    setv('spActionY', d.splash_action_y_pct || 22);
     if(typeof window.previewSplashActionImage==='function') window.previewSplashActionImage();
     window.setSublineVisible(d.splash_subline_visible!==false);
   };
@@ -15340,6 +15416,137 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
     }catch(e){}
   };
+  window.__splashDesigner = {x:50,y:22,scale:100,rotation:0,drag:null};
+  window.splashDesignerCurrentUrl = function(){
+    var fileEl=document.getElementById('spActionImageFile');
+    var urlEl=document.getElementById('spActionImageUrl');
+    return (fileEl && fileEl.files && fileEl.files[0]) ? URL.createObjectURL(fileEl.files[0]) : (urlEl && urlEl.value || '');
+  };
+  window.paintSplashDesigner = function(){
+    var st=window.__splashDesigner;
+    var action=document.getElementById('pbActionDesignerAction');
+    var img=document.getElementById('pbActionDesignerImg');
+    var tint=document.getElementById('pbActionDesignerTint');
+    var on=document.getElementById('pbDesignTintEnabled');
+    var hex=document.getElementById('pbDesignTintHex');
+    var url=window.splashDesignerCurrentUrl();
+    if(img) img.src=url;
+    if(action){
+      action.style.left=st.x+'%';
+      action.style.top=st.y+'%';
+      action.style.width=(190*(st.scale/100))+'px';
+      action.style.height=(68*(st.scale/100))+'px';
+      action.style.transform='translate(-50%,-50%) rotate('+st.rotation+'deg)';
+      action.classList.toggle('tint', !!(on&&on.checked));
+    }
+    if(tint){
+      var safe=url ? 'url("'+url.replace(/"/g,'%22').replace(/'/g,'%27')+'")' : '';
+      tint.style.backgroundColor=window.pbSplashActionHexColor(hex&&hex.value, '#FF5A36');
+      tint.style.webkitMaskImage=safe;
+      tint.style.maskImage=safe;
+    }
+  };
+  window.openSplashActionDesigner = function(){
+    var url=window.splashDesignerCurrentUrl();
+    if(!url){ alert('Bitte zuerst ein Aktions-PNG auswählen oder eine PNG-URL eintragen.'); return; }
+    var g=function(id){ var el=document.getElementById(id); return el?el.value:''; };
+    window.__splashDesigner={
+      x:window.pbClampActionNumber(g('spActionX'),50,8,92),
+      y:window.pbClampActionNumber(g('spActionY'),22,8,60),
+      scale:window.pbClampActionNumber(g('spActionScale'),100,50,220),
+      rotation:window.pbClampActionNumber(g('spActionRotation'),0,-180,180),
+      drag:null
+    };
+    var on=document.getElementById('pbDesignTintEnabled'), srcOn=document.getElementById('spActionTintEnabled');
+    var color=document.getElementById('pbDesignTintColor'), srcColor=document.getElementById('spActionTintColor');
+    var hex=document.getElementById('pbDesignTintHex'), srcHex=document.getElementById('spActionTintHex');
+    if(on&&srcOn) on.checked=srcOn.checked;
+    if(color&&srcColor) color.value=srcColor.value;
+    if(hex&&srcHex) hex.value=srcHex.value;
+    document.getElementById('pbActionDesigner')?.classList.add('open');
+    document.getElementById('pbActionDesigner')?.setAttribute('aria-hidden','false');
+    window.paintSplashDesigner();
+  };
+  window.closeSplashActionDesigner = function(){
+    document.getElementById('pbActionDesigner')?.classList.remove('open');
+    document.getElementById('pbActionDesigner')?.setAttribute('aria-hidden','true');
+  };
+  window.applySplashActionDesigner = function(){
+    var st=window.__splashDesigner;
+    var setv=function(id,v){ var el=document.getElementById(id); if(el) el.value=v; };
+    setv('spActionX', Math.round(st.x*100)/100);
+    setv('spActionY', Math.round(st.y*100)/100);
+    setv('spActionScale', Math.round(st.scale));
+    setv('spActionRotation', Math.round(st.rotation));
+    var on=document.getElementById('pbDesignTintEnabled'), srcOn=document.getElementById('spActionTintEnabled');
+    var color=document.getElementById('pbDesignTintColor'), srcColor=document.getElementById('spActionTintColor');
+    var hex=document.getElementById('pbDesignTintHex'), srcHex=document.getElementById('spActionTintHex');
+    if(srcOn&&on) srcOn.checked=on.checked;
+    if(srcColor&&color) srcColor.value=color.value;
+    if(srcHex&&hex) srcHex.value=hex.value;
+    window.previewSplashActionImage();
+    window.closeSplashActionDesigner();
+  };
+  window.syncSplashDesignerFromControls = function(){ window.paintSplashDesigner(); };
+  window.syncSplashDesignerColorHex = function(){
+    var color=document.getElementById('pbDesignTintColor'), hex=document.getElementById('pbDesignTintHex');
+    if(color&&hex) hex.value=window.pbSplashActionHexColor(color.value,'#FF5A36');
+    window.paintSplashDesigner();
+  };
+  window.syncSplashDesignerHexColor = function(){
+    var color=document.getElementById('pbDesignTintColor'), hex=document.getElementById('pbDesignTintHex');
+    var clean=window.pbSplashActionHexColor(hex&&hex.value,'');
+    if(color&&clean) color.value=clean;
+    window.paintSplashDesigner();
+  };
+  window.pickSplashDesignerTint = async function(){
+    if(!window.EyeDropper){ alert('Pipette nur in Chrome/Edge verfügbar.'); return; }
+    try{
+      var res=await new EyeDropper().open();
+      if(res&&res.sRGBHex){
+        var color=document.getElementById('pbDesignTintColor'), hex=document.getElementById('pbDesignTintHex'), on=document.getElementById('pbDesignTintEnabled');
+        if(color) color.value=res.sRGBHex;
+        if(hex) hex.value=res.sRGBHex;
+        if(on) on.checked=true;
+        window.paintSplashDesigner();
+      }
+    }catch(e){}
+  };
+  window.initSplashActionDesigner = function(){
+    var action=document.getElementById('pbActionDesignerAction');
+    var stage=document.getElementById('pbActionDesignerStage');
+    if(!action||!stage||action.dataset.ready) return;
+    action.dataset.ready='1';
+    action.addEventListener('pointerdown', function(e){
+      var st=window.__splashDesigner;
+      var rect=(action.parentElement || stage).getBoundingClientRect();
+      var type=e.target.classList.contains('resize')?'resize':(e.target.classList.contains('rotate')?'rotate':'move');
+      st.drag={type:type,x:e.clientX,y:e.clientY,startX:st.x,startY:st.y,startScale:st.scale,startRot:st.rotation,rect:rect};
+      var ar=action.getBoundingClientRect();
+      st.drag.cx=ar.left+ar.width/2; st.drag.cy=ar.top+ar.height/2;
+      st.drag.startAngle=Math.atan2(e.clientY-st.drag.cy,e.clientX-st.drag.cx)*180/Math.PI;
+      action.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    action.addEventListener('pointermove', function(e){
+      var st=window.__splashDesigner, d=st.drag;
+      if(!d) return;
+      if(d.type==='move'){
+        st.x=window.pbClampActionNumber(d.startX + ((e.clientX-d.x)/d.rect.width*100),50,8,92);
+        st.y=window.pbClampActionNumber(d.startY + ((e.clientY-d.y)/d.rect.height*100),22,8,60);
+      }else if(d.type==='resize'){
+        var delta=(e.clientX-d.x)+(e.clientY-d.y);
+        st.scale=window.pbClampActionNumber(d.startScale + delta*.6,100,50,220);
+      }else if(d.type==='rotate'){
+        var angle=Math.atan2(e.clientY-d.cy,e.clientX-d.cx)*180/Math.PI;
+        st.rotation=window.pbClampActionNumber(d.startRot + angle - d.startAngle,0,-180,180);
+      }
+      window.paintSplashDesigner();
+    });
+    action.addEventListener('pointerup', function(){ window.__splashDesigner.drag=null; });
+  };
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', window.initSplashActionDesigner);
+  else window.initSplashActionDesigner();
   window.renderSplashActionImagePreview = function(url, enabled, color, scalePct, rotationDeg){
     var box=document.getElementById('spActionImagePreview');
     if(!box) return;
@@ -15392,7 +15599,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         p_action_tint_enabled: !!(document.getElementById('spActionTintEnabled') && document.getElementById('spActionTintEnabled').checked),
         p_action_tint_color: window.pbSplashActionHexColor(g('spActionTintHex'), '#FF5A36'),
         p_action_scale_pct: window.pbClampActionNumber(g('spActionScale'), 100, 50, 220),
-        p_action_rotation_deg: window.pbClampActionNumber(g('spActionRotation'), 0, -180, 180)
+        p_action_rotation_deg: window.pbClampActionNumber(g('spActionRotation'), 0, -180, 180),
+        p_action_x_pct: window.pbClampActionNumber(g('spActionX'), 50, 8, 92),
+        p_action_y_pct: window.pbClampActionNumber(g('spActionY'), 22, 8, 60)
       };
       var r=await sb.rpc('admin_set_splash', payload);
       if(r.error && !actionImageUrl){
@@ -15401,7 +15610,19 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         delete payload.p_action_tint_color;
         delete payload.p_action_scale_pct;
         delete payload.p_action_rotation_deg;
+        delete payload.p_action_x_pct;
+        delete payload.p_action_y_pct;
         r=await sb.rpc('admin_set_splash', payload);
+      }
+      if(r.error){
+        var compat={...payload, p_action_image_tint:(payload.p_action_tint_enabled ? 'coral' : 'original')};
+        delete compat.p_action_tint_enabled;
+        delete compat.p_action_tint_color;
+        delete compat.p_action_scale_pct;
+        delete compat.p_action_rotation_deg;
+        delete compat.p_action_x_pct;
+        delete compat.p_action_y_pct;
+        r=await sb.rpc('admin_set_splash', compat);
       }
       if(r.error) throw r.error;
       var urlEl=document.getElementById('spActionImageUrl');
@@ -15409,7 +15630,13 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(actionImageFile) actionImageFile.value = '';
       if(typeof showToast==='function') showToast('Splash-Texte gespeichert.');
       if(typeof loadSplash==='function') await loadSplash();
-    }catch(e){ alert('Speichern fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
+    }catch(e){
+      var msg = e && e.message ? e.message : 'Unbekannter Fehler';
+      if(/admin_set_splash|schema cache|Could not find the function/i.test(msg)){
+        msg = 'Die Datenbank kennt die neue Splash-Aktions-Funktion noch nicht. Bitte die aktualisierte Datei 79_splash_action_png.sql in Supabase ausführen und die App danach neu laden.';
+      }
+      alert('Speichern fehlgeschlagen: ' + msg);
+    }
   };
 
   /* Editierbare Texte der großen „Jahresabo sichern"-Kachel (#earlybirdBanner)
