@@ -4525,7 +4525,7 @@ main {
             </div>
             <!-- Aktionslogo: Box links, Label+Input rechts -->
             <div style="display:flex;gap:12px;align-items:flex-end;">
-              <div id="spActionLogoPreview" style="width:180px;height:81px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;border:1.5px solid #E2DACB;border-radius:8px;overflow:hidden;"><span style="font:700 9px Manrope,sans-serif;color:#A59D92;">nicht gesetzt</span></div>
+              <div id="spActionLogoPreview" style="width:180px;height:81px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;border:1.5px solid #E2DACB;border-radius:8px;overflow:hidden;position:relative;"><span style="font:700 9px Manrope,sans-serif;color:#A59D92;">nicht gesetzt</span></div>
               <div style="flex:1;">
                 <div style="font:700 10px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Aktionslogo</div>
                 <input id="spActionFile" type="file" accept="image/*" onchange="sponsorPreviewActionFile()" style="width:100%;font:500 12px 'Manrope',sans-serif;color:#1C1A17;">
@@ -9358,8 +9358,10 @@ async function loadSponsorWeights() {
 function renderLogoPreview(url, elementId) {
   const box = document.getElementById(elementId);
   if (!box) return;
+  const isAction = elementId === 'spActionLogoPreview';
   box.innerHTML = url
-    ? `<img src="${url}" style="max-height:75px;max-width:170px;width:auto;height:auto;object-fit:contain;display:block;margin:auto;">`
+    ? `<img src="${esc(url)}" style="max-height:75px;max-width:170px;width:auto;height:auto;object-fit:contain;display:block;margin:auto;">
+       ${isAction ? '<button type="button" onclick="clearSponsorActionLogo(event)" title="Aktionslogo löschen" style="position:absolute;top:5px;right:5px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(28,26,23,.86);color:#fff;cursor:pointer;font:700 14px/1 Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:0;">×</button>' : ''}`
     : '<span style="font:700 9px Manrope,sans-serif;color:#A59D92;">nicht gesetzt</span>';
 }
 
@@ -9373,6 +9375,19 @@ function sponsorPreviewActionFile() {
   const f = document.getElementById('spActionFile').files[0];
   const actionUrl = f ? URL.createObjectURL(f) : (document.getElementById('spActionLogoUrl').value || '');
   renderLogoPreview(actionUrl, 'spActionLogoPreview');
+}
+
+function clearSponsorActionLogo(event) {
+  event?.preventDefault?.();
+  event?.stopPropagation?.();
+  const url = document.getElementById('spActionLogoUrl');
+  const file = document.getElementById('spActionFile');
+  const mode = document.getElementById('spActionLogoMode');
+  if (url) url.value = '';
+  if (file) file.value = '';
+  if (mode) mode.value = 'off';
+  renderLogoPreview('', 'spActionLogoPreview');
+  if (typeof showToast === 'function') showToast('Aktionslogo entfernt. Bitte speichern, damit die Änderung live wird.');
 }
 
 async function uploadSponsorLogo(file, prefix) {
