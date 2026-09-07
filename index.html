@@ -803,6 +803,13 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 .info-mail-subs { display:grid; gap:8px; max-height:220px; overflow:auto; margin-top:10px; }
 .info-mail-sub { display:flex; align-items:center; justify-content:space-between; gap:8px; background:#fff; border:1px solid #E2DACB; border-radius:9px; padding:8px 10px; font-size:13px; color:#1C1A17; }
 .info-mail-sub button { border:0; background:transparent; color:#B8402C; cursor:pointer; font-size:18px; line-height:1; }
+.info-mail-drafts { display:grid; gap:8px; margin-top:10px; }
+.info-mail-draft { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; background:#fff; border:1px solid #E2DACB; border-radius:10px; padding:10px 12px; color:#1C1A17; }
+.info-mail-draft strong { display:block; font:800 13px "Space Grotesk","Arial Narrow",sans-serif; }
+.info-mail-draft span { display:block; margin-top:2px; font-size:12px; color:#7A7368; }
+.info-mail-draft-actions { display:flex; gap:6px; }
+.info-mail-draft-actions button { border:1px solid #E2DACB; border-radius:8px; background:#F6F1E7; color:#1C1A17; cursor:pointer; padding:7px 9px; font:800 12px "Space Grotesk","Arial Narrow",sans-serif; }
+.info-mail-draft-actions button.danger { color:#B8402C; }
 @media (max-width: 760px) {
   .info-mail-grid, .info-mail-targets { grid-template-columns:1fr; }
 }
@@ -5258,7 +5265,7 @@ body.bielstein-theme #tabPlay:not(.active) {
                 </label>
                 <label class="info-mail-target">
                   <input id="infoMailTargetSubscribers" type="checkbox">
-                  <span><strong>Alle Abonnenten</strong><span id="infoMailSubscribersCount">Abonnenten werden geladen …</span></span>
+                  <span><strong>Alle Abonnenten</strong><span id="infoMailSubscribersCount">Aktive Jahresabos werden geladen …</span></span>
                 </label>
               </div>
 
@@ -5289,6 +5296,8 @@ body.bielstein-theme #tabPlay:not(.active) {
 
               <div class="infos-actions">
                 <button id="infoMailPreviewBtn" type="button" class="infos-btn" onclick="renderInfoMailPreview()">Vorschau aktualisieren</button>
+                <button id="infoMailDraftBtn" type="button" class="infos-btn" onclick="saveInfoMailDraft()">Entwurf speichern</button>
+                <button type="button" class="infos-btn" onclick="newInfoMailDraft()">Neu</button>
                 <button id="infoMailTestBtn" type="button" class="infos-btn" onclick="sendInfoMail(true)">Test an mich</button>
                 <button id="infoMailSendBtn" type="button" class="infos-btn-primary" onclick="sendInfoMail(false)">Info-Mail senden</button>
                 <span id="infoMailStatus" class="infos-status"></span>
@@ -5296,15 +5305,10 @@ body.bielstein-theme #tabPlay:not(.active) {
             </div>
 
             <div class="admin-card">
-              <div class="admin-row" style="align-items:flex-start;">
-                <label class="admin-label" for="infoMailSubscribersInput">Abonnenten ergänzen</label>
-                <textarea id="infoMailSubscribersInput" class="admin-input" rows="4" placeholder="Eine oder mehrere E-Mail-Adressen, getrennt durch Komma, Semikolon oder Zeilenumbruch"></textarea>
-              </div>
-              <div class="infos-actions">
-                <button type="button" class="infos-btn-primary" onclick="saveInfoMailSubscribers()">Abonnenten speichern</button>
-                <span id="infoMailSubsStatus" class="infos-status"></span>
-              </div>
-              <div id="infoMailSubscribersList" class="info-mail-subs"></div>
+              <div class="admin-section-title" style="margin-bottom:12px;">Gespeicherte Entwürfe</div>
+              <input id="infoMailDraftId" type="hidden">
+              <div style="font-size:12px;color:#7A7368;line-height:1.5;">Bis zu fünf Info-Mails können vorbereitet, später geändert und erst dann versendet werden.</div>
+              <div id="infoMailDraftList" class="info-mail-drafts"></div>
             </div>
           </div>
 
@@ -9747,11 +9751,35 @@ function renderInfoMailSubscribers() {
   `).join('');
 }
 
+function renderInfoMailDrafts() {
+  const host = document.getElementById('infoMailDraftList');
+  if (!host) return;
+  const drafts = Array.isArray(window.__infoMailDrafts) ? window.__infoMailDrafts : [];
+  if (!drafts.length) {
+    host.innerHTML = '<div style="font-size:12px;color:#7A7368;">Noch keine Entwürfe gespeichert.</div>';
+    return;
+  }
+  host.innerHTML = drafts.map(d => {
+    const stamp = d.updated_at ? new Date(d.updated_at).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+    return `
+      <div class="info-mail-draft">
+        <div>
+          <strong>${esc(d.title || d.subject || 'Unbenannter Entwurf')}</strong>
+          <span>${stamp ? `zuletzt geändert ${esc(stamp)}` : 'gespeichert'} · ${d.target_accounts ? 'Accounts' : ''}${d.target_accounts && d.target_subscribers ? ' + ' : ''}${d.target_subscribers ? 'Abonnenten' : ''}</span>
+        </div>
+        <div class="info-mail-draft-actions">
+          <button type="button" onclick="loadInfoMailDraft('${esc(d.id).replace(/'/g,'&#39;')}')">Laden</button>
+          <button type="button" class="danger" onclick="deleteInfoMailDraft('${esc(d.id).replace(/'/g,'&#39;')}')">×</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
 function renderInfoMailCounts(counts = {}) {
   const acc = document.getElementById('infoMailAccountsCount');
   const sub = document.getElementById('infoMailSubscribersCount');
   if (acc) acc.textContent = `${Number(counts.accounts || 0)} zugelassene Accounts`;
-  if (sub) sub.textContent = `${Number(counts.subscribers || 0)} aktive Abonnenten`;
+  if (sub) sub.textContent = `${Number(counts.subscribers || 0)} aktive Jahresabo-Abonnenten`;
 }
 
 function renderInfoMailPreview() {
@@ -9776,9 +9804,11 @@ async function loadInfoMailState() {
     const data = await infoMailRpc('state');
     window.__infoMailAssets = data.assets || [];
     window.__infoMailSubscribers = data.subscribers || [];
+    window.__infoMailDrafts = data.drafts || [];
     renderInfoMailCounts(data.counts || {});
     renderInfoMailAssets();
     renderInfoMailSubscribers();
+    renderInfoMailDrafts();
     renderInfoMailPreview();
     infoMailStatus('');
   } catch (e) {
@@ -9794,6 +9824,81 @@ function initInfoMailsAdmin() {
     editor.addEventListener('paste', () => setTimeout(renderInfoMailPreview, 40));
   }
   loadInfoMailState();
+}
+
+function newInfoMailDraft() {
+  const draftId = document.getElementById('infoMailDraftId');
+  const subject = document.getElementById('infoMailSubject');
+  const image = document.getElementById('infoMailImageUrl');
+  const editor = document.getElementById('infoMailEditor');
+  const accounts = document.getElementById('infoMailTargetAccounts');
+  const subscribers = document.getElementById('infoMailTargetSubscribers');
+  if (draftId) draftId.value = '';
+  if (subject) subject.value = '';
+  if (image) image.value = '';
+  if (editor) editor.innerHTML = '';
+  if (accounts) accounts.checked = true;
+  if (subscribers) subscribers.checked = false;
+  renderInfoMailAssets();
+  renderInfoMailPreview();
+  infoMailStatus('Neuer Entwurf.');
+}
+
+function loadInfoMailDraft(id) {
+  const draft = (window.__infoMailDrafts || []).find(d => d.id === id);
+  if (!draft) return;
+  const draftId = document.getElementById('infoMailDraftId');
+  const subject = document.getElementById('infoMailSubject');
+  const image = document.getElementById('infoMailImageUrl');
+  const editor = document.getElementById('infoMailEditor');
+  const accounts = document.getElementById('infoMailTargetAccounts');
+  const subscribers = document.getElementById('infoMailTargetSubscribers');
+  if (draftId) draftId.value = draft.id;
+  if (subject) subject.value = draft.subject || '';
+  if (image) image.value = draft.teaser_image_url || '';
+  if (editor) editor.innerHTML = draft.body_html || '';
+  if (accounts) accounts.checked = draft.target_accounts !== false;
+  if (subscribers) subscribers.checked = draft.target_subscribers === true;
+  renderInfoMailAssets();
+  renderInfoMailPreview();
+  infoMailStatus('Entwurf geladen.');
+}
+
+async function saveInfoMailDraft() {
+  const subject = document.getElementById('infoMailSubject')?.value.trim() || '';
+  const bodyHtml = currentInfoMailHtml();
+  if (!subject) { infoMailStatus('Bitte einen Betreff eintragen.', false); return; }
+  if (!bodyHtml || !document.getElementById('infoMailEditor')?.textContent.trim()) { infoMailStatus('Bitte einen Mailtext eintragen.', false); return; }
+  infoMailStatus('Entwurf wird gespeichert …');
+  try {
+    const data = await infoMailRpc('save_draft', {
+      id: document.getElementById('infoMailDraftId')?.value || '',
+      title: subject,
+      subject,
+      body_html: bodyHtml,
+      teaser_image_url: document.getElementById('infoMailImageUrl')?.value || '',
+      target_accounts: !!document.getElementById('infoMailTargetAccounts')?.checked,
+      target_subscribers: !!document.getElementById('infoMailTargetSubscribers')?.checked,
+    });
+    const draftId = document.getElementById('infoMailDraftId');
+    if (draftId) draftId.value = data.draft?.id || '';
+    await loadInfoMailState();
+    infoMailStatus('Entwurf gespeichert.');
+  } catch (e) {
+    infoMailStatus(e.message || 'Entwurf konnte nicht gespeichert werden.', false);
+  }
+}
+
+async function deleteInfoMailDraft(id) {
+  if (!id || !confirm('Diesen Entwurf löschen?')) return;
+  try {
+    await infoMailRpc('delete_draft', { id });
+    if (document.getElementById('infoMailDraftId')?.value === id) newInfoMailDraft();
+    await loadInfoMailState();
+    infoMailStatus('Entwurf gelöscht.');
+  } catch (e) {
+    infoMailStatus(e.message || 'Entwurf konnte nicht gelöscht werden.', false);
+  }
 }
 
 async function uploadInfoMailImage(file) {
