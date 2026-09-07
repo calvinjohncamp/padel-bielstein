@@ -9576,6 +9576,7 @@ async function saveSponsor() {
   let   actionLogoUrl = document.getElementById('spActionLogoUrl').value || null;
   const file   = document.getElementById('spFile').files[0];
   const actionFile = document.getElementById('spActionFile').files[0];
+  const existingSponsor = id ? (window.__sponsorRows || []).find(s => s.id === id) : null;
   const actionLogoMode = document.getElementById('spActionLogoMode').value || 'off';
   const hasActionLogo = actionLogoMode !== 'off';
   const contactName  = document.getElementById('spContactName').value.trim();
@@ -9604,8 +9605,18 @@ async function saveSponsor() {
   const prev = btn.textContent;
   btn.disabled = true; btn.textContent = 'Speichert …';
   try {
-    if (file) logoUrl = await uploadSponsorLogo(file, 'logo');
-    if (actionFile) actionLogoUrl = await uploadSponsorLogo(actionFile, 'action-logo');
+    if (!file && !logoUrl && existingSponsor?.logo_url) {
+      logoUrl = existingSponsor.logo_url;
+      document.getElementById('spLogoUrl').value = logoUrl;
+    }
+    if (file) {
+      logoUrl = await uploadSponsorLogo(file, 'logo');
+      document.getElementById('spLogoUrl').value = logoUrl;
+    }
+    if (actionFile) {
+      actionLogoUrl = await uploadSponsorLogo(actionFile, 'action-logo');
+      document.getElementById('spActionLogoUrl').value = actionLogoUrl;
+    }
     const payload = {
       p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort,
       p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
