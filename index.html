@@ -9802,15 +9802,22 @@ async function uploadInfoMailImage(file) {
   try {
     if (!/^image\/(jpeg|png)$/.test(file.type || '')) throw new Error('Bitte nur JPG oder PNG hochladen.');
     if (file.size > 8 * 1024 * 1024) throw new Error('Das Bild ist zu groß. Bitte maximal 8 MB.');
-    const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g,'') || 'png';
-    const uid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2));
-    const path = `info-mail-${uid}.${ext}`;
-    const { error: upErr } = await sb.storage.from('sponsor-logos').upload(path, file, { upsert:true, cacheControl:'3600' });
-    if (upErr) throw upErr;
-    const imageUrl = sb.storage.from('sponsor-logos').getPublicUrl(path).data.publicUrl;
-    const saved = await infoMailRpc('save_asset', { image_url: imageUrl, storage_path: path, filename: file.name });
+    const localPreview = URL.createObjectURL(file);
+    selectInfoMailImage(localPreview);
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('Bild konnte nicht gelesen werden.'));
+      reader.readAsDataURL(file);
+    });
+    const saved = await infoMailRpc('upload_asset', {
+      filename: file.name,
+      mime_type: file.type,
+      data_url: dataUrl,
+    });
+    if (localPreview.startsWith('blob:')) URL.revokeObjectURL(localPreview);
     window.__infoMailAssets = [saved.asset, ...(window.__infoMailAssets || [])].filter(Boolean);
-    selectInfoMailImage(imageUrl);
+    selectInfoMailImage(saved.asset?.image_url || '');
     infoMailStatus('Bild gespeichert.');
   } catch (e) {
     infoMailStatus(e.message || 'Bild konnte nicht hochgeladen werden.', false);
