@@ -9266,20 +9266,20 @@ async function loadAdminSponsors() {
   box.innerHTML = Object.entries(byTier).flatMap(([tier, tierRows]) => {
     if (!tierRows.length) return [];
     return tierRows.map((s, idx) => {
+      const actionMode = s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
       // Firmenlogo (180×81px wie in Admin-Form)
       const mainLogo = s.logo_url
         ? `<img src="${esc(s.logo_url)}" alt="" style="max-height:75px;max-width:170px;width:auto;height:auto;object-fit:contain;display:block;margin:auto;">`
         : '<span style="color:#B8402C;font-size:0.75rem;text-align:center;">kein<br>Logo</span>';
-      // Aktionslogo (180×81px, oder leere Kachel)
-      const actionLogo = (s.action_logo_url && s.action_logo_mode && s.action_logo_mode !== 'off')
-        ? `<img src="${esc(s.action_logo_url)}" alt="" style="max-height:75px;max-width:170px;width:auto;height:auto;object-fit:contain;display:block;margin:auto;">`
-        : '';
+      // Aktionslogo in der Admin-Übersicht immer zeigen, wenn eines gespeichert ist.
+      const actionLogo = s.action_logo_url
+        ? `<img src="${esc(s.action_logo_url)}" alt="" style="max-height:75px;max-width:170px;width:auto;height:auto;object-fit:contain;display:block;margin:auto;${actionMode === 'off' ? 'opacity:.42;' : ''}">`
+        : '<span style="color:#A59D92;font-size:0.72rem;text-align:center;">kein<br>Aktionslogo</span>';
 
       const active = s.active
         ? '<span style="color:#1F8A5F;font-weight:800;">● aktiv</span>'
         : '<span style="color:#7A7368;font-weight:800;">○ inaktiv</span>';
-      const actionMode = s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
-      const actionLabel = actionMode === 'replace' ? 'Aktionslogo ueberall' : (actionMode === 'slideshow' ? 'Diashow' : (actionMode === 'hover' ? 'Hover-Aktion' : ''));
+      const actionLabel = actionMode === 'replace' ? 'Aktionslogo ueberall' : (actionMode === 'slideshow' ? 'Diashow' : (actionMode === 'hover' ? 'Hover-Aktion' : (s.action_logo_url ? 'Aktionslogo gespeichert, live aus' : '')));
       const action = (actionLabel && s.action_logo_url)
         ? `<span style="color:#FF5A36;font-weight:800;"> · ${actionLabel}</span>`
         : '';
