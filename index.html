@@ -5445,6 +5445,25 @@ async function authHeaders() {
   return { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 }
 
+function pbSponsorTierRank(tier) {
+  return tier === 'premium' ? 0 : (tier === 'partner' ? 1 : (tier === 'regional' ? 2 : 3));
+}
+
+function pbSponsorSortNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function pbCompareSponsors(a, b) {
+  const tierDiff = pbSponsorTierRank(a?.tier) - pbSponsorTierRank(b?.tier);
+  if (tierDiff) return tierDiff;
+  const orderDiff = pbSponsorSortNumber(a?.sort_order) - pbSponsorSortNumber(b?.sort_order);
+  if (orderDiff) return orderDiff;
+  const nameDiff = String(a?.name || '').localeCompare(String(b?.name || ''), 'de', { sensitivity:'base', numeric:true });
+  if (nameDiff) return nameDiff;
+  return String(a?.id || a?.logo_url || '').localeCompare(String(b?.id || b?.logo_url || ''), 'de', { sensitivity:'base', numeric:true });
+}
+
 // Fachliche Tabellen (Buchungen, Abos, Zahlungen, Wertkarten) referenzieren
 // public.users.id. Supabase Auth verwendet dagegen auth.users.id. Diese IDs
 // dürfen nicht verwechselt werden.
@@ -9232,7 +9251,7 @@ async function loadAdminSponsors() {
   try {
     const { data, error } = await sb.rpc('admin_list_sponsors');
     if (error) throw error;
-    rows = data || [];
+    rows = (data || []).slice().sort(pbCompareSponsors);
   } catch(e) {
     box.innerHTML = `<div style="color:#B8402C;padding:18px;">Sponsoren konnten nicht geladen werden: ${esc(e?.message || 'Unbekannter Fehler')}</div>`;
     return;
@@ -15718,19 +15737,18 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     };
     try{
       if(typeof sb==='undefined' || !sb){ host.innerHTML=''; return; }
-      var res=await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,has_action_logo,sort_order,website_url');
+      var res=await sb.from('sponsors_public').select('id,tier,name,logo_url,action_logo_url,action_logo_mode,has_action_logo,sort_order,website_url');
       if(res.error){
-        res=await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
+        res=await sb.from('sponsors_public').select('id,tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
       }
       if(res.error){
-        res=await sb.from('sponsors_public').select('tier,name,logo_url,sort_order,website_url');
+        res=await sb.from('sponsors_public').select('id,tier,name,logo_url,sort_order,website_url');
       }
       if(res.error) throw res.error;
-      var rows=res.data||[];
-      var by=function(a,b){ return (a.sort_order||0)-(b.sort_order||0); };
-      var prem=rows.filter(function(r){return r.tier==='premium';}).sort(by);
-      var part=rows.filter(function(r){return r.tier==='partner';}).sort(by);
-      var reg =rows.filter(function(r){return r.tier==='regional';}).sort(by);
+      var rows=(res.data||[]).slice().sort(pbCompareSponsors);
+      var prem=rows.filter(function(r){return r.tier==='premium';});
+      var part=rows.filter(function(r){return r.tier==='partner';});
+      var reg =rows.filter(function(r){return r.tier==='regional';});
       var h='<div class="pbp-board">'
         +'<header class="pbp-head"><img class="pbp-brand" src="'+BRAND+'" alt="Padel Bielstein">'
         +'<div class="pbp-rule"></div><div class="pbp-welcome">'
