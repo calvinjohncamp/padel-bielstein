@@ -2198,7 +2198,10 @@ main {
     .email-profile .balls img{width:16px;height:16px}
     .seat-index{width:34px;height:34px;border-radius:9px;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-    .invite-save-actions{display:grid;grid-template-columns:1fr 1.25fr;gap:10px;align-items:stretch}
+    .invite-save-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,1.25fr);gap:14px;align-items:stretch}
+    .invite-action-copy{display:flex;flex-direction:column;gap:12px}
+    .invite-action-copy .small-note{margin:0}
+    .invite-action-buttons{display:grid;gap:10px;align-content:start}
     .invite-mail-choice{margin-top:18px}
     .btn{border:0;border-radius:10px;padding:13px 16px;background:var(--ink);color:var(--cream);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px}
     .btn.secondary{background:var(--soft);color:var(--ink)}
@@ -3301,15 +3304,20 @@ main {
           ${groupEditorHTML()}
         &lt;/div&gt;
         &lt;div class=&quot;field invite-mail-choice&quot;&gt;
-          &lt;label&gt;Mail an neue Spieler&lt;/label&gt;
+          &lt;label&gt;Mail an Mitspieler&lt;/label&gt;
           ${segmentHTML(&quot;mailType&quot;, [
             { value:&quot;du_bist_dabei&quot;, label:&quot;Du bist dabei&quot; }, { value:&quot;lust_auf_padel&quot;, label:&quot;Lust auf Padel?&quot; }
           ], selectedMailType)}
         &lt;/div&gt;
         &lt;div class=&quot;actions invite-save-actions&quot;&gt;
-          &lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;saveMeetup&quot;&gt;Änderungen speichern&lt;/button&gt;
-          &lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot;&gt;Spieler informieren&lt;/button&gt;
-          &lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;sendReminder&quot;&gt;Erinnerungs-Mail schicken&lt;/button&gt;
+          &lt;div class=&quot;invite-action-copy&quot;&gt;
+            &lt;p class=&quot;small-note&quot;&gt;Mit &quot;Spieler informieren&quot; erhalten die von dir angegebenen Mitspieler eine E-Mail-Information, dass du sie fest eingeplant hast (&quot;Du bist dabei&quot;) oder dass du sie zum Spielen einlädst (&quot;Lust auf Padel?&quot;). Mit &quot;Erinnerungs-Mail&quot; kannst du kurz vor dem Match nochmal alle Beteiligten einnorden.&lt;/p&gt;
+            &lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;saveMeetup&quot;&gt;Änderungen speichern&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;invite-action-buttons&quot;&gt;
+            &lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot;&gt;Spieler informieren&lt;/button&gt;
+            &lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;sendReminder&quot;&gt;Erinnerungs-Mail schicken&lt;/button&gt;
+          &lt;/div&gt;
         &lt;/div&gt;
       &lt;/article&gt;`;
     }
