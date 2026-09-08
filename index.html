@@ -704,6 +704,7 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 .profile-form { text-align: left; margin-top: 4px; }
 .profile-form .form-group { margin-bottom: 14px; }
 .profile-form .form-label { color: #8C8B84; }
+.form-label-optional { color: #B8B0A2; font-weight: 700; letter-spacing: 0.04em; text-transform: none; }
 .profile-form .form-input { background: #fff; border: 1.5px solid #E7E0D5; color: #1C1A17; }
 .profile-form .form-input:focus { border-color: #FF5A36; }
 .profile-save-ok { font-size: 0.78rem; color: #FF5A36; margin-top: 10px; text-align: center; min-height: 1em; }
@@ -1344,8 +1345,8 @@ main {
         <input class="form-input" type="tel" id="regPhone" placeholder="z.B. 0170 1234567" autocomplete="tel">
         <div class="form-hint">Für Rückfragen bei Wetter/Zugangsproblemen</div>
       </div>
-      <!-- Geschlecht wird spaeter freiwillig im Profil gesetzt; bei Registrierung
-           bleibt es bewusst leer. Geburtsjahr wird nicht mehr erhoben. -->
+      <!-- Geschlecht und Geburtsjahr werden spaeter freiwillig im Profil gesetzt;
+           bei Registrierung bleibt beides bewusst leer. -->
       <div class="form-hint" style="margin-bottom:14px;line-height:1.5;">
         <strong>Mitglied der Tennisfreunde oder Partner?</strong><br>
         Du musst nichts angeben. Sobald du deine E-Mail-Adresse bestätigt hast,
@@ -1691,7 +1692,7 @@ main {
       </p>
       <h3>Welche Daten wir verarbeiten – und wozu</h3>
       <ul>
-        <li><strong>Benutzerkonto:</strong> Name, E-Mail-Adresse und Telefonnummer (für Rückfragen bei Wetter- oder Zugangsproblemen) sowie weitere Angaben aus der Registrierung. Ohne Konto ist keine Buchung möglich. Rechtsgrundlage: Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO).</li>
+        <li><strong>Benutzerkonto:</strong> Name, E-Mail-Adresse und Telefonnummer (für Rückfragen bei Wetter- oder Zugangsproblemen), freiwillige Profilangaben wie Geschlecht oder Geburtsjahr sowie weitere Angaben aus der Registrierung. Ohne Konto ist keine Buchung möglich. Rechtsgrundlage: Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO) bzw. bei freiwilligen Profilangaben deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO).</li>
         <li><strong>Buchungen, Abos, Guthaben:</strong> gebuchte Zeiten, Preise, Guthabenbewegungen und Wetterausfall-Meldungen – zur Vertragserfüllung und wegen gesetzlicher Aufbewahrungspflichten (Art. 6 Abs. 1 lit. b und c DSGVO).</li>
         <li><strong>Zahlungen:</strong> laufen über den Zahlungsdienstleister Stripe. Deine Kartendaten werden ausschließlich von Stripe erhoben und verarbeitet – wir selbst sehen und speichern keine Kartendaten.</li>
         <li><strong>Mitgliederrabatt:</strong> zur Gewährung des Rabatts gleichen wir deine bestätigte E-Mail-Adresse mit unserer Mitgliederliste ab (Art. 6 Abs. 1 lit. b DSGVO).</li>
@@ -11675,6 +11676,8 @@ function profileCardHTML() {
   const name = esc(currentProfile?.full_name);
   const email = esc(currentProfile?.email || currentUser?.email);
   const phone = esc(currentProfile?.phone);
+  const birthYearRaw = Number(currentProfile?.birth_year || 0);
+  const birthYear = birthYearRaw >= 1900 ? String(birthYearRaw) : '';
   const inits = profileInitials();
   const avatar = profileAvatarUrl();
   const infoAllowed = currentProfile?.info_mails_enabled !== false;
@@ -11723,6 +11726,11 @@ function profileCardHTML() {
       <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pfName" type="text" value="${name}"></div>
       <div class="form-group"><label class="form-label">E-Mail</label><input class="form-input" id="pfEmail" type="email" value="${email}"></div>
       <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
+      <div class="form-group">
+        <label class="form-label">Geburtsjahr <span class="form-label-optional">freiwillig</span></label>
+        <input class="form-input" id="pfBirthYear" type="number" inputmode="numeric" min="1900" max="${new Date().getFullYear()}" placeholder="z. B. 1985" value="${birthYear}">
+        <div class="form-hint">Erlaubt später gezieltere Einladungen nach Alter. Bleibt leer, wenn du das nicht angeben möchtest.</div>
+      </div>
       <div class="form-group"><label class="form-label">Geschlecht</label><div class="acct-gender-picker">${profileGenderOptionsHTML()}</div></div>
       <div class="form-group"><label class="form-label">Spielstärke</label><div class="acct-level-picker">${profileLevelOptionsHTML()}</div></div>
       <div class="form-group">
@@ -12875,12 +12883,20 @@ async function saveProfile() {
   const name  = document.getElementById('pfName').value.trim();
   const email = document.getElementById('pfEmail').value.trim().toLowerCase();
   const phone = document.getElementById('pfPhone').value.trim();
+  const birthYearValue = document.getElementById('pfBirthYear')?.value.trim() || '';
+  const birthYear = birthYearValue ? Number(birthYearValue) : null;
+  const currentYear = new Date().getFullYear();
   const playingLevel = selectedProfileLevel();
   const gender = selectedProfileGender() || null;
   const infoMailsEnabled = document.getElementById('pfInfoMails')?.checked !== false;
   const openInvitesEnabled = document.getElementById('pfOpenInvites')?.checked !== false;
   if (!name)  { msg.style.color = '#d64545'; msg.textContent = 'Bitte einen Namen angeben.'; return; }
   if (!email) { msg.style.color = '#d64545'; msg.textContent = 'Bitte eine E-Mail angeben.'; return; }
+  if (birthYear !== null && (!Number.isInteger(birthYear) || birthYear < 1900 || birthYear > currentYear)) {
+    msg.style.color = '#d64545';
+    msg.textContent = `Bitte ein vierstelliges Geburtsjahr zwischen 1900 und ${currentYear} eintragen oder das Feld leer lassen.`;
+    return;
+  }
   msg.style.color = ''; msg.textContent = 'Wird gespeichert …';
   btn.disabled = true; btn.textContent = 'Wird gespeichert …';
   try {
@@ -12904,6 +12920,7 @@ async function saveProfile() {
       full_name: name,
       phone: phone || null,
       email,
+      birth_year: birthYear,
       playing_level: playingLevel,
       gender,
       info_mails_enabled: infoMailsEnabled,
@@ -12913,17 +12930,17 @@ async function saveProfile() {
       .from('users')
       .update(updateProfile)
       .eq('auth_id', currentUser.id)
-      .select('auth_id,full_name,email,phone,playing_level,gender,avatar_url,info_mails_enabled,open_invites_enabled')
+      .select('auth_id,full_name,email,phone,birth_year,playing_level,gender,avatar_url,info_mails_enabled,open_invites_enabled')
       .maybeSingle();
 
-    if (profileErr && /(playing_level|gender|info_mails_enabled|open_invites_enabled)/i.test(profileErr.message || '')) {
+    if (profileErr && /(birth_year|playing_level|gender|info_mails_enabled|open_invites_enabled)/i.test(profileErr.message || '')) {
       const fallback = await sb
         .from('users')
         .update({ full_name: name, phone: phone || null, email })
         .eq('auth_id', currentUser.id)
         .select('auth_id,full_name,email,phone,avatar_url')
         .maybeSingle();
-      saved = fallback.data ? { ...fallback.data, playing_level: playingLevel, gender, info_mails_enabled: infoMailsEnabled, open_invites_enabled: openInvitesEnabled } : null;
+      saved = fallback.data ? { ...fallback.data, birth_year: birthYear, playing_level: playingLevel, gender, info_mails_enabled: infoMailsEnabled, open_invites_enabled: openInvitesEnabled } : null;
       profileErr = fallback.error;
       emailNote += ' – neue Profilfelder werden dauerhaft gespeichert, sobald die Datenbank-Erweiterung aktiv ist';
     }
@@ -12934,7 +12951,7 @@ async function saveProfile() {
     }
 
     // Nur den nachweislich von der Datenbank zurückgegebenen Stand übernehmen.
-    currentProfile = { ...(currentProfile || {}), ...saved, playing_level: playingLevel, gender, info_mails_enabled: infoMailsEnabled, open_invites_enabled: openInvitesEnabled };
+    currentProfile = { ...(currentProfile || {}), ...saved, birth_year: birthYear, playing_level: playingLevel, gender, info_mails_enabled: infoMailsEnabled, open_invites_enabled: openInvitesEnabled };
     localStorage.setItem('pb_playing_level', playingLevel);
     const nb = document.getElementById('userBarName'); if (nb) nb.textContent = name;
 
