@@ -2111,6 +2111,10 @@ main {
     .main-tab{flex:1 1 auto;min-width:max-content;border:0;border-radius:10px;background:transparent;color:var(--muted);padding:15px 13px;font-family:&quot;Space Grotesk&quot;,&quot;Arial Narrow&quot;,sans-serif;font-weight:800;font-size:15.5px;white-space:nowrap}
     .main-tab.active{background:var(--ink);color:var(--cream)}
     .section-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin:26px 0 14px}
+    .meet-title-row{display:inline-flex;align-items:flex-start;gap:12px}
+    .meet-info-star{width:68px;height:68px;margin-top:-11px;border:0;border-radius:50%;background:transparent;color:var(--coral);font-family:&quot;Space Grotesk&quot;,&quot;Arial Narrow&quot;,sans-serif;font-size:0;font-weight:900;line-height:1;display:inline-grid;place-items:center;cursor:pointer;transition:transform .15s,color .15s,background .15s}
+    .meet-info-star::before{content:&quot;*&quot;;display:block;font-size:68px;line-height:.72;transform:translateY(9px)}
+    .meet-info-star:hover,.meet-info-star:focus-visible{color:#E94722;background:rgba(255,90,54,.12);transform:scale(1.08);outline:0}
     .section-head h1,.section-head h2{margin:0;font-family:&quot;Space Grotesk&quot;,&quot;Arial Narrow&quot;,sans-serif;font-weight:800;letter-spacing:0}
     .section-head h1{font-size:clamp(34px,5vw,58px);line-height:.96}
     .section-head h2{font-size:clamp(25px,4vw,38px)}
@@ -2265,9 +2269,20 @@ main {
     .empty{padding:22px;border-radius:14px;background:var(--soft);color:var(--muted);text-align:center;font-weight:800}
     .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--cream);border-radius:999px;padding:12px 16px;box-shadow:0 10px 30px rgba(28,26,23,.2);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:min(92vw,760px);text-align:center;font-weight:800}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .meet-info-overlay{position:fixed;inset:0;z-index:80;display:none;align-items:flex-start;justify-content:center;padding:46px 18px 18px}
+    .meet-info-overlay.open{display:flex}
+    .meet-info-backdrop{position:absolute;inset:0;border:0;background:rgba(0,0,0,.76);backdrop-filter:blur(8px);cursor:pointer}
+    .meet-info-modal{position:relative;z-index:1;width:min(92vw,560px);max-height:min(82vh,680px);overflow:auto;display:flex;flex-direction:column;gap:14px;padding:18px;border:1px solid rgba(246,241,231,.16);border-radius:18px;background:var(--ink);box-shadow:0 28px 80px rgba(0,0,0,.46)}
+    .meet-info-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:999px;border:1px solid rgba(246,241,231,.18);background:rgba(246,241,231,.06);color:var(--cream);font-size:22px;line-height:1;cursor:pointer}
+    .meet-info-card{display:flex;width:100%;min-height:168px;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;padding:28px 24px;border:1px solid #3A352E;border-radius:14px;background:rgba(246,241,231,.04)}
+    .meet-info-kicker{font:800 1rem/1.28 &quot;Space Grotesk&quot;,&quot;Arial Narrow&quot;,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--coral);margin-bottom:12px;max-width:100%}
+    .meet-info-text{font:500 1.03rem/1.58 Manrope,Arial,sans-serif;color:#D5CEC1;max-width:490px;text-align:left}
+    .meet-info-text p{margin:0 0 14px}
+    .meet-info-text p:last-child{margin-bottom:0}
+    .meet-info-text strong{color:var(--cream);font-weight:800}
     [hidden]{display:none!important}
     @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
-    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}.email-list .email-row .email-profile{grid-column:2;justify-content:flex-start}.seat-index{width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.cta-large{font-size:16px}}
+    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}.email-list .email-row .email-profile{grid-column:2;justify-content:flex-start}.seat-index{width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
@@ -2289,7 +2304,10 @@ main {
 
     &lt;section class=&quot;section-head editor-section-head&quot;&gt;
       &lt;div&gt;
-        &lt;h1&gt;Dating 2.0&lt;/h1&gt;
+        &lt;div class=&quot;meet-title-row&quot;&gt;
+          &lt;h1&gt;Dating 2.0&lt;/h1&gt;
+          &lt;button class=&quot;meet-info-star&quot; type=&quot;button&quot; id=&quot;meetInfoOpen&quot; aria-label=&quot;Informationen zu Dating 2.0 öffnen&quot;&gt;*&lt;/button&gt;
+        &lt;/div&gt;
         &lt;p&gt;Mitspielerinnen und Mitspieler für gebuchte Termine finden und Einladungen annehmen.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/section&gt;
@@ -2362,6 +2380,21 @@ main {
     &lt;/section&gt;
   &lt;/main&gt;
 
+  &lt;div class=&quot;meet-info-overlay&quot; id=&quot;meetInfoOverlay&quot; aria-hidden=&quot;true&quot;&gt;
+    &lt;button class=&quot;meet-info-backdrop&quot; type=&quot;button&quot; id=&quot;meetInfoBackdrop&quot; aria-label=&quot;Information schliessen&quot;&gt;&lt;/button&gt;
+    &lt;article class=&quot;meet-info-modal&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot; aria-labelledby=&quot;meetInfoTitle&quot;&gt;
+      &lt;button class=&quot;meet-info-close&quot; type=&quot;button&quot; id=&quot;meetInfoClose&quot; aria-label=&quot;Information schliessen&quot;&gt;×&lt;/button&gt;
+      &lt;div class=&quot;meet-info-card&quot;&gt;
+        &lt;div class=&quot;meet-info-kicker&quot; id=&quot;meetInfoTitle&quot;&gt;Dating 2.0&lt;/div&gt;
+        &lt;div class=&quot;meet-info-text&quot;&gt;
+          &lt;p&gt;Hier lädst du dir bekannte Mitspieler zu den von dir gebuchten Terminen ein (&lt;strong&gt;Mitspieler&lt;/strong&gt; bzw. &lt;strong&gt;Meine Gruppe&lt;/strong&gt;) oder aber du findest ganz neue Mitspieler.&lt;/p&gt;
+          &lt;p&gt;Dafür gibt es die Funktion Einladung an &lt;strong&gt;Alle&lt;/strong&gt;. In diesem Fall werden keine Mails verschickt, sondern deine Einladung taucht an dieser Stelle in der App bei all denen auf, die zu deinen Vorgaben für das entsprechende Match passen.&lt;/p&gt;
+          &lt;p&gt;Möchtest du nur von dir bekannten Personen eingeladen werden, kannst du &lt;strong&gt;Einladungen von allen&lt;/strong&gt; jederzeit in deinem Account deaktivieren. Sobald sich 4 Personen gemeldet/eingebucht haben, wird die betreffende Buchung nicht mehr für weitere Personen angezeigt.&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/article&gt;
+  &lt;/div&gt;
+
   &lt;div class=&quot;toast&quot; id=&quot;toast&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
 
   &lt;script&gt;
@@ -2430,6 +2463,7 @@ main {
       selectedGroupId: groups[0].id,
       groupEditorId: null
     };
+    let systemOpenInvitesEnabled = true;
     const $ = (sel, root = document) =&gt; root.querySelector(sel);
     const $$ = (sel, root = document) =&gt; Array.from(root.querySelectorAll(sel));
     const mailOk = value =&gt; /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(value || &quot;&quot;).trim());
@@ -2523,6 +2557,31 @@ main {
     window.addEventListener(&quot;load&quot;, sendMeetHeight);
     window.addEventListener(&quot;resize&quot;, sendMeetHeight);
     if (&quot;ResizeObserver&quot; in window) new ResizeObserver(sendMeetHeight).observe(document.body);
+
+    function initMeetInfoModal() {
+      const overlay = $(&quot;#meetInfoOverlay&quot;);
+      const openBtn = $(&quot;#meetInfoOpen&quot;);
+      const closeBtn = $(&quot;#meetInfoClose&quot;);
+      const backdrop = $(&quot;#meetInfoBackdrop&quot;);
+      if (!overlay || !openBtn) return;
+      if (overlay.dataset.ready === &quot;1&quot;) return;
+      overlay.dataset.ready = &quot;1&quot;;
+      const open = () =&gt; {
+        overlay.classList.add(&quot;open&quot;);
+        overlay.setAttribute(&quot;aria-hidden&quot;, &quot;false&quot;);
+        sendMeetHeight();
+      };
+      const close = () =&gt; {
+        overlay.classList.remove(&quot;open&quot;);
+        overlay.setAttribute(&quot;aria-hidden&quot;, &quot;true&quot;);
+      };
+      openBtn.addEventListener(&quot;click&quot;, open);
+      if (closeBtn) closeBtn.addEventListener(&quot;click&quot;, close);
+      if (backdrop) backdrop.addEventListener(&quot;click&quot;, close);
+      document.addEventListener(&quot;keydown&quot;, event =&gt; {
+        if (event.key === &quot;Escape&quot; &amp;&amp; overlay.classList.contains(&quot;open&quot;)) close();
+      });
+    }
 
     function balls(n) {
       return Array.from({ length: n }, () =&gt; '&lt;img src=&quot;assets/icons/padel-ball-hd.png&quot; alt=&quot;&quot;&gt;').join(&quot;&quot;);
@@ -2715,6 +2774,7 @@ main {
           return true;
         }) : [];
         state.accepted = invites.filter(invite =&gt; invite.inviteStatus === &quot;accepted&quot;).map(invite =&gt; invite.id);
+        systemOpenInvitesEnabled = data.settings?.open_invites_enabled !== false;
       } catch (e) {
         console.warn(e);
       }
@@ -2731,7 +2791,7 @@ main {
             const dateISO = nextAbo ? nextAbo(row, today) : &quot;&quot;;
             if (dateISO) nextAbos.push(sourceFromAbo(row, dateISO));
           });
-          bookings = [...nextBookings, ...nextAbos].sort(sortByDate).slice(0, 20);
+          bookings = [...nextBookings, ...nextAbos].sort(sortByDate).slice(0, 10);
           if (bookings.length) {
             state.selectedType = &quot;booking&quot;;
             state.selectedId = bookings[0].id;
@@ -2754,7 +2814,7 @@ main {
       return index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
     }
     function renderPickLists() {
-      const sortedBookings = bookings.slice().sort(sortByDate);
+      const sortedBookings = bookings.slice().sort(sortByDate).slice(0, 10);
       $(&quot;#myBookings&quot;).innerHTML = sortedBookings.length ? sortedBookings.map((item, index) =&gt; {
         const active = state.selectedType === &quot;booking&quot; &amp;&amp; state.selectedId === item.id;
         const tone = index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
@@ -3104,7 +3164,12 @@ main {
       while (rows.length &lt; 4) rows.push({ email: &quot;&quot;, player: null, index: rows.length + 1 });
       const selectedLevels = existing?.levels || (existing?.level ? [existing.level] : [&quot;egal&quot;]);
       const gender = existing?.gender || &quot;egal&quot;;
-      const audience = existing?.audience || &quot;Mitspieler&quot;;
+      const audience = existing?.audience === &quot;Alle&quot; &amp;&amp; systemOpenInvitesEnabled === false ? &quot;Mitspieler&quot; : (existing?.audience || &quot;Mitspieler&quot;);
+      const audienceItems = [
+        { value:&quot;Mitspieler&quot;, label:&quot;Mitspieler&quot; },
+        { value:&quot;Meine Gruppe&quot;, label:&quot;Meine Gruppe&quot; },
+        ...(systemOpenInvitesEnabled === false ? [] : [{ value:&quot;Alle&quot;, label:&quot;Alle&quot; }])
+      ];
       const defaultMailType = audience === &quot;Mitspieler&quot; &amp;&amp; rows.filter(row =&gt; row.email).length &gt;= 4 ? &quot;du_bist_dabei&quot; : &quot;lust_auf_padel&quot;;
       const selectedMailType = existing?.mailType === &quot;Du bist dabei&quot; || existing?.mailType === &quot;du_bist_dabei&quot; ? &quot;du_bist_dabei&quot; : existing?.mailType === &quot;Lust auf Padel?&quot; || existing?.mailType === &quot;lust_auf_padel&quot; ? &quot;lust_auf_padel&quot; : defaultMailType;
       return `&lt;article class=&quot;create-card is-booking ${selectedToneClass()}&quot;&gt;
@@ -3139,9 +3204,8 @@ main {
           &lt;/div&gt;
           &lt;div class=&quot;field&quot;&gt;
             &lt;label&gt;Einladung an&lt;/label&gt;
-            ${segmentHTML(&quot;audience&quot;, [
-              { value:&quot;Mitspieler&quot;, label:&quot;Mitspieler&quot; }, { value:&quot;Meine Gruppe&quot;, label:&quot;Meine Gruppe&quot; }, { value:&quot;Alle&quot;, label:&quot;Alle&quot; }
-            ], audience)}
+            ${segmentHTML(&quot;audience&quot;, audienceItems, audience)}
+            ${systemOpenInvitesEnabled === false ? '&lt;p class=&quot;small-note&quot;&gt;Einladungen an Alle sind derzeit nicht aktiv.&lt;/p&gt;' : ''}
           &lt;/div&gt;
           &lt;div class=&quot;field&quot;&gt;
             &lt;label&gt;Meine Gruppen&lt;/label&gt;
@@ -3323,6 +3387,10 @@ main {
       }
       if (uniqueEmails(emails).length !== emails.length) {
         toast(&quot;Bitte jede E-Mail-Adresse nur einmal eintragen.&quot;);
+        return;
+      }
+      if (audience === &quot;Alle&quot; &amp;&amp; systemOpenInvitesEnabled === false) {
+        toast(&quot;Einladungen an Alle sind derzeit nicht aktiv.&quot;);
         return;
       }
       if (!emails.length &amp;&amp; audience === &quot;Mitspieler&quot;) {
@@ -3571,6 +3639,7 @@ main {
       renderEditor();
       renderStatus();
       applyBalls();
+      initMeetInfoModal();
       sendMeetHeight();
     }
     let refreshAttempts = 0;
@@ -3854,6 +3923,24 @@ main {
           </div>
           <div class="admin-ok"  id="fbOk"></div>
           <div class="admin-err" id="fbErr"></div>
+        </div>
+      </div>
+
+      <!-- Verabreden -->
+      <div class="admin-section">
+        <div class="admin-section-title">Verabreden</div>
+        <div class="admin-card">
+          <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
+            Master-Schalter für offene Einladungen an „Alle". Direkte Einladungen an Mitspieler
+            und Einladungen an „Meine Gruppe" bleiben davon unberührt.
+          </div>
+          <div class="admin-row" style="align-items:center;gap:16px;">
+            <span class="admin-label">Einladungen an Alle</span>
+            <div class="seg-toggle">
+              <button type="button" id="openInvitesOff" class="seg-btn" onclick="setOpenInvitesEnabled(false)">Aus</button>
+              <button type="button" id="openInvitesOn" class="seg-btn seg-active" onclick="setOpenInvitesEnabled(true)">An</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -10450,6 +10537,7 @@ async function loadAdminFreibad() {
   await loadClosureList();
   renderExceptionList();
   loadFreibadPricingAdmin();
+  if (typeof loadOpenInvitesEnabled === 'function') loadOpenInvitesEnabled();
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
 }
@@ -11587,6 +11675,7 @@ function profileCardHTML() {
   const inits = profileInitials();
   const avatar = profileAvatarUrl();
   const infoAllowed = currentProfile?.info_mails_enabled !== false;
+  const openInvitesAllowed = currentProfile?.open_invites_enabled !== false;
   // Mitgliedschaft wird serverseitig über die BESTÄTIGTE E-Mail-Adresse erkannt
   // (my_membership()). Reine Anzeige – der Nutzer kann hier nichts setzen.
   const srcs = Array.isArray(myMemberSources) ? myMemberSources : [];
@@ -11634,6 +11723,13 @@ function profileCardHTML() {
       <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
       <div class="form-group"><label class="form-label">Geschlecht</label><div class="acct-gender-picker">${profileGenderOptionsHTML()}</div></div>
       <div class="form-group"><label class="form-label">Spielstärke</label><div class="acct-level-picker">${profileLevelOptionsHTML()}</div></div>
+      <div class="form-group">
+        <label class="form-label">Einladungen</label>
+        <label class="acct-pref-row">
+          <input type="checkbox" id="pfOpenInvites" ${openInvitesAllowed ? 'checked' : ''}>
+          <span><strong>Einladungen von allen zulassen</strong><em>Wenn ausgeschaltet, siehst du nur direkte Einladungen oder Einladungen deiner Gruppen.</em></span>
+        </label>
+      </div>
       <div class="form-group">
         <label class="form-label">Profilbild</label>
         <div class="acct-avatar-field" data-avatar-dropzone ondragenter="profileAvatarDrag(event, true)" ondragover="profileAvatarDrag(event, true)" ondragleave="profileAvatarDrag(event, false)" ondrop="dropProfileAvatar(event)">
@@ -12796,6 +12892,7 @@ async function saveProfile() {
   const phone = document.getElementById('pfPhone').value.trim();
   const playingLevel = selectedProfileLevel();
   const gender = selectedProfileGender() || null;
+  const openInvitesEnabled = document.getElementById('pfOpenInvites')?.checked !== false;
   if (!name)  { msg.style.color = '#d64545'; msg.textContent = 'Bitte einen Namen angeben.'; return; }
   if (!email) { msg.style.color = '#d64545'; msg.textContent = 'Bitte eine E-Mail angeben.'; return; }
   msg.style.color = ''; msg.textContent = 'Wird gespeichert …';
@@ -12824,22 +12921,23 @@ async function saveProfile() {
       playing_level: playingLevel,
       gender,
       info_mails_enabled: currentProfile?.info_mails_enabled !== false,
+      open_invites_enabled: openInvitesEnabled,
     };
     let { data: saved, error: profileErr } = await sb
       .from('users')
       .update(updateProfile)
       .eq('auth_id', currentUser.id)
-      .select('auth_id,full_name,email,phone,playing_level,gender,avatar_url,info_mails_enabled')
+      .select('auth_id,full_name,email,phone,playing_level,gender,avatar_url,info_mails_enabled,open_invites_enabled')
       .maybeSingle();
 
-    if (profileErr && /(playing_level|gender|info_mails_enabled)/i.test(profileErr.message || '')) {
+    if (profileErr && /(playing_level|gender|info_mails_enabled|open_invites_enabled)/i.test(profileErr.message || '')) {
       const fallback = await sb
         .from('users')
         .update({ full_name: name, phone: phone || null, email })
         .eq('auth_id', currentUser.id)
         .select('auth_id,full_name,email,phone,avatar_url')
         .maybeSingle();
-      saved = fallback.data ? { ...fallback.data, playing_level: playingLevel, gender, info_mails_enabled: currentProfile?.info_mails_enabled !== false } : null;
+      saved = fallback.data ? { ...fallback.data, playing_level: playingLevel, gender, info_mails_enabled: currentProfile?.info_mails_enabled !== false, open_invites_enabled: openInvitesEnabled } : null;
       profileErr = fallback.error;
       emailNote += ' – neue Profilfelder werden dauerhaft gespeichert, sobald die Datenbank-Erweiterung aktiv ist';
     }
@@ -12850,7 +12948,7 @@ async function saveProfile() {
     }
 
     // Nur den nachweislich von der Datenbank zurückgegebenen Stand übernehmen.
-    currentProfile = { ...(currentProfile || {}), ...saved, playing_level: playingLevel, gender };
+    currentProfile = { ...(currentProfile || {}), ...saved, playing_level: playingLevel, gender, open_invites_enabled: openInvitesEnabled };
     localStorage.setItem('pb_playing_level', playingLevel);
     const nb = document.getElementById('userBarName'); if (nb) nb.textContent = name;
 
@@ -14604,6 +14702,20 @@ body.bielstein-theme .acct-gender-option.active .acct-gender-check {
   background: #1C1A17;
   color: #F6F1E7;
 }
+body.bielstein-theme .acct-pref-row {
+  display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px;
+  background: #FFFFFF; border: 1.5px solid #E2DACB; border-radius: 12px;
+  color: #1C1A17; cursor: pointer;
+}
+body.bielstein-theme .acct-pref-row input {
+  width: 17px; height: 17px; margin-top: 2px; accent-color: #FF5A36; flex: 0 0 auto;
+}
+body.bielstein-theme .acct-pref-row strong {
+  display: block; font: 800 13px "Space Grotesk","Arial Narrow",sans-serif;
+}
+body.bielstein-theme .acct-pref-row em {
+  display: block; margin-top: 3px; color: #7A7368; font-style: normal; font-size: 12px; line-height: 1.45;
+}
 body.bielstein-theme .acct-avatar-field {
   display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center;
   background: #FFFFFF; border: 1.5px solid #E2DACB; border-radius: 14px;
@@ -15849,6 +15961,37 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(r.error) throw r.error;
       window.applySponsorVisibility(on);
       if(typeof showToast==='function') showToast(on ? 'Partner-Anzeige ist aktiv.' : 'Partner-Anzeige komplett ausgeblendet.');
+    }catch(e){ alert('Umschalten fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
+  };
+
+  /* Verabreden: offene Einladungen an "Alle" global schaltbar.
+     Default bleibt AN; direkte Einladungen und Gruppen sind davon unberuehrt. */
+  window.__openInvitesEnabled = true;
+  window.fillOpenInvitesAdmin = function(){
+    var on = window.__openInvitesEnabled !== false;
+    var off=document.getElementById('openInvitesOff'), onb=document.getElementById('openInvitesOn');
+    if(off&&onb){ off.classList.toggle('seg-active', !on); onb.classList.toggle('seg-active', on); }
+  };
+  window.applyOpenInvitesEnabled = function(on){
+    window.__openInvitesEnabled = on !== false;
+    window.fillOpenInvitesAdmin();
+    if(typeof refreshVerabredungenFrame === 'function') refreshVerabredungenFrame();
+  };
+  window.loadOpenInvitesEnabled = async function(){
+    try{
+      if(typeof sb==='undefined' || !sb) return;
+      var r=await sb.from('app_flags').select('meetup_open_invites_enabled').maybeSingle();
+      if(r.error || !r.data) { window.applyOpenInvitesEnabled(true); return; }
+      window.applyOpenInvitesEnabled(r.data.meetup_open_invites_enabled !== false);
+    }catch(e){ window.applyOpenInvitesEnabled(true); }
+  };
+  window.setOpenInvitesEnabled = async function(on){
+    on=!!on;
+    try{
+      var r=await sb.rpc('admin_set_meetup_open_invites_enabled', { p_enabled: on });
+      if(r.error) throw r.error;
+      window.applyOpenInvitesEnabled(on);
+      if(typeof showToast==='function') showToast(on ? 'Einladungen an Alle sind aktiv.' : 'Einladungen an Alle sind deaktiviert.');
     }catch(e){ alert('Umschalten fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
   };
 
