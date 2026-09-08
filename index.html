@@ -2198,14 +2198,17 @@ main {
     .email-profile .balls img{width:16px;height:16px}
     .seat-index{width:34px;height:34px;border-radius:9px;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-    .invite-save-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,1.25fr);gap:14px;align-items:stretch}
-    .invite-action-copy{display:flex;flex-direction:column;gap:12px}
-    .invite-action-copy .small-note{margin:0}
+    .invite-save-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.95fr);gap:18px;align-items:start}
+    .invite-action-copy{display:block}
+    .invite-action-copy .small-note{margin:0;font-size:15px;line-height:1.52}
+    .invite-action-copy strong{color:var(--ink);font-weight:900}
     .invite-action-buttons{display:grid;gap:10px;align-content:start}
     .invite-mail-choice{margin-top:18px}
     .btn{border:0;border-radius:10px;padding:13px 16px;background:var(--ink);color:var(--cream);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px}
     .btn.secondary{background:var(--soft);color:var(--ink)}
+    .btn.beige{background:#EFE7D8;color:var(--ink)}
     .btn.coral{background:var(--coral);color:var(--white)}
+    .btn.gray{background:#D5D0C7;color:var(--ink)}
     .btn.done{background:var(--ink);color:var(--cream)}
     .btn:disabled{opacity:.62;cursor:default}
     .btn.done:disabled{opacity:1}
@@ -3247,8 +3250,8 @@ main {
         ? existing.players.map((player, index) =&gt; ({ email: player?.email || &quot;&quot;, player, index: index + 1 }))
         : [{ email: user.email, player: profileForEmail(user.email), index: 1 }, { email: &quot;&quot;, player: null, index: 2 }, { email: &quot;&quot;, player: null, index: 3 }, { email: &quot;&quot;, player: null, index: 4 }];
       while (rows.length &lt; 4) rows.push({ email: &quot;&quot;, player: null, index: rows.length + 1 });
-      const selectedLevels = existing?.levels || (existing?.level ? [existing.level] : [&quot;egal&quot;]);
-      const gender = existing?.gender || &quot;egal&quot;;
+      const selectedLevels = [&quot;egal&quot;];
+      const gender = &quot;egal&quot;;
       const ageFilter = ageFilterFromItem(existing);
       const audience = existing?.audience === &quot;Alle&quot; &amp;&amp; systemOpenInvitesEnabled === false ? &quot;Mitspieler&quot; : (existing?.audience || &quot;Mitspieler&quot;);
       const audienceItems = [
@@ -3311,12 +3314,12 @@ main {
         &lt;/div&gt;
         &lt;div class=&quot;actions invite-save-actions&quot;&gt;
           &lt;div class=&quot;invite-action-copy&quot;&gt;
-            &lt;p class=&quot;small-note&quot;&gt;Mit &quot;Spieler informieren&quot; erhalten die von dir angegebenen Mitspieler eine E-Mail-Information, dass du sie fest eingeplant hast (&quot;Du bist dabei&quot;) oder dass du sie zum Spielen einlädst (&quot;Lust auf Padel?&quot;). Mit &quot;Erinnerungs-Mail&quot; kannst du kurz vor dem Match nochmal alle Beteiligten einnorden.&lt;/p&gt;
-            &lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;saveMeetup&quot;&gt;Änderungen speichern&lt;/button&gt;
+            &lt;p class=&quot;small-note&quot;&gt;Mit &lt;strong&gt;Spieler informieren&lt;/strong&gt; erhalten die von dir angegebenen Mitspieler eine E-Mail-Information, dass du sie fest eingeplant hast (&lt;strong&gt;Du bist dabei&lt;/strong&gt;) oder dass du sie zum Spielen einlädst (&lt;strong&gt;Lust auf Padel?&lt;/strong&gt;). Mit &lt;strong&gt;Erinnerungs-Mail&lt;/strong&gt; kannst du kurz vor dem Match nochmal alle Beteiligten einnorden.&lt;/p&gt;
           &lt;/div&gt;
           &lt;div class=&quot;invite-action-buttons&quot;&gt;
+            &lt;button class=&quot;btn beige cta-large&quot; type=&quot;button&quot; id=&quot;saveMeetup&quot;&gt;Änderungen speichern&lt;/button&gt;
             &lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot;&gt;Spieler informieren&lt;/button&gt;
-            &lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;sendReminder&quot;&gt;Erinnerungs-Mail schicken&lt;/button&gt;
+            &lt;button class=&quot;btn gray cta-large&quot; type=&quot;button&quot; id=&quot;sendReminder&quot;&gt;Erinnerungs-Mail schicken&lt;/button&gt;
           &lt;/div&gt;
         &lt;/div&gt;
       &lt;/article&gt;`;
