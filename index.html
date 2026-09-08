@@ -2200,8 +2200,8 @@ main {
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
     .invite-save-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.95fr);gap:36px;align-items:start;margin-top:26px}
     .invite-action-copy{display:block}
-    .invite-action-copy .small-note{margin:0;font-size:15px;line-height:1.52}
-    .invite-action-copy strong{color:var(--ink);font-weight:900}
+    .invite-action-copy .small-note{max-width:455px;margin:0;font-size:15px;line-height:1.52}
+    .invite-action-copy strong{color:var(--ink);font-weight:900;white-space:nowrap}
     .invite-action-buttons{display:grid;gap:10px;align-content:start}
     .invite-mail-choice{margin-top:18px}
     .btn{border:0;border-radius:10px;padding:13px 16px;background:var(--ink);color:var(--cream);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px}
@@ -3260,7 +3260,8 @@ main {
         ...(systemOpenInvitesEnabled === false ? [] : [{ value:&quot;Alle&quot;, label:&quot;Alle&quot; }])
       ];
       const defaultMailType = audience === &quot;Mitspieler&quot; &amp;&amp; rows.filter(row =&gt; row.email).length &gt;= 4 ? &quot;du_bist_dabei&quot; : &quot;lust_auf_padel&quot;;
-      const selectedMailType = existing?.mailType === &quot;Du bist dabei&quot; || existing?.mailType === &quot;du_bist_dabei&quot; ? &quot;du_bist_dabei&quot; : existing?.mailType === &quot;Lust auf Padel?&quot; || existing?.mailType === &quot;lust_auf_padel&quot; ? &quot;lust_auf_padel&quot; : defaultMailType;
+      const rememberedMailType = existing?.mailType === &quot;Du bist dabei&quot; || existing?.mailType === &quot;du_bist_dabei&quot; ? &quot;du_bist_dabei&quot; : existing?.mailType === &quot;Lust auf Padel?&quot; || existing?.mailType === &quot;lust_auf_padel&quot; ? &quot;lust_auf_padel&quot; : defaultMailType;
+      const selectedMailType = audience === &quot;Mitspieler&quot; ? rememberedMailType : &quot;lust_auf_padel&quot;;
       return `&lt;article class=&quot;create-card is-booking ${selectedToneClass()}&quot;&gt;
         &lt;div class=&quot;badge&quot;&gt;Ich habe gebucht&lt;/div&gt;
         &lt;div class=&quot;create-head&quot;&gt;
@@ -3314,7 +3315,7 @@ main {
         &lt;/div&gt;
         &lt;div class=&quot;actions invite-save-actions&quot;&gt;
           &lt;div class=&quot;invite-action-copy&quot;&gt;
-            &lt;p class=&quot;small-note&quot;&gt;Mit &lt;strong&gt;Spieler informieren&lt;/strong&gt; erhalten die von dir angegebenen&lt;br&gt;Mitspieler eine E-Mail-Information, dass du sie fest eingeplant hast (&lt;strong&gt;Du bist dabei&lt;/strong&gt;) oder dass du sie zum Spielen einlädst (&lt;strong&gt;Lust auf Padel?&lt;/strong&gt;). Mit &lt;strong&gt;Erinnerungs-Mail&lt;/strong&gt; kannst du kurz vor dem Match nochmal alle Beteiligten einnorden.&lt;/p&gt;
+            &lt;p class=&quot;small-note&quot;&gt;Mit &lt;strong&gt;Spieler informieren&lt;/strong&gt; verschickst du die passende Mail: Bei festen Mitspielern heißt das &lt;strong&gt;Du bist dabei&lt;/strong&gt;, bei Gruppen oder offenen Einladungen &lt;strong&gt;Lust auf Padel?&lt;/strong&gt;. Mit &lt;strong&gt;Erinnerungs-Mail&lt;/strong&gt; kannst du kurz vor dem Match nochmal alle Beteiligten einnorden.&lt;/p&gt;
           &lt;/div&gt;
           &lt;div class=&quot;invite-action-buttons&quot;&gt;
             &lt;button class=&quot;btn beige cta-large&quot; type=&quot;button&quot; id=&quot;saveMeetup&quot;&gt;Änderungen speichern&lt;/button&gt;
@@ -3396,8 +3397,20 @@ main {
           }
           $$(&quot;.chip&quot;, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip === btn));
           if (seg.dataset.seg === &quot;ageMode&quot;) updateAgeRangeVisibility(seg.closest(&quot;.age-filter-row&quot;) || document);
+          if (seg.dataset.seg === &quot;audience&quot;) syncMailTypeForAudience(root);
         });
       });
+    }
+    function syncMailTypeForAudience(root = document) {
+      const mailSeg = $(&quot;[data-seg='mailType']&quot;, root);
+      if (!mailSeg) return;
+      const fixedPlayersOnly = selectedChip(&quot;audience&quot;, root) === &quot;Mitspieler&quot;;
+      const fixedChip = $(&quot;.chip[data-value='du_bist_dabei']&quot;, mailSeg);
+      const openChip = $(&quot;.chip[data-value='lust_auf_padel']&quot;, mailSeg);
+      if (fixedChip) fixedChip.hidden = !fixedPlayersOnly;
+      if (!fixedPlayersOnly &amp;&amp; openChip) {
+        $$(&quot;.chip&quot;, mailSeg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip === openChip));
+      }
     }
     function renderEditor() {
       const source = selectedSource();
@@ -3412,6 +3425,7 @@ main {
       $(&quot;#editorSubline&quot;).textContent = sourceLabel(source);
       $(&quot;#editor&quot;).innerHTML = state.selectedType === &quot;booking&quot; ? ownEditorHTML(source) : inviteEditorHTML(source);
       wireSegments($(&quot;#editor&quot;));
+      syncMailTypeForAudience($(&quot;#editor&quot;));
       const add = $(&quot;#addEmail&quot;);
       if (add) add.addEventListener(&quot;click&quot;, () =&gt; addEmailRow());
       const groupSelect = $(&quot;#groupSelect&quot;);
@@ -3483,7 +3497,7 @@ main {
       const audience = selectedChip(&quot;audience&quot;);
       const ageFilter = selectedAgeFilterFromEditor();
       if (!ageFilter) return;
-      const chosenMailType = forcedMailType || selectedChip(&quot;mailType&quot;) || &quot;lust_auf_padel&quot;;
+      const chosenMailType = forcedMailType || (audience === &quot;Mitspieler&quot; ? selectedChip(&quot;mailType&quot;) : &quot;lust_auf_padel&quot;) || &quot;lust_auf_padel&quot;;
       const selectedGroup = groups.find(group =&gt; group.id === state.selectedGroupId);
       const invalid = emails.filter(email =&gt; !mailOk(email));
       if (invalid.length) {
