@@ -2174,6 +2174,11 @@ main {
     .seg.multi .chip[data-value=&quot;egal&quot;].active{background:var(--ink);color:var(--cream)}
     .text-input{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink);padding:10px 12px}
     .text-input:focus{outline:0;border-color:var(--coral);box-shadow:0 0 0 3px rgba(255,90,54,.16)}
+    .age-filter-row{grid-column:1/-1}
+    .age-filter{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+    .age-range{display:none;grid-template-columns:88px 88px;gap:8px}
+    .age-range.open{display:grid}
+    .age-range .text-input{min-height:40px;text-align:center;font-weight:900}
     .email-panel{margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}
     .email-list{display:grid;gap:8px}
     .email-list .email-row{min-height:78px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.58);display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:12px 14px}
@@ -2286,7 +2291,7 @@ main {
     .meet-info-text strong{color:var(--cream);font-weight:800}
     [hidden]{display:none!important}
     @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
-    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}.email-list .email-row .email-profile{grid-column:2;justify-content:flex-start}.seat-index{width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
+    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}.email-list .email-row .email-profile{grid-column:2;justify-content:flex-start}.seat-index{width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
@@ -2712,6 +2717,8 @@ main {
         levels: Array.isArray(row.desired_levels) &amp;&amp; row.desired_levels.length ? row.desired_levels : [&quot;egal&quot;],
         level: Array.isArray(row.desired_levels) ? row.desired_levels.join(&quot;, &quot;) : &quot;egal&quot;,
         gender: row.desired_gender || &quot;egal&quot;,
+        ageMin: cleanAgeBound(row.desired_age_min),
+        ageMax: cleanAgeBound(row.desired_age_max),
         audience: row.audience === &quot;gruppe&quot; ? &quot;Meine Gruppe&quot; : row.audience === &quot;alle&quot; ? &quot;Alle&quot; : &quot;Mitspieler&quot;,
         groupId: row.group_id || &quot;&quot;,
         extraEmails: [],
@@ -2739,6 +2746,8 @@ main {
         inviteStatus: row.invite_status || &quot;invited&quot;,
         levels: Array.isArray(meetup.desired_levels) &amp;&amp; meetup.desired_levels.length ? meetup.desired_levels : [&quot;egal&quot;],
         gender: meetup.desired_gender || &quot;egal&quot;,
+        ageMin: cleanAgeBound(meetup.desired_age_min),
+        ageMax: cleanAgeBound(meetup.desired_age_max),
         players
       };
     }
@@ -2963,8 +2972,8 @@ main {
         &lt;span class=&quot;seat-index&quot;&gt;${index}&lt;/span&gt;
       &lt;/div&gt;`;
     }
-    function selectedChip(name) {
-      return $(`[data-seg=&quot;${name}&quot;] .chip.active`)?.dataset.value || &quot;&quot;;
+    function selectedChip(name, root = document) {
+      return $(`[data-seg=&quot;${name}&quot;] .chip.active`, root)?.dataset.value || &quot;&quot;;
     }
     function addEmailRow(value = &quot;&quot;) {
       const list = $(&quot;#emailList&quot;);
@@ -3159,6 +3168,75 @@ main {
         &lt;button class=&quot;chip ${activeValues.includes(item.value) ? &quot;active&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-value=&quot;${esc(item.value)}&quot;&gt;${esc(item.label)}&lt;/button&gt;
       `).join(&quot;&quot;)}&lt;/div&gt;`;
     }
+    function cleanAgeBound(value) {
+      if (value === null || value === undefined || value === &quot;&quot;) return null;
+      const number = Number(value);
+      return Number.isInteger(number) ? number : null;
+    }
+    function ageFilterFromBounds(minValue, maxValue) {
+      const min = cleanAgeBound(minValue);
+      const max = cleanAgeBound(maxValue);
+      if (min === 18 &amp;&amp; max === null) return { mode: &quot;18plus&quot;, min: 18, max: &quot;&quot; };
+      if (min === null &amp;&amp; max === 17) return { mode: &quot;u18&quot;, min: &quot;&quot;, max: 17 };
+      if (min !== null || max !== null) return { mode: &quot;range&quot;, min: min ?? &quot;&quot;, max: max ?? &quot;&quot; };
+      return { mode: &quot;egal&quot;, min: &quot;&quot;, max: &quot;&quot; };
+    }
+    function ageFilterFromItem(item) {
+      return ageFilterFromBounds(item?.desired_age_min ?? item?.ageMin, item?.desired_age_max ?? item?.ageMax);
+    }
+    function ageFilterHTML(ageFilter) {
+      const filter = ageFilter || { mode: &quot;egal&quot;, min: &quot;&quot;, max: &quot;&quot; };
+      return `&lt;div class=&quot;age-filter&quot;&gt;
+        ${segmentHTML(&quot;ageMode&quot;, [
+          { value:&quot;egal&quot;, label:&quot;egal&quot; }, { value:&quot;18plus&quot;, label:&quot;18+&quot; }, { value:&quot;u18&quot;, label:&quot;unter 18&quot; }, { value:&quot;range&quot;, label:&quot;von/bis&quot; }
+        ], filter.mode)}
+        &lt;div class=&quot;age-range ${filter.mode === &quot;range&quot; ? &quot;open&quot; : &quot;&quot;}&quot; id=&quot;ageRange&quot;&gt;
+          &lt;input class=&quot;text-input&quot; id=&quot;ageMin&quot; type=&quot;number&quot; inputmode=&quot;numeric&quot; min=&quot;0&quot; max=&quot;120&quot; placeholder=&quot;von&quot; value=&quot;${esc(filter.min)}&quot; ${filter.mode === &quot;range&quot; ? &quot;&quot; : &quot;disabled&quot;}&gt;
+          &lt;input class=&quot;text-input&quot; id=&quot;ageMax&quot; type=&quot;number&quot; inputmode=&quot;numeric&quot; min=&quot;0&quot; max=&quot;120&quot; placeholder=&quot;bis&quot; value=&quot;${esc(filter.max)}&quot; ${filter.mode === &quot;range&quot; ? &quot;&quot; : &quot;disabled&quot;}&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;`;
+    }
+    function updateAgeRangeVisibility(root = document) {
+      const range = $(&quot;#ageRange&quot;, root);
+      if (!range) return;
+      const isRange = selectedChip(&quot;ageMode&quot;, root) === &quot;range&quot;;
+      range.classList.toggle(&quot;open&quot;, isRange);
+      $$(&quot;input&quot;, range).forEach(input =&gt; { input.disabled = !isRange; });
+    }
+    function selectedAgeFilterFromEditor() {
+      const mode = selectedChip(&quot;ageMode&quot;) || &quot;egal&quot;;
+      if (mode === &quot;egal&quot;) return { min: null, max: null, mode };
+      if (mode === &quot;18plus&quot;) return { min: 18, max: null, mode };
+      if (mode === &quot;u18&quot;) return { min: null, max: 17, mode };
+      const minRaw = $(&quot;#ageMin&quot;)?.value.trim() || &quot;&quot;;
+      const maxRaw = $(&quot;#ageMax&quot;)?.value.trim() || &quot;&quot;;
+      const min = minRaw ? Number(minRaw) : null;
+      const max = maxRaw ? Number(maxRaw) : null;
+      if (min === null &amp;&amp; max === null) {
+        toast(&quot;Bitte Alter von/bis eintragen oder egal wählen.&quot;);
+        return null;
+      }
+      if ((min !== null &amp;&amp; (!Number.isInteger(min) || min &lt; 0 || min &gt; 120)) || (max !== null &amp;&amp; (!Number.isInteger(max) || max &lt; 0 || max &gt; 120))) {
+        toast(&quot;Bitte beim Alter Werte zwischen 0 und 120 eintragen.&quot;);
+        return null;
+      }
+      if (min !== null &amp;&amp; max !== null &amp;&amp; min &gt; max) {
+        toast(&quot;Beim Alter muss von kleiner oder gleich bis sein.&quot;);
+        return null;
+      }
+      return { min, max, mode };
+    }
+    function ageLabel(item) {
+      const filter = ageFilterFromItem(item);
+      if (filter.mode === &quot;18plus&quot;) return &quot;18+&quot;;
+      if (filter.mode === &quot;u18&quot;) return &quot;unter 18&quot;;
+      if (filter.mode === &quot;range&quot;) {
+        if (filter.min !== &quot;&quot; &amp;&amp; filter.max !== &quot;&quot;) return `${filter.min}-${filter.max}`;
+        if (filter.min !== &quot;&quot;) return `ab ${filter.min}`;
+        if (filter.max !== &quot;&quot;) return `bis ${filter.max}`;
+      }
+      return &quot;egal&quot;;
+    }
     function ownEditorHTML(item) {
       const existing = ownMatchFor(item.id);
       if (existing?.groupId) state.selectedGroupId = existing.groupId;
@@ -3168,6 +3246,7 @@ main {
       while (rows.length &lt; 4) rows.push({ email: &quot;&quot;, player: null, index: rows.length + 1 });
       const selectedLevels = existing?.levels || (existing?.level ? [existing.level] : [&quot;egal&quot;]);
       const gender = existing?.gender || &quot;egal&quot;;
+      const ageFilter = ageFilterFromItem(existing);
       const audience = existing?.audience === &quot;Alle&quot; &amp;&amp; systemOpenInvitesEnabled === false ? &quot;Mitspieler&quot; : (existing?.audience || &quot;Mitspieler&quot;);
       const audienceItems = [
         { value:&quot;Mitspieler&quot;, label:&quot;Mitspieler&quot; },
@@ -3215,6 +3294,10 @@ main {
             &lt;label&gt;Meine Gruppen&lt;/label&gt;
             ${groupToolsHTML()}
           &lt;/div&gt;
+          &lt;div class=&quot;field age-filter-row&quot;&gt;
+            &lt;label&gt;Alter&lt;/label&gt;
+            ${ageFilterHTML(ageFilter)}
+          &lt;/div&gt;
           ${groupEditorHTML()}
         &lt;/div&gt;
         &lt;div class=&quot;field invite-mail-choice&quot;&gt;
@@ -3253,6 +3336,10 @@ main {
           &lt;div class=&quot;field&quot;&gt;
             &lt;label&gt;Mitspieler&lt;/label&gt;
             &lt;div class=&quot;seg&quot;&gt;&lt;button class=&quot;chip active&quot; type=&quot;button&quot;&gt;${esc(displayGender(item.gender))}&lt;/button&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;field age-filter-row&quot;&gt;
+            &lt;label&gt;Alter&lt;/label&gt;
+            &lt;div class=&quot;seg&quot;&gt;&lt;button class=&quot;chip active&quot; type=&quot;button&quot;&gt;${esc(ageLabel(item))}&lt;/button&gt;&lt;/div&gt;
           &lt;/div&gt;
         &lt;/div&gt;
         &lt;div class=&quot;actions&quot;&gt;
@@ -3297,6 +3384,7 @@ main {
             return;
           }
           $$(&quot;.chip&quot;, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip === btn));
+          if (seg.dataset.seg === &quot;ageMode&quot;) updateAgeRangeVisibility(seg.closest(&quot;.age-filter-row&quot;) || document);
         });
       });
     }
@@ -3382,6 +3470,8 @@ main {
       const actionButton = sendEmails ? sendButton : saveButton;
       const emails = collectEmails();
       const audience = selectedChip(&quot;audience&quot;);
+      const ageFilter = selectedAgeFilterFromEditor();
+      if (!ageFilter) return;
       const chosenMailType = forcedMailType || selectedChip(&quot;mailType&quot;) || &quot;lust_auf_padel&quot;;
       const selectedGroup = groups.find(group =&gt; group.id === state.selectedGroupId);
       const invalid = emails.filter(email =&gt; !mailOk(email));
@@ -3419,6 +3509,8 @@ main {
             scheduled_date: item.dateISO,
             desired_levels: selectedLevelsFromEditor().filter(level =&gt; level !== &quot;egal&quot;),
             desired_gender: selectedChip(&quot;gender&quot;),
+            desired_age_min: ageFilter.min,
+            desired_age_max: ageFilter.max,
             audience: audience === &quot;Meine Gruppe&quot; ? &quot;gruppe&quot; : audience === &quot;Alle&quot; ? &quot;alle&quot; : &quot;mitspieler&quot;,
             group_id: audience === &quot;Meine Gruppe&quot; ? state.selectedGroupId : null,
             send_emails: sendEmails,
@@ -3499,6 +3591,8 @@ main {
         level: selectedLevelsFromEditor().join(&quot;, &quot;),
         levels: selectedLevelsFromEditor(),
         gender: selectedChip(&quot;gender&quot;),
+        ageMin: ageFilter.min,
+        ageMax: ageFilter.max,
         audience,
         groupId: audience === &quot;Meine Gruppe&quot; ? state.selectedGroupId : &quot;&quot;,
         players,
@@ -11729,7 +11823,7 @@ function profileCardHTML() {
       <div class="form-group">
         <label class="form-label">Geburtsjahr <span class="form-label-optional">freiwillig</span></label>
         <input class="form-input" id="pfBirthYear" type="number" inputmode="numeric" min="1900" max="${new Date().getFullYear()}" placeholder="z. B. 1985" value="${birthYear}">
-        <div class="form-hint">Erlaubt später gezieltere Einladungen nach Alter. Bleibt leer, wenn du das nicht angeben möchtest.</div>
+        <div class="form-hint">Erlaubt gezieltere Match-Einladungen nach Alter.</div>
       </div>
       <div class="form-group"><label class="form-label">Geschlecht</label><div class="acct-gender-picker">${profileGenderOptionsHTML()}</div></div>
       <div class="form-group"><label class="form-label">Spielstärke</label><div class="acct-level-picker">${profileLevelOptionsHTML()}</div></div>
