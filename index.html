@@ -4769,12 +4769,12 @@ main {
       <div class="admin-section">
         <div class="admin-section-title">Digitale Häufigkeit</div>
         <div style="font-size:0.78rem;color:#888;margin-bottom:12px;line-height:1.5;">
-          In App und Bestätigungsmails rotieren alle drei Stufen gemeinsam nach den hier eingestellten Gewichten.
+          Normale Rotation auf Unterseiten und in Bestätigungsmails. Premium hat zusätzlich die exklusive Splash-Sichtbarkeit.
         </div>
         <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
           <div>
             <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Premium-Gewicht</label>
-            <input id="spWPremium" type="number" min="1" value="15" style="width:110px;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+            <input id="spWPremium" type="number" min="1" value="3" style="width:110px;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
           </div>
           <div>
             <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Partner-Gewicht</label>
@@ -7455,9 +7455,9 @@ function ccDrawCover(ctx, img, x, y, w, h) {
   const dw = img.width * s, dh = img.height * s;
   ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
 }
-// Zwei Partner für die Karte: gemeinsame Rotation Premium / Partner / Regional
-// nach den Admin-Gewichten, stabil pro Buchung (per Hash). Wenn Premium
-// auftaucht, steht er links - wie in App und Mail.
+// Zwei Partner für die Karte: normale Rotation Premium / Partner / Regional
+// nach den Admin-Gewichten, stabil pro Buchung (per Hash). Premium hat
+// zusätzlich die Splash-Sonderfläche; hier läuft Premium wie Partner.
 function sponsorDisplayLogoUrl(s) {
   if (!s) return '';
   return (s.action_logo_mode === 'replace' && s.action_logo_url) ? s.action_logo_url : s.logo_url;
@@ -7480,12 +7480,12 @@ async function pickCardSponsors(seedStr) {
     const prem = rows.filter(r => r.tier === 'premium').sort(bySort);
     const part = rows.filter(r => r.tier === 'partner').sort(bySort);
     const reg  = rows.filter(r => r.tier === 'regional').sort(bySort);
-    let wM = 15, wP = 3, wR = 1;
+    let wM = 3, wP = 3, wR = 1;
     try {
       const cfg = await sb.from('app_settings')
         .select('app_weight_premium,app_weight_partner,app_weight_regional').eq('id', true).single();
       if (cfg && cfg.data) {
-        wM = Number(cfg.data.app_weight_premium) || 15;
+        wM = Number(cfg.data.app_weight_premium) || 3;
         wP = Number(cfg.data.app_weight_partner) || 3;
         wR = Number(cfg.data.app_weight_regional) || 1;
       }
@@ -9577,11 +9577,11 @@ async function loadSponsorWeights() {
       .select('app_weight_premium, app_weight_partner, app_weight_regional').eq('id', true).single();
     if (error) throw error;
     if (data) {
-      document.getElementById('spWPremium').value = data.app_weight_premium || 15;
+      document.getElementById('spWPremium').value = data.app_weight_premium || 3;
       document.getElementById('spWPartner').value  = data.app_weight_partner;
       document.getElementById('spWRegional').value = data.app_weight_regional;
     }
-  } catch(e) { /* Standardwerte 15 / 3 / 1 bleiben stehen */ }
+  } catch(e) { /* Standardwerte 3 / 3 / 1 bleiben stehen */ }
 }
 
 function renderLogoPreview(url, elementId) {
@@ -17245,12 +17245,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(prem.length) fillPremiumDuo('pbSplashSponsor', 'Präsentiert von unseren Premium-Partnern', prem);
 
       // Gewichtete Reihum-Liste nach den Admin-Werten.
-      var wM=15, wP=3, wR=1, playlist=[];
+      var wM=3, wP=3, wR=1, playlist=[];
       try{
         var cfg = await sb.from('app_settings')
           .select('app_weight_premium,app_weight_partner,app_weight_regional').eq('id', true).single();
         if(cfg && cfg.data){
-          wM = Number(cfg.data.app_weight_premium) || 15;
+          wM = Number(cfg.data.app_weight_premium) || 3;
           wP = Number(cfg.data.app_weight_partner) || 3;
           wR = Number(cfg.data.app_weight_regional) || 1;
         }
