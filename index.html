@@ -667,7 +667,7 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
    Konstante Höhe => beim Blättern springt nichts, man klickt an Ort und Stelle. ■■ */
 .card-pager { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 46px; margin-top: 12px; padding: 12px 4px 2px; border-top: 1px solid #E7E0D5; background: transparent; }
 .card-pager-label { display: none; }
-.pager-nav { display: flex; align-items: center; gap: 10px; }
+.pager-nav { display: flex; align-items: center; gap: 7px; min-width: 0; }
 .pager-action {
   border: 1px solid #D9CFBF; background: transparent; color: #7A7368;
   font-family: "Space Grotesk","Arial Narrow",sans-serif; font-weight: 600;
@@ -675,11 +675,12 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
   cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s;
 }
 .pager-action:hover { border-color: #FF5A36; color: #1C1A17; }
-.pager-dots { display: flex; align-items: center; gap: 7px; }
+.pager-dots { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 128px; overflow: hidden; }
 .pager-dot { width: 7px; height: 7px; padding: 0; border: none; border-radius: 999px; background: #D8CFBF; cursor: pointer; transition: width .22s ease, background .22s ease; }
 .pager-dot.active { width: 20px; background: #FF5A36; cursor: default; }
 .pager-arrow { width: 30px; height: 30px; padding: 0; border: none; background: transparent; color: #B8B0A2; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color .15s; }
 .pager-arrow svg { width: 18px; height: 18px; }
+.pager-arrow.pager-jump svg { width: 20px; height: 20px; }
 .pager-arrow:hover:not(:disabled) { color: #1C1A17; }
 .pager-arrow:disabled { opacity: .22; cursor: default; }
 
@@ -1402,9 +1403,11 @@ main {
     <div id="accountPageHost"></div>
     <div class="card-pager" id="cardPager" style="display:none;">
       <div class="pager-nav">
+        <button type="button" class="pager-arrow pager-jump" id="cardPagerFirst" onclick="goToCard(0)" aria-label="Ganz zum Anfang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline></svg></button>
         <button type="button" class="pager-arrow" id="cardPagerPrev" onclick="pageCard(-1)" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
         <div class="pager-dots" id="cardPagerDots"></div>
         <button type="button" class="pager-arrow" id="cardPagerNext" onclick="pageCard(1)" aria-label="Weiter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+        <button type="button" class="pager-arrow pager-jump" id="cardPagerLast" onclick="goToCard(accountPages.length - 1)" aria-label="Ganz zum Ende"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg></button>
       </div>
       <button type="button" class="pager-action" id="cardPagerAction" style="display:none;"></button>
     </div>
@@ -11712,7 +11715,6 @@ function profileCardHTML() {
          ${srcs.length ? '' : '<br><button type="button" class="acct-report-btn" onclick="reportMissingMembership()">Ich bin Mitglied, werde aber nicht erkannt →</button>'}
        </div>`;
   return `<div class="loyalty-card acct-card${isPartner ? ' acct-card-partner' : ''}">
-    <button type="button" class="acct-info-mail-toggle${infoAllowed ? ' on' : ''}" onclick="toggleInfoMails(event)" title="${infoAllowed ? 'Info-Mails abbestellen' : 'Info-Mails zulassen'}">${infoAllowed ? 'Info-Mails zulassen' : 'Info-Mails abbestellt'}</button>
     ${roundAvatarHTML('rw-badge acct-photo-badge', inits, avatar)}
     <div class="rw-tagline">${isPartner ? 'Dein Partner-Account' : 'Dein Account'}</div>
     ${headerVisual}
@@ -11723,6 +11725,13 @@ function profileCardHTML() {
       <div class="form-group"><label class="form-label">Handynummer</label><input class="form-input" id="pfPhone" type="tel" value="${phone}"></div>
       <div class="form-group"><label class="form-label">Geschlecht</label><div class="acct-gender-picker">${profileGenderOptionsHTML()}</div></div>
       <div class="form-group"><label class="form-label">Spielstärke</label><div class="acct-level-picker">${profileLevelOptionsHTML()}</div></div>
+      <div class="form-group">
+        <label class="form-label">Info-Mails</label>
+        <label class="acct-pref-row">
+          <input type="checkbox" id="pfInfoMails" ${infoAllowed ? 'checked' : ''}>
+          <span><strong>Info-Mails zulassen</strong><em>Hinweise der Anlage, z. B. Turniere, Clubmeisterschaften, Aktionen oder Platzsperrungen. Buchungs-, Zahlungs- und Terminbestätigungen bleiben davon unabhängig.</em></span>
+        </label>
+      </div>
       <div class="form-group">
         <label class="form-label">Einladungen</label>
         <label class="acct-pref-row">
@@ -12799,8 +12808,10 @@ function renderAccountPage(direction = 0) {
   dots.innerHTML = accountPages.map((_, i) =>
     `<button type="button" class="pager-dot${i === accountPageIndex ? ' active' : ''}" aria-label="Seite ${i + 1}" onclick="goToCard(${i})"></button>`
   ).join('');
+  document.getElementById('cardPagerFirst').disabled = accountPageIndex === 0;
   document.getElementById('cardPagerPrev').disabled = accountPageIndex === 0;
   document.getElementById('cardPagerNext').disabled = accountPageIndex === accountPages.length - 1;
+  document.getElementById('cardPagerLast').disabled = accountPageIndex === accountPages.length - 1;
 
   // Rechter Aktionsbutton: nur wo sinnvoll (Abo -> "Zum Abo", Titel/Daten -> "Abmelden").
   const action = document.getElementById('cardPagerAction');
@@ -12857,32 +12868,6 @@ function pageCard(dir) {
   }, 105);
 }
 
-async function toggleInfoMails(event) {
-  event?.preventDefault?.();
-  event?.stopPropagation?.();
-  const btn = event?.currentTarget;
-  const next = currentProfile?.info_mails_enabled === false;
-  const oldText = btn?.textContent;
-  if (btn) { btn.disabled = true; btn.textContent = 'Speichert …'; }
-  try {
-    if (!currentUser?.id) throw new Error('Bitte zuerst anmelden.');
-    const { data, error } = await sb
-      .from('users')
-      .update({ info_mails_enabled: next })
-      .eq('auth_id', currentUser.id)
-      .select('auth_id,info_mails_enabled')
-      .maybeSingle();
-    if (error) throw error;
-    if (!data || data.auth_id !== currentUser.id) throw new Error('Die Änderung wurde nicht gespeichert.');
-    currentProfile = { ...(currentProfile || {}), info_mails_enabled: data.info_mails_enabled !== false };
-    renderAccountPage(0);
-    if (typeof showToast === 'function') showToast(currentProfile.info_mails_enabled ? 'Info-Mails sind zugelassen.' : 'Info-Mails sind abbestellt.');
-  } catch (e) {
-    if (btn) { btn.disabled = false; btn.textContent = oldText; }
-    alert('Info-Mail-Einstellung konnte nicht gespeichert werden: ' + (e?.message || 'Unbekannter Fehler'));
-  }
-}
-
 // Persönliche Daten speichern (users-Tabelle + ggf. Login-E-Mail via Auth)
 async function saveProfile() {
   const msg = document.getElementById('pfSaveMsg');
@@ -12892,6 +12877,7 @@ async function saveProfile() {
   const phone = document.getElementById('pfPhone').value.trim();
   const playingLevel = selectedProfileLevel();
   const gender = selectedProfileGender() || null;
+  const infoMailsEnabled = document.getElementById('pfInfoMails')?.checked !== false;
   const openInvitesEnabled = document.getElementById('pfOpenInvites')?.checked !== false;
   if (!name)  { msg.style.color = '#d64545'; msg.textContent = 'Bitte einen Namen angeben.'; return; }
   if (!email) { msg.style.color = '#d64545'; msg.textContent = 'Bitte eine E-Mail angeben.'; return; }
@@ -12920,7 +12906,7 @@ async function saveProfile() {
       email,
       playing_level: playingLevel,
       gender,
-      info_mails_enabled: currentProfile?.info_mails_enabled !== false,
+      info_mails_enabled: infoMailsEnabled,
       open_invites_enabled: openInvitesEnabled,
     };
     let { data: saved, error: profileErr } = await sb
@@ -12937,7 +12923,7 @@ async function saveProfile() {
         .eq('auth_id', currentUser.id)
         .select('auth_id,full_name,email,phone,avatar_url')
         .maybeSingle();
-      saved = fallback.data ? { ...fallback.data, playing_level: playingLevel, gender, info_mails_enabled: currentProfile?.info_mails_enabled !== false, open_invites_enabled: openInvitesEnabled } : null;
+      saved = fallback.data ? { ...fallback.data, playing_level: playingLevel, gender, info_mails_enabled: infoMailsEnabled, open_invites_enabled: openInvitesEnabled } : null;
       profileErr = fallback.error;
       emailNote += ' – neue Profilfelder werden dauerhaft gespeichert, sobald die Datenbank-Erweiterung aktiv ist';
     }
@@ -12948,7 +12934,7 @@ async function saveProfile() {
     }
 
     // Nur den nachweislich von der Datenbank zurückgegebenen Stand übernehmen.
-    currentProfile = { ...(currentProfile || {}), ...saved, playing_level: playingLevel, gender, open_invites_enabled: openInvitesEnabled };
+    currentProfile = { ...(currentProfile || {}), ...saved, playing_level: playingLevel, gender, info_mails_enabled: infoMailsEnabled, open_invites_enabled: openInvitesEnabled };
     localStorage.setItem('pb_playing_level', playingLevel);
     const nb = document.getElementById('userBarName'); if (nb) nb.textContent = name;
 
@@ -14634,32 +14620,6 @@ body.bielstein-theme .acct-card {
   position: relative;
   margin-top: 26px;
   padding-top: 40px;
-}
-body.bielstein-theme .acct-info-mail-toggle {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  border: 1.5px solid #E2DACB;
-  border-radius: 999px;
-  background: #FFFFFF;
-  color: #7A7368;
-  padding: 7px 10px;
-  cursor: pointer;
-  font: 800 10.5px "Space Grotesk","Arial Narrow",sans-serif;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-}
-body.bielstein-theme .acct-info-mail-toggle.on {
-  border-color: #B8B0A2;
-  background: #F6F1E7;
-  color: #1C1A17;
-}
-@media (max-width: 560px) {
-  body.bielstein-theme .acct-info-mail-toggle {
-    position: static;
-    display: inline-flex;
-    margin: 0 auto 12px;
-  }
 }
 body.bielstein-theme .acct-card .profile-form { text-align: left; }
 body.bielstein-theme .acct-gender-picker {
