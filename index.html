@@ -2202,7 +2202,7 @@ main {
     .meetup-status-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:flex-start;gap:12px;margin-bottom:12px}
     .meetup-status-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900;color:var(--ink)}
     .meetup-status-title span{display:block;margin-top:3px;color:var(--muted);font:800 12px/1.35 Manrope,Arial,sans-serif}
-    .meetup-full{justify-self:end;padding:11px 15px;border-radius:999px;background:var(--ink);color:var(--cream);font-size:15px;font-weight:950;white-space:normal;text-align:center;line-height:1.18;box-shadow:0 8px 22px rgba(28,26,23,.12);display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+    .meetup-full{justify-self:end;min-width:172px;padding:11px 15px;border-radius:14px;background:var(--ink);color:var(--cream);font-size:15px;font-weight:950;white-space:normal;text-align:right;line-height:1.18;box-shadow:0 8px 22px rgba(28,26,23,.12);display:inline-flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:2px}
     .meetup-full strong{display:block;color:inherit;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:950}
     .meetup-full span{display:block;color:inherit;opacity:.86}
     .delivery-list{display:grid;gap:7px}
@@ -2343,7 +2343,7 @@ main {
     .meet-info-text strong{color:var(--cream);font-weight:800}
     [hidden]{display:none!important}
     @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.groups-field{grid-column:auto}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-stack{justify-items:start}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
-    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.source-mini{justify-self:start;text-align:left}.booking-summary{align-items:flex-start;gap:9px}.booking-summary-left{width:100%;align-items:flex-start}.booking-summary-chip{font-size:12px;padding:8px 10px;text-align:left;justify-content:flex-start}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:start;line-height:1.18;align-items:flex-start;text-align:left}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto auto minmax(0,1fr) auto;align-items:start;gap:9px;padding:10px}.email-list .email-row:not(.has-avatar){grid-template-columns:auto minmax(0,1fr)}.email-list .email-row .mini-avatar{width:42px;height:42px}.seat-index{grid-column:1;grid-row:1;width:32px;height:32px}.email-row-avatar{grid-column:2;grid-row:1}.email-field-wrap{grid-column:3;grid-row:1;min-width:0}.email-list .email-row .email-profile{display:none}.email-row-status{grid-column:1 / -1;grid-row:2;justify-content:flex-start;flex-wrap:wrap;overflow:visible;gap:5px;margin-top:4px}.email-accept-toggle{grid-column:3;grid-row:3;justify-self:start;margin-top:2px}.email-remove{grid-column:4;grid-row:1}.email-status-pill{font-size:10px;padding:5px 7px;max-width:100%;white-space:normal;text-align:left}.match-top{display:grid;grid-template-columns:minmax(142px,max-content) minmax(0,1fr);align-items:start;gap:10px}.time{font-size:28px;white-space:nowrap}.status.progress{justify-self:stretch;width:100%;padding:10px 9px;text-align:right;align-items:flex-end}.status.progress strong,.status.progress span{overflow-wrap:normal;word-break:normal;hyphens:none}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
+    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-pick-side{justify-content:flex-start;flex-wrap:wrap}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.source-mini{justify-self:start;text-align:left}.booking-summary{align-items:flex-start;gap:9px}.booking-summary-left{width:100%;align-items:flex-start}.booking-summary-chip{font-size:12px;padding:8px 10px;text-align:left;justify-content:flex-start}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:end;min-width:164px;line-height:1.18;align-items:flex-end;text-align:right}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto auto minmax(0,1fr) auto;align-items:start;gap:9px;padding:10px}.email-list .email-row:not(.has-avatar){grid-template-columns:auto minmax(0,1fr)}.email-list .email-row .mini-avatar{width:42px;height:42px}.seat-index{grid-column:1;grid-row:1;width:32px;height:32px}.email-row-avatar{grid-column:2;grid-row:1}.email-field-wrap{grid-column:3;grid-row:1;min-width:0}.email-list .email-row .email-profile{display:none}.email-row-status{grid-column:1 / -1;grid-row:2;justify-content:flex-start;flex-wrap:wrap;overflow:visible;gap:5px;margin-top:4px}.email-accept-toggle{grid-column:3;grid-row:3;justify-self:start;margin-top:2px}.email-remove{grid-column:4;grid-row:1}.email-status-pill{font-size:10px;padding:5px 7px;max-width:100%;white-space:normal;text-align:left}.match-top{display:grid;grid-template-columns:minmax(142px,max-content) minmax(0,1fr);align-items:start;gap:10px}.time{font-size:28px;white-space:nowrap}.status.progress{justify-self:stretch;width:100%;padding:10px 9px;text-align:right;align-items:flex-end}.status.progress strong,.status.progress span{overflow-wrap:normal;word-break:normal;hyphens:none}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
@@ -2820,6 +2820,7 @@ main {
     const confirmedPlayerCount = item =&gt; (item?.players || []).filter(player =&gt; player &amp;&amp; (player.accepted || isOrganizerPlayer(player))).length;
     const sentDeliveries = item =&gt; (item?.deliveries || []).filter(delivery =&gt; delivery.status === &quot;sent&quot; || delivery.status === &quot;skipped_duplicate&quot;);
     const inviteeDeliveryEmails = item =&gt; uniqueEmails(sentDeliveries(item).map(delivery =&gt; delivery.email).filter(email =&gt; !isUserEmail(email)));
+    const deliveryEmailsForInviteView = item =&gt; uniqueEmails(sentDeliveries(item).map(delivery =&gt; delivery.email).filter(Boolean));
     function latestDeliveryForEmail(item, email) {
       const key = normalizeEmail(email);
       if (!key) return null;
@@ -2838,6 +2839,7 @@ main {
     function audienceLongLabel(item) {
       if (item?.audience === &quot;Meine Gruppe&quot;) return &quot;Gruppeneinladung&quot;;
       if (item?.audience === &quot;Alle&quot;) return &quot;Einladung an alle&quot;;
+      if (item?.mode === &quot;open&quot;) return &quot;Einladung an alle&quot;;
       return &quot;Direkte Einladung&quot;;
     }
     function inviteeCountLabel(count) {
@@ -2851,9 +2853,9 @@ main {
       }
       return `&lt;span class=&quot;meetup-full&quot;&gt;&lt;strong&gt;${confirmed} von 4 zugesagt&lt;/strong&gt;&lt;/span&gt;`;
     }
-    function bookingInviteSummaryHTML(existing) {
+    function bookingInviteSummaryHTML(existing, includeUserDelivery = false) {
       if (!existing) return &quot;&quot;;
-      const informed = inviteeDeliveryEmails(existing).length;
+      const informed = (includeUserDelivery ? deliveryEmailsForInviteView(existing) : inviteeDeliveryEmails(existing)).length;
       return `&lt;div class=&quot;booking-summary&quot;&gt;
         &lt;div class=&quot;booking-summary-left&quot;&gt;
           &lt;span class=&quot;booking-summary-chip audience&quot;&gt;${esc(audienceLongLabel(existing))}&lt;/span&gt;
@@ -2862,14 +2864,14 @@ main {
         ${slotStatusPillHTML(existing)}
       &lt;/div&gt;`;
     }
-    function inviteSummaryBadgeHTML(item) {
+    function inviteSummaryBadgeHTML(item, includeUserDelivery = false) {
       const confirmed = confirmedPlayerCount(item);
-      const informed = inviteeDeliveryEmails(item).length;
+      const informed = (includeUserDelivery ? deliveryEmailsForInviteView(item) : inviteeDeliveryEmails(item)).length;
       const parts = [];
+      const status = confirmed &gt;= 4 ? &quot;Buchung vollständig&quot; : confirmed ? `${confirmed} von 4 zugesagt` : &quot;Noch offen&quot;;
       if (informed) parts.push(`${informed} informiert`);
-      if (confirmed &gt;= 4) parts.push(&quot;vollständig · 4 Zusagen&quot;);
-      else if (confirmed) parts.push(`${confirmed} von 4 zugesagt`);
-      return `&lt;span class=&quot;invite-summary-badge&quot;&gt;${esc(audienceLongLabel(item))}&lt;span&gt;${esc(parts.join(&quot; · &quot;) || &quot;gespeichert&quot;)}&lt;/span&gt;&lt;/span&gt;`;
+      if (confirmed) parts.push(`${confirmed} Zusage${confirmed === 1 ? &quot;&quot; : &quot;n&quot;}`);
+      return `&lt;span class=&quot;invite-summary-badge&quot;&gt;${esc(audienceLongLabel(item))}&lt;span&gt;${esc(status)}${parts.length ? ` · ${esc(parts.join(&quot; · &quot;))}` : &quot;&quot;}&lt;/span&gt;&lt;/span&gt;`;
     }
     function sourceFromMeetup(row) {
       const parts = dateParts(row.scheduled_date);
@@ -2932,6 +2934,8 @@ main {
         mode: row.direct ? &quot;direct&quot; : &quot;open&quot;,
         participantId: row.participant_id || &quot;&quot;,
         inviteStatus: row.invite_status || &quot;invited&quot;,
+        audience: meetup.audience === &quot;gruppe&quot; ? &quot;Meine Gruppe&quot; : meetup.audience === &quot;alle&quot; ? &quot;Alle&quot; : row.direct ? &quot;Mitspieler&quot; : &quot;Alle&quot;,
+        deliveries: (meetup.meetup_invite_deliveries || []).map(deliveryFromRow).filter(Boolean).sort((a, b) =&gt; String(a.sentAt).localeCompare(String(b.sentAt))),
         levels: Array.isArray(meetup.desired_levels) &amp;&amp; meetup.desired_levels.length ? meetup.desired_levels : [&quot;egal&quot;],
         gender: meetup.desired_gender || &quot;egal&quot;,
         ageMin: cleanAgeBound(meetup.desired_age_min),
@@ -2975,6 +2979,7 @@ main {
           if (ownSourceIds.has(String(invite.id || &quot;&quot;))) return false;
           return true;
         }) : [];
+        invites = mergeDemoInvites(invites);
         state.accepted = invites.filter(invite =&gt; invite.inviteStatus === &quot;accepted&quot;).map(invite =&gt; invite.id);
         systemOpenInvitesEnabled = data.settings?.open_invites_enabled !== false;
       } catch (e) {
@@ -3015,6 +3020,81 @@ main {
     }
     function orderedInvites() {
       return invites.slice().sort((a, b) =&gt; (a.priority - b.priority) || sortByDate(a, b)).slice(0, 10);
+    }
+    function demoInvitesForUser(now = new Date()) {
+      const key = normalizeEmail(user.email);
+      if (![&quot;calvinjohncamp@aol.com&quot;, &quot;kaemper@padel-bielstein.de&quot;].includes(key)) return [];
+      const dayOne = addDays(now, 8);
+      const dayTwo = addDays(now, 12);
+      const dateOne = localDateKey(dayOne);
+      const dateTwo = localDateKey(dayTwo);
+      const one = dateParts(dateOne);
+      const two = dateParts(dateTwo);
+      const sentOne = new Date(now);
+      sentOne.setHours(9, 15, 0, 0);
+      const sentTwo = new Date(now);
+      sentTwo.setHours(10, 40, 0, 0);
+      return [
+        {
+          id: &quot;demo-invite-direct&quot;,
+          demo: true,
+          priority: 0,
+          from: &quot;Marc Hüller&quot;,
+          fromAvatar: &quot;&quot;,
+          mode: &quot;direct&quot;,
+          audience: &quot;Mitspieler&quot;,
+          invitedEmails: [user.email],
+          inviteStatus: &quot;invited&quot;,
+          day: one.day,
+          date: one.date,
+          dateISO: dateOne,
+          time: &quot;18:00&quot;,
+          end: &quot;20:00&quot;,
+          court: &quot;Court 1&quot;,
+          duration: &quot;2h&quot;,
+          levels: [&quot;A&quot;, &quot;B&quot;],
+          gender: &quot;egal&quot;,
+          deliveries: [{ email: normalizeEmail(user.email), mailType: &quot;lust_auf_padel&quot;, status: &quot;sent&quot;, sentAt: sentOne.toISOString(), error: &quot;&quot; }],
+          players: [
+            { email: &quot;marc.hueller@example.de&quot;, name: &quot;Marc Hüller&quot;, level: &quot;B&quot;, accepted: true, isOrganizer: true, acceptedAt: sentOne.toISOString() },
+            { email: &quot;ulrich.pflitsch@example.de&quot;, name: &quot;Ulrich Pflitsch&quot;, level: &quot;B&quot;, accepted: true, acceptedAt: sentOne.toISOString() },
+            null,
+            null
+          ]
+        },
+        {
+          id: &quot;demo-invite-open&quot;,
+          demo: true,
+          priority: 1,
+          from: &quot;Anne Fischer&quot;,
+          fromAvatar: &quot;&quot;,
+          mode: &quot;open&quot;,
+          audience: &quot;Alle&quot;,
+          inviteStatus: &quot;invited&quot;,
+          day: two.day,
+          date: two.date,
+          dateISO: dateTwo,
+          time: &quot;10:00&quot;,
+          end: &quot;11:00&quot;,
+          court: &quot;Court 2&quot;,
+          duration: &quot;1h&quot;,
+          levels: [&quot;B&quot;, &quot;C&quot;],
+          gender: &quot;egal&quot;,
+          deliveries: [{ email: normalizeEmail(user.email), mailType: &quot;lust_auf_padel&quot;, status: &quot;sent&quot;, sentAt: sentTwo.toISOString(), error: &quot;&quot; }],
+          players: [
+            { email: &quot;anne.fischer@example.de&quot;, name: &quot;Anne Fischer&quot;, level: &quot;B&quot;, accepted: true, isOrganizer: true, acceptedAt: sentTwo.toISOString() },
+            null,
+            null,
+            null
+          ]
+        }
+      ];
+    }
+    function mergeDemoInvites(current) {
+      const demos = demoInvitesForUser();
+      if (!demos.length) return current;
+      const realIds = new Set(current.map(invite =&gt; invite.id));
+      return [...current, ...demos.filter(invite =&gt; !realIds.has(invite.id))];
     }
     function editorDeckItems() {
       return [
@@ -3083,7 +3163,7 @@ main {
           &lt;/span&gt;
           &lt;span class=&quot;invite-pick-side&quot;&gt;
             ${miniAvatarHTML(item.from, item.fromAvatar)}
-            &lt;span class=&quot;status ${item.mode === &quot;direct&quot; ? &quot;coral&quot; : &quot;&quot;}&quot;&gt;${item.mode === &quot;direct&quot; ? &quot;Direkte Einladung&quot; : &quot;Offene Einladung&quot;}&lt;/span&gt;
+            ${inviteSummaryBadgeHTML(item, true)}
           &lt;/span&gt;
         &lt;/button&gt;
       `}).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Aktuell keine passenden Einladungen.&lt;/div&gt;';
@@ -3783,10 +3863,11 @@ main {
         &lt;div class=&quot;create-head&quot;&gt;
           &lt;div&gt;
             &lt;h2 class=&quot;card-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/h2&gt;
-            &lt;p class=&quot;card-sub&quot;&gt;${esc(item.court)} · ${esc(item.duration)} · ${item.mode === &quot;direct&quot; ? &quot;direkte Einladung&quot; : &quot;offene Einladung&quot;} ${editorPagerHTML(&quot;invite&quot;)}&lt;/p&gt;
+            &lt;p class=&quot;card-sub&quot;&gt;&lt;strong class=&quot;duration-line&quot;&gt;${esc(durationText(item.duration))}&lt;/strong&gt;${editorPagerHTML(&quot;invite&quot;)}&lt;/p&gt;
           &lt;/div&gt;
-          &lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${filled} von 4 Mitspielern&lt;/strong&gt;&lt;span&gt;${filled === 1 ? &quot;hat&quot; : &quot;haben&quot;} bisher zugesagt&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;source-stack&quot;&gt;&lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${esc(item.court)}&lt;/strong&gt;&lt;span&gt;${esc(audienceLongLabel(item))}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
         &lt;/div&gt;
+        ${bookingInviteSummaryHTML(item, true)}
         &lt;div class=&quot;player-grid&quot;&gt;
           ${[0,1,2,3].map(i =&gt; seatHTML(item.players[i], i, true)).join(&quot;&quot;)}
         &lt;/div&gt;
@@ -4185,7 +4266,7 @@ main {
     }
     async function acceptInvitation() {
       const item = currentInvite();
-      if (embedded &amp;&amp; item?.id) {
+      if (embedded &amp;&amp; item?.id &amp;&amp; !item.demo) {
         try {
           const data = await callMeetupFunction({ action: &quot;accept_invite&quot;, meetup_id: item.id });
           const updated = data.meetup ? inviteFromServer({ direct: item.mode === &quot;direct&quot;, participant_id: data.participant?.id || item.participantId, invite_status: &quot;accepted&quot;, meetup: data.meetup }) : null;
@@ -4223,7 +4304,7 @@ main {
     async function withdrawInvitation() {
       const item = currentInvite();
       if (!item) return;
-      if (embedded &amp;&amp; item.id) {
+      if (embedded &amp;&amp; item.id &amp;&amp; !item.demo) {
         try {
           const data = await callMeetupFunction({ action: &quot;withdraw_invite&quot;, meetup_id: item.id });
           const updated = data.meetup ? inviteFromServer({ direct: item.mode === &quot;direct&quot;, participant_id: item.participantId, invite_status: &quot;declined&quot;, meetup: data.meetup }) : null;
@@ -4252,7 +4333,7 @@ main {
     }
     function miniStatusHTML(item, kind, index = 0) {
       const accepted = confirmedPlayerCount(item);
-      const informed = inviteeDeliveryEmails(item).length;
+      const informed = kind === &quot;own&quot; ? inviteeDeliveryEmails(item).length : deliveryEmailsForInviteView(item).length;
       const statusText = accepted &gt;= 4 ? &quot;Buchung vollständig&quot; : `${accepted}\u00a0von\u00a04 zugesagt`;
       const detailLines = [];
       if (kind === &quot;own&quot;) {
@@ -4261,10 +4342,12 @@ main {
         if (accepted) countParts.push(`${accepted}\u00a0Zusage${accepted === 1 ? &quot;&quot; : &quot;n&quot;}`);
         detailLines.push(audienceLongLabel(item));
         detailLines.push(countParts.length ? countParts.join(&quot; · &quot;) : &quot;gespeichert&quot;);
-      } else if (accepted &amp;&amp; accepted &lt; 4) {
-        detailLines.push(`${accepted}\u00a0Zusage${accepted === 1 ? &quot;&quot; : &quot;n&quot;}`);
-      } else if (accepted &gt;= 4) {
-        detailLines.push(`${accepted}\u00a0Zusagen`);
+      } else {
+        const countParts = [];
+        if (informed) countParts.push(`${informed}\u00a0informiert`);
+        if (accepted) countParts.push(`${accepted}\u00a0Zusage${accepted === 1 ? &quot;&quot; : &quot;n&quot;}`);
+        detailLines.push(audienceLongLabel(item));
+        detailLines.push(countParts.length ? countParts.join(&quot; · &quot;) : &quot;gespeichert&quot;);
       }
       const detailHtml = detailLines.length ? detailLines.map(line =&gt; `&lt;span&gt;${esc(line)}&lt;/span&gt;`).join(&quot;&quot;) : '&lt;span&gt;gespeichert&lt;/span&gt;';
       const world = kind === &quot;own&quot; ? &quot;own-world&quot; : &quot;invite-world&quot;;
@@ -4285,7 +4368,7 @@ main {
       const ownItems = state.ownMatches.filter(item =&gt; isWithinNextMonth(item, now) &amp;&amp; hasVisibleBookingSource(item)).sort(sortByDate).slice(0, 20);
       $(&quot;#ownStatus&quot;).innerHTML = ownItems.length ? ownItems.map((item, index) =&gt; miniStatusHTML(item, &quot;own&quot;, index)).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine eigene Einladung vorbereitet.&lt;/div&gt;';
       const acceptedItems = state.accepted.map(id =&gt; invites.find(item =&gt; item.id === id)).filter(Boolean).filter(item =&gt; isFutureItem(item, now)).sort(sortByDate).slice(0, 10);
-      $(&quot;#acceptedStatus&quot;).innerHTML = acceptedItems.length ? acceptedItems.map((item, index) =&gt; miniStatusHTML(item, &quot;direct&quot;, index)).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine Einladung angenommen.&lt;/div&gt;';
+      $(&quot;#acceptedStatus&quot;).innerHTML = acceptedItems.length ? acceptedItems.map((item, index) =&gt; miniStatusHTML(item, &quot;invite&quot;, index)).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine Einladung angenommen.&lt;/div&gt;';
       applyBalls($(&quot;#ownStatus&quot;));
       applyBalls($(&quot;#acceptedStatus&quot;));
     }
