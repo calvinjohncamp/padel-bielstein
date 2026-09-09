@@ -2225,10 +2225,12 @@ main {
     .group-select{min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink);padding:10px 12px;font-weight:800}
     .icon-btn{min-width:44px;min-height:44px;border:0;border-radius:10px;background:var(--soft);color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
     .icon-btn:disabled{opacity:.42;cursor:default}
-    .group-editor{grid-column:1/-1;margin-top:2px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}
+    .groups-field{grid-column:1 / 2}
+    .group-editor{margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}
     .group-editor-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
     .group-editor-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
     .group-email-list{display:grid;gap:8px;margin-top:10px}
+    .group-email-list .email-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center}
     .level-profile-band{display:block;margin:54px 0 18px}
     .level-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
     .level-item{border:1px solid var(--line);border-radius:14px;background:var(--cream);padding:13px 12px;display:grid;gap:4px}
@@ -2304,7 +2306,7 @@ main {
     .meet-info-text p:last-child{margin-bottom:0}
     .meet-info-text strong{color:var(--cream);font-weight:800}
     [hidden]{display:none!important}
-    @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
+    @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.groups-field{grid-column:auto}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
     @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}.email-list .email-row .email-profile{grid-column:2;justify-content:flex-start}.seat-index{width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
@@ -3045,8 +3047,8 @@ main {
     }
     function groupEmailRowHTML(value = &quot;&quot;, index = 1) {
       return `&lt;div class=&quot;email-row&quot;&gt;
-        &lt;input class=&quot;text-input group-email&quot; type=&quot;email&quot; name=&quot;group_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;Gruppen-E-Mail ${index}&quot;&gt;
         &lt;span class=&quot;seat-index&quot;&gt;${index}&lt;/span&gt;
+        &lt;input class=&quot;text-input group-email&quot; type=&quot;email&quot; name=&quot;group_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;Gruppen-E-Mail ${index}&quot;&gt;
       &lt;/div&gt;`;
     }
     function groupEditorHTML() {
@@ -3359,14 +3361,14 @@ main {
             ${systemOpenInvitesEnabled === false ? '&lt;p class=&quot;small-note&quot;&gt;Einladungen an Alle sind derzeit nicht aktiv.&lt;/p&gt;' : ''}
           &lt;/div&gt;
           &lt;div class=&quot;field&quot;&gt;
-            &lt;label&gt;Meine Gruppen&lt;/label&gt;
-            ${groupToolsHTML()}
-          &lt;/div&gt;
-          &lt;div class=&quot;field age-filter-row&quot;&gt;
             &lt;label&gt;Alter&lt;/label&gt;
             ${ageFilterHTML(ageFilter)}
           &lt;/div&gt;
-          ${groupEditorHTML()}
+          &lt;div class=&quot;field groups-field&quot;&gt;
+            &lt;label&gt;Meine Gruppen&lt;/label&gt;
+            ${groupToolsHTML()}
+            ${groupEditorHTML()}
+          &lt;/div&gt;
         &lt;/div&gt;
         &lt;div class=&quot;field invite-mail-choice&quot;&gt;
           &lt;label&gt;Mail an Mitspieler&lt;/label&gt;
