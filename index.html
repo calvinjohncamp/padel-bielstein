@@ -2191,6 +2191,7 @@ main {
     .email-list .email-row{min-height:78px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.58);display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:12px 14px}
     .email-list .email-row:not(.has-avatar){min-height:44px;border:0;background:transparent;grid-template-columns:minmax(0,1fr) auto;padding:0;gap:8px}
     .email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto auto}
+    .email-list .email-row.has-avatar.has-remove{grid-template-columns:auto minmax(0,1fr) auto auto auto}
     .email-list .email-row .mini-avatar{width:48px;height:48px;border:2px solid var(--coral);background:var(--coral);color:var(--ink);font-size:15px}
     .email-list .email-row .mini-avatar.has-photo{color:transparent;background-color:var(--cream)}
     .email-field-wrap{display:grid;gap:2px;min-width:0}
@@ -2203,6 +2204,8 @@ main {
     .email-profile .profile-level-title{color:var(--ink)}
     .email-profile .balls{display:inline-flex;gap:2px}
     .email-profile .balls img{width:16px;height:16px}
+    .email-remove{width:30px;height:30px;border:0;border-radius:999px;background:var(--soft);color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;line-height:1}
+    .email-remove:hover,.email-remove:focus-visible{background:var(--ink);color:var(--cream);outline:0}
     .seat-index{width:34px;height:34px;border-radius:9px;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
     .invite-save-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.95fr);gap:36px;align-items:start;margin-top:26px}
@@ -3015,18 +3018,21 @@ main {
         else if (!html &amp;&amp; existing) existing.remove();
       });
     }
-    function emailRowHTML(value = &quot;&quot;, index = 1, player = null) {
+    function emailRowHTML(value = &quot;&quot;, index = 1, player = null, allowOrganizerRemove = false) {
       const profile = profileForEmail(value, player);
       const avatar = value ? emailFallbackAvatarHTML(value, profile) : &quot;&quot;;
       const playerName = emailPlayerNameHTML(profile);
       const profileInfo = emailProfileHTML(profile, !!value);
-      return `&lt;div class=&quot;email-row${avatar ? &quot; has-avatar&quot; : &quot;&quot;}&quot;&gt;
+      const isOrganizer = String(value || &quot;&quot;).trim().toLowerCase() === user.email.toLowerCase();
+      const canRemove = allowOrganizerRemove &amp;&amp; isOrganizer;
+      return `&lt;div class=&quot;email-row${avatar ? &quot; has-avatar&quot; : &quot;&quot;}${canRemove ? &quot; has-remove&quot; : &quot;&quot;}&quot;&gt;
         ${avatar ? `&lt;span class=&quot;email-row-avatar&quot;&gt;${avatar}&lt;/span&gt;` : &quot;&quot;}
         &lt;span class=&quot;email-field-wrap&quot;&gt;
           ${playerName}
           &lt;input class=&quot;text-input player-email&quot; type=&quot;email&quot; name=&quot;player_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;E-Mail ${index}&quot;&gt;
         &lt;/span&gt;
         ${profileInfo}
+        ${canRemove ? `&lt;button class=&quot;email-remove&quot; type=&quot;button&quot; data-remove-email-row aria-label=&quot;Mich aus dieser Einladung entfernen&quot;&gt;×&lt;/button&gt;` : &quot;&quot;}
         &lt;span class=&quot;seat-index&quot;&gt;${index}&lt;/span&gt;
       &lt;/div&gt;`;
     }
@@ -3177,12 +3183,22 @@ main {
       toast(&quot;Gruppe gelöscht.&quot;);
     }
     function refreshEmailIndexes() {
-      $$(&quot;.email-row&quot;).forEach((row, index) =&gt; {
+      $$(&quot;#emailList .email-row&quot;).forEach((row, index) =&gt; {
         const n = index + 1;
         $(&quot;.seat-index&quot;, row).textContent = n;
-        $(&quot;.player-email&quot;, row).setAttribute(&quot;aria-label&quot;, `E-Mail ${n}`);
+        const input = $(&quot;.player-email&quot;, row);
+        if (input) input.setAttribute(&quot;aria-label&quot;, `E-Mail ${n}`);
       });
       refreshEmailRowAvatars();
+    }
+    function removeEmailRowPlayer(button) {
+      const row = button.closest(&quot;.email-row&quot;);
+      if (!row) return;
+      const index = Math.max(1, $$(&quot;#emailList .email-row&quot;).indexOf(row) + 1);
+      row.outerHTML = emailRowHTML(&quot;&quot;, index);
+      refreshEmailIndexes();
+      wireEmailAutofillGuard($(&quot;#emailList&quot;));
+      toast(&quot;Du bist aus dieser Einladung entfernt.&quot;);
     }
     let focusedEmailInput = null;
     function runEmailAutofillGuard(input) {
@@ -3309,14 +3325,14 @@ main {
     function ownEditorHTML(item) {
       const existing = ownMatchFor(item.id);
       if (existing?.groupId) state.selectedGroupId = existing.groupId;
-      const rows = existing
+      const audience = existing?.audience === &quot;Alle&quot; &amp;&amp; systemOpenInvitesEnabled === false ? &quot;Mitspieler&quot; : (existing?.audience || &quot;Mitspieler&quot;);
+      let rows = existing
         ? existing.players.map((player, index) =&gt; ({ email: player?.email || &quot;&quot;, player, index: index + 1 }))
         : [{ email: user.email, player: profileForEmail(user.email), index: 1 }, { email: &quot;&quot;, player: null, index: 2 }, { email: &quot;&quot;, player: null, index: 3 }, { email: &quot;&quot;, player: null, index: 4 }];
       while (rows.length &lt; 4) rows.push({ email: &quot;&quot;, player: null, index: rows.length + 1 });
       const selectedLevels = [&quot;egal&quot;];
       const gender = &quot;egal&quot;;
       const ageFilter = ageFilterFromItem(existing);
-      const audience = existing?.audience === &quot;Alle&quot; &amp;&amp; systemOpenInvitesEnabled === false ? &quot;Mitspieler&quot; : (existing?.audience || &quot;Mitspieler&quot;);
       const audienceItems = [
         { value:&quot;Mitspieler&quot;, label:&quot;Mitspieler&quot; },
         { value:&quot;Meine Gruppe&quot;, label:&quot;Meine Gruppe&quot; },
@@ -3337,7 +3353,7 @@ main {
         &lt;div class=&quot;email-panel&quot;&gt;
           &lt;span class=&quot;email-block-label&quot;&gt;Teilnehmer / Einladungen&lt;/span&gt;
           &lt;div class=&quot;email-list&quot; id=&quot;emailList&quot;&gt;
-            ${rows.map(row =&gt; emailRowHTML(row.email, row.index, row.player)).join(&quot;&quot;)}
+            ${rows.map(row =&gt; emailRowHTML(row.email, row.index, row.player, true)).join(&quot;&quot;)}
           &lt;/div&gt;
           &lt;div class=&quot;actions&quot;&gt;&lt;button class=&quot;btn secondary&quot; type=&quot;button&quot; id=&quot;addEmail&quot;&gt;E-Mail ergänzen&lt;/button&gt;&lt;/div&gt;
           &lt;p class=&quot;small-note&quot;&gt;Die erste Mail-Adresse ist bereits vorausgefüllt. Sie kann gelöscht oder überschrieben werden, wenn du selbst nicht mitspielst.&lt;/p&gt;
@@ -3460,7 +3476,9 @@ main {
           }
           $$(&quot;.chip&quot;, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip === btn));
           if (seg.dataset.seg === &quot;ageMode&quot;) updateAgeRangeVisibility(seg.closest(&quot;.age-filter-row&quot;) || document);
-          if (seg.dataset.seg === &quot;audience&quot;) syncMailTypeForAudience(root);
+          if (seg.dataset.seg === &quot;audience&quot;) {
+            syncMailTypeForAudience(root);
+          }
         });
       });
     }
@@ -3516,6 +3534,7 @@ main {
       const withdraw = $(&quot;#withdrawInvite&quot;);
       if (withdraw) withdraw.addEventListener(&quot;click&quot;, withdrawInvitation);
       $$(&quot;[data-remove-me]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, withdrawInvitation));
+      $$(&quot;[data-remove-email-row]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; removeEmailRowPlayer(btn)));
       wireEmailAutofillGuard($(&quot;#editor&quot;));
       refreshEmailRowAvatars($(&quot;#editor&quot;));
       applyBalls($(&quot;#editor&quot;));
@@ -3601,8 +3620,8 @@ main {
       const saveButton = $(&quot;#saveMeetup&quot;);
       const reminderButton = $(&quot;#sendReminder&quot;);
       const actionButton = forcedMailType === &quot;status_update&quot; ? reminderButton : sendEmails ? sendButton : saveButton;
-      const emails = collectEmails();
       const audience = selectedChip(&quot;audience&quot;);
+      const emails = collectEmails();
       const ageFilter = selectedAgeFilterFromEditor();
       if (!ageFilter) return;
       const chosenMailType = forcedMailType || (audience === &quot;Mitspieler&quot; ? selectedChip(&quot;mailType&quot;) : &quot;lust_auf_padel&quot;) || &quot;lust_auf_padel&quot;;
