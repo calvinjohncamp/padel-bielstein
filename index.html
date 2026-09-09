@@ -2152,7 +2152,7 @@ main {
     .status.progress span{display:block;color:var(--muted)}
     .status.green{background:#DDEBD9;color:var(--green)}
     .status.coral{background:#FFE0D7;color:var(--coral)}
-    .invite-summary-badge{justify-self:end;min-width:124px;border-radius:14px;padding:8px 10px;background:rgba(255,255,255,.62);color:var(--ink);font-size:12px;font-weight:900;text-align:right;line-height:1.2}
+    .invite-summary-badge{justify-self:end;min-width:150px;border-radius:14px;padding:8px 10px;background:rgba(255,255,255,.62);color:var(--ink);font-size:12px;font-weight:900;text-align:right;line-height:1.2}
     .invite-summary-badge span{display:block;color:var(--muted);font-size:11px;font-weight:800}
     .mini-avatar{width:34px;height:34px;border-radius:50%;background:var(--coral);color:var(--ink);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;overflow:hidden;background-size:cover;background-position:center;flex-shrink:0}
     .mini-avatar.has-photo{color:transparent;background-color:var(--cream)}
@@ -2685,6 +2685,24 @@ main {
         date: d.toLocaleDateString(&quot;de-DE&quot;, { day: &quot;2-digit&quot;, month: &quot;2-digit&quot;, year: &quot;numeric&quot; })
       };
     }
+    function localDateKey(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, &quot;0&quot;)}-${String(d.getDate()).padStart(2, &quot;0&quot;)}`;
+    }
+    function nextAboDateForMeetup(row, now = new Date()) {
+      if (!row) return &quot;&quot;;
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+      for (let offset = 0; offset &lt; 15; offset += 1) {
+        const day = new Date(todayStart);
+        day.setDate(todayStart.getDate() + offset);
+        const dateISO = localDateKey(day);
+        if (row.starts_on &amp;&amp; dateISO &lt; row.starts_on) continue;
+        if (row.ends_on &amp;&amp; dateISO &gt; row.ends_on) return &quot;&quot;;
+        if (Number(row.weekday) !== day.getDay()) continue;
+        const start = new Date(`${dateISO}T${String(Number(row.hour_start || 0)).padStart(2, &quot;0&quot;)}:00:00`);
+        if (start &gt; now) return dateISO;
+      }
+      return &quot;&quot;;
+    }
     function sourceFromBooking(row) {
       const parts = dateParts(row.date);
       const start = Number(row.hour_start || 0);
@@ -2764,29 +2782,22 @@ main {
     const isUserEmail = email =&gt; normalizeEmail(email) === normalizeEmail(user.email);
     const isOrganizerPlayer = player =&gt; !!player &amp;&amp; (player.isOrganizer || isUserEmail(player.email));
     const occupiedSlotsCount = item =&gt; (item?.players || []).filter(Boolean).length;
-    const acceptedInviteCount = item =&gt; (item?.players || []).filter(player =&gt; player &amp;&amp; !isOrganizerPlayer(player) &amp;&amp; player.accepted).length;
+    const confirmedPlayerCount = item =&gt; (item?.players || []).filter(player =&gt; player &amp;&amp; (player.accepted || isOrganizerPlayer(player))).length;
     const sentDeliveries = item =&gt; (item?.deliveries || []).filter(delivery =&gt; delivery.status === &quot;sent&quot; || delivery.status === &quot;skipped_duplicate&quot;);
     const inviteeDeliveryEmails = item =&gt; uniqueEmails(sentDeliveries(item).map(delivery =&gt; delivery.email).filter(email =&gt; !isUserEmail(email)));
-    function audienceShortLabel(item) {
-      if (item?.audience === &quot;Meine Gruppe&quot;) return &quot;Gruppe&quot;;
-      if (item?.audience === &quot;Alle&quot;) return &quot;Alle&quot;;
-      return &quot;Direkt&quot;;
-    }
     function audienceLongLabel(item) {
       if (item?.audience === &quot;Meine Gruppe&quot;) return &quot;Gruppeneinladung&quot;;
       if (item?.audience === &quot;Alle&quot;) return &quot;Einladung an alle&quot;;
       return &quot;Direkte Einladung&quot;;
     }
     function inviteSummaryBadgeHTML(item) {
-      const occupied = occupiedSlotsCount(item);
-      const accepted = acceptedInviteCount(item);
+      const confirmed = confirmedPlayerCount(item);
       const informed = inviteeDeliveryEmails(item).length;
-      const first = `${audienceShortLabel(item)}${occupied &gt;= 4 ? &quot; · voll&quot; : &quot;&quot;}`;
       const parts = [];
       if (informed) parts.push(`${informed} informiert`);
-      if (accepted) parts.push(`${accepted} zugesagt`);
-      if (!parts.length &amp;&amp; occupied) parts.push(`${occupied} von 4 belegt`);
-      return `&lt;span class=&quot;invite-summary-badge&quot;&gt;${esc(first)}&lt;span&gt;${esc(parts.join(&quot; · &quot;) || &quot;gespeichert&quot;)}&lt;/span&gt;&lt;/span&gt;`;
+      if (confirmed &gt;= 4) parts.push(&quot;vollständig · 4 Zusagen&quot;);
+      else if (confirmed) parts.push(`${confirmed} von 4 zugesagt`);
+      return `&lt;span class=&quot;invite-summary-badge&quot;&gt;${esc(audienceLongLabel(item))}&lt;span&gt;${esc(parts.join(&quot; · &quot;) || &quot;gespeichert&quot;)}&lt;/span&gt;&lt;/span&gt;`;
     }
     function sourceFromMeetup(row) {
       const parts = dateParts(row.scheduled_date);
@@ -2860,7 +2871,6 @@ main {
       if (!embedded) return;
       const loadBookings = appFn(&quot;loadUpcomingBookings&quot;);
       const loadAbos = appFn(&quot;loadActiveAbos&quot;);
-      const nextAbo = appFn(&quot;nextAboDateAfter&quot;);
       const today = appFn(&quot;todayStr&quot;) ? appFn(&quot;todayStr&quot;)() : new Date().toISOString().slice(0, 10);
       try {
         const data = await callMeetupFunction({ action: &quot;dashboard&quot; });
@@ -2908,7 +2918,7 @@ main {
             .filter(item =&gt; isFutureItem(item, now));
           const nextAbos = [];
           (aboRows || []).filter(row =&gt; [&quot;paid&quot;, &quot;active&quot;, &quot;pending&quot;].includes(String(row.status || &quot;&quot;))).forEach(row =&gt; {
-            const dateISO = nextAbo ? nextAbo(row, today) : &quot;&quot;;
+            const dateISO = nextAboDateForMeetup(row, now);
             if (dateISO) nextAbos.push(sourceFromAbo(row, dateISO));
           });
           bookings = [...nextBookings, ...nextAbos].sort(sortByDate).slice(0, 10);
@@ -3417,27 +3427,27 @@ main {
       const participantsByEmail = new Map((existing.players || []).filter(Boolean).map(player =&gt; [String(player.email || &quot;&quot;).toLowerCase(), player]));
       const uniqueDeliveryEmails = uniqueEmails(deliveries.map(d =&gt; d.email));
       const occupiedCount = occupiedSlotsCount(existing);
-      const acceptedCount = acceptedInviteCount(existing);
+      const acceptedCount = confirmedPlayerCount(existing);
       const sentCount = inviteeDeliveryEmails(existing).length;
       const failedCount = deliveries.filter(d =&gt; d.status === &quot;failed&quot;).length;
       const rows = uniqueDeliveryEmails.map(email =&gt; {
         const latest = deliveries.filter(d =&gt; d.email === email).sort((a, b) =&gt; String(b.sentAt).localeCompare(String(a.sentAt)))[0] || {};
         const participant = participantsByEmail.get(email);
         const organizerCopy = isUserEmail(email);
-        const stateClass = latest.status === &quot;failed&quot; ? &quot;failed&quot; : organizerCopy ? &quot;copy&quot; : participant &amp;&amp; participant.accepted &amp;&amp; !isOrganizerPlayer(participant) ? &quot;accepted&quot; : &quot;&quot;;
-        const stateText = latest.status === &quot;failed&quot; ? &quot;nicht gesendet&quot; : organizerCopy ? &quot;Kopie&quot; : participant &amp;&amp; participant.accepted &amp;&amp; !isOrganizerPlayer(participant) ? &quot;zugesagt&quot; : &quot;eingeladen&quot;;
+        const stateClass = latest.status === &quot;failed&quot; ? &quot;failed&quot; : organizerCopy ? &quot;copy&quot; : participant &amp;&amp; participant.accepted ? &quot;accepted&quot; : &quot;&quot;;
+        const stateText = latest.status === &quot;failed&quot; ? &quot;nicht gesendet&quot; : organizerCopy ? &quot;Kopie&quot; : participant &amp;&amp; participant.accepted ? &quot;zugesagt&quot; : &quot;eingeladen&quot;;
         return `&lt;div class=&quot;delivery-row&quot;&gt;
           &lt;span&gt;&lt;span class=&quot;delivery-mail&quot;&gt;${esc(email)}&lt;/span&gt;&lt;span class=&quot;delivery-meta&quot;&gt;${esc(deliveryLabel(latest.mailType))}${latest.sentAt ? ` · ${esc(formatDateTime(latest.sentAt))}` : &quot;&quot;}&lt;/span&gt;&lt;/span&gt;
           &lt;span class=&quot;delivery-state ${stateClass}&quot;&gt;${stateText}&lt;/span&gt;
         &lt;/div&gt;`;
       }).join(&quot;&quot;);
       const statusParts = [`${sentCount} Empfänger informiert`];
-      if (acceptedCount) statusParts.push(`${acceptedCount} zugesagt`);
+      if (acceptedCount) statusParts.push(`${acceptedCount} Zusage${acceptedCount === 1 ? &quot;&quot; : &quot;n&quot;}`);
       if (failedCount) statusParts.push(`${failedCount} fehlgeschlagen`);
       return `&lt;div class=&quot;meetup-status-panel&quot;&gt;
         &lt;div class=&quot;meetup-status-head&quot;&gt;
           &lt;div class=&quot;meetup-status-title&quot;&gt;${esc(audienceLongLabel(existing))} verschickt&lt;span&gt;Zuletzt ${esc(formatDateTime(latestSent.sentAt))} · ${esc(statusParts.join(&quot; · &quot;))}&lt;/span&gt;&lt;/div&gt;
-          &lt;span class=&quot;meetup-full&quot;&gt;${occupiedCount &gt;= 4 ? &quot;Slot voll&quot; : `${occupiedCount} von 4 Plätzen belegt`}&lt;/span&gt;
+          &lt;span class=&quot;meetup-full&quot;&gt;${acceptedCount &gt;= 4 ? &quot;Buchung vollständig · 4 Zusagen&quot; : `${acceptedCount} von 4 zugesagt`}&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&quot;delivery-list&quot;&gt;${rows}&lt;/div&gt;
         &lt;p class=&quot;small-note&quot;&gt;Bereits informierte Empfänger bekommen beim erneuten Informieren keine doppelte Mail. Nur neue Adressen werden angeschrieben.&lt;/p&gt;
@@ -3977,16 +3987,15 @@ main {
       toast(&quot;Teilnahme zurückgezogen.&quot;);
     }
     function miniStatusHTML(item, kind, index = 0) {
-      const occupied = occupiedSlotsCount(item);
-      const accepted = acceptedInviteCount(item);
+      const accepted = confirmedPlayerCount(item);
       const informed = inviteeDeliveryEmails(item).length;
-      const statusText = occupied &gt;= 4
-        ? &quot;Slot voll&quot;
-        : `${occupied} von 4 Plätzen belegt`;
+      const statusText = accepted &gt;= 4
+        ? &quot;Alle Mitspieler gefunden&quot;
+        : `${accepted} von 4 zugesagt`;
       const detailParts = [];
       if (kind === &quot;own&quot;) detailParts.push(audienceLongLabel(item));
       if (informed) detailParts.push(`${informed} informiert`);
-      if (accepted) detailParts.push(`${accepted} zugesagt`);
+      if (accepted) detailParts.push(`${accepted} Zusage${accepted === 1 ? &quot;&quot; : &quot;n&quot;}`);
       const world = kind === &quot;own&quot; ? &quot;own-world&quot; : &quot;invite-world&quot;;
       const shade = index % 2 === 0 ? &quot;shade-a&quot; : &quot;shade-b&quot;;
       return `&lt;article class=&quot;pb-card ${world} ${shade} ${kind === &quot;direct&quot; ? &quot;direct&quot; : &quot;&quot;}&quot;&gt;
