@@ -2169,6 +2169,11 @@ main {
     .source-mini strong{display:inline;color:var(--ink)}
     .source-mini span{display:inline}
     .source-stack{display:grid;justify-items:end;gap:11px}
+    .booking-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}
+    .booking-summary-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+    .booking-summary-chip{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:9px 12px;background:rgba(255,255,255,.56);color:var(--ink);font-size:13px;font-weight:950;line-height:1.18;white-space:normal;text-align:center}
+    .booking-summary-chip.audience{background:var(--ink);color:var(--cream)}
+    .booking-summary-chip.count{background:#F4EFE4;color:var(--muted)}
     .duration-line{display:block;color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900}
     .editor-swipe-meta{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-top:13px;color:var(--muted);font-size:16px;font-weight:900}
     .editor-swipe-meta strong{color:var(--ink);font-weight:900}
@@ -2197,7 +2202,9 @@ main {
     .meetup-status-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:flex-start;gap:12px;margin-bottom:12px}
     .meetup-status-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900;color:var(--ink)}
     .meetup-status-title span{display:block;margin-top:3px;color:var(--muted);font:800 12px/1.35 Manrope,Arial,sans-serif}
-    .meetup-full{justify-self:end;padding:11px 15px;border-radius:999px;background:var(--ink);color:var(--cream);font-size:15px;font-weight:950;white-space:nowrap;box-shadow:0 8px 22px rgba(28,26,23,.12)}
+    .meetup-full{justify-self:end;padding:11px 15px;border-radius:999px;background:var(--ink);color:var(--cream);font-size:15px;font-weight:950;white-space:normal;text-align:center;line-height:1.18;box-shadow:0 8px 22px rgba(28,26,23,.12);display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+    .meetup-full strong{display:block;color:inherit;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:950}
+    .meetup-full span{display:block;color:inherit;opacity:.86}
     .delivery-list{display:grid;gap:7px}
     .delivery-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.62)}
     .delivery-mail{display:block;min-width:0;color:var(--ink);font-weight:850;overflow-wrap:anywhere}
@@ -2223,7 +2230,7 @@ main {
     .email-profile .profile-level-title{color:var(--ink)}
     .email-profile .balls{display:inline-flex;gap:2px}
     .email-profile .balls img{width:16px;height:16px}
-    .email-row-status{display:flex;flex-wrap:nowrap;gap:5px;margin-top:6px;overflow-x:auto;scrollbar-width:none}
+    .email-row-status{grid-column:3;grid-row:2;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:5px;margin-top:2px;overflow:visible;scrollbar-width:none}
     .email-row-status::-webkit-scrollbar{display:none}
     .email-status-pill{border:0;border-radius:999px;padding:5px 8px;background:var(--soft);color:var(--muted);font-size:11px;font-weight:900;line-height:1.1;white-space:nowrap}
     .email-status-pill.accepted{background:#DDEBD9;color:var(--green)}
@@ -2336,7 +2343,7 @@ main {
     .meet-info-text strong{color:var(--cream);font-weight:800}
     [hidden]{display:none!important}
     @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.groups-field{grid-column:auto}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-stack{justify-items:start}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
-    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.source-mini{justify-self:start;text-align:left}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:start;white-space:normal;line-height:1.25}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto auto minmax(0,1fr) auto;align-items:start;gap:9px;padding:10px}.email-list .email-row:not(.has-avatar){grid-template-columns:auto minmax(0,1fr)}.email-list .email-row .mini-avatar{width:42px;height:42px}.seat-index{grid-column:1;grid-row:1;width:32px;height:32px}.email-row-avatar{grid-column:2;grid-row:1}.email-field-wrap{grid-column:3;grid-row:1;min-width:0}.email-list .email-row .email-profile{display:none}.email-row-status{justify-content:flex-start;flex-wrap:wrap;overflow:visible;gap:5px}.email-accept-toggle{grid-column:3;grid-row:2;justify-self:start;margin-top:4px}.email-remove{grid-column:4;grid-row:1}.email-status-pill{font-size:10px;padding:5px 7px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
+    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.source-mini{justify-self:start;text-align:left}.booking-summary{align-items:flex-start;gap:9px}.booking-summary-left{width:100%;align-items:flex-start}.booking-summary-chip{font-size:12px;padding:8px 10px;text-align:left;justify-content:flex-start}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:start;line-height:1.18;align-items:flex-start;text-align:left}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto auto minmax(0,1fr) auto;align-items:start;gap:9px;padding:10px}.email-list .email-row:not(.has-avatar){grid-template-columns:auto minmax(0,1fr)}.email-list .email-row .mini-avatar{width:42px;height:42px}.seat-index{grid-column:1;grid-row:1;width:32px;height:32px}.email-row-avatar{grid-column:2;grid-row:1}.email-field-wrap{grid-column:3;grid-row:1;min-width:0}.email-list .email-row .email-profile{display:none}.email-row-status{grid-column:1 / -1;grid-row:2;justify-content:flex-start;flex-wrap:wrap;overflow:visible;gap:5px;margin-top:4px}.email-accept-toggle{grid-column:3;grid-row:3;justify-self:start;margin-top:2px}.email-remove{grid-column:4;grid-row:1}.email-status-pill{font-size:10px;padding:5px 7px;max-width:100%;white-space:normal;text-align:left}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
@@ -2833,6 +2840,28 @@ main {
       if (item?.audience === &quot;Alle&quot;) return &quot;Einladung an alle&quot;;
       return &quot;Direkte Einladung&quot;;
     }
+    function inviteeCountLabel(count) {
+      if (!count) return &quot;Noch keine Person eingeladen&quot;;
+      return `${count} Person${count === 1 ? &quot;&quot; : &quot;en&quot;} eingeladen`;
+    }
+    function slotStatusPillHTML(item) {
+      const confirmed = confirmedPlayerCount(item);
+      if (confirmed &gt;= 4) {
+        return `&lt;span class=&quot;meetup-full&quot;&gt;&lt;strong&gt;Buchung vollständig&lt;/strong&gt;&lt;span&gt;4 Zusagen&lt;/span&gt;&lt;/span&gt;`;
+      }
+      return `&lt;span class=&quot;meetup-full&quot;&gt;&lt;strong&gt;${confirmed} von 4 zugesagt&lt;/strong&gt;&lt;/span&gt;`;
+    }
+    function bookingInviteSummaryHTML(existing) {
+      if (!existing) return &quot;&quot;;
+      const informed = inviteeDeliveryEmails(existing).length;
+      return `&lt;div class=&quot;booking-summary&quot;&gt;
+        &lt;div class=&quot;booking-summary-left&quot;&gt;
+          &lt;span class=&quot;booking-summary-chip audience&quot;&gt;${esc(audienceLongLabel(existing))}&lt;/span&gt;
+          &lt;span class=&quot;booking-summary-chip count&quot;&gt;${esc(inviteeCountLabel(informed))}&lt;/span&gt;
+        &lt;/div&gt;
+        ${slotStatusPillHTML(existing)}
+      &lt;/div&gt;`;
+    }
     function inviteSummaryBadgeHTML(item) {
       const confirmed = confirmedPlayerCount(item);
       const informed = inviteeDeliveryEmails(item).length;
@@ -3223,8 +3252,8 @@ main {
         &lt;span class=&quot;email-field-wrap&quot;&gt;
           ${playerName}
           &lt;input class=&quot;text-input player-email&quot; type=&quot;email&quot; name=&quot;player_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;E-Mail ${index}&quot;&gt;
-          ${statusInfo}
         &lt;/span&gt;
+        ${statusInfo}
         ${profileInfo}
         ${value ? `&lt;button class=&quot;email-accept-toggle ${accepted ? &quot;accepted&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-toggle-accepted data-accepted=&quot;${accepted ? &quot;1&quot; : &quot;0&quot;}&quot;&gt;${accepted ? &quot;zugesagt&quot; : &quot;offen&quot;}&lt;/button&gt;` : &quot;&quot;}
         ${canRemove ? `&lt;button class=&quot;email-remove&quot; type=&quot;button&quot; data-remove-email-row aria-label=&quot;Spieler aus dieser Einladung entfernen&quot;&gt;×&lt;/button&gt;` : &quot;&quot;}
@@ -3430,7 +3459,7 @@ main {
         const name = row.querySelector('.email-player-name')?.textContent || value;
         const profile = profileForEmail(value, { email: value, name, accepted });
         const statusInfo = participantStatusHTML(value, profile);
-        if (statusInfo) wrap.insertAdjacentHTML('beforeend', statusInfo);
+        if (statusInfo) wrap.insertAdjacentHTML('afterend', statusInfo);
       });
     }
     let focusedEmailInput = null;
@@ -3592,7 +3621,7 @@ main {
       return `&lt;div class=&quot;meetup-status-panel&quot;&gt;
         &lt;div class=&quot;meetup-status-head&quot;&gt;
           &lt;div class=&quot;meetup-status-title&quot;&gt;${esc(audienceLongLabel(existing))}&lt;span&gt;Verschickt · zuletzt ${esc(formatDateTime(latestSent.sentAt))} · ${esc(statusParts.join(&quot; · &quot;))}&lt;/span&gt;&lt;/div&gt;
-          &lt;span class=&quot;meetup-full&quot;&gt;${acceptedCount &gt;= 4 ? &quot;Buchung vollständig · 4 Zusagen&quot; : `${acceptedCount} von 4 zugesagt`}&lt;/span&gt;
+          ${slotStatusPillHTML(existing)}
         &lt;/div&gt;
         &lt;div class=&quot;delivery-list&quot;&gt;${rows}&lt;/div&gt;
         &lt;p class=&quot;small-note&quot;&gt;Bereits informierte Empfänger bekommen beim erneuten Informieren keine doppelte Mail. Nur neue Adressen werden angeschrieben.&lt;/p&gt;
@@ -3600,8 +3629,7 @@ main {
     }
     function bookingStatePillHTML(existing) {
       if (!existing) return &quot;&quot;;
-      const confirmed = confirmedPlayerCount(existing);
-      return `&lt;span class=&quot;meetup-full&quot;&gt;${confirmed &gt;= 4 ? &quot;Buchung vollständig · 4 Zusagen&quot; : `${confirmed} von 4 zugesagt`}&lt;/span&gt;`;
+      return slotStatusPillHTML(existing);
     }
     function actionState(existing, audience, rows, selectedGroup) {
       const rowEmails = rows.map(row =&gt; row.email).filter(Boolean);
@@ -3690,8 +3718,9 @@ main {
             &lt;h2 class=&quot;card-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/h2&gt;
             &lt;p class=&quot;card-sub&quot;&gt;&lt;strong class=&quot;duration-line&quot;&gt;${esc(durationText(item.duration))}&lt;/strong&gt;${editorPagerHTML(&quot;booking&quot;)}&lt;/p&gt;
           &lt;/div&gt;
-          &lt;div class=&quot;source-stack&quot;&gt;&lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${esc(item.court)}&lt;/strong&gt;&lt;span&gt;${esc(item.paidBy)}&lt;/span&gt;&lt;/div&gt;${bookingStatePillHTML(existing)}&lt;/div&gt;
+          &lt;div class=&quot;source-stack&quot;&gt;&lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${esc(item.court)}&lt;/strong&gt;&lt;span&gt;${esc(item.paidBy)}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
         &lt;/div&gt;
+        ${bookingInviteSummaryHTML(existing)}
         &lt;div class=&quot;email-panel&quot;&gt;
           &lt;span class=&quot;email-block-label&quot;&gt;Teilnehmer pro Einladung&lt;/span&gt;
           &lt;div class=&quot;email-list&quot; id=&quot;emailList&quot;&gt;
@@ -4224,13 +4253,12 @@ main {
     function miniStatusHTML(item, kind, index = 0) {
       const accepted = confirmedPlayerCount(item);
       const informed = inviteeDeliveryEmails(item).length;
-      const statusText = accepted &gt;= 4
-        ? &quot;Buchung vollständig · 4 Zusagen&quot;
-        : `${accepted} von 4 zugesagt`;
+      const statusText = accepted &gt;= 4 ? &quot;Buchung vollständig&quot; : `${accepted} von 4 zugesagt`;
       const detailParts = [];
+      if (accepted &gt;= 4) detailParts.push(&quot;4 Zusagen&quot;);
       if (kind === &quot;own&quot;) detailParts.push(audienceLongLabel(item));
       if (informed) detailParts.push(`${informed} informiert`);
-      if (accepted) detailParts.push(`${accepted} Zusage${accepted === 1 ? &quot;&quot; : &quot;n&quot;}`);
+      if (accepted &amp;&amp; accepted &lt; 4) detailParts.push(`${accepted} Zusage${accepted === 1 ? &quot;&quot; : &quot;n&quot;}`);
       const world = kind === &quot;own&quot; ? &quot;own-world&quot; : &quot;invite-world&quot;;
       const shade = index % 2 === 0 ? &quot;shade-a&quot; : &quot;shade-b&quot;;
       const complete = accepted &gt;= 4;
