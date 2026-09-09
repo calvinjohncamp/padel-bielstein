@@ -2134,12 +2134,12 @@ main {
     .world-invite{background:#EEF3F2!important;border-color:#D5E0DE}
     .create-card{border-color:#9E978A;padding:34px clamp(18px,3vw,30px) 24px;transition:background .18s,border-color .18s,box-shadow .18s}
     .create-card.is-booking,.create-card.is-invite{box-shadow:0 12px 34px rgba(28,26,23,.14)}
-    .tone-a{background:#E5E1D8!important}
-    .tone-b{background:#D5D0C5!important}
-    .booking-pick.active.tone-a,.create-card.is-booking.tone-a{background:#E5E1D8!important;border-color:#9E978A}
-    .booking-pick.active.tone-b,.create-card.is-booking.tone-b{background:#D5D0C5!important;border-color:#8C8577}
-    .invite-pick.active.tone-a,.create-card.is-invite.tone-a{background:#DDE4E3!important;border-color:#8A9996}
-    .invite-pick.active.tone-b,.create-card.is-invite.tone-b{background:#CFD9D7!important;border-color:#748682}
+    .tone-a{background:#EFE5D4!important}
+    .tone-b{background:#D8C9B5!important}
+    .booking-pick.tone-a,.create-card.is-booking.tone-a{background:#EFE5D4!important;border-color:#B8A98F}
+    .booking-pick.tone-b,.create-card.is-booking.tone-b{background:#D8C9B5!important;border-color:#927F61}
+    .invite-pick.tone-a,.create-card.is-invite.tone-a{background:#E2EEEC!important;border-color:#91AAA5}
+    .invite-pick.tone-b,.create-card.is-invite.tone-b{background:#C8DDDA!important;border-color:#6F928C}
     .list{display:grid;gap:10px;margin-top:14px}
     .pick-row{width:100%;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.52);padding:12px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;color:var(--ink)}
     .pick-row:hover,.pick-row.active{border-color:#8D8679;box-shadow:0 0 0 3px rgba(28,26,23,.11)}
@@ -2157,17 +2157,17 @@ main {
     .mini-avatar img{width:100%;height:100%;object-fit:cover;display:block}
     .invite-pick-side{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
     .badge{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);height:30px;padding:0 14px;border-radius:15px;background:var(--cream);border:1.5px solid var(--coral);color:var(--coral);box-shadow:0 0 0 8px var(--cream);display:flex;align-items:center;justify-content:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;font-size:12px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
-    .create-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start}
+    .create-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:start}
     .card-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:24px;font-weight:800;margin:0 0 6px}
     .card-sub{margin:0;color:var(--muted);line-height:1.45;font-size:14px}
-    .source-mini{align-self:start;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.48);padding:12px 14px;color:var(--muted);font-weight:900;line-height:1.35;text-align:right;white-space:normal}
+    .source-mini{align-self:start;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.48);padding:12px 14px;color:var(--muted);font-weight:900;line-height:1.35;text-align:right;white-space:normal;margin-top:4px}
     .source-mini strong{display:block;color:var(--ink)}
     .source-mini span{display:block}
     .duration-line{display:block;color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900}
-    .editor-swipe-meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:7px;color:var(--muted);font-size:12px;font-weight:900}
+    .editor-swipe-meta{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-top:13px;color:var(--muted);font-size:16px;font-weight:900}
     .editor-swipe-meta strong{color:var(--ink);font-weight:900}
-    .editor-swipe-actions{display:inline-flex;align-items:center;gap:4px}
-    .editor-nav{width:30px;height:30px;border:0;border-radius:999px;background:rgba(255,255,255,.58);color:var(--ink);display:inline-grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900;line-height:1}
+    .editor-swipe-actions{display:inline-flex;align-items:center;gap:6px}
+    .editor-nav{width:40px;height:40px;border:0;border-radius:999px;background:rgba(255,255,255,.68);color:var(--ink);display:inline-grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:24px;font-weight:900;line-height:1}
     .editor-nav:not(:disabled):hover,.editor-nav:not(:disabled):focus-visible{background:var(--ink);color:var(--cream);outline:0}
     .editor-nav:disabled{opacity:.28;cursor:default}
     .swipe-word{color:var(--muted)}
@@ -2871,7 +2871,7 @@ main {
           &lt;button class=&quot;editor-nav&quot; type=&quot;button&quot; data-editor-prev aria-label=&quot;Vorheriger Termin&quot; ${canPrev ? &quot;&quot; : &quot;disabled&quot;}&gt;‹&lt;/button&gt;
           &lt;button class=&quot;editor-nav&quot; type=&quot;button&quot; data-editor-next aria-label=&quot;Nächster Termin&quot; ${canNext ? &quot;&quot; : &quot;disabled&quot;}&gt;›&lt;/button&gt;
         &lt;/span&gt;
-        &lt;span class=&quot;swipe-word&quot;&gt;Wischen&lt;/span&gt;
+        &lt;span class=&quot;swipe-word&quot;&gt;Swipe&lt;/span&gt;
       &lt;/span&gt;`;
     }
     function selectedToneClass() {
@@ -2885,7 +2885,7 @@ main {
         const active = state.selectedType === &quot;booking&quot; &amp;&amp; state.selectedId === item.id;
         const tone = index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
         return `
-        &lt;button class=&quot;pick-row booking-pick ${active ? `active ${tone}` : &quot;&quot;}&quot; type=&quot;button&quot; data-booking=&quot;${esc(item.id)}&quot;&gt;
+        &lt;button class=&quot;pick-row booking-pick ${tone} ${active ? &quot;active&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-booking=&quot;${esc(item.id)}&quot;&gt;
           &lt;span&gt;
             &lt;span class=&quot;row-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/span&gt;
             &lt;span class=&quot;row-sub&quot;&gt;${esc(item.court)} · ${esc(item.duration)} · ${esc(item.paidBy)}&lt;/span&gt;
@@ -2898,7 +2898,7 @@ main {
         const active = state.selectedType === &quot;invite&quot; &amp;&amp; state.selectedId === item.id;
         const tone = index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
         return `
-        &lt;button class=&quot;pick-row invite-pick ${active ? `active ${tone}` : &quot;&quot;}&quot; type=&quot;button&quot; data-invite=&quot;${esc(item.id)}&quot;&gt;
+        &lt;button class=&quot;pick-row invite-pick ${tone} ${active ? &quot;active&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-invite=&quot;${esc(item.id)}&quot;&gt;
           &lt;span&gt;
             &lt;span class=&quot;row-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/span&gt;
             &lt;span class=&quot;row-sub&quot;&gt;${esc(item.court)} · von ${esc(item.from)}&lt;/span&gt;
@@ -3583,7 +3583,8 @@ main {
       const item = currentBooking();
       const sendButton = $(&quot;#sendInvite&quot;);
       const saveButton = $(&quot;#saveMeetup&quot;);
-      const actionButton = sendEmails ? sendButton : saveButton;
+      const reminderButton = $(&quot;#sendReminder&quot;);
+      const actionButton = forcedMailType === &quot;status_update&quot; ? reminderButton : sendEmails ? sendButton : saveButton;
       const emails = collectEmails();
       const audience = selectedChip(&quot;audience&quot;);
       const ageFilter = selectedAgeFilterFromEditor();
