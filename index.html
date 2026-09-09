@@ -2152,6 +2152,8 @@ main {
     .status.progress span{display:block;color:var(--muted)}
     .status.green{background:#DDEBD9;color:var(--green)}
     .status.coral{background:#FFE0D7;color:var(--coral)}
+    .invite-summary-badge{justify-self:end;min-width:104px;border-radius:14px;padding:8px 10px;background:rgba(255,255,255,.58);color:var(--ink);font-size:12px;font-weight:900;text-align:right;line-height:1.2}
+    .invite-summary-badge span{display:block;color:var(--muted);font-size:11px;font-weight:800}
     .mini-avatar{width:34px;height:34px;border-radius:50%;background:var(--coral);color:var(--ink);display:grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;overflow:hidden;background-size:cover;background-position:center;flex-shrink:0}
     .mini-avatar.has-photo{color:transparent;background-color:var(--cream)}
     .mini-avatar img{width:100%;height:100%;object-fit:cover;display:block}
@@ -2187,6 +2189,18 @@ main {
     .age-range.open{display:grid}
     .age-range .text-input{min-height:40px;text-align:center;font-weight:900}
     .email-panel{margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}
+    .meetup-status-panel{margin-top:18px;padding:15px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.46)}
+    .meetup-status-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+    .meetup-status-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900;color:var(--ink)}
+    .meetup-status-title span{display:block;margin-top:3px;color:var(--muted);font:800 12px/1.35 Manrope,Arial,sans-serif}
+    .meetup-full{padding:8px 11px;border-radius:999px;background:#DDEBD9;color:var(--green);font-size:12px;font-weight:900;white-space:nowrap}
+    .delivery-list{display:grid;gap:7px}
+    .delivery-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.62)}
+    .delivery-mail{min-width:0;color:var(--ink);font-weight:850;overflow-wrap:anywhere}
+    .delivery-meta{margin-top:2px;color:var(--muted);font-size:12px;font-weight:750}
+    .delivery-state{padding:6px 9px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:11px;font-weight:900;white-space:nowrap}
+    .delivery-state.accepted{background:#DDEBD9;color:var(--green)}
+    .delivery-state.failed{background:#FFE0D7;color:var(--red)}
     .email-list{display:grid;gap:8px}
     .email-list .email-row{min-height:78px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.58);display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:12px 14px}
     .email-list .email-row:not(.has-avatar){min-height:44px;border:0;background:transparent;grid-template-columns:minmax(0,1fr) auto;padding:0;gap:8px}
@@ -2703,6 +2717,27 @@ main {
         accepted: row.status === &quot;accepted&quot;
       };
     }
+    function deliveryFromRow(row) {
+      if (!row) return null;
+      return {
+        email: String(row.recipient_email || &quot;&quot;).trim().toLowerCase(),
+        mailType: row.mail_type || &quot;&quot;,
+        status: row.delivery_status || &quot;sent&quot;,
+        sentAt: row.sent_at || row.created_at || &quot;&quot;,
+        error: row.error_message || &quot;&quot;
+      };
+    }
+    function formatDateTime(value) {
+      if (!value) return &quot;&quot;;
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return &quot;&quot;;
+      return d.toLocaleDateString(&quot;de-DE&quot;, { day:&quot;2-digit&quot;, month:&quot;2-digit&quot;, year:&quot;numeric&quot; }) + &quot; um &quot; + d.toLocaleTimeString(&quot;de-DE&quot;, { hour:&quot;2-digit&quot;, minute:&quot;2-digit&quot; }) + &quot; Uhr&quot;;
+    }
+    function deliveryLabel(type) {
+      if (type === &quot;status_update&quot;) return &quot;Erinnerung&quot;;
+      if (type === &quot;du_bist_dabei&quot;) return &quot;Du bist dabei&quot;;
+      return &quot;Lust auf Padel?&quot;;
+    }
     function sourceFromMeetup(row) {
       const parts = dateParts(row.scheduled_date);
       const durationHours = Math.max(1, Math.round(Number(row.duration_minutes || 60) / 60));
@@ -2733,6 +2768,7 @@ main {
       return {
         ...source,
         players,
+        deliveries: (row.meetup_invite_deliveries || []).map(deliveryFromRow).filter(Boolean).sort((a, b) =&gt; String(a.sentAt).localeCompare(String(b.sentAt))),
         levels: Array.isArray(row.desired_levels) &amp;&amp; row.desired_levels.length ? row.desired_levels : [&quot;egal&quot;],
         level: Array.isArray(row.desired_levels) ? row.desired_levels.join(&quot;, &quot;) : &quot;egal&quot;,
         gender: row.desired_gender || &quot;egal&quot;,
@@ -2892,13 +2928,19 @@ main {
       $(&quot;#myBookings&quot;).innerHTML = sortedBookings.length ? sortedBookings.map((item, index) =&gt; {
         const active = state.selectedType === &quot;booking&quot; &amp;&amp; state.selectedId === item.id;
         const tone = index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
+        const existing = ownMatchFor(item);
+        const acceptedCount = existing ? existing.players.filter(Boolean).length : 0;
+        const deliveryCount = existing ? uniqueEmails((existing.deliveries || []).filter(d =&gt; d.status === &quot;sent&quot;).map(d =&gt; d.email)).length : 0;
+        const statusHtml = existing
+          ? `&lt;span class=&quot;invite-summary-badge&quot;&gt;${acceptedCount &gt;= 4 ? &quot;Voll&quot; : `${acceptedCount} von 4 zugesagt`}&lt;span&gt;${deliveryCount || 0} informiert&lt;/span&gt;&lt;/span&gt;`
+          : miniAvatarHTML();
         return `
         &lt;button class=&quot;pick-row booking-pick ${tone} ${active ? &quot;active&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-booking=&quot;${esc(item.id)}&quot;&gt;
           &lt;span&gt;
             &lt;span class=&quot;row-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/span&gt;
             &lt;span class=&quot;row-sub&quot;&gt;${esc(item.court)} · ${esc(item.duration)} · ${esc(item.paidBy)}&lt;/span&gt;
           &lt;/span&gt;
-          ${miniAvatarHTML()}
+          ${statusHtml}
         &lt;/button&gt;
       `}).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine kommenden Buchungen gefunden.&lt;/div&gt;';
       const sortedInvites = orderedInvites();
@@ -3322,6 +3364,34 @@ main {
       }
       return &quot;egal&quot;;
     }
+    function meetupStatusHTML(existing) {
+      if (!existing || !(existing.deliveries || []).length) return &quot;&quot;;
+      const deliveries = existing.deliveries || [];
+      const latestSent = deliveries.slice().sort((a, b) =&gt; String(b.sentAt).localeCompare(String(a.sentAt)))[0];
+      const participantsByEmail = new Map((existing.players || []).filter(Boolean).map(player =&gt; [String(player.email || &quot;&quot;).toLowerCase(), player]));
+      const uniqueDeliveryEmails = uniqueEmails(deliveries.map(d =&gt; d.email));
+      const acceptedCount = (existing.players || []).filter(Boolean).length;
+      const sentCount = deliveries.filter(d =&gt; d.status === &quot;sent&quot;).length;
+      const failedCount = deliveries.filter(d =&gt; d.status === &quot;failed&quot;).length;
+      const rows = uniqueDeliveryEmails.map(email =&gt; {
+        const latest = deliveries.filter(d =&gt; d.email === email).sort((a, b) =&gt; String(b.sentAt).localeCompare(String(a.sentAt)))[0] || {};
+        const participant = participantsByEmail.get(email);
+        const stateClass = latest.status === &quot;failed&quot; ? &quot;failed&quot; : participant ? &quot;accepted&quot; : &quot;&quot;;
+        const stateText = latest.status === &quot;failed&quot; ? &quot;nicht gesendet&quot; : participant ? &quot;zugesagt&quot; : &quot;eingeladen&quot;;
+        return `&lt;div class=&quot;delivery-row&quot;&gt;
+          &lt;span&gt;&lt;span class=&quot;delivery-mail&quot;&gt;${esc(email)}&lt;/span&gt;&lt;span class=&quot;delivery-meta&quot;&gt;${esc(deliveryLabel(latest.mailType))}${latest.sentAt ? ` · ${esc(formatDateTime(latest.sentAt))}` : &quot;&quot;}&lt;/span&gt;&lt;/span&gt;
+          &lt;span class=&quot;delivery-state ${stateClass}&quot;&gt;${stateText}&lt;/span&gt;
+        &lt;/div&gt;`;
+      }).join(&quot;&quot;);
+      return `&lt;div class=&quot;meetup-status-panel&quot;&gt;
+        &lt;div class=&quot;meetup-status-head&quot;&gt;
+          &lt;div class=&quot;meetup-status-title&quot;&gt;Einladung verschickt&lt;span&gt;Zuletzt ${esc(formatDateTime(latestSent.sentAt))} · ${sentCount} informiert${failedCount ? ` · ${failedCount} fehlgeschlagen` : &quot;&quot;}&lt;/span&gt;&lt;/div&gt;
+          &lt;span class=&quot;meetup-full&quot;&gt;${acceptedCount &gt;= 4 ? &quot;Slot voll&quot; : `${acceptedCount} von 4 zugesagt`}&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;delivery-list&quot;&gt;${rows}&lt;/div&gt;
+        &lt;p class=&quot;small-note&quot;&gt;Bereits informierte Empfänger bekommen beim erneuten Informieren keine doppelte Mail. Nur neue Adressen werden angeschrieben.&lt;/p&gt;
+      &lt;/div&gt;`;
+    }
     function ownEditorHTML(item) {
       const existing = ownMatchFor(item.id);
       if (existing?.groupId) state.selectedGroupId = existing.groupId;
@@ -3350,6 +3420,7 @@ main {
           &lt;/div&gt;
           &lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${esc(item.court)}&lt;/strong&gt;${esc(item.paidBy)}&lt;/div&gt;
         &lt;/div&gt;
+        ${meetupStatusHTML(existing)}
         &lt;div class=&quot;email-panel&quot;&gt;
           &lt;span class=&quot;email-block-label&quot;&gt;Teilnehmer / Einladungen&lt;/span&gt;
           &lt;div class=&quot;email-list&quot; id=&quot;emailList&quot;&gt;
@@ -3684,6 +3755,7 @@ main {
             state.ownMatches.sort(sortByDate);
           }
           updateUserLevelReferences();
+          renderPickLists();
           renderStatus();
           const successText = !sendEmails
             ? &quot;Änderungen gespeichert&quot;
