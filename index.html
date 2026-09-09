@@ -2224,6 +2224,7 @@ main {
     .group-tools-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px}
     .group-select{min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink);padding:10px 12px;font-weight:800}
     .icon-btn{min-width:44px;min-height:44px;border:0;border-radius:10px;background:var(--soft);color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
+    .icon-btn:disabled{opacity:.42;cursor:default}
     .group-editor{grid-column:1/-1;margin-top:2px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}
     .group-editor-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
     .group-editor-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
@@ -2785,11 +2786,13 @@ main {
         } else if (parentAvatar) {
           user.avatar_url = parentAvatar;
         }
-        groups = Array.isArray(data.groups) &amp;&amp; data.groups.length ? data.groups.map(group =&gt; ({
-          id: group.id,
-          name: group.name,
-          emails: group.emails || []
-        })) : groups;
+        if (Array.isArray(data.groups)) {
+          groups = data.groups.map(group =&gt; ({
+            id: group.id,
+            name: group.name,
+            emails: group.emails || []
+          }));
+        }
         state.selectedGroupId = groups[0]?.id || &quot;&quot;;
         state.ownMatches = Array.isArray(data.ownMeetups) ? data.ownMeetups.map(ownMatchFromMeetup) : [];
         const ownMeetupIds = new Set(state.ownMatches.map(match =&gt; String(match.meetupId || &quot;&quot;)).filter(Boolean));
@@ -3037,6 +3040,7 @@ main {
       wireEmailAutofillGuard(list);
     }
     function groupOptionHTML() {
+      if (!groups.length) return '&lt;option value=&quot;&quot; selected&gt;Keine Gruppe angelegt&lt;/option&gt;';
       return groups.map(group =&gt; `&lt;option value=&quot;${esc(group.id)}&quot; ${group.id === state.selectedGroupId ? &quot;selected&quot; : &quot;&quot;}&gt;${esc(group.name)} · ${group.emails.length}&lt;/option&gt;`).join(&quot;&quot;);
     }
     function groupEmailRowHTML(value = &quot;&quot;, index = 1) {
@@ -3069,7 +3073,7 @@ main {
         &lt;div class=&quot;group-tools-row&quot;&gt;
           &lt;select class=&quot;group-select&quot; id=&quot;groupSelect&quot; aria-label=&quot;Gruppe auswählen&quot;&gt;${groupOptionHTML()}&lt;/select&gt;
           &lt;button class=&quot;icon-btn&quot; type=&quot;button&quot; id=&quot;newGroup&quot; title=&quot;Gruppe anlegen&quot;&gt;+&lt;/button&gt;
-          &lt;button class=&quot;icon-btn&quot; type=&quot;button&quot; id=&quot;editGroup&quot; title=&quot;Gruppe bearbeiten&quot;&gt;✎&lt;/button&gt;
+          &lt;button class=&quot;icon-btn&quot; type=&quot;button&quot; id=&quot;editGroup&quot; title=&quot;Gruppe bearbeiten&quot; ${groups.length ? &quot;&quot; : &quot;disabled&quot;}&gt;✎&lt;/button&gt;
         &lt;/div&gt;
       &lt;/div&gt;`;
     }
@@ -3097,36 +3101,10 @@ main {
       state.groupEditorId = null;
       renderEditor();
     }
-    async function saveGroup() {
-      const name = $(&quot;#groupNameInput&quot;).value.trim() || &quot;Neue Gruppe&quot;;
-      const emails = groupEditorEmails();
-      const invalid = emails.filter(email =&gt; !mailOk(email));
-      if (invalid.length) {
-        toast(&quot;Bitte nur gültige E-Mail-Adressen in der Gruppe verwenden.&quot;);
-        return;
-      }
-      if (uniqueEmails(emails).length !== emails.length) {
-        toast(&quot;Bitte jede Gruppen-E-Mail nur einmal eintragen.&quot;);
-        return;
-      }
-      if (embedded) {
-        try {
-          const data = await callMeetupFunction({ action: &quot;save_group&quot;, group_id: state.groupEditorId || undefined, name, emails });
-          const saved = data.group || {};
-          const index = groups.findIndex(group =&gt; group.id === saved.id);
-          const group = { id: saved.id, name: saved.name || name, emails: saved.emails || emails };
-          if (index &gt;= 0) groups.splice(index, 1, group);
-          else groups.unshift(group);
-          state.selectedGroupId = group.id;
-          state.groupEditorId = null;
-          renderEditor();
-          toast(&quot;Gruppe gespeichert.&quot;);
-          return;
-        } catch (e) {
-          toast(e.message || &quot;Gruppe konnte nicht gespeichert werden.&quot;);
-          return;
-        }
-      }
+    function isLocalGroupId(id) {
+      return /^g\d+$/i.test(String(id || &quot;&quot;).trim());
+    }
+    function saveLocalGroup(name, emails) {
       const existing = groups.find(group =&gt; group.id === state.groupEditorId);
       if (existing) {
         existing.name = name;
@@ -3141,11 +3119,47 @@ main {
       renderEditor();
       toast(&quot;Gruppe gespeichert.&quot;);
     }
+    async function saveGroup() {
+      const name = $(&quot;#groupNameInput&quot;).value.trim() || &quot;Neue Gruppe&quot;;
+      const emails = groupEditorEmails();
+      const invalid = emails.filter(email =&gt; !mailOk(email));
+      if (invalid.length) {
+        toast(&quot;Bitte nur gültige E-Mail-Adressen in der Gruppe verwenden.&quot;);
+        return;
+      }
+      if (uniqueEmails(emails).length !== emails.length) {
+        toast(&quot;Bitte jede Gruppen-E-Mail nur einmal eintragen.&quot;);
+        return;
+      }
+      if (embedded &amp;&amp; !isLocalGroupId(state.groupEditorId)) {
+        try {
+          const data = await callMeetupFunction({ action: &quot;save_group&quot;, group_id: state.groupEditorId || undefined, name, emails });
+          const saved = data.group || {};
+          const index = groups.findIndex(group =&gt; group.id === saved.id);
+          const group = { id: saved.id, name: saved.name || name, emails: saved.emails || emails };
+          if (index &gt;= 0) groups.splice(index, 1, group);
+          else groups.unshift(group);
+          state.selectedGroupId = group.id;
+          state.groupEditorId = null;
+          renderEditor();
+          toast(&quot;Gruppe gespeichert.&quot;);
+          return;
+        } catch (e) {
+          if (!state.groupEditorId) {
+            saveLocalGroup(name, emails);
+            return;
+          }
+          toast(e.message || &quot;Gruppe konnte nicht gespeichert werden.&quot;);
+          return;
+        }
+      }
+      saveLocalGroup(name, emails);
+    }
     async function deleteGroup() {
       const existing = groups.find(group =&gt; group.id === state.groupEditorId);
       if (!existing) return;
       if (!confirm(&quot;Willst du diese Gruppe wirklich löschen?&quot;)) return;
-      if (embedded) {
+      if (embedded &amp;&amp; !isLocalGroupId(existing.id)) {
         try {
           await callMeetupFunction({ action: &quot;delete_group&quot;, group_id: existing.id });
         } catch (e) {
