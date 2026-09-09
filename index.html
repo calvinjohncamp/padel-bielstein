@@ -2165,6 +2165,7 @@ main {
     .source-mini{align-self:start;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.48);padding:12px 14px;color:var(--muted);font-weight:900;line-height:1.35;text-align:right;white-space:normal;margin-top:4px}
     .source-mini strong{display:block;color:var(--ink)}
     .source-mini span{display:block}
+    .source-stack{display:grid;justify-items:end;gap:9px}
     .duration-line{display:block;color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900}
     .editor-swipe-meta{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-top:13px;color:var(--muted);font-size:16px;font-weight:900}
     .editor-swipe-meta strong{color:var(--ink);font-weight:900}
@@ -2193,7 +2194,7 @@ main {
     .meetup-status-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:flex-start;gap:12px;margin-bottom:12px}
     .meetup-status-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900;color:var(--ink)}
     .meetup-status-title span{display:block;margin-top:3px;color:var(--muted);font:800 12px/1.35 Manrope,Arial,sans-serif}
-    .meetup-full{justify-self:end;padding:8px 11px;border-radius:999px;background:#DDEBD9;color:var(--green);font-size:12px;font-weight:900;white-space:nowrap}
+    .meetup-full{justify-self:end;padding:8px 11px;border-radius:999px;background:var(--ink);color:var(--cream);font-size:12px;font-weight:900;white-space:nowrap}
     .delivery-list{display:grid;gap:7px}
     .delivery-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.62)}
     .delivery-mail{display:block;min-width:0;color:var(--ink);font-weight:850;overflow-wrap:anywhere}
@@ -2203,9 +2204,9 @@ main {
     .delivery-state.failed{background:#FFE0D7;color:var(--red)}
     .delivery-state.copy{background:#F4EFE4;color:var(--muted)}
     .email-list{display:grid;gap:8px}
-    .email-list .email-row{min-height:78px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.58);display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:12px 14px}
+    .email-list .email-row{min-height:78px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.58);display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;gap:14px;align-items:center;padding:12px 14px}
     .email-list .email-row:not(.has-avatar){min-height:44px;border:0;background:transparent;grid-template-columns:minmax(0,1fr) auto;padding:0;gap:8px}
-    .email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto auto}
+    .email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto auto auto}
     .email-list .email-row.has-avatar.has-remove{grid-template-columns:auto minmax(0,1fr) auto auto auto}
     .email-list .email-row .mini-avatar{width:48px;height:48px;border:2px solid var(--coral);background:var(--coral);color:var(--ink);font-size:15px}
     .email-list .email-row .mini-avatar.has-photo{color:transparent;background-color:var(--cream)}
@@ -2219,6 +2220,12 @@ main {
     .email-profile .profile-level-title{color:var(--ink)}
     .email-profile .balls{display:inline-flex;gap:2px}
     .email-profile .balls img{width:16px;height:16px}
+    .email-row-status{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+    .email-status-pill{border:0;border-radius:999px;padding:6px 9px;background:var(--soft);color:var(--muted);font-size:11px;font-weight:900;line-height:1.15}
+    .email-status-pill.accepted{background:#DDEBD9;color:var(--green)}
+    .email-status-pill.info{background:#F4EFE4;color:var(--muted)}
+    .email-accept-toggle{border:0;border-radius:999px;padding:8px 10px;background:var(--soft);color:var(--muted);font-size:12px;font-weight:900;white-space:nowrap}
+    .email-accept-toggle.accepted{background:#DDEBD9;color:var(--green)}
     .email-remove{width:30px;height:30px;border:0;border-radius:999px;background:var(--soft);color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;line-height:1}
     .email-remove:hover,.email-remove:focus-visible{background:var(--ink);color:var(--cream);outline:0}
     .seat-index{width:34px;height:34px;border-radius:9px;background:var(--soft);display:grid;place-items:center;color:var(--muted);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
@@ -2324,8 +2331,8 @@ main {
     .meet-info-text p:last-child{margin-bottom:0}
     .meet-info-text strong{color:var(--cream);font-weight:800}
     [hidden]{display:none!important}
-    @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.groups-field{grid-column:auto}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
-    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:start;white-space:normal;line-height:1.25}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}.email-list .email-row .email-profile{grid-column:2;justify-content:flex-start}.email-remove{grid-column:3;grid-row:1}.seat-index{width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
+    @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.groups-field{grid-column:auto}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-stack{justify-items:start}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
+    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:start;white-space:normal;line-height:1.25}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}.email-list .email-row .email-profile{grid-column:2;justify-content:flex-start}.email-accept-toggle{grid-column:2;justify-self:start}.email-remove{grid-column:3;grid-row:1}.seat-index{grid-column:3;grid-row:3;width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
@@ -2579,6 +2586,15 @@ main {
       const start = startsAt(item);
       return start ? start &gt; now : true;
     }
+    function addDays(date, days) {
+      const next = new Date(date);
+      next.setDate(next.getDate() + days);
+      return next;
+    }
+    function isWithinNextMonth(item, now = new Date()) {
+      const start = startsAt(item);
+      return start ? start &gt; now &amp;&amp; start &lt;= addDays(now, 31) : true;
+    }
     const app = (() =&gt; { try { return window.parent || window; } catch (_e) { return window; } })();
     const embedded = app !== window || document.body.classList.contains(&quot;embedded&quot;);
     function appFn(name) { try { return typeof app[name] === &quot;function&quot; ? app[name].bind(app) : null; } catch (_e) { return null; } }
@@ -2691,7 +2707,7 @@ main {
     function nextAboDateForMeetup(row, now = new Date()) {
       if (!row) return &quot;&quot;;
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
-      for (let offset = 0; offset &lt; 15; offset += 1) {
+      for (let offset = 0; offset &lt; 32; offset += 1) {
         const day = new Date(todayStart);
         day.setDate(todayStart.getDate() + offset);
         const dateISO = localDateKey(day);
@@ -2754,7 +2770,9 @@ main {
         status: row.status || &quot;&quot;,
         inviteKind,
         isOrganizer: inviteKind === &quot;organizer&quot; || String(email || &quot;&quot;).toLowerCase() === user.email.toLowerCase(),
-        accepted: row.status === &quot;accepted&quot;
+        accepted: row.status === &quot;accepted&quot;,
+        acceptedAt: row.accepted_at || &quot;&quot;,
+        createdAt: row.created_at || &quot;&quot;
       };
     }
     function deliveryFromRow(row) {
@@ -2785,6 +2803,13 @@ main {
     const confirmedPlayerCount = item =&gt; (item?.players || []).filter(player =&gt; player &amp;&amp; (player.accepted || isOrganizerPlayer(player))).length;
     const sentDeliveries = item =&gt; (item?.deliveries || []).filter(delivery =&gt; delivery.status === &quot;sent&quot; || delivery.status === &quot;skipped_duplicate&quot;);
     const inviteeDeliveryEmails = item =&gt; uniqueEmails(sentDeliveries(item).map(delivery =&gt; delivery.email).filter(email =&gt; !isUserEmail(email)));
+    function latestDeliveryForEmail(item, email) {
+      const key = normalizeEmail(email);
+      if (!key) return null;
+      return (item?.deliveries || [])
+        .filter(delivery =&gt; normalizeEmail(delivery.email) === key)
+        .sort((a, b) =&gt; String(b.sentAt).localeCompare(String(a.sentAt)))[0] || null;
+    }
     function audienceLongLabel(item) {
       if (item?.audience === &quot;Meine Gruppe&quot;) return &quot;Gruppeneinladung&quot;;
       if (item?.audience === &quot;Alle&quot;) return &quot;Einladung an alle&quot;;
@@ -2915,13 +2940,13 @@ main {
           const nextBookings = (bookingRows || [])
             .filter(row =&gt; [&quot;paid&quot;, &quot;active&quot;].includes(String(row.status || &quot;&quot;)))
             .map(sourceFromBooking)
-            .filter(item =&gt; isFutureItem(item, now));
+            .filter(item =&gt; isWithinNextMonth(item, now));
           const nextAbos = [];
           (aboRows || []).filter(row =&gt; [&quot;paid&quot;, &quot;active&quot;, &quot;pending&quot;].includes(String(row.status || &quot;&quot;))).forEach(row =&gt; {
             const dateISO = nextAboDateForMeetup(row, now);
             if (dateISO) nextAbos.push(sourceFromAbo(row, dateISO));
           });
-          bookings = [...nextBookings, ...nextAbos].sort(sortByDate).slice(0, 10);
+          bookings = [...nextBookings, ...nextAbos].sort(sortByDate).slice(0, 20);
           if (bookings.length) {
             state.selectedType = &quot;booking&quot;;
             state.selectedId = bookings[0].id;
@@ -2939,7 +2964,7 @@ main {
       return `${item.day}, ${item.date} · ${item.time}-${item.end} Uhr · ${item.court}`;
     }
     function orderedBookings() {
-      return bookings.slice().sort(sortByDate).slice(0, 10);
+      return bookings.slice().sort(sortByDate).slice(0, 20);
     }
     function orderedInvites() {
       return invites.slice().sort((a, b) =&gt; (a.priority - b.priority) || sortByDate(a, b)).slice(0, 10);
@@ -3102,6 +3127,18 @@ main {
       const level = levels[player.level] ? player.level : &quot;&quot;;
       return `&lt;span class=&quot;email-profile&quot;&gt;&lt;span class=&quot;profile-level-letter&quot;&gt;${level}&lt;/span&gt;&lt;span class=&quot;profile-level-title&quot;&gt;${esc(levels[level].title)}&lt;/span&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${levels[level].balls}&quot;&gt;&lt;/span&gt;&lt;/span&gt;`;
     }
+    function participantStatusHTML(value, player = null) {
+      if (!value) return &quot;&quot;;
+      const existing = currentBooking() ? ownMatchFor(currentBooking()) : null;
+      const delivery = latestDeliveryForEmail(existing, value);
+      const accepted = !!(player?.accepted || isOrganizerPlayer(player));
+      const acceptedAt = player?.acceptedAt || (isOrganizerPlayer(player) ? player?.createdAt : &quot;&quot;);
+      const parts = [];
+      if (delivery &amp;&amp; !isUserEmail(value)) parts.push(`&lt;span class=&quot;email-status-pill info&quot;&gt;Eingeladen am ${esc(formatDateTime(delivery.sentAt))}&lt;/span&gt;`);
+      if (delivery &amp;&amp; isUserEmail(value)) parts.push(`&lt;span class=&quot;email-status-pill info&quot;&gt;Kopie ${esc(formatDateTime(delivery.sentAt))}&lt;/span&gt;`);
+      if (accepted) parts.push(`&lt;span class=&quot;email-status-pill accepted&quot;&gt;Zusage${acceptedAt ? ` am ${esc(formatDateTime(acceptedAt))}` : &quot;&quot;}&lt;/span&gt;`);
+      return parts.length ? `&lt;span class=&quot;email-row-status&quot;&gt;${parts.join(&quot;&quot;)}&lt;/span&gt;` : &quot;&quot;;
+    }
     function refreshEmailRowAvatars(root = document) {
       $$('.email-row', root).forEach(row =&gt; {
         const input = row.querySelector('.player-email');
@@ -3127,6 +3164,7 @@ main {
       });
       if (changed) {
         wireEmailAutofillGuard(root);
+        wireEmailRowActions(root);
         applyBalls(root);
       }
       return changed;
@@ -3137,15 +3175,19 @@ main {
       const playerName = emailPlayerNameHTML(profile);
       const profileInfo = emailProfileHTML(profile, !!value);
       const isOrganizer = String(value || &quot;&quot;).trim().toLowerCase() === user.email.toLowerCase();
-      const canRemove = allowOrganizerRemove &amp;&amp; isOrganizer;
+      const accepted = !!(profile?.accepted || isOrganizer);
+      const canRemove = allowOrganizerRemove &amp;&amp; !!value;
+      const statusInfo = participantStatusHTML(value, profile);
       return `&lt;div class=&quot;email-row${avatar ? &quot; has-avatar&quot; : &quot;&quot;}${canRemove ? &quot; has-remove&quot; : &quot;&quot;}&quot;&gt;
         ${avatar ? `&lt;span class=&quot;email-row-avatar&quot;&gt;${avatar}&lt;/span&gt;` : &quot;&quot;}
         &lt;span class=&quot;email-field-wrap&quot;&gt;
           ${playerName}
           &lt;input class=&quot;text-input player-email&quot; type=&quot;email&quot; name=&quot;player_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;E-Mail ${index}&quot;&gt;
+          ${statusInfo}
         &lt;/span&gt;
         ${profileInfo}
-        ${canRemove ? `&lt;button class=&quot;email-remove&quot; type=&quot;button&quot; data-remove-email-row aria-label=&quot;Mich aus dieser Einladung entfernen&quot;&gt;×&lt;/button&gt;` : &quot;&quot;}
+        ${value ? `&lt;button class=&quot;email-accept-toggle ${accepted ? &quot;accepted&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-toggle-accepted data-accepted=&quot;${accepted ? &quot;1&quot; : &quot;0&quot;}&quot;&gt;${accepted ? &quot;zugesagt&quot; : &quot;offen&quot;}&lt;/button&gt;` : &quot;&quot;}
+        ${canRemove ? `&lt;button class=&quot;email-remove&quot; type=&quot;button&quot; data-remove-email-row aria-label=&quot;Spieler aus dieser Einladung entfernen&quot;&gt;×&lt;/button&gt;` : &quot;&quot;}
         &lt;span class=&quot;seat-index&quot;&gt;${index}&lt;/span&gt;
       &lt;/div&gt;`;
     }
@@ -3159,6 +3201,7 @@ main {
       if (input) input.focus();
       refreshEmailIndexes();
       wireEmailAutofillGuard(list);
+      wireEmailRowActions(list);
     }
     function groupOptionHTML() {
       if (!groups.length) return '&lt;option value=&quot;&quot; selected&gt;Keine Gruppe angelegt&lt;/option&gt;';
@@ -3307,11 +3350,32 @@ main {
     function removeEmailRowPlayer(button) {
       const row = button.closest(&quot;.email-row&quot;);
       if (!row) return;
+      const input = row.querySelector('.player-email');
+      const label = row.querySelector('.email-player-name')?.textContent || input?.value || &quot;diesen Spieler&quot;;
+      if (!confirm(`Bist du sicher, dass du ${label} aus dieser Einladung entfernen willst?`)) return;
       const index = Math.max(1, $$(&quot;#emailList .email-row&quot;).indexOf(row) + 1);
       row.outerHTML = emailRowHTML(&quot;&quot;, index);
       refreshEmailIndexes();
       wireEmailAutofillGuard($(&quot;#emailList&quot;));
-      toast(&quot;Du bist aus dieser Einladung entfernt.&quot;);
+      toast(&quot;Spieler aus dieser Einladung entfernt.&quot;);
+    }
+    function toggleAccepted(button) {
+      const next = button.dataset.accepted !== &quot;1&quot;;
+      button.dataset.accepted = next ? &quot;1&quot; : &quot;0&quot;;
+      button.classList.toggle(&quot;accepted&quot;, next);
+      button.textContent = next ? &quot;zugesagt&quot; : &quot;offen&quot;;
+    }
+    function wireEmailRowActions(root = document) {
+      $$(&quot;[data-remove-email-row]&quot;, root).forEach(btn =&gt; {
+        if (btn.dataset.bound === &quot;1&quot;) return;
+        btn.dataset.bound = &quot;1&quot;;
+        btn.addEventListener(&quot;click&quot;, () =&gt; removeEmailRowPlayer(btn));
+      });
+      $$(&quot;[data-toggle-accepted]&quot;, root).forEach(btn =&gt; {
+        if (btn.dataset.bound === &quot;1&quot;) return;
+        btn.dataset.bound = &quot;1&quot;;
+        btn.addEventListener(&quot;click&quot;, () =&gt; toggleAccepted(btn));
+      });
     }
     let focusedEmailInput = null;
     function runEmailAutofillGuard(input) {
@@ -3473,6 +3537,11 @@ main {
         &lt;p class=&quot;small-note&quot;&gt;Bereits informierte Empfänger bekommen beim erneuten Informieren keine doppelte Mail. Nur neue Adressen werden angeschrieben.&lt;/p&gt;
       &lt;/div&gt;`;
     }
+    function bookingStatePillHTML(existing) {
+      if (!existing) return &quot;&quot;;
+      const confirmed = confirmedPlayerCount(existing);
+      return `&lt;span class=&quot;meetup-full&quot;&gt;${confirmed &gt;= 4 ? &quot;Buchung vollständig · 4 Zusagen&quot; : `${confirmed} von 4 zugesagt`}&lt;/span&gt;`;
+    }
     function ownEditorHTML(item) {
       const existing = ownMatchFor(item.id);
       if (existing?.groupId) state.selectedGroupId = existing.groupId;
@@ -3499,9 +3568,8 @@ main {
             &lt;h2 class=&quot;card-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/h2&gt;
             &lt;p class=&quot;card-sub&quot;&gt;&lt;strong class=&quot;duration-line&quot;&gt;${esc(durationText(item.duration))}&lt;/strong&gt;${editorPagerHTML(&quot;booking&quot;)}&lt;/p&gt;
           &lt;/div&gt;
-          &lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${esc(item.court)}&lt;/strong&gt;${esc(item.paidBy)}&lt;/div&gt;
+          &lt;div class=&quot;source-stack&quot;&gt;&lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${esc(item.court)}&lt;/strong&gt;${esc(item.paidBy)}&lt;/div&gt;${bookingStatePillHTML(existing)}&lt;/div&gt;
         &lt;/div&gt;
-        ${meetupStatusHTML(existing)}
         &lt;div class=&quot;email-panel&quot;&gt;
           &lt;span class=&quot;email-block-label&quot;&gt;Teilnehmer pro Einladung&lt;/span&gt;
           &lt;div class=&quot;email-list&quot; id=&quot;emailList&quot;&gt;
@@ -3686,7 +3754,7 @@ main {
       const withdraw = $(&quot;#withdrawInvite&quot;);
       if (withdraw) withdraw.addEventListener(&quot;click&quot;, withdrawInvitation);
       $$(&quot;[data-remove-me]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, withdrawInvitation));
-      $$(&quot;[data-remove-email-row]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; removeEmailRowPlayer(btn)));
+      wireEmailRowActions($(&quot;#editor&quot;));
       wireEmailAutofillGuard($(&quot;#editor&quot;));
       refreshEmailRowAvatars($(&quot;#editor&quot;));
       applyBalls($(&quot;#editor&quot;));
@@ -3753,6 +3821,20 @@ main {
       enforceUniqueVisibleEmails(focusedEmailInput);
       return $$(&quot;.player-email&quot;).map(input =&gt; input.value.trim()).filter(Boolean);
     }
+    function collectPlayerSlots() {
+      enforceUniqueVisibleEmails(focusedEmailInput);
+      return $$('#emailList .email-row').map((row, index) =&gt; {
+        const input = row.querySelector('.player-email');
+        const email = input?.value.trim() || &quot;&quot;;
+        if (!email) return null;
+        const acceptedButton = row.querySelector('[data-toggle-accepted]');
+        return {
+          slotNo: index + 1,
+          email,
+          accepted: isUserEmail(email) || acceptedButton?.dataset.accepted === &quot;1&quot;
+        };
+      }).filter(Boolean);
+    }
     function selectedLevelsFromEditor() {
       const active = $$(&quot;[data-seg='level'] .chip.active&quot;).map(btn =&gt; btn.dataset.value).filter(Boolean);
       return active.length ? active : [&quot;egal&quot;];
@@ -3773,7 +3855,8 @@ main {
       const reminderButton = $(&quot;#sendReminder&quot;);
       const actionButton = forcedMailType === &quot;status_update&quot; ? reminderButton : sendEmails ? sendButton : saveButton;
       const audience = selectedChip(&quot;audience&quot;);
-      const emails = collectEmails();
+      const playerSlots = collectPlayerSlots();
+      const emails = playerSlots.map(slot =&gt; slot.email);
       const ageFilter = selectedAgeFilterFromEditor();
       if (!ageFilter) return;
       const chosenMailType = forcedMailType || (audience === &quot;Mitspieler&quot; ? selectedChip(&quot;mailType&quot;) : &quot;lust_auf_padel&quot;) || &quot;lust_auf_padel&quot;;
@@ -3819,11 +3902,13 @@ main {
             group_id: audience === &quot;Meine Gruppe&quot; ? state.selectedGroupId : null,
             send_emails: sendEmails,
             mail_type: chosenMailType,
-            slots: playerEmails.map((email, index) =&gt; ({
-              slot_no: index + 1,
-              email,
-              display_name: email.toLowerCase() === user.email.toLowerCase() ? user.name : &quot;&quot;,
-              playing_level: email.toLowerCase() === user.email.toLowerCase() ? user.level : &quot;&quot;
+            slots: playerSlots.slice(0, 4).map(slot =&gt; ({
+              slot_no: slot.slotNo,
+              email: slot.email,
+              accepted: slot.accepted,
+              status: slot.accepted ? &quot;accepted&quot; : &quot;invited&quot;,
+              display_name: slot.email.toLowerCase() === user.email.toLowerCase() ? user.name : &quot;&quot;,
+              playing_level: slot.email.toLowerCase() === user.email.toLowerCase() ? user.level : &quot;&quot;
             }))
           };
           const data = await callMeetupFunction(payload);
@@ -3863,16 +3948,19 @@ main {
           return;
         }
       }
-      const players = playerEmails.map(email =&gt; ({
+      const players = playerSlots.slice(0, 4).map(slot =&gt; {
+        const email = slot.email;
+        return ({
         email,
         name: email.toLowerCase() === user.email.toLowerCase() ? user.name : email,
         level: email.toLowerCase() === user.email.toLowerCase() ? user.level : &quot;&quot;,
         avatar_url: email.toLowerCase() === user.email.toLowerCase() ? user.avatar_url || &quot;&quot; : &quot;&quot;,
-        status: email.toLowerCase() === user.email.toLowerCase() ? &quot;accepted&quot; : &quot;invited&quot;,
+        status: slot.accepted ? &quot;accepted&quot; : &quot;invited&quot;,
         inviteKind: email.toLowerCase() === user.email.toLowerCase() ? &quot;organizer&quot; : &quot;direct&quot;,
         isOrganizer: email.toLowerCase() === user.email.toLowerCase(),
-        accepted: email.toLowerCase() === user.email.toLowerCase()
-      }));
+        accepted: slot.accepted,
+        acceptedAt: slot.accepted ? new Date().toISOString() : &quot;&quot;
+      })});
       while (players.length &lt; 4) players.push(null);
       const mailType = chosenMailType === &quot;status_update&quot; ? &quot;Erinnerung&quot; : chosenMailType === &quot;du_bist_dabei&quot; ? &quot;Du bist dabei&quot; : &quot;Lust auf Padel?&quot;;
       const shouldSendMail = !!sendEmails;
@@ -4030,7 +4118,7 @@ main {
     }
     function renderStatus() {
       const now = new Date();
-      const ownItems = state.ownMatches.filter(item =&gt; isFutureItem(item, now) &amp;&amp; hasVisibleBookingSource(item)).sort(sortByDate).slice(0, 10);
+      const ownItems = state.ownMatches.filter(item =&gt; isWithinNextMonth(item, now) &amp;&amp; hasVisibleBookingSource(item)).sort(sortByDate).slice(0, 20);
       $(&quot;#ownStatus&quot;).innerHTML = ownItems.length ? ownItems.map((item, index) =&gt; miniStatusHTML(item, &quot;own&quot;, index)).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine eigene Einladung vorbereitet.&lt;/div&gt;';
       const acceptedItems = state.accepted.map(id =&gt; invites.find(item =&gt; item.id === id)).filter(Boolean).filter(item =&gt; isFutureItem(item, now)).sort(sortByDate).slice(0, 10);
       $(&quot;#acceptedStatus&quot;).innerHTML = acceptedItems.length ? acceptedItems.map((item, index) =&gt; miniStatusHTML(item, &quot;direct&quot;, index)).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine Einladung angenommen.&lt;/div&gt;';
