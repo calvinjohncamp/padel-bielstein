@@ -2164,6 +2164,13 @@ main {
     .source-mini strong{display:block;color:var(--ink)}
     .source-mini span{display:block}
     .duration-line{display:block;color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900}
+    .editor-swipe-meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:7px;color:var(--muted);font-size:12px;font-weight:900}
+    .editor-swipe-meta strong{color:var(--ink);font-weight:900}
+    .editor-swipe-actions{display:inline-flex;align-items:center;gap:4px}
+    .editor-nav{width:30px;height:30px;border:0;border-radius:999px;background:rgba(255,255,255,.58);color:var(--ink);display:inline-grid;place-items:center;font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900;line-height:1}
+    .editor-nav:not(:disabled):hover,.editor-nav:not(:disabled):focus-visible{background:var(--ink);color:var(--cream);outline:0}
+    .editor-nav:disabled{opacity:.28;cursor:default}
+    .swipe-word{color:var(--muted)}
     .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}
     .field label,.email-block-label{display:block;margin-bottom:8px;color:var(--muted);font-size:12px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
     .seg{display:flex;gap:2px;background:var(--soft);border-radius:12px;padding:3px;overflow-x:auto;scrollbar-width:none}
@@ -2827,13 +2834,53 @@ main {
     function sourceLabel(item) {
       return `${item.day}, ${item.date} · ${item.time}-${item.end} Uhr · ${item.court}`;
     }
+    function orderedBookings() {
+      return bookings.slice().sort(sortByDate).slice(0, 10);
+    }
+    function orderedInvites() {
+      return invites.slice().sort((a, b) =&gt; (a.priority - b.priority) || sortByDate(a, b)).slice(0, 10);
+    }
+    function editorDeckItems() {
+      return [
+        ...orderedBookings().map(item =&gt; ({ type: &quot;booking&quot;, item })),
+        ...orderedInvites().map(item =&gt; ({ type: &quot;invite&quot;, item }))
+      ];
+    }
+    function selectedDeckIndex() {
+      const deck = editorDeckItems();
+      return deck.findIndex(entry =&gt; entry.type === state.selectedType &amp;&amp; entry.item.id === state.selectedId);
+    }
+    function selectDeckIndex(index) {
+      const deck = editorDeckItems();
+      const entry = deck[index];
+      if (!entry) return;
+      if (entry.type === &quot;booking&quot;) selectBooking(entry.item.id);
+      else selectInvite(entry.item.id);
+    }
+    function editorPagerHTML(kind) {
+      const deck = editorDeckItems();
+      const index = selectedDeckIndex();
+      const safeIndex = index &gt;= 0 ? index : 0;
+      const canPrev = safeIndex &gt; 0;
+      const canNext = safeIndex &lt; deck.length - 1;
+      const kindLabel = kind === &quot;booking&quot; ? &quot;Buchung&quot; : &quot;Einladung&quot;;
+      if (deck.length &lt;= 1) return &quot;&quot;;
+      return `&lt;span class=&quot;editor-swipe-meta&quot;&gt;
+        &lt;strong&gt;${kindLabel} ${safeIndex + 1} von ${deck.length}&lt;/strong&gt;
+        &lt;span class=&quot;editor-swipe-actions&quot; aria-label=&quot;Weitere Termine blättern&quot;&gt;
+          &lt;button class=&quot;editor-nav&quot; type=&quot;button&quot; data-editor-prev aria-label=&quot;Vorheriger Termin&quot; ${canPrev ? &quot;&quot; : &quot;disabled&quot;}&gt;‹&lt;/button&gt;
+          &lt;button class=&quot;editor-nav&quot; type=&quot;button&quot; data-editor-next aria-label=&quot;Nächster Termin&quot; ${canNext ? &quot;&quot; : &quot;disabled&quot;}&gt;›&lt;/button&gt;
+        &lt;/span&gt;
+        &lt;span class=&quot;swipe-word&quot;&gt;Wischen&lt;/span&gt;
+      &lt;/span&gt;`;
+    }
     function selectedToneClass() {
-      const list = state.selectedType === &quot;booking&quot; ? bookings.slice().sort(sortByDate) : invites.slice().sort((a, b) =&gt; (a.priority - b.priority) || sortByDate(a, b)).slice(0, 10);
+      const list = state.selectedType === &quot;booking&quot; ? orderedBookings() : orderedInvites();
       const index = Math.max(0, list.findIndex(item =&gt; item.id === state.selectedId));
       return index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
     }
     function renderPickLists() {
-      const sortedBookings = bookings.slice().sort(sortByDate).slice(0, 10);
+      const sortedBookings = orderedBookings();
       $(&quot;#myBookings&quot;).innerHTML = sortedBookings.length ? sortedBookings.map((item, index) =&gt; {
         const active = state.selectedType === &quot;booking&quot; &amp;&amp; state.selectedId === item.id;
         const tone = index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
@@ -2846,8 +2893,8 @@ main {
           ${miniAvatarHTML()}
         &lt;/button&gt;
       `}).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine kommenden Buchungen gefunden.&lt;/div&gt;';
-      const orderedInvites = invites.slice().sort((a, b) =&gt; (a.priority - b.priority) || sortByDate(a, b)).slice(0, 10);
-      $(&quot;#incomingInvites&quot;).innerHTML = orderedInvites.length ? orderedInvites.map((item, index) =&gt; {
+      const sortedInvites = orderedInvites();
+      $(&quot;#incomingInvites&quot;).innerHTML = sortedInvites.length ? sortedInvites.map((item, index) =&gt; {
         const active = state.selectedType === &quot;invite&quot; &amp;&amp; state.selectedId === item.id;
         const tone = index % 2 === 0 ? &quot;tone-a&quot; : &quot;tone-b&quot;;
         return `
@@ -3267,7 +3314,7 @@ main {
         &lt;div class=&quot;create-head&quot;&gt;
           &lt;div&gt;
             &lt;h2 class=&quot;card-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/h2&gt;
-            &lt;p class=&quot;card-sub&quot;&gt;&lt;strong class=&quot;duration-line&quot;&gt;${esc(durationText(item.duration))}&lt;/strong&gt;&lt;/p&gt;
+            &lt;p class=&quot;card-sub&quot;&gt;&lt;strong class=&quot;duration-line&quot;&gt;${esc(durationText(item.duration))}&lt;/strong&gt;${editorPagerHTML(&quot;booking&quot;)}&lt;/p&gt;
           &lt;/div&gt;
           &lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${esc(item.court)}&lt;/strong&gt;${esc(item.paidBy)}&lt;/div&gt;
         &lt;/div&gt;
@@ -3333,7 +3380,7 @@ main {
         &lt;div class=&quot;create-head&quot;&gt;
           &lt;div&gt;
             &lt;h2 class=&quot;card-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/h2&gt;
-            &lt;p class=&quot;card-sub&quot;&gt;${esc(item.court)} · ${esc(item.duration)} · ${item.mode === &quot;direct&quot; ? &quot;direkte Einladung&quot; : &quot;offene Einladung&quot;}&lt;/p&gt;
+            &lt;p class=&quot;card-sub&quot;&gt;${esc(item.court)} · ${esc(item.duration)} · ${item.mode === &quot;direct&quot; ? &quot;direkte Einladung&quot; : &quot;offene Einladung&quot;} ${editorPagerHTML(&quot;invite&quot;)}&lt;/p&gt;
           &lt;/div&gt;
           &lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${filled} von 4 Mitspielern&lt;/strong&gt;&lt;span&gt;${filled === 1 ? &quot;hat&quot; : &quot;haben&quot;} bisher zugesagt&lt;/span&gt;&lt;/div&gt;
         &lt;/div&gt;
@@ -3456,6 +3503,50 @@ main {
       wireEmailAutofillGuard($(&quot;#editor&quot;));
       refreshEmailRowAvatars($(&quot;#editor&quot;));
       applyBalls($(&quot;#editor&quot;));
+      wireEditorPager();
+      sendMeetHeight();
+    }
+    function wireEditorPager() {
+      const card = $(&quot;#editor .create-card&quot;);
+      if (!card) return;
+      const go = delta =&gt; {
+        const index = selectedDeckIndex();
+        if (index &lt; 0) return;
+        selectDeckIndex(index + delta);
+      };
+      $$(&quot;[data-editor-prev]&quot;, card).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, event =&gt; {
+        event.preventDefault();
+        event.stopPropagation();
+        go(-1);
+      }));
+      $$(&quot;[data-editor-next]&quot;, card).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, event =&gt; {
+        event.preventDefault();
+        event.stopPropagation();
+        go(1);
+      }));
+      let touchStartX = 0;
+      let touchStartY = 0;
+      card.addEventListener(&quot;touchstart&quot;, event =&gt; {
+        if (event.target.closest(&quot;input,select,textarea,button,.email-panel,.form-grid,.actions&quot;)) {
+          touchStartX = 0;
+          touchStartY = 0;
+          return;
+        }
+        const touch = event.touches && event.touches[0];
+        if (!touch) return;
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      }, { passive: true });
+      card.addEventListener(&quot;touchend&quot;, event =&gt; {
+        if (!touchStartX &amp;&amp; !touchStartY) return;
+        const touch = event.changedTouches && event.changedTouches[0];
+        if (!touch) return;
+        const dx = touch.clientX - touchStartX;
+        const dy = touch.clientY - touchStartY;
+        if (Math.abs(dx) &lt; 48 || Math.abs(dx) &lt; Math.abs(dy) * 1.35) return;
+        if (dx &lt; 0) go(1);
+        else go(-1);
+      }, { passive: true });
     }
     function selectBooking(id) {
       state.selectedType = &quot;booking&quot;;
@@ -11856,7 +11947,7 @@ function profileCardHTML() {
         <label class="form-label">Info-Mails</label>
         <label class="acct-pref-row">
           <input type="checkbox" id="pfInfoMails" ${infoAllowed ? 'checked' : ''}>
-          <span><strong>Info-Mails zulassen</strong><em>Hinweise der Anlage, z. B. Turniere, Clubmeisterschaften, Aktionen oder Platzsperrungen. Buchungs-, Zahlungs- und Terminbestätigungen bleiben davon unabhängig.</em></span>
+          <span><strong>Info-Mails zulassen</strong><em>Hinweise von Padel Bielstein, z. B. Turniere, Clubmeisterschaften, Aktionen oder Platzsperrungen. Buchungs-, Zahlungs- und Terminbestätigungen bleiben davon unabhängig.</em></span>
         </label>
       </div>
       <div class="form-group">
