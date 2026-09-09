@@ -2147,9 +2147,9 @@ main {
     .row-title{display:block;font-weight:900}
     .row-sub{margin-top:3px;color:var(--muted);font-size:13px;line-height:1.35}
     .status{height:fit-content;padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:12px;font-weight:900;white-space:nowrap}
-    .status.progress{border-radius:14px;line-height:1.25;text-align:right;white-space:normal}
+    .status.progress{border-radius:14px;line-height:1.25;text-align:center;white-space:normal;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;max-width:100%}
     .status.progress strong{display:block;color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
-    .status.progress span{display:block;color:var(--muted)}
+    .status.progress span{display:block;color:var(--muted);max-width:100%;white-space:normal}
     .status.green{background:#DDEBD9;color:var(--green)}
     .status.complete{background:var(--ink);color:var(--cream);padding:10px 12px;font-size:13px}
     .status.complete strong,.status.complete span{color:var(--cream)}
@@ -2343,7 +2343,7 @@ main {
     .meet-info-text strong{color:var(--cream);font-weight:800}
     [hidden]{display:none!important}
     @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.groups-field{grid-column:auto}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-stack{justify-items:start}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
-    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.source-mini{justify-self:start;text-align:left}.booking-summary{align-items:flex-start;gap:9px}.booking-summary-left{width:100%;align-items:flex-start}.booking-summary-chip{font-size:12px;padding:8px 10px;text-align:left;justify-content:flex-start}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:start;line-height:1.18;align-items:flex-start;text-align:left}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto auto minmax(0,1fr) auto;align-items:start;gap:9px;padding:10px}.email-list .email-row:not(.has-avatar){grid-template-columns:auto minmax(0,1fr)}.email-list .email-row .mini-avatar{width:42px;height:42px}.seat-index{grid-column:1;grid-row:1;width:32px;height:32px}.email-row-avatar{grid-column:2;grid-row:1}.email-field-wrap{grid-column:3;grid-row:1;min-width:0}.email-list .email-row .email-profile{display:none}.email-row-status{grid-column:1 / -1;grid-row:2;justify-content:flex-start;flex-wrap:wrap;overflow:visible;gap:5px;margin-top:4px}.email-accept-toggle{grid-column:3;grid-row:3;justify-self:start;margin-top:2px}.email-remove{grid-column:4;grid-row:1}.email-status-pill{font-size:10px;padding:5px 7px;max-width:100%;white-space:normal;text-align:left}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
+    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.source-mini{justify-self:start;text-align:left}.booking-summary{align-items:flex-start;gap:9px}.booking-summary-left{width:100%;align-items:flex-start}.booking-summary-chip{font-size:12px;padding:8px 10px;text-align:left;justify-content:flex-start}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:start;line-height:1.18;align-items:flex-start;text-align:left}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto auto minmax(0,1fr) auto;align-items:start;gap:9px;padding:10px}.email-list .email-row:not(.has-avatar){grid-template-columns:auto minmax(0,1fr)}.email-list .email-row .mini-avatar{width:42px;height:42px}.seat-index{grid-column:1;grid-row:1;width:32px;height:32px}.email-row-avatar{grid-column:2;grid-row:1}.email-field-wrap{grid-column:3;grid-row:1;min-width:0}.email-list .email-row .email-profile{display:none}.email-row-status{grid-column:1 / -1;grid-row:2;justify-content:flex-start;flex-wrap:wrap;overflow:visible;gap:5px;margin-top:4px}.email-accept-toggle{grid-column:3;grid-row:3;justify-self:start;margin-top:2px}.email-remove{grid-column:4;grid-row:1}.email-status-pill{font-size:10px;padding:5px 7px;max-width:100%;white-space:normal;text-align:left}.match-top{display:grid;grid-template-columns:minmax(108px,.72fr) minmax(0,1fr);align-items:start}.status.progress{justify-self:stretch;width:100%;padding:10px 9px;text-align:center}.status.progress strong,.status.progress span{overflow-wrap:normal;word-break:normal;hyphens:none}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
@@ -4254,11 +4254,16 @@ main {
       const accepted = confirmedPlayerCount(item);
       const informed = inviteeDeliveryEmails(item).length;
       const statusText = accepted &gt;= 4 ? &quot;Buchung vollständig&quot; : `${accepted} von 4 zugesagt`;
-      const detailParts = [];
-      if (accepted &gt;= 4) detailParts.push(&quot;4 Zusagen&quot;);
-      if (kind === &quot;own&quot;) detailParts.push(audienceLongLabel(item));
-      if (informed) detailParts.push(`${informed} informiert`);
-      if (accepted &amp;&amp; accepted &lt; 4) detailParts.push(`${accepted} Zusage${accepted === 1 ? &quot;&quot; : &quot;n&quot;}`);
+      const detailLines = [];
+      if (accepted &gt;= 4) detailLines.push(&quot;4 Zusagen&quot;);
+      if (kind === &quot;own&quot;) {
+        const info = informed ? `${informed}\u00a0informiert` : &quot;gespeichert&quot;;
+        const maybeAccepted = accepted &amp;&amp; accepted &lt; 4 ? ` · ${accepted}\u00a0Zusage${accepted === 1 ? &quot;&quot; : &quot;n&quot;}` : &quot;&quot;;
+        detailLines.push(`${audienceLongLabel(item)} · ${info}${maybeAccepted}`);
+      } else if (accepted &amp;&amp; accepted &lt; 4) {
+        detailLines.push(`${accepted}\u00a0Zusage${accepted === 1 ? &quot;&quot; : &quot;n&quot;}`);
+      }
+      const detailHtml = detailLines.length ? detailLines.map(line =&gt; `&lt;span&gt;${esc(line)}&lt;/span&gt;`).join(&quot;&quot;) : '&lt;span&gt;gespeichert&lt;/span&gt;';
       const world = kind === &quot;own&quot; ? &quot;own-world&quot; : &quot;invite-world&quot;;
       const shade = index % 2 === 0 ? &quot;shade-a&quot; : &quot;shade-b&quot;;
       const complete = accepted &gt;= 4;
@@ -4266,7 +4271,7 @@ main {
         &lt;div class=&quot;badge&quot;&gt;${kind === &quot;own&quot; ? &quot;Ich habe eingeladen&quot; : &quot;Ich wurde eingeladen und bin dabei&quot;}&lt;/div&gt;
         &lt;div class=&quot;match-top&quot;&gt;
           &lt;div&gt;&lt;div class=&quot;day&quot;&gt;${esc(item.day)}, ${esc(item.date)}&lt;/div&gt;&lt;div class=&quot;time&quot;&gt;${esc(item.time)}-${esc(item.end)}&lt;/div&gt;&lt;/div&gt;
-          &lt;span class=&quot;status progress ${complete ? &quot;complete&quot; : &quot;green&quot;}&quot;&gt;&lt;strong&gt;${esc(statusText)}&lt;/strong&gt;&lt;span&gt;${esc(detailParts.join(&quot; · &quot;) || &quot;gespeichert&quot;)}&lt;/span&gt;&lt;/span&gt;
+          &lt;span class=&quot;status progress ${complete ? &quot;complete&quot; : &quot;green&quot;}&quot;&gt;&lt;strong&gt;${esc(statusText)}&lt;/strong&gt;${detailHtml}&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&quot;meta&quot;&gt;&lt;span&gt;${esc(item.court)}&lt;/span&gt;&lt;span&gt;${esc(item.duration)}&lt;/span&gt;${item.mailType ? `&lt;span&gt;${esc(item.mailType)}&lt;/span&gt;` : &quot;&quot;}&lt;/div&gt;
         &lt;div class=&quot;player-grid&quot;&gt;${[0,1,2,3].map(i =&gt; seatHTML(item.players[i], i)).join(&quot;&quot;)}&lt;/div&gt;
@@ -16803,6 +16808,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     return s;
   };
   window.__splash = {};
+  window.__splashCacheKey = 'pbSplashConfigCache';
   window.pbSplashActionHexColor = function(value, fallback){
     var s=String(value||'').trim();
     if(/^#[0-9a-fA-F]{6}$/.test(s)) return s;
@@ -16857,46 +16863,52 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     window.pbApplySplashActionStyle(window.__splash||{});
     window.pbRefreshSplashActionVisibility();
   };
+  window.pbApplySplashData = function(d){
+    if(!d) return;
+    window.__splash = d;
+    var claim = document.querySelector('.pb-splash-claim');
+    if(claim && d.splash_claim!=null){ claim.innerHTML = pbEsc(d.splash_claim).replace(/\n/g,'<br>'); }
+    var foot = document.querySelector('.pb-splash-foot');
+    if(foot){
+      if(d.splash_subline!=null) foot.textContent = d.splash_subline;
+      foot.style.display = (d.splash_subline_visible===false) ? 'none' : '';
+    }
+    var kick = document.querySelector('#pbSplashEarly .kick');
+    if(kick){
+      if(d.splash_eb_kicker!=null) kick.textContent = d.splash_eb_kicker;
+      kick.style.color = window.pbPaletteColor(d.splash_eb_kicker_color,'coral');
+    }
+    var txt = document.querySelector('#pbSplashEarly .txt');
+    if(txt){
+      var bis = window.ebFmtDate ? window.ebFmtDate(d.earlybird_end) : '';
+      var tc = window.pbPaletteColor(d.splash_eb_text_color,'beige');
+      var hc = window.pbPaletteColor(d.splash_eb_hi_color,'coral');
+      txt.style.color = tc;
+      txt.innerHTML = window.pbRenderMarked(d.splash_eb_text, hc, bis);
+    }
+    if(typeof window.pbSetSplashActionImage==='function' && Object.prototype.hasOwnProperty.call(d, 'splash_action_image_url')){
+      window.pbSetSplashActionImage(d.splash_action_image_url || d.splash_eb_image_url || window.__splashActionImageUrl || '');
+    }
+    var actionLabel=document.getElementById('pbSplashActionPrimaryLabel');
+    if(actionLabel) actionLabel.textContent = String(d.splash_action_cta_label || 'Mehr anzeigen').trim() || 'Mehr anzeigen';
+    if(typeof window.pbApplySplashActionStyle==='function') window.pbApplySplashActionStyle(d);
+    if(typeof window.fillSplashAdmin==='function') window.fillSplashAdmin();
+  };
   window.loadSplash = async function(){
     try{
       if(typeof sb==='undefined' || !sb) return;
+      try{
+        var cached=JSON.parse(localStorage.getItem(window.__splashCacheKey)||'null');
+        if(cached) window.pbApplySplashData(cached);
+      }catch(e){}
       var splashFields='splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,splash_action_cta_label,splash_action_image_url,splash_action_image_tint,splash_action_tint_enabled,splash_action_tint_color,splash_action_scale_pct,splash_action_rotation_deg,splash_action_x_pct,splash_action_y_pct,earlybird_end';
       var r = await sb.from('app_flags').select(splashFields).maybeSingle();
       if(r.error){
         r = await sb.from('app_flags').select('splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,earlybird_end').maybeSingle();
       }
       if(r.error || !r.data) return;
-      var d = r.data; window.__splash = d;
-      // 1) Claim (bis 4 Zeilen; Umbrüche des Editors übernehmen)
-      var claim = document.querySelector('.pb-splash-claim');
-      if(claim && d.splash_claim!=null){ claim.innerHTML = pbEsc(d.splash_claim).replace(/\n/g,'<br>'); }
-      // 2) Zeile unter „Jetzt loslegen" + Sichtbarkeit
-      var foot = document.querySelector('.pb-splash-foot');
-      if(foot){
-        if(d.splash_subline!=null) foot.textContent = d.splash_subline;
-        foot.style.display = (d.splash_subline_visible===false) ? 'none' : '';
-      }
-      // 3) Frühbucher-Kachel: Überschrift + Text + Farben
-      var kick = document.querySelector('#pbSplashEarly .kick');
-      if(kick){
-        if(d.splash_eb_kicker!=null) kick.textContent = d.splash_eb_kicker;
-        kick.style.color = window.pbPaletteColor(d.splash_eb_kicker_color,'coral');
-      }
-      var txt = document.querySelector('#pbSplashEarly .txt');
-      if(txt){
-        var bis = window.ebFmtDate ? window.ebFmtDate(d.earlybird_end) : '';
-        var tc = window.pbPaletteColor(d.splash_eb_text_color,'beige');
-        var hc = window.pbPaletteColor(d.splash_eb_hi_color,'coral');
-        txt.style.color = tc;
-        txt.innerHTML = window.pbRenderMarked(d.splash_eb_text, hc, bis);
-      }
-      if(typeof window.pbSetSplashActionImage==='function' && Object.prototype.hasOwnProperty.call(d, 'splash_action_image_url')){
-        window.pbSetSplashActionImage(d.splash_action_image_url || d.splash_eb_image_url || window.__splashActionImageUrl || '');
-      }
-      var actionLabel=document.getElementById('pbSplashActionPrimaryLabel');
-      if(actionLabel) actionLabel.textContent = String(d.splash_action_cta_label || 'Mehr anzeigen').trim() || 'Mehr anzeigen';
-      if(typeof window.pbApplySplashActionStyle==='function') window.pbApplySplashActionStyle(d);
-      if(typeof window.fillSplashAdmin==='function') window.fillSplashAdmin();
+      try{ localStorage.setItem(window.__splashCacheKey, JSON.stringify(r.data)); }catch(e){}
+      window.pbApplySplashData(r.data);
     }catch(e){}
   };
 
@@ -17722,6 +17734,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 <script>
 (function(){
   var ROT_KEY='pbSponsorRot';
+  var CACHE_KEY='pbSponsorsPublicCache';
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
   function normUrl(u){
     u=String(u||'').trim();
@@ -17729,8 +17742,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(!/^https?:\/\//i.test(u)) u='https://'+u;
     return /^https?:\/\/[^ ]+\.[^ ]+/i.test(u) ? u : '';
   }
-  function displayLogoUrl(s){
+  function displayLogoUrl(s, quiet){
     if(!s) return '';
+    if(quiet) return s.logo_url || '';
     return (s.action_logo_mode === 'replace' && s.action_logo_url) ? s.action_logo_url : s.logo_url;
   }
   function linkedTile(s, cl, inner){
@@ -17739,11 +17753,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(url) return '<a class="'+cl+'" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer nofollow" title="'+title+'">'+inner+'</a>';
     return '<div class="'+cl+'" title="'+title+'">'+inner+'</div>';
   }
-  function tile(s, prem){
-    var logo=displayLogoUrl(s);
+  function tile(s, prem, quiet){
+    var logo=displayLogoUrl(s, quiet);
     if(!s || !logo) return '';
-    var direct=(s.action_logo_mode === 'replace' && s.action_logo_url);
-    var slide=(s.action_logo_mode === 'slideshow' && s.logo_url && s.action_logo_url);
+    var direct=(!quiet && s.action_logo_mode === 'replace' && s.action_logo_url);
+    var slide=(!quiet && s.action_logo_mode === 'slideshow' && s.logo_url && s.action_logo_url);
     var cl='pbsp-tile'+(prem?' pbsp-prem':'')+(direct?' pbsp-tile-action-direct':'')+(slide?' pbsp-tile-slideshow':'');
     if(slide){
       return linkedTile(s, cl, '<img class="pbsp-logo-main" src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'"><span class="pbsp-logo-action"><img class="pbsp-action-motif" src="'+esc(s.action_logo_url)+'" alt="'+esc(s.name)+' Aktion"></span>');
@@ -17766,9 +17780,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   function fillPremiumDuo(id, kicker, premiumRows){
     var el=document.getElementById(id); if(!el) return;
-    var items=(premiumRows||[]).slice(0,2).map(function(s){ return tile(s,true); }).filter(Boolean);
+    var items=(premiumRows||[]).slice(0,2).map(function(s){ return tile(s,true,true); }).filter(Boolean);
     while(items.length<2) items.push(emptyPremiumTile(items.length+1));
     el.innerHTML = '<div class="pbsp-kicker">'+kicker+'</div><div class="pbsp-duo">'+items.join('')+'</div>';
+  }
+  function renderSplashPremiumFromRows(rows){
+    var prem=(rows||[]).filter(function(r){return r.tier==='premium';})
+      .sort(function(a,b){return (a.sort_order||0)-(b.sort_order||0);});
+    if(prem.length) fillPremiumDuo('pbSplashSponsor', 'Präsentiert von unseren Premium-Partnern', prem);
   }
   function pushWeighted(list, rows, weight){
     var w=Math.max(parseInt(weight,10)||0,0);
@@ -17783,6 +17802,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   async function loadSponsorsDisplay(){
     try{
       if(typeof sb==='undefined' || !sb) return;
+      try{
+        var cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'[]');
+        if(Array.isArray(cached) && cached.length) renderSplashPremiumFromRows(cached);
+      }catch(e){}
       var res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order,website_url');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order,website_url');
@@ -17790,6 +17813,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
       if(res.error) throw res.error;
       var rows = res.data || [];
+      try{ localStorage.setItem(CACHE_KEY, JSON.stringify(rows.slice(0,80))); }catch(e){}
       var pick = function(t){ return rows.filter(function(r){return r.tier===t;})
                                   .sort(function(a,b){return (a.sort_order||0)-(b.sort_order||0);}); };
       var prem=pick('premium'), part=pick('partner'), reg=pick('regional');
@@ -17856,8 +17880,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
   }
   function initSponsorArea(){
-    if(typeof loadActionLogoSlideshowSettings==='function') loadActionLogoSlideshowSettings().then(loadSponsorsDisplay);
-    else loadSponsorsDisplay();
+    loadSponsorsDisplay();
+    if(typeof loadActionLogoSlideshowSettings==='function') loadActionLogoSlideshowSettings();
     if(typeof loadPartnerFlag==='function') loadPartnerFlag();
     if(typeof loadSponsorsEnabled==='function') loadSponsorsEnabled();
     if(typeof loadShareCardTheme==='function') loadShareCardTheme();
