@@ -2190,10 +2190,10 @@ main {
     .age-range .text-input{min-height:40px;text-align:center;font-weight:900}
     .email-panel{margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.42)}
     .meetup-status-panel{margin-top:18px;padding:15px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.46)}
-    .meetup-status-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+    .meetup-status-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:flex-start;gap:12px;margin-bottom:12px}
     .meetup-status-title{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900;color:var(--ink)}
     .meetup-status-title span{display:block;margin-top:3px;color:var(--muted);font:800 12px/1.35 Manrope,Arial,sans-serif}
-    .meetup-full{padding:8px 11px;border-radius:999px;background:#DDEBD9;color:var(--green);font-size:12px;font-weight:900;white-space:nowrap}
+    .meetup-full{justify-self:end;padding:8px 11px;border-radius:999px;background:#DDEBD9;color:var(--green);font-size:12px;font-weight:900;white-space:nowrap}
     .delivery-list{display:grid;gap:7px}
     .delivery-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.62)}
     .delivery-mail{display:block;min-width:0;color:var(--ink);font-weight:850;overflow-wrap:anywhere}
@@ -2325,7 +2325,7 @@ main {
     .meet-info-text strong{color:var(--cream);font-weight:800}
     [hidden]{display:none!important}
     @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.groups-field{grid-column:auto}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
-    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}.email-list .email-row .email-profile{grid-column:2;justify-content:flex-start}.seat-index{width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
+    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:start;white-space:normal;line-height:1.25}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto minmax(0,1fr) auto;align-items:start}.email-list .email-row .email-profile{grid-column:2;justify-content:flex-start}.email-remove{grid-column:3;grid-row:1}.seat-index{width:34px;height:34px}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
@@ -2358,7 +2358,7 @@ main {
     &lt;section class=&quot;top-grid&quot; aria-label=&quot;Terminauswahl&quot;&gt;
       &lt;article class=&quot;booking-card pick-card world-own&quot;&gt;
         &lt;h2 class=&quot;card-title&quot;&gt;Meine Buchungen&lt;/h2&gt;
-        &lt;p class=&quot;card-sub&quot;&gt;Nächste 14 Tage, chronologisch sortiert.&lt;/p&gt;
+        &lt;p class=&quot;card-sub&quot;&gt;Kommende Buchungen, chronologisch sortiert.&lt;/p&gt;
         &lt;div class=&quot;list&quot; id=&quot;myBookings&quot;&gt;&lt;/div&gt;
       &lt;/article&gt;
 
@@ -2411,7 +2411,7 @@ main {
     &lt;section class=&quot;status-grid&quot; aria-label=&quot;Verabredungsstatus&quot;&gt;
       &lt;article class=&quot;booking-card world-own&quot;&gt;
         &lt;h2 class=&quot;card-title&quot;&gt;Meine Verabredungen&lt;/h2&gt;
-        &lt;p class=&quot;card-sub&quot;&gt;Buchungen der nächsten 2 Wochen, für die ich schon eingeladen habe.&lt;/p&gt;
+        &lt;p class=&quot;card-sub&quot;&gt;Kommende Buchungen, für die ich schon eingeladen habe.&lt;/p&gt;
         &lt;div class=&quot;list&quot; id=&quot;ownStatus&quot;&gt;&lt;/div&gt;
       &lt;/article&gt;
 
@@ -3116,6 +3116,21 @@ main {
         else if (!html &amp;&amp; existing) existing.remove();
       });
     }
+    function restoreOwnEmailRows(root = document) {
+      let changed = false;
+      $$('#emailList .email-row', root).forEach((row, index) =&gt; {
+        const input = row.querySelector('.player-email');
+        if (!input || !isUserEmail(input.value)) return;
+        if (row.classList.contains('has-remove') &amp;&amp; row.querySelector('.email-player-name') &amp;&amp; row.querySelector('.email-profile')) return;
+        row.outerHTML = emailRowHTML(user.email, index + 1, profileForEmail(user.email), true);
+        changed = true;
+      });
+      if (changed) {
+        wireEmailAutofillGuard(root);
+        applyBalls(root);
+      }
+      return changed;
+    }
     function emailRowHTML(value = &quot;&quot;, index = 1, player = null, allowOrganizerRemove = false) {
       const profile = profileForEmail(value, player);
       const avatar = value ? emailFallbackAvatarHTML(value, profile) : &quot;&quot;;
@@ -3332,17 +3347,22 @@ main {
         input.addEventListener(&quot;input&quot;, () =&gt; {
           runEmailAutofillGuard(focusedEmailInput || input);
           refreshEmailRowAvatars(root);
+          if (isUserEmail(input.value)) restoreOwnEmailRows(root);
           input.dataset.prevValue = input.value || &quot;&quot;;
         });
         input.addEventListener(&quot;change&quot;, () =&gt; {
           runEmailAutofillGuard(focusedEmailInput || input);
           refreshEmailRowAvatars(root);
+          restoreOwnEmailRows(root);
           input.dataset.prevValue = input.value || &quot;&quot;;
         });
         input.addEventListener(&quot;keydown&quot;, event =&gt; {
           if (event.key === &quot;Enter&quot;) runEmailAutofillGuard(input);
         });
-        input.addEventListener(&quot;blur&quot;, () =&gt; runEmailAutofillGuard(input));
+        input.addEventListener(&quot;blur&quot;, () =&gt; {
+          runEmailAutofillGuard(input);
+          restoreOwnEmailRows(root);
+        });
       });
     }
     function segmentHTML(name, items, active, multi = false) {
@@ -3446,7 +3466,7 @@ main {
       if (failedCount) statusParts.push(`${failedCount} fehlgeschlagen`);
       return `&lt;div class=&quot;meetup-status-panel&quot;&gt;
         &lt;div class=&quot;meetup-status-head&quot;&gt;
-          &lt;div class=&quot;meetup-status-title&quot;&gt;${esc(audienceLongLabel(existing))} verschickt&lt;span&gt;Zuletzt ${esc(formatDateTime(latestSent.sentAt))} · ${esc(statusParts.join(&quot; · &quot;))}&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;meetup-status-title&quot;&gt;${esc(audienceLongLabel(existing))}&lt;span&gt;Verschickt · zuletzt ${esc(formatDateTime(latestSent.sentAt))} · ${esc(statusParts.join(&quot; · &quot;))}&lt;/span&gt;&lt;/div&gt;
           &lt;span class=&quot;meetup-full&quot;&gt;${acceptedCount &gt;= 4 ? &quot;Buchung vollständig · 4 Zusagen&quot; : `${acceptedCount} von 4 zugesagt`}&lt;/span&gt;
         &lt;/div&gt;
         &lt;div class=&quot;delivery-list&quot;&gt;${rows}&lt;/div&gt;
@@ -3483,7 +3503,7 @@ main {
         &lt;/div&gt;
         ${meetupStatusHTML(existing)}
         &lt;div class=&quot;email-panel&quot;&gt;
-          &lt;span class=&quot;email-block-label&quot;&gt;Teilnehmer / Einladungen&lt;/span&gt;
+          &lt;span class=&quot;email-block-label&quot;&gt;Teilnehmer pro Einladung&lt;/span&gt;
           &lt;div class=&quot;email-list&quot; id=&quot;emailList&quot;&gt;
             ${rows.map(row =&gt; emailRowHTML(row.email, row.index, row.player, true)).join(&quot;&quot;)}
           &lt;/div&gt;
