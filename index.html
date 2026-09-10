@@ -2738,14 +2738,14 @@ main {
         const status = result.status || &quot;&quot;;
         const label = mailResultStateLabel(status);
         const stateClass = status === &quot;sent&quot; ? &quot; sent&quot; : status === &quot;failed&quot; ? &quot; failed&quot; : &quot;&quot;;
-        const email = escapeHtml(result.email || &quot;Empfänger ohne Adresse&quot;);
-        const error = status === &quot;failed&quot; &amp;&amp; result.error ? ` &lt;small&gt;${escapeHtml(result.error)}&lt;/small&gt;` : &quot;&quot;;
+        const email = esc(result.email || &quot;Empfänger ohne Adresse&quot;);
+        const error = status === &quot;failed&quot; &amp;&amp; result.error ? ` &lt;small&gt;${esc(result.error)}&lt;/small&gt;` : &quot;&quot;;
         return `&lt;div class=&quot;invite-result-row&quot;&gt;&lt;span class=&quot;invite-result-mail&quot;&gt;${email}${error}&lt;/span&gt;&lt;span class=&quot;invite-result-state${stateClass}&quot;&gt;${label}&lt;/span&gt;&lt;/div&gt;`;
-      }).join(&quot;&quot;) : `&lt;div class=&quot;invite-result-row&quot;&gt;&lt;span class=&quot;invite-result-mail&quot;&gt;${escapeHtml(message || &quot;Es wurde keine neue Adresse angeschrieben.&quot;)}&lt;/span&gt;&lt;span class=&quot;invite-result-state&quot;&gt;geprüft&lt;/span&gt;&lt;/div&gt;`;
+      }).join(&quot;&quot;) : `&lt;div class=&quot;invite-result-row&quot;&gt;&lt;span class=&quot;invite-result-mail&quot;&gt;${esc(message || &quot;Es wurde keine neue Adresse angeschrieben.&quot;)}&lt;/span&gt;&lt;span class=&quot;invite-result-state&quot;&gt;geprüft&lt;/span&gt;&lt;/div&gt;`;
       body.innerHTML = `
         &lt;p class=&quot;invite-result-kicker&quot;&gt;Versand abgeschlossen&lt;/p&gt;
-        &lt;h3 class=&quot;invite-result-title&quot; id=&quot;inviteResultTitle&quot;&gt;${escapeHtml(title || &quot;Spieler informiert&quot;)}&lt;/h3&gt;
-        ${message ? `&lt;p class=&quot;invite-result-sub&quot;&gt;${escapeHtml(message)}&lt;/p&gt;` : &quot;&quot;}
+        &lt;h3 class=&quot;invite-result-title&quot; id=&quot;inviteResultTitle&quot;&gt;${esc(title || &quot;Spieler informiert&quot;)}&lt;/h3&gt;
+        ${message ? `&lt;p class=&quot;invite-result-sub&quot;&gt;${esc(message)}&lt;/p&gt;` : &quot;&quot;}
         &lt;div class=&quot;invite-result-list&quot;&gt;${resultHtml}&lt;/div&gt;
         &lt;button class=&quot;btn coral invite-result-action&quot; type=&quot;button&quot; id=&quot;inviteResultAction&quot;&gt;Schließen&lt;/button&gt;
       `;
@@ -4075,7 +4075,7 @@ main {
       const deleteGroupBtn = $(&quot;#deleteGroup&quot;);
       if (deleteGroupBtn) deleteGroupBtn.addEventListener(&quot;click&quot;, deleteGroup);
       const send = $(&quot;#sendInvite&quot;);
-      if (send) send.addEventListener(&quot;click&quot;, sendInvitation);
+      if (send) send.addEventListener(&quot;click&quot;, () =&gt; sendInvitation(true));
       const reminder = $(&quot;#sendReminder&quot;);
       if (reminder) reminder.addEventListener(&quot;click&quot;, () =&gt; sendInvitation(true, &quot;status_update&quot;));
       const saveMeetup = $(&quot;#saveMeetup&quot;);
