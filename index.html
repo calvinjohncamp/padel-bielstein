@@ -3505,6 +3505,15 @@ main {
     }
     function addEmailRow(value = &quot;&quot;) {
       const list = $(&quot;#emailList&quot;);
+      const emptyInput = $$('.player-email', list).find(input =&gt; !input.value.trim());
+      if (emptyInput &amp;&amp; !value) {
+        emptyInput.focus();
+        return;
+      }
+      if ($$('.player-email', list).length &gt;= 4) {
+        toast(&quot;Eine Buchung hat maximal vier Spielerplätze.&quot;);
+        return;
+      }
       list.insertAdjacentHTML(&quot;beforeend&quot;, emailRowHTML(value, $$(&quot;.player-email&quot;, list).length + 1));
       const input = $$(&quot;.player-email&quot;, list).at(-1);
       if (input) input.focus();
@@ -4222,17 +4231,16 @@ main {
     }
     function collectPlayerSlots() {
       enforceUniqueVisibleEmails(focusedEmailInput);
-      return $$('#emailList .email-row').map((row, index) =&gt; {
+      return $$('#emailList .email-row').map((row) =&gt; {
         const input = row.querySelector('.player-email');
         const email = input?.value.trim() || &quot;&quot;;
         if (!email) return null;
         const acceptedButton = row.querySelector('[data-toggle-accepted]');
         return {
-          slotNo: index + 1,
           email,
           accepted: isUserEmail(email) || acceptedButton?.dataset.accepted === &quot;1&quot;
         };
-      }).filter(Boolean);
+      }).filter(Boolean).slice(0, 4).map((slot, index) =&gt; ({ ...slot, slotNo: index + 1 }));
     }
     function selectedLevelsFromEditor() {
       const active = $$(&quot;[data-seg='level'] .chip.active&quot;).map(btn =&gt; btn.dataset.value).filter(Boolean);
@@ -4315,7 +4323,7 @@ main {
           const saved = data.meetup ? ownMatchFromMeetup(data.meetup) : null;
           if (saved) {
             saved.mailType = chosenMailType === &quot;status_update&quot; ? &quot;Erinnerung&quot; : chosenMailType === &quot;du_bist_dabei&quot; ? &quot;Du bist dabei&quot; : &quot;Lust auf Padel?&quot;;
-            const index = state.ownMatches.findIndex(match =&gt; match.meetupId === saved.meetupId || match.id === saved.id || match.bookingId === saved.bookingId);
+            const index = state.ownMatches.findIndex(match =&gt; match.meetupId === saved.meetupId || match.id === saved.id || sameBookingSource(match, saved));
             if (index &gt;= 0) state.ownMatches.splice(index, 1, saved);
             else state.ownMatches.push(saved);
             state.ownMatches.sort(sortByDate);
@@ -4356,7 +4364,10 @@ main {
               sendMeetHeight();
             });
           } else {
-            refreshActionButtons();
+            window.setTimeout(() =&gt; {
+              refreshActionButtons();
+              sendMeetHeight();
+            }, 1400);
           }
           toast(successText);
           sendMeetHeight();
