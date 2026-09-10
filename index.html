@@ -2247,6 +2247,10 @@ main {
     .invite-action-copy strong{color:var(--ink);font-weight:900;white-space:nowrap}
     .invite-action-buttons{display:grid;gap:10px;align-content:start}
     .invite-mail-choice{margin-top:18px}
+    .cost-option{margin-top:18px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.46);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;cursor:pointer}
+    .cost-option input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--coral);flex:0 0 auto}
+    .cost-option strong{display:block;color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:16px;line-height:1.2}
+    .cost-option small{display:block;margin-top:4px;color:var(--muted);font-size:13px;line-height:1.35}
     .btn{border:0;border-radius:10px;padding:13px 16px;background:var(--ink);color:var(--cream);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px}
     .btn.secondary{background:var(--soft);color:var(--ink)}
     .btn.beige{border:1.5px solid #D3C8B8;background:var(--soft);color:var(--ink);box-shadow:0 2px 0 rgba(28,26,23,.08),0 8px 18px rgba(28,26,23,.05)}
@@ -2909,7 +2913,8 @@ main {
         court: `Court ${row.court}`,
         courtNum: Number(row.court || 1),
         duration: `${durationHours}h`,
-        paidBy: row.source_type === &quot;abo&quot; ? &quot;Abo&quot; : &quot;Einzelbuchung&quot;
+        paidBy: row.source_type === &quot;abo&quot; ? &quot;Abo&quot; : &quot;Einzelbuchung&quot;,
+        costCoveredByOrganizer: row.cost_covered_by_organizer === true
       };
     }
     function ownMatchFromMeetup(row) {
@@ -3862,6 +3867,10 @@ main {
             { value:&quot;du_bist_dabei&quot;, label:&quot;Du bist dabei&quot; }, { value:&quot;lust_auf_padel&quot;, label:&quot;Lust auf Padel?&quot; }
           ], selectedMailType)}
         &lt;/div&gt;
+        &lt;label class=&quot;cost-option&quot;&gt;
+          &lt;input type=&quot;checkbox&quot; id=&quot;costCoveredByOrganizer&quot; ${existing?.costCoveredByOrganizer ? &quot;checked&quot; : &quot;&quot;}&gt;
+          &lt;span&gt;&lt;strong&gt;Ich übernehme die kompletten Kosten&lt;/strong&gt;&lt;small&gt;Wenn ausgeschaltet, nennt die Mail Gesamtpreis und rechnerischen Preis pro Person.&lt;/small&gt;&lt;/span&gt;
+        &lt;/label&gt;
         &lt;div class=&quot;actions invite-save-actions&quot;&gt;
           &lt;div class=&quot;invite-action-copy&quot;&gt;
             &lt;p class=&quot;small-note&quot;&gt;Mit &lt;strong&gt;Spieler informieren&lt;/strong&gt; verschickst du die passende Mail: Bei festen Mitspielern heißt das &lt;strong&gt;Du bist dabei&lt;/strong&gt;, bei Gruppen oder offenen Einladungen &lt;strong&gt;Lust auf Padel?&lt;/strong&gt;. Mit &lt;strong&gt;Erinnerungs-Mail&lt;/strong&gt; kannst du kurz vor dem Match nochmal alle Beteiligten einnorden.&lt;/p&gt;
@@ -4155,6 +4164,7 @@ main {
             group_id: audience === &quot;Meine Gruppe&quot; ? state.selectedGroupId : null,
             send_emails: sendEmails,
             mail_type: chosenMailType,
+            cost_covered_by_organizer: $(&quot;#costCoveredByOrganizer&quot;)?.checked === true,
             slots: playerSlots.slice(0, 4).map(slot =&gt; ({
               slot_no: slot.slotNo,
               email: slot.email,
@@ -4176,12 +4186,21 @@ main {
           updateUserLevelReferences();
           renderPickLists();
           renderStatus();
+          const summary = data.mail_summary || {};
+          const sentCount = Number(summary.sent || 0);
+          const skippedCount = Number(summary.skipped || 0);
+          const failedCount = Number(summary.failed || 0);
+          const configured = summary.configured !== false;
           const successText = !sendEmails
             ? &quot;Änderungen gespeichert&quot;
-            : forcedMailType === &quot;status_update&quot; &amp;&amp; data.mails?.length
-              ? `${data.mails.length} Erinnerungs-Mail${data.mails.length === 1 ? &quot;&quot; : &quot;s&quot;} verschickt`
-            : data.mails?.length
-              ? `${data.mails.length} neue Adresse${data.mails.length === 1 ? &quot;&quot; : &quot;n&quot;} informiert`
+            : failedCount
+              ? configured ? `${sentCount} verschickt · ${failedCount} fehlgeschlagen` : &quot;Mailversand nicht konfiguriert&quot;
+            : forcedMailType === &quot;status_update&quot; &amp;&amp; sentCount
+              ? `${sentCount} Erinnerungs-Mail${sentCount === 1 ? &quot;&quot; : &quot;s&quot;} verschickt`
+            : sentCount
+              ? `${sentCount} neue Adresse${sentCount === 1 ? &quot;&quot; : &quot;n&quot;} informiert`
+            : skippedCount
+              ? &quot;Bereits informiert · keine Doppelmail&quot;
               : &quot;Keine neue Adresse zu informieren&quot;;
           if (actionButton) {
             actionButton.classList.remove(&quot;coral&quot;);
@@ -4256,6 +4275,7 @@ main {
         ageMax: ageFilter.max,
         audience,
         groupId: audience === &quot;Meine Gruppe&quot; ? state.selectedGroupId : &quot;&quot;,
+        costCoveredByOrganizer: $(&quot;#costCoveredByOrganizer&quot;)?.checked === true,
         players,
         deliveries: [...previousDeliveries, ...newDeliveries],
         extraEmails: audience === &quot;Meine Gruppe&quot; ? uniqueEmails([...emails.slice(4), ...(selectedGroup?.emails || [])]) : emails.slice(4),
@@ -6537,7 +6557,9 @@ function togglePw(fieldId, btn) {
   btn.title = show ? 'Passwort verbergen' : 'Passwort anzeigen';
 }
 
-function fmt(n) { return n.toLocaleString('de-DE') + ' €'; }
+function fmt(n) {
+  return Number(n || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
 function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -11644,7 +11666,7 @@ async function loadAdminStats() {
     const revenue  = bookings.reduce((s,b) => s + (b.price_cents||0), 0)
                    + abos.reduce((s,a) => s + (a.total_price_cents||0), 0);
     document.getElementById('statBookings').textContent = bookings.length;
-    document.getElementById('statRevenue').textContent  = (revenue/100).toLocaleString('de-DE');
+    document.getElementById('statRevenue').textContent  = (revenue/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     document.getElementById('statAbos').textContent     = abos.length;
   } catch(e) { console.warn('Stats Fehler:', e); }
 }
@@ -11669,7 +11691,7 @@ async function loadAdminBookings() {
         <td>${String(b.hour_start).padStart(2,'0')}:00 – ${String(b.hour_start+b.duration).padStart(2,'0')}:00</td>
         <td>Court #${b.court}</td>
         <td style="color:#e0e0e0;">${b.full_name || '—'}</td>
-        <td style="color:var(--gold);">${b.price_cents ? (b.price_cents/100).toFixed(2)+' €' : '—'}</td>
+        <td style="color:var(--gold);">${b.price_cents ? (b.price_cents/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })+' €' : '—'}</td>
       </tr>`).join('');
   } catch(e) { console.warn('Buchungen Admin Fehler:', e); }
 }
@@ -11694,7 +11716,7 @@ async function loadAdminAbos() {
         <td>Court #${a.court}</td>
         <td>${wdNames[a.weekday] || '—'}</td>
         <td>${String(a.hour_start).padStart(2,'0')}:00 – ${String(a.hour_start+a.duration).padStart(2,'0')}:00</td>
-        <td style="color:var(--gold);">${a.price_per_week_cents ? (a.price_per_week_cents/100).toFixed(2)+' €' : '—'}</td>
+        <td style="color:var(--gold);">${a.price_per_week_cents ? (a.price_per_week_cents/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })+' €' : '—'}</td>
         <td>${a.ends_on ? formatDateDE(a.ends_on) : '—'}</td>
       </tr>`).join('');
   } catch(e) { console.warn('Abos Admin Fehler:', e); }
@@ -12116,7 +12138,7 @@ async function loadInternalBookings() {
         <td>${String(b.hour_start).padStart(2,'0')}:00 – ${String(b.hour_start+b.duration).padStart(2,'0')}:00</td>
         <td>Court #${b.court}</td>
         <td style="color:#e0e0e0;">${b.full_name||'—'}</td>
-        <td style="color:${b.price_cents>0?'var(--gold)':'#555'};">${b.price_cents>0?(b.price_cents/100).toFixed(2)+' €':'0 €'}</td>
+        <td style="color:${b.price_cents>0?'var(--gold)':'#555'};">${b.price_cents>0?(b.price_cents/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })+' €':'0,00 €'}</td>
         <td style="color:#888;">${b.isRecurring?formatDateDE(b.lastDate):'<span style="color:#555;">Einzeltermin</span>'}</td>
         <td style="display:flex;gap:5px;">
           <button class="admin-save-btn" style="height:26px;font-size:0.63rem;padding:0 7px;" onclick="openIntEdit(${b.id},'${b.recur_group||''}','${safeReason}',${b.hour_start},${b.hour_start+b.duration},${pricePerH},${b.isRecurring})">✏</button>
@@ -17555,7 +17577,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 
   function eur(n){
     return (Math.round(Number(n)*100)/100).toLocaleString('de-DE',
-      {minimumFractionDigits:0, maximumFractionDigits:2}) + ' €';
+      {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
   }
   function dstr(ts){
     if(!ts) return '';
