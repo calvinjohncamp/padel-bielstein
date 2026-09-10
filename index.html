@@ -2692,7 +2692,8 @@ main {
       const url = `${appVal(&quot;SUPABASE_URL&quot;, &quot;https://hioaqcwqzeqcvvikollq.supabase.co&quot;)}/functions/v1/manage-meetup`;
       const res = await fetch(url, { method: &quot;POST&quot;, headers, body: JSON.stringify(payload) });
       let data = {};
-      try { data = await res.json(); } catch (_e) {}
+      const rawText = await res.text();
+      try { data = rawText ? JSON.parse(rawText) : {}; } catch (_e) { data = { error: rawText }; }
       if (!res.ok) throw new Error(readableErrorText(data.error || data.message || data));
       return data;
     }
@@ -4327,6 +4328,7 @@ main {
           const skippedCount = Number(summary.skipped || 0);
           const failedCount = Number(summary.failed || 0);
           const configured = summary.configured !== false;
+          const warnings = Array.isArray(summary.warnings) ? summary.warnings.filter(Boolean).map(value =&gt; readableErrorText(value, &quot;&quot;)).filter(Boolean) : [];
           const successText = !sendEmails
             ? &quot;Änderungen gespeichert&quot;
             : failedCount
@@ -4347,7 +4349,7 @@ main {
           refreshParticipantStatusPills($(&quot;#editor&quot;));
           if (sendEmails) {
             const resultMessage = configured
-              ? &quot;Bereits informierte Empfänger bekommen keine zweite Mail. Fehlgeschlagene Adressen kannst du gezielt prüfen.&quot;
+              ? warnings.length ? warnings.join(&quot; &quot;) : &quot;Bereits informierte Empfänger bekommen keine zweite Mail. Fehlgeschlagene Adressen kannst du gezielt prüfen.&quot;
               : &quot;Der Termin wurde gespeichert, aber der Mailversand ist noch nicht konfiguriert.&quot;;
             showInviteResultDialog(successText, resultMessage, data.mail_results || [], () =&gt; {
               refreshActionButtons();
@@ -4360,14 +4362,17 @@ main {
           sendMeetHeight();
           return;
         } catch (e) {
-          const errorText = e.message || &quot;Verabredung konnte nicht gespeichert werden.&quot;;
+          const errorText = readableErrorText(e, &quot;Verabredung konnte nicht gespeichert werden.&quot;);
           toast(errorText);
           if (actionButton) {
             actionButton.disabled = false;
             actionButton.textContent = forcedMailType === &quot;status_update&quot; ? &quot;Erinnerungs-Mail schicken&quot; : sendEmails ? &quot;Spieler informieren&quot; : &quot;Änderungen speichern&quot;;
           }
           if (sendEmails) {
-            showInviteResultDialog(&quot;Versand nicht abgeschlossen&quot;, errorText, [{ email: emails.join(&quot;, &quot;) || &quot;Keine Empfängeradresse&quot;, status: &quot;failed&quot;, error: errorText }], () =&gt; {
+            const visibleError = errorText === &quot;[object Object]&quot;
+              ? &quot;Die Live-Function hat ein nicht lesbares Fehlerobjekt zurückgegeben. Bitte die aktuelle manage-meetup-Datei deployen und danach die Diagnose-SQL prüfen.&quot;
+              : errorText;
+            showInviteResultDialog(&quot;Versand nicht abgeschlossen&quot;, &quot;Die Verabreden-Funktion ist vor einer einzelnen Versandrückmeldung abgebrochen. Das bedeutet nicht automatisch, dass jede eingegebene Adresse einzeln abgelehnt wurde.&quot;, [{ email: &quot;Verabreden-Funktion&quot;, status: &quot;failed&quot;, error: visibleError }], () =&gt; {
               refreshActionButtons();
               sendMeetHeight();
             });
