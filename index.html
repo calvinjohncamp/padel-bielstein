@@ -2374,6 +2374,13 @@ main {
     .invite-result-state.sent{background:#DDEBD9;color:var(--green)}
     .invite-result-state.failed{background:#FFE0D7;color:var(--red)}
     .invite-result-action{margin-top:4px;width:100%;min-height:48px}
+    .invite-result-inline{grid-column:1/-1;margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--cream);box-shadow:0 10px 28px rgba(28,26,23,.12)}
+    .invite-result-inline-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+    .invite-result-inline .invite-result-title{font-size:18px;margin:0}
+    .invite-result-inline .invite-result-kicker{margin:0 0 3px;font-size:9.5px}
+    .invite-result-inline .invite-result-sub{font-size:12.5px}
+    .invite-result-inline .invite-result-row{padding:8px 9px}
+    .invite-result-inline .invite-result-close{width:32px;height:32px;flex:0 0 auto;border-radius:999px;border:1px solid var(--line);background:var(--soft);font-size:18px;font-weight:900;color:var(--ink);cursor:pointer}
     [hidden]{display:none!important}
     @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.groups-field{grid-column:auto}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-stack{justify-items:start}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
     @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-pick-side{justify-content:flex-start;flex-wrap:wrap}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.source-mini{justify-self:start;text-align:left}.booking-summary{align-items:flex-start;gap:9px}.booking-summary-left{width:100%;align-items:flex-start}.booking-summary-chip{font-size:12px;padding:8px 10px;text-align:left;justify-content:flex-start}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:end;min-width:164px;line-height:1.18;align-items:flex-end;text-align:right}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat:not(.free){grid-template-columns:auto auto minmax(0,1fr)}.seat:not(.free) .seat-index{grid-column:1;grid-row:1}.seat:not(.free) .seat-avatar{grid-column:2;grid-row:1}.seat:not(.free) .seat-main{grid-column:3;grid-row:1}.seat:not(.free) .seat-level{grid-column:3;grid-row:2}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto auto minmax(0,1fr) auto;align-items:start;gap:9px;padding:10px}.email-list .email-row:not(.has-avatar){grid-template-columns:auto minmax(0,1fr)}.email-list .email-row .mini-avatar{width:42px;height:42px}.seat-index{grid-column:1;grid-row:1;width:32px;height:32px}.email-row-avatar{grid-column:2;grid-row:1}.email-field-wrap{grid-column:3;grid-row:1;min-width:0}.email-list .email-row .email-profile{display:none}.email-row-status{grid-column:1 / -1;grid-row:2;justify-content:flex-start;flex-wrap:wrap;overflow:visible;gap:5px;margin-top:4px}.email-accept-toggle{grid-column:3;grid-row:3;justify-self:start;margin-top:2px}.email-remove{grid-column:4;grid-row:1}.email-status-pill{font-size:10px;padding:5px 7px;max-width:100%;white-space:normal;text-align:left}.match-top{display:grid;grid-template-columns:minmax(142px,max-content) minmax(0,1fr);align-items:start;gap:10px}.time{font-size:28px;white-space:nowrap}.status.progress{justify-self:stretch;width:100%;padding:10px 9px;text-align:right;align-items:flex-end}.status.progress strong,.status.progress span{overflow-wrap:normal;word-break:normal;hyphens:none}.invite-save-actions{grid-template-columns:1fr}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
@@ -2657,6 +2664,28 @@ main {
       const fn = appFn(&quot;authHeaders&quot;);
       return fn ? await fn() : {};
     }
+    function readableErrorText(value, fallback = &quot;Verabreden konnte nicht gespeichert werden.&quot;) {
+      if (!value) return fallback;
+      if (typeof value === &quot;string&quot;) {
+        const trimmed = value.trim();
+        if (!trimmed) return fallback;
+        try {
+          const parsed = JSON.parse(trimmed);
+          return readableErrorText(parsed, trimmed);
+        } catch (_e) {
+          return trimmed;
+        }
+      }
+      if (value instanceof Error) return value.message || fallback;
+      if (typeof value === &quot;object&quot;) {
+        const obj = value;
+        if (typeof obj.message === &quot;string&quot;) return obj.message;
+        if (typeof obj.error === &quot;string&quot;) return obj.error;
+        if (typeof obj.name === &quot;string&quot; &amp;&amp; typeof obj.statusCode !== &quot;undefined&quot;) return `${obj.name} (${obj.statusCode})`;
+        try { return JSON.stringify(obj); } catch (_e) { return fallback; }
+      }
+      return String(value || fallback);
+    }
     async function callMeetupFunction(payload) {
       const headers = await authHeaders();
       headers[&quot;Content-Type&quot;] = &quot;application/json&quot;;
@@ -2664,7 +2693,7 @@ main {
       const res = await fetch(url, { method: &quot;POST&quot;, headers, body: JSON.stringify(payload) });
       let data = {};
       try { data = await res.json(); } catch (_e) {}
-      if (!res.ok) throw new Error(data.error || &quot;Verabreden konnte nicht gespeichert werden.&quot;);
+      if (!res.ok) throw new Error(readableErrorText(data.error || data.message || data));
       return data;
     }
     function sendMeetHeight() {
@@ -2727,6 +2756,43 @@ main {
       return &quot;geprüft&quot;;
     }
     function showInviteResultDialog(title, message, results = [], onClose) {
+      const inlineHost = $(&quot;.invite-action-buttons&quot;);
+      if (inlineHost) {
+        $(&quot;#inviteResultInline&quot;)?.remove();
+        const panel = document.createElement(&quot;div&quot;);
+        panel.className = &quot;invite-result-inline&quot;;
+        panel.id = &quot;inviteResultInline&quot;;
+        const rows = Array.isArray(results) ? results : [];
+        const resultHtml = rows.length ? rows.map(result =&gt; {
+          const status = result.status || &quot;&quot;;
+          const label = mailResultStateLabel(status);
+          const stateClass = status === &quot;sent&quot; ? &quot; sent&quot; : status === &quot;failed&quot; ? &quot; failed&quot; : &quot;&quot;;
+          const email = esc(result.email || &quot;Empfänger ohne Adresse&quot;);
+          const errorText = status === &quot;failed&quot; &amp;&amp; result.error ? readableErrorText(result.error, &quot;&quot;) : &quot;&quot;;
+          const error = errorText ? ` &lt;small&gt;${esc(errorText)}&lt;/small&gt;` : &quot;&quot;;
+          return `&lt;div class=&quot;invite-result-row&quot;&gt;&lt;span class=&quot;invite-result-mail&quot;&gt;${email}${error}&lt;/span&gt;&lt;span class=&quot;invite-result-state${stateClass}&quot;&gt;${label}&lt;/span&gt;&lt;/div&gt;`;
+        }).join(&quot;&quot;) : `&lt;div class=&quot;invite-result-row&quot;&gt;&lt;span class=&quot;invite-result-mail&quot;&gt;${esc(message || &quot;Es wurde keine neue Adresse angeschrieben.&quot;)}&lt;/span&gt;&lt;span class=&quot;invite-result-state&quot;&gt;geprüft&lt;/span&gt;&lt;/div&gt;`;
+        panel.innerHTML = `
+          &lt;div class=&quot;invite-result-inline-head&quot;&gt;
+            &lt;div&gt;
+              &lt;p class=&quot;invite-result-kicker&quot;&gt;Versand abgeschlossen&lt;/p&gt;
+              &lt;h3 class=&quot;invite-result-title&quot;&gt;${esc(title || &quot;Spieler informiert&quot;)}&lt;/h3&gt;
+            &lt;/div&gt;
+            &lt;button class=&quot;invite-result-close&quot; type=&quot;button&quot; aria-label=&quot;Versandmeldung schliessen&quot;&gt;×&lt;/button&gt;
+          &lt;/div&gt;
+          ${message ? `&lt;p class=&quot;invite-result-sub&quot;&gt;${esc(message)}&lt;/p&gt;` : &quot;&quot;}
+          &lt;div class=&quot;invite-result-list&quot;&gt;${resultHtml}&lt;/div&gt;
+        `;
+        const close = () =&gt; {
+          panel.remove();
+          if (typeof onClose === &quot;function&quot;) onClose();
+        };
+        panel.querySelector(&quot;.invite-result-close&quot;)?.addEventListener(&quot;click&quot;, close, { once: true });
+        inlineHost.appendChild(panel);
+        panel.scrollIntoView({ behavior: &quot;smooth&quot;, block: &quot;nearest&quot; });
+        sendMeetHeight();
+        return;
+      }
       const overlay = $(&quot;#inviteResultOverlay&quot;);
       const body = $(&quot;#inviteResultBody&quot;);
       if (!overlay || !body) {
@@ -2739,7 +2805,8 @@ main {
         const label = mailResultStateLabel(status);
         const stateClass = status === &quot;sent&quot; ? &quot; sent&quot; : status === &quot;failed&quot; ? &quot; failed&quot; : &quot;&quot;;
         const email = esc(result.email || &quot;Empfänger ohne Adresse&quot;);
-        const error = status === &quot;failed&quot; &amp;&amp; result.error ? ` &lt;small&gt;${esc(result.error)}&lt;/small&gt;` : &quot;&quot;;
+        const errorText = status === &quot;failed&quot; &amp;&amp; result.error ? readableErrorText(result.error, &quot;&quot;) : &quot;&quot;;
+        const error = errorText ? ` &lt;small&gt;${esc(errorText)}&lt;/small&gt;` : &quot;&quot;;
         return `&lt;div class=&quot;invite-result-row&quot;&gt;&lt;span class=&quot;invite-result-mail&quot;&gt;${email}${error}&lt;/span&gt;&lt;span class=&quot;invite-result-state${stateClass}&quot;&gt;${label}&lt;/span&gt;&lt;/div&gt;`;
       }).join(&quot;&quot;) : `&lt;div class=&quot;invite-result-row&quot;&gt;&lt;span class=&quot;invite-result-mail&quot;&gt;${esc(message || &quot;Es wurde keine neue Adresse angeschrieben.&quot;)}&lt;/span&gt;&lt;span class=&quot;invite-result-state&quot;&gt;geprüft&lt;/span&gt;&lt;/div&gt;`;
       body.innerHTML = `
