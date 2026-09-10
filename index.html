@@ -4293,10 +4293,17 @@ main {
           sendMeetHeight();
           return;
         } catch (e) {
-          toast(e.message || &quot;Verabredung konnte nicht gespeichert werden.&quot;);
+          const errorText = e.message || &quot;Verabredung konnte nicht gespeichert werden.&quot;;
+          toast(errorText);
           if (actionButton) {
             actionButton.disabled = false;
             actionButton.textContent = forcedMailType === &quot;status_update&quot; ? &quot;Erinnerungs-Mail schicken&quot; : sendEmails ? &quot;Spieler informieren&quot; : &quot;Änderungen speichern&quot;;
+          }
+          if (sendEmails) {
+            showInviteResultDialog(&quot;Versand nicht abgeschlossen&quot;, errorText, [{ email: emails.join(&quot;, &quot;) || &quot;Keine Empfängeradresse&quot;, status: &quot;failed&quot;, error: errorText }], () =&gt; {
+              refreshActionButtons();
+              sendMeetHeight();
+            });
           }
           return;
         }
@@ -6775,13 +6782,18 @@ function aboDiscountInfo() {
   }
   return { pct: bestPct, label: label || 'Rabatt', kind };
 }
+function discountedEuroPrice(p, pct) {
+  const cents = Math.round(Number(p || 0) * 100);
+  const discount = Math.max(0, Math.min(100, Number(pct) || 0)) / 100;
+  return Math.round(cents * (1 - discount)) / 100;
+}
 function mP(p) {
   const info = bookingDiscountInfo();
-  return info.pct > 0 ? Math.round(p * (1 - info.pct / 100)) : p;
+  return info.pct > 0 ? discountedEuroPrice(p, info.pct) : Number(p || 0);
 }
 function aboP(p) {
   const info = aboDiscountInfo();
-  return info.pct > 0 ? Math.round(p * (1 - info.pct / 100)) : p;
+  return info.pct > 0 ? discountedEuroPrice(p, info.pct) : Number(p || 0);
 }
 
 // Günstigster Wochenpreis für eine Abo-Dauer (über alle Tage/Zeiten hinweg):
@@ -6802,8 +6814,8 @@ function cheapestAboWeek(dur) {
 function updateAboDurPrices() {
   const b1 = document.querySelector('#adur1 .dprice');
   const b2 = document.querySelector('#adur2 .dprice');
-  if (b1) b1.textContent = `ab ${aboP(cheapestAboWeek(1))} €/Woche`;
-  if (b2) b2.textContent = `ab ${aboP(cheapestAboWeek(2))} €/Woche`;
+  if (b1) b1.textContent = `ab ${fmt(aboP(cheapestAboWeek(1)))}/Woche`;
+  if (b2) b2.textContent = `ab ${fmt(aboP(cheapestAboWeek(2)))}/Woche`;
 }
 function showLoader(on) { document.getElementById('loadingBar').classList.toggle('active', on); }
 
@@ -7191,8 +7203,8 @@ function updDurPrices() {
   if (!selDate) return;
   const p = isWE(selDate) ? PE : PW;
   const mn = Math.min(...Object.values(p));
-  document.getElementById("dp1").textContent = `ab ${mP(mn)} €`;
-  document.getElementById("dp2").textContent = `ab ${mP(mn*2)} €`;
+  document.getElementById("dp1").textContent = `ab ${fmt(mP(mn))}`;
+  document.getElementById("dp2").textContent = `ab ${fmt(mP(mn*2))}`;
 }
 
 function setDur(d) {
@@ -7258,24 +7270,24 @@ function renderSlots() {
       // "von jemandem belegt" und muss auf einen Blick unterscheidbar sein.
       sl.className = "slot " + (expired ? "expired" : bk ? (isAboBlock ? "abo-booked" : "booked") : spillover ? "free" : isSel ? "selected" : isSec ? "selected-second" : "free");
       if (expired) {
-        sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Abgelaufen</span></span><span class="slot-price">${p} €</span>`;
+        sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Abgelaufen</span></span><span class="slot-price">${fmt(p)}</span>`;
       } else if (bk) {
         if (isAboBlock) {
-          sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Abo</span></span><span class="slot-price">${p} €</span>`;
+          sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Abo</span></span><span class="slot-price">${fmt(p)}</span>`;
         } else if (isBlocked) {
-          sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip" title="${blockReason}">${blockReason}</span></span><span class="slot-price">${p} €</span>`;
+          sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip" title="${blockReason}">${blockReason}</span></span><span class="slot-price">${fmt(p)}</span>`;
         } else {
-          sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Belegt</span></span><span class="slot-price">${p} €</span>`;
+          sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Belegt</span></span><span class="slot-price">${fmt(p)}</span>`;
         }
       } else if (spillover) {
         // Diese Einzelstunde ist frei (deshalb weiß/frei angezeigt), taugt aber
         // nicht als Start einer 2-Stunden-Buchung, weil die Folgestunde belegt
         // ist. Bewusst nicht anklickbar, aber optisch nicht als "belegt" markiert.
-        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price${isMp1h?' mprice':''}">${p1h} €</span>`;
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price${isMp1h?' mprice':''}">${fmt(p1h)}</span>`;
         sl.title = 'Als 2-Stunden-Start nicht verfügbar – die Folgestunde ist belegt.';
       } else if(isSec){ sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span>`; }
       else {
-        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price${isMp?' mprice':''}">${p} €</span>`;
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price${isMp?' mprice':''}">${fmt(p)}</span>`;
         sl.onclick = () => pickSlot(ct, h);
       }
       c.appendChild(sl);
@@ -7308,7 +7320,7 @@ function updateSummary() {
   document.getElementById("sDur").textContent   = `${selDur} Stunde${selDur>1?'n':''}`;
   // Preisblock wie beim Abo: fette Summe links (Orange), große dunkle Pro-Spieler-Zahl rechts.
   document.getElementById("sTotal").textContent = fmt(p);
-  document.getElementById("sPer").textContent   = fmt(Math.round(p / 4));
+  document.getElementById("sPer").textContent   = fmt(p / 4);
   const sReg = document.getElementById("sReg");
   const sSave = document.getElementById("sSave");
   if (discountInfo.pct > 0 && disc > 0) {
@@ -7353,8 +7365,8 @@ function updateSummary() {
   if (sbCalc) {
     const crow = (pos, mid, betrag, desc, cls) =>
       `<tr class="${cls || ''}"><td class="pos">${pos}</td><td class="mid">${mid || ''}</td>`
-      + `<td>${fmt(Math.round(betrag))}</td><td>${fmt(Math.round(betrag / 4))}</td><td class="desc">${desc || ''}</td></tr>`;
-    let body = crow('Normalpreis', `${perHour} € / Stunde`, rp, 'Preis deiner Buchung ohne Rabatt');
+      + `<td>${fmt(betrag)}</td><td>${fmt(betrag / 4)}</td><td class="desc">${desc || ''}</td></tr>`;
+    let body = crow('Normalpreis', `${fmt(perHour)} / Stunde`, rp, 'Preis deiner Buchung ohne Rabatt');
     let note = '';
     if (discountInfo.pct > 0 && disc > 0) {
       body += crow(discountInfo.label, `${discountInfo.pct} %`, disc, 'Rabatt')
@@ -9786,23 +9798,23 @@ function renderAboSlots() {
 
       if (isOccupiedHour) {
         sl.className = "slot abo-booked";
-        sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Abo</span></span><span class="slot-price">${p} €/Wo</span>`;
+        sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Abo</span></span><span class="slot-price">${fmt(p)}/Wo</span>`;
       } else if (conflictsWithNextHour) {
         // Diese Stunde ist als Einzelstunde frei (deshalb weiß/frei angezeigt),
         // taugt aber nicht als Start eines 2-Stunden-Abos, weil die Folgestunde
         // bereits vergeben ist. Bewusst nicht anklickbar.
         sl.className = "slot free";
-        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p1h} €/Wo</span>`;
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${fmt(p1h)}/Wo</span>`;
         sl.title = 'Als 2-Stunden-Start nicht verfügbar – die Folgestunde ist vergeben.';
       } else if (isSel) {
         sl.className = "slot selected";
-        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${fmt(p)}/Wo</span>`;
       } else if (isSec) {
         sl.className = "slot selected-second";
         sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span>`;
       } else {
         sl.className = "slot free";
-        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${p} €/Wo</span>`;
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${fmt(p)}/Wo</span>`;
         sl.onclick = () => pickAboSlot(ct, h);
       }
       c.appendChild(sl);
@@ -9930,15 +9942,15 @@ function updateAboSummary() {
     const normalPw = normalWeek;                          // Einzelbuchungs-Wochenpreis als Vergleich
     const abo30 = pw * 30;
     // Mittelspalte: für 1 Std. „x €/Stunde", für Mehr-Stunden-Buchungen „x €/Woche".
-    const midPrice = aboDur === 1 ? `${pw} € / Stunde` : `${pw} € / Woche`;
-    const normalMidPrice = aboDur === 1 ? `${normalPw} € / Stunde` : `${normalPw} € / Woche`;
+    const midPrice = aboDur === 1 ? `${fmt(pw)} / Stunde` : `${fmt(pw)} / Woche`;
+    const normalMidPrice = aboDur === 1 ? `${fmt(normalPw)} / Stunde` : `${fmt(normalPw)} / Woche`;
     // Eine Tabellenzeile mit 5 Spalten (Buchung = Gesamt, pro Spieler = ÷4).
     const crow = (pos, mid, betrag, desc, cls) =>
       `<tr class="${cls || ''}">`
       + `<td class="pos">${pos}</td>`
       + `<td class="mid">${mid || ''}</td>`
-      + `<td>${fmt(Math.round(betrag))}</td>`
-      + `<td>${fmt(Math.round(betrag / 4))}</td>`
+      + `<td>${fmt(betrag)}</td>`
+      + `<td>${fmt(betrag / 4)}</td>`
       + `<td class="desc">${desc || ''}</td></tr>`;
     let body, note = '';
     if (aboActionOn) {
