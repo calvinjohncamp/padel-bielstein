@@ -2315,6 +2315,7 @@ main {
     .seat-main{min-width:0}
     .seat-name{font-size:17px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}
     .seat-mail{margin-top:2px;color:var(--muted);font-size:13px;font-weight:700;overflow-wrap:anywhere}
+    .seat-main.mail-only .seat-mail{margin-top:0}
     .seat-level{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:14px;font-weight:900;white-space:nowrap}
     .seat-level-letter{font-family:&quot;Space Grotesk&quot;,sans-serif;color:var(--coral);font-size:18px;font-weight:900;line-height:.9}
     .seat-level-title{color:var(--ink)}
@@ -3410,10 +3411,10 @@ main {
     }
     function emailProfileHTML(player, hasValue = false) {
       if (!player || !levels[player.level]) {
-        return hasValue ? '&lt;span class=&quot;email-profile&quot;&gt;Spielstärke offen&lt;/span&gt;' : &quot;&quot;;
+        return &quot;&quot;;
       }
       const level = levels[player.level] ? player.level : &quot;&quot;;
-      return `&lt;span class=&quot;email-profile&quot;&gt;&lt;span class=&quot;profile-level-letter&quot;&gt;${level}&lt;/span&gt;&lt;span class=&quot;profile-level-title&quot;&gt;${esc(levels[level].title)}&lt;/span&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${levels[level].balls}&quot;&gt;&lt;/span&gt;&lt;/span&gt;`;
+      return `&lt;span class=&quot;email-profile&quot; title=&quot;${esc(level)} ${esc(levels[level].title)}&quot; aria-label=&quot;${esc(level)} ${esc(levels[level].title)}&quot;&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${levels[level].balls}&quot;&gt;&lt;/span&gt;&lt;/span&gt;`;
     }
     function participantStatusHTML(value, player = null) {
       if (!value) return &quot;&quot;;
@@ -4068,22 +4069,27 @@ main {
     function durationText(duration) {
       return duration === &quot;1h&quot; ? &quot;1 Stunde&quot; : duration === &quot;2h&quot; ? &quot;2 Stunden&quot; : duration;
     }
+    function playerHasProfileName(player) {
+      const name = String(player?.name || &quot;&quot;).trim();
+      const email = String(player?.email || &quot;&quot;).trim();
+      return !!name &amp;&amp; name.toLowerCase() !== email.toLowerCase();
+    }
     function seatLevelHTML(level) {
-      if (!level || !levels[level]) return '&lt;span class=&quot;seat-level&quot;&gt;Spielstärke offen&lt;/span&gt;';
+      if (!level || !levels[level]) return &quot;&quot;;
       const meta = levels[level];
-      return `&lt;span class=&quot;seat-level&quot;&gt;&lt;span class=&quot;seat-level-letter&quot;&gt;${esc(level)}&lt;/span&gt;&lt;span class=&quot;seat-level-title&quot;&gt;${esc(meta.title)}&lt;/span&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${meta.balls}&quot;&gt;&lt;/span&gt;&lt;/span&gt;`;
+      return `&lt;span class=&quot;seat-level&quot; title=&quot;${esc(level)} ${esc(meta.title)}&quot; aria-label=&quot;${esc(level)} ${esc(meta.title)}&quot;&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${meta.balls}&quot;&gt;&lt;/span&gt;&lt;/span&gt;`;
     }
     function seatHTML(player, index, removable = false) {
       if (!player) {
-        return `&lt;div class=&quot;seat free&quot;&gt;&lt;div class=&quot;seat-avatar&quot;&gt;${index + 1}&lt;/div&gt;&lt;div class=&quot;seat-main&quot;&gt;&lt;div class=&quot;seat-name&quot;&gt;frei&lt;/div&gt;&lt;div class=&quot;seat-mail&quot;&gt;offener Platz&lt;/div&gt;&lt;/div&gt;&lt;span class=&quot;seat-level&quot;&gt;Spielstärke offen&lt;/span&gt;&lt;/div&gt;`;
+        return `&lt;div class=&quot;seat free&quot;&gt;&lt;div class=&quot;seat-avatar&quot;&gt;${index + 1}&lt;/div&gt;&lt;div class=&quot;seat-main&quot;&gt;&lt;div class=&quot;seat-name&quot;&gt;frei&lt;/div&gt;&lt;div class=&quot;seat-mail&quot;&gt;offener Platz&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;
       }
-      const initials = player.name.split(/\s+/).map(part =&gt; part[0]).join(&quot;&quot;).slice(0, 2).toUpperCase();
       const mine = player.email.toLowerCase() === user.email.toLowerCase();
+      const hasProfileName = playerHasProfileName(player);
       return `&lt;div class=&quot;seat ${mine ? &quot;mine&quot; : &quot;&quot;}&quot;&gt;
         ${mine &amp;&amp; removable ? '&lt;button class=&quot;seat-remove&quot; type=&quot;button&quot; data-remove-me aria-label=&quot;Teilnahme zurückziehen&quot;&gt;×&lt;/button&gt;' : ''}
         &lt;span class=&quot;seat-index&quot;&gt;${index + 1}&lt;/span&gt;
         ${seatAvatarHTML(player, index)}
-        &lt;div class=&quot;seat-main&quot;&gt;&lt;div class=&quot;seat-name&quot;&gt;${esc(player.name || player.email)}&lt;/div&gt;&lt;div class=&quot;seat-mail&quot;&gt;${esc(player.email)}&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;seat-main${hasProfileName ? &quot;&quot; : &quot; mail-only&quot;}&quot;&gt;${hasProfileName ? `&lt;div class=&quot;seat-name&quot;&gt;${esc(player.name)}&lt;/div&gt;` : &quot;&quot;}&lt;div class=&quot;seat-mail&quot;&gt;${esc(player.email)}&lt;/div&gt;&lt;/div&gt;
         ${seatLevelHTML(player.level)}
       &lt;/div&gt;`;
     }
