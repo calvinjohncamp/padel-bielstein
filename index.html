@@ -5527,7 +5527,7 @@ main {
           <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
             <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Ansprechpartner (Partner-Vorteil)</div>
             <div style="font-size:0.76rem;color:#7A7368;line-height:1.5;margin-bottom:10px;">
-              Trägt hier eine <strong>E-Mail</strong> ein und meldet sich diese Person mit genau dieser Adresse an, wird sie automatisch wie ein Mitglied behandelt: <strong>10 % Rabatt</strong> auf alle Buchungen inkl. Abos (bis zu 2 Abos).
+              Trägt hier eine <strong>E-Mail</strong> ein und meldet sich diese Person mit genau dieser Adresse an, wird sie automatisch wie ein Mitglied behandelt: <strong>10 % Rabatt</strong> auf alle Buchungen inkl. Abos (bis zu 2 Abos). Nur erforderliche Kontaktdaten eintragen, wenn die Person als Ansprechpartner vorgesehen und beim Partner informiert ist.
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
               <div>
@@ -11426,7 +11426,7 @@ function buildMemberRows(matrix) {
   for (let r = 1; r < matrix.length; r++) {
     const cells = matrix[r];
     const name  = ((iVor >= 0 ? (cells[iVor] || '').trim() : '') + ' ' + (cells[iName] || '').trim()).trim();
-    const phone = iPhone >= 0 ? ((cells[iPhone] || '').trim() || null) : null;
+    const phone = (source === 'freibad' && iPhone >= 0) ? ((cells[iPhone] || '').trim() || null) : null;
     const primary = firstMail(cells[mailCols[0]]);
     if (!name || !primary) continue;
     rows.push({ member_number: primary, full_name: name, email: primary, phone });
