@@ -7300,10 +7300,18 @@ function updDurPrices() {
   if (!selDate) return;
   const dp1 = document.getElementById("dp1");
   const dp2 = document.getElementById("dp2");
-  const best1 = cheapestBookPriceForDuration(1);
-  const best2 = cheapestBookPriceForDuration(2);
-  if (dp1) dp1.textContent = best1 == null ? 'nicht verfügbar' : `ab ${fmt(mP(best1))}`;
-  if (dp2) dp2.textContent = best2 == null ? 'nicht verfügbar' : `ab ${fmt(mP(best2))}`;
+  const btn1 = document.getElementById("dur1");
+  const btn2 = document.getElementById("dur2");
+  const best1 = cheapestBookCandidateForDuration(1);
+  const best2 = cheapestBookCandidateForDuration(2);
+  const labelFor = (best) => best
+    ? `Günstigster echter Slot: Court #${best.court}, ${String(best.hour).padStart(2,'0')}:00–${String(best.end).padStart(2,'0')}:00 Uhr`
+    : 'Kein buchbarer Slot für diese Dauer.';
+  if (dp1) dp1.textContent = best1 == null ? 'nicht verfügbar' : `ab ${fmt(mP(best1.price))}`;
+  if (dp2) dp2.textContent = best2 == null ? 'nicht verfügbar' : `ab ${fmt(mP(best2.price))}`;
+  if (btn1) btn1.title = labelFor(best1);
+  if (btn2) btn2.title = labelFor(best2);
+  window.__pbDurationPriceCandidates = { 1: best1, 2: best2 };
 }
 
 function setDur(d) {
@@ -7334,18 +7342,26 @@ function isBookableSlotStart(court, hour, duration) {
   return isSlotRangeFree(court, hour, duration);
 }
 
-function cheapestBookPriceForDuration(duration) {
+function cheapestBookCandidateForDuration(duration) {
   if (!selDate) return null;
   const pmap = prices(selDate);
-  let best = Infinity;
+  let best = null;
   Object.keys(pmap).map(Number).sort((a, b) => a - b).forEach(h => {
     if (!hasHourlyPriceRange(pmap, h, duration)) return;
     for (const court of [1, 2]) {
       if (!isBookableSlotStart(court, h, duration)) continue;
-      best = Math.min(best, sumHourlyFb(pmap, h, duration, selDate, false));
+      const price = sumHourlyFb(pmap, h, duration, selDate, false);
+      if (!best || price < best.price || (price === best.price && (h < best.hour || (h === best.hour && court < best.court)))) {
+        best = { price, court, hour: h, duration, end: h + duration };
+      }
     }
   });
-  return best === Infinity ? null : best;
+  return best;
+}
+
+function cheapestBookPriceForDuration(duration) {
+  const best = cheapestBookCandidateForDuration(duration);
+  return best ? best.price : null;
 }
 
 function renderSlots() {
