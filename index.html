@@ -6664,12 +6664,14 @@ async function loadBookings(date) {
     addLocalAboBlocksForDate(date);
 
     console.log('Buchungen geladen:', data.length, 'Einträge');
+    if (date === selDate && typeof updDurPrices === 'function') updDurPrices();
   } catch(e) {
     console.warn('Buchungen Fehler:', e.message);
     if (myGen !== bookingsLoadGeneration) return; // veralteter Aufruf, nicht mehr über neuere Daten drüberschreiben
     booked = {1: new Set(), 2: new Set()};
     blockedSlots = {1: {}, 2: {}};
     addLocalAboBlocksForDate(date);
+    if (date === selDate && typeof updDurPrices === 'function') updDurPrices();
   }
 }
 
@@ -6832,6 +6834,12 @@ function sumHourlyFb(priceMap, hour, duration, dateOrNull, isAbo) {
   let total = 0;
   for (let i = 0; i < duration; i++) total += hourP(priceMap, hour + i, dateOrNull, isAbo);
   return total;
+}
+function hasHourlyPriceRange(priceMap, hour, duration) {
+  for (let i = 0; i < duration; i++) {
+    if (priceMap[hour + i] == null) return false;
+  }
+  return true;
 }
 function rawP(h, d) { return sumHourlyFb(prices(d), h, selDur, d, false); }
 function actionIsEligibleForCurrentUser(eb) {
@@ -7290,10 +7298,12 @@ async function selectDate(s) {
 // ============================================================
 function updDurPrices() {
   if (!selDate) return;
-  const p = isWE(selDate) ? PE : PW;
-  const mn = Math.min(...Object.values(p));
-  document.getElementById("dp1").textContent = `ab ${fmt(mP(mn))}`;
-  document.getElementById("dp2").textContent = `ab ${fmt(mP(mn*2))}`;
+  const dp1 = document.getElementById("dp1");
+  const dp2 = document.getElementById("dp2");
+  const best1 = cheapestBookPriceForDuration(1);
+  const best2 = cheapestBookPriceForDuration(2);
+  if (dp1) dp1.textContent = best1 == null ? 'nicht verfügbar' : `ab ${fmt(mP(best1))}`;
+  if (dp2) dp2.textContent = best2 == null ? 'nicht verfügbar' : `ab ${fmt(mP(best2))}`;
 }
 
 function setDur(d) {
@@ -7317,20 +7327,41 @@ function isSlotRangeFree(court, hour, duration) {
   return true;
 }
 
+function isBookableSlotStart(court, hour, duration) {
+  if (!selDate) return false;
+  if (isSlotExpired(selDate, hour)) return false;
+  if (!hasHourlyPriceRange(prices(selDate), hour, duration)) return false;
+  return isSlotRangeFree(court, hour, duration);
+}
+
+function cheapestBookPriceForDuration(duration) {
+  if (!selDate) return null;
+  const pmap = prices(selDate);
+  let best = Infinity;
+  Object.keys(pmap).map(Number).sort((a, b) => a - b).forEach(h => {
+    if (!hasHourlyPriceRange(pmap, h, duration)) return;
+    for (const court of [1, 2]) {
+      if (!isBookableSlotStart(court, h, duration)) continue;
+      best = Math.min(best, sumHourlyFb(pmap, h, duration, selDate, false));
+    }
+  });
+  return best === Infinity ? null : best;
+}
+
 function renderSlots() {
   if (!selDate) return;
   // Falls die aktuelle Auswahl durch frisch geladene Daten (z.B. inzwischen
   // vergebenes Abo, Race Condition beim schnellen Umschalten) ungültig
   // geworden ist: Auswahl verwerfen statt eine nicht mehr verfügbare
   // Buchung zur Zahlung anzubieten.
-  if (selSlot && !isSlotRangeFree(selSlot.court, selSlot.hour, selDur)) {
+  if (selSlot && !isBookableSlotStart(selSlot.court, selSlot.hour, selDur)) {
     selSlot = null;
     showToast('⚠️ Der ausgewählte Slot ist inzwischen nicht mehr verfügbar.');
   }
   [1, 2].forEach(ct => {
     const c = document.getElementById("slots" + ct);
     c.innerHTML = "";
-    Object.keys(PW).map(Number).forEach(h => {
+    Object.keys(prices(selDate)).map(Number).sort((a, b) => a - b).forEach(h => {
       const k  = `${selDate}-${h}`;
       const k2 = `${selDate}-${h+1}`;
       // "bk" heißt jetzt ausschließlich: die Stunde h selbst ist wirklich belegt.
@@ -7355,6 +7386,7 @@ function renderSlots() {
       const isBlocked = !!blockedSlots[ct][k];
       const blockReason = blockedSlots[ct][k] || '';
       const isAboBlock = blockReason === 'Abo vergeben' || isLocalAboBlockedOnDate(selDate, ct, h);
+      const hasCurrentDurationPrice = hasHourlyPriceRange(prices(selDate), h, selDur);
       // Abgelaufen bekommt eine eigene Klasse: "vorbei" ist etwas anderes als
       // "von jemandem belegt" und muss auf einen Blick unterscheidbar sein.
       sl.className = "slot " + (expired ? "expired" : bk ? (isAboBlock ? "abo-booked" : "booked") : spillover ? "free" : isSel ? "selected" : isSec ? "selected-second" : "free");
@@ -7368,6 +7400,9 @@ function renderSlots() {
         } else {
           sl.innerHTML = `<span class="slot-main"><span class="slot-time">${h1} – ${h2}</span><span class="slot-chip">Belegt</span></span><span class="slot-price">${fmt(p)}</span>`;
         }
+      } else if (!hasCurrentDurationPrice && selDur > 1) {
+        sl.innerHTML = `<span class="slot-time">${h1} – ${h2}</span><span class="slot-price">${fmt(p1h)}</span>`;
+        sl.title = 'Als 2-Stunden-Start nicht verfügbar – dafür fehlt die zweite Preisstunde.';
       } else if (spillover) {
         // Diese Einzelstunde ist frei (deshalb weiß/frei angezeigt), taugt aber
         // nicht als Start einer 2-Stunden-Buchung, weil die Folgestunde belegt
