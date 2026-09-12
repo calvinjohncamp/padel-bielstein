@@ -5493,7 +5493,7 @@ main {
         <div class="admin-section-title">🤝 Sponsor anlegen / bearbeiten</div>
         <div style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5;">
           <strong>Premium</strong> erscheint bis zu zweimal oben auf der Partner-Seite; auf der Startseite bleibt der erste aktive Premium-Partner exklusiv.
-          In App und Mails rotieren <strong>Premium</strong>, <strong>Partner</strong> und <strong>Regional-Partner</strong> nach den unten eingestellten Gewichten.
+          In App und Mails rotieren <strong>Premium</strong> und <strong>Partner</strong> gleich häufig; <strong>Regional-Partner</strong> laufen mit dem eigenen Regional-Gewicht.
           Logo als PNG/JPG/SVG mit möglichst wenig Rand hochladen – es wird in eine feste Kachel (140 × 64) eingepasst.
         </div>
         <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
@@ -5642,11 +5642,7 @@ main {
         </div>
         <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
           <div>
-            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Premium-Gewicht</label>
-            <input id="spWPremium" type="number" min="1" value="3" style="width:110px;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
-          </div>
-          <div>
-            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Partner-Gewicht</label>
+            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Premium-/Partner-Gewicht</label>
             <input id="spWPartner" type="number" min="1" value="3" style="width:110px;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
           </div>
           <div>
@@ -8419,8 +8415,8 @@ async function pickCardSponsors(seedStr) {
       const cfg = await sb.from('app_settings')
         .select('app_weight_premium,app_weight_partner,app_weight_regional').eq('id', true).single();
       if (cfg && cfg.data) {
-        wM = Number(cfg.data.app_weight_premium) || 3;
         wP = Number(cfg.data.app_weight_partner) || 3;
+        wM = wP;
         wR = Number(cfg.data.app_weight_regional) || 1;
       }
     } catch(e) {}
@@ -8435,13 +8431,16 @@ async function pickCardSponsors(seedStr) {
       pushWeighted(part, 3);
       pushWeighted(reg,  1);
     }
+    const sponsorKey = (s) => s ? String(s.name || s.logo_url || s.id || '').trim().toLowerCase() : '';
     let h = 0; for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) >>> 0;
     if (!playlist.length) return [];
     const first = playlist[h % playlist.length];
+    const firstKey = sponsorKey(first);
     let second = null;
     for (let step = 1; step < playlist.length + 1; step++) {
       const cand = playlist[(h + step) % playlist.length];
-      if (cand !== first) { second = cand; break; }
+      const key = sponsorKey(cand);
+      if (key && key !== firstKey) { second = cand; break; }
     }
     let out = [first, second].filter(Boolean);
     if (out[1]?.tier === 'premium' && out[0]?.tier !== 'premium') out = [out[1], out[0]];
@@ -10515,8 +10514,7 @@ async function loadSponsorWeights() {
       .select('app_weight_premium, app_weight_partner, app_weight_regional').eq('id', true).single();
     if (error) throw error;
     if (data) {
-      document.getElementById('spWPremium').value = data.app_weight_premium || 3;
-      document.getElementById('spWPartner').value  = data.app_weight_partner;
+      document.getElementById('spWPartner').value  = data.app_weight_partner || data.app_weight_premium || 3;
       document.getElementById('spWRegional').value = data.app_weight_regional;
     }
   } catch(e) { /* Standardwerte 3 / 3 / 1 bleiben stehen */ }
@@ -10845,12 +10843,11 @@ async function moveSponsor(id, direction) {
 }
 
 async function saveSponsorWeights() {
-  const m = parseInt(document.getElementById('spWPremium').value) || 0;
   const p = parseInt(document.getElementById('spWPartner').value) || 0;
   const r = parseInt(document.getElementById('spWRegional').value) || 0;
-  if (m < 1 || p < 1 || r < 1) { alert('Gewichte müssen mindestens 1 sein.'); return; }
+  if (p < 1 || r < 1) { alert('Gewichte müssen mindestens 1 sein.'); return; }
   try {
-    const { error } = await sb.rpc('admin_update_sponsor_settings', { p_premium_weight: m, p_partner_weight: p, p_regional_weight: r });
+    const { error } = await sb.rpc('admin_update_sponsor_settings', { p_premium_weight: p, p_partner_weight: p, p_regional_weight: r });
     if (error) throw error;
     showToast('Digitale Häufigkeit gespeichert.');
   } catch(e) {
@@ -18235,8 +18232,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var cfg = await sb.from('app_settings')
           .select('app_weight_premium,app_weight_partner,app_weight_regional').eq('id', true).single();
         if(cfg && cfg.data){
-          wM = Number(cfg.data.app_weight_premium) || 3;
           wP = Number(cfg.data.app_weight_partner) || 3;
+          wM = wP;
           wR = Number(cfg.data.app_weight_regional) || 1;
         }
       }catch(e){}
@@ -18249,28 +18246,32 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
       var N=playlist.length;
       function sponsorKey(s){
-        return s ? String(s.id || s.name || s.logo_url || '') : '';
+        return s ? String(s.name || s.logo_url || s.id || '').trim().toLowerCase() : '';
       }
-      function nextUnique(start, used, premiumSeen){
+      function nextUnique(start, used, shown, premiumSeen, allowShownRepeat){
         if(N===0) return null;
         var m=function(i){ return playlist[((i%N)+N)%N]; };
         for(var step=0; step<N; step++){
           var s=m(start+step), key=sponsorKey(s);
           if(premiumSeen && s && s.tier==='premium') continue;
-          if(key && !used[key]){
+          if(key && !used[key] && (allowShownRepeat || !shown[key])){
             used[key]=true;
+            shown[key]=true;
             return s;
           }
         }
         return null;
       }
-      // Innerhalb einer Doppelkachel kein Logo doppeln; Premium darf ueber die
-      // vier App-Flaechen insgesamt nur einmal auftauchen.
+      // Pro Seitenaufruf jedes Logo nur einmal zeigen. Falls zu wenige aktive
+      // Partner fuer alle Flaechen vorhanden sind, bleiben die Flaechen gefuellt.
+      var shownKeys={};
       var premiumShown=false;
       function pair(start){
         var used={};
-        var a=nextUnique(start, used, premiumShown);
-        var b=nextUnique(start+1, used, premiumShown || (a && a.tier==='premium'));
+        var a=nextUnique(start, used, shownKeys, premiumShown, false);
+        if(!a) a=nextUnique(start, used, shownKeys, premiumShown, true);
+        var b=nextUnique(start+1, used, shownKeys, premiumShown || (a && a.tier==='premium'), false);
+        if(!b) b=nextUnique(start+1, used, shownKeys, premiumShown || (a && a.tier==='premium'), true);
         var out=sortPremiumLeft([a,b]);
         if((out[0] && out[0].tier==='premium') || (out[1] && out[1].tier==='premium')) premiumShown=true;
         return out;
