@@ -1919,8 +1919,8 @@ main {
     </div>
 
     <div class="courts-wrap gap">
-      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #1</div><div class="court-sub">Linker Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="slots1"></div></div>
-      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #2</div><div class="court-sub">Rechter Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="slots2"></div></div>
+      <div class="court-col"><div class="court-hdr"><div class="court-name" id="courtName1">Court #1</div><div class="court-sub">Linker Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="slots1"></div></div>
+      <div class="court-col"><div class="court-hdr"><div class="court-name" id="courtName2">Court #2</div><div class="court-sub">Rechter Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="slots2"></div></div>
     </div>
 
     <div class="freibad-note">
@@ -2024,8 +2024,8 @@ main {
       <div class="legend-item"><div class="ldot" style="background:#1C1A17"></div> Abo vergeben</div>
     </div>
     <div class="courts-wrap gap">
-      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #1</div><div class="court-sub">Linker Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="aboSlots1"></div></div>
-      <div class="court-col"><div class="court-hdr"><div class="court-name">Court #2</div><div class="court-sub">Rechter Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="aboSlots2"></div></div>
+      <div class="court-col"><div class="court-hdr"><div class="court-name" id="aboCourtName1">Court #1</div><div class="court-sub">Linker Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="aboSlots1"></div></div>
+      <div class="court-col"><div class="court-hdr"><div class="court-name" id="aboCourtName2">Court #2</div><div class="court-sub">Rechter Court – von der Parkplatzseite aus gesehen</div></div><div class="slots-grid" id="aboSlots2"></div></div>
     </div>
     <div class="abo-summary" id="aboSummary">
       <div class="abo-sum-hdr"><span class="abo-sum-sq" aria-hidden="true"></span><span class="abo-sum-title">Dein Jahresabo</span></div>
@@ -2980,7 +2980,7 @@ main {
         dateISO: row.date,
         time: `${String(start).padStart(2, &quot;0&quot;)}:00`,
         end: `${String(start + duration).padStart(2, &quot;0&quot;)}:00`,
-        court: `Court ${row.court}`,
+        court: appFn(&quot;courtLabelShort&quot;) ? appFn(&quot;courtLabelShort&quot;)(row.court) : `Court ${row.court}`,
         courtNum: Number(row.court || 1),
         duration: `${duration}h`,
         paidBy: &quot;Einzelbuchung&quot;
@@ -2999,7 +2999,7 @@ main {
         dateISO,
         time: `${String(start).padStart(2, &quot;0&quot;)}:00`,
         end: `${String(start + duration).padStart(2, &quot;0&quot;)}:00`,
-        court: `Court ${row.court}`,
+        court: appFn(&quot;courtLabelShort&quot;) ? appFn(&quot;courtLabelShort&quot;)(row.court) : `Court ${row.court}`,
         courtNum: Number(row.court || 1),
         duration: `${duration}h`,
         paidBy: &quot;Abo&quot;
@@ -3124,7 +3124,7 @@ main {
         dateISO: row.scheduled_date,
         time: `${String(Number(row.hour_start || 0)).padStart(2, &quot;0&quot;)}:00`,
         end: `${String(Number(row.hour_start || 0) + durationHours).padStart(2, &quot;0&quot;)}:00`,
-        court: `Court ${row.court}`,
+        court: appFn(&quot;courtLabelShort&quot;) ? appFn(&quot;courtLabelShort&quot;)(row.court) : `Court ${row.court}`,
         courtNum: Number(row.court || 1),
         duration: `${durationHours}h`,
         paidBy: row.source_type === &quot;abo&quot; ? &quot;Abo&quot; : &quot;Einzelbuchung&quot;,
@@ -3288,7 +3288,7 @@ main {
           dateISO: dateOne,
           time: &quot;18:00&quot;,
           end: &quot;20:00&quot;,
-          court: &quot;Court 1&quot;,
+          court: appFn(&quot;courtLabelShort&quot;) ? appFn(&quot;courtLabelShort&quot;)(1) : &quot;Court 1&quot;,
           duration: &quot;2h&quot;,
           levels: [&quot;A&quot;, &quot;B&quot;],
           gender: &quot;egal&quot;,
@@ -3314,7 +3314,7 @@ main {
           dateISO: dateTwo,
           time: &quot;10:00&quot;,
           end: &quot;11:00&quot;,
-          court: &quot;Court 2&quot;,
+          court: appFn(&quot;courtLabelShort&quot;) ? appFn(&quot;courtLabelShort&quot;)(2) : &quot;Court 2&quot;,
           duration: &quot;1h&quot;,
           levels: [&quot;B&quot;, &quot;C&quot;],
           gender: &quot;egal&quot;,
@@ -5089,8 +5089,8 @@ main {
             <input class="admin-input" type="date" id="newClosureDate" style="max-width:160px;">
             <select class="admin-input" id="newClosureTarget" style="max-width:180px;">
               <option value="freibad">🏊 Nur Freibad (Tür B)</option>
-              <option value="court1">🎾 Court #1</option>
-              <option value="court2">🎾 Court #2</option>
+              <option value="court1" id="closureCourt1">🎾 Court #1</option>
+              <option value="court2" id="closureCourt2">🎾 Court #2</option>
               <option value="both">🎾 Beide Courts</option>
             </select>
             <input class="admin-input" type="text" id="newClosureNote" placeholder="Grund (z.B. Reparatur)" style="flex:2;min-width:160px;">
@@ -5223,8 +5223,8 @@ main {
             <input class="admin-input" type="date" id="intDate" style="max-width:160px;">
             <span class="admin-label" style="min-width:50px;">Court</span>
             <select class="admin-input" id="intCourt" style="max-width:140px;">
-              <option value="1">Court #1</option>
-              <option value="2">Court #2</option>
+              <option value="1" id="intCourt1">Court #1</option>
+              <option value="2" id="intCourt2">Court #2</option>
               <option value="0">Beide Courts</option>
             </select>
           </div>
@@ -5592,6 +5592,12 @@ main {
           <div style="margin-bottom:12px;">
             <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Marke</label>
             <input id="spName" type="text" placeholder="z. B. Sparkasse Gummersbach" oninput="syncSponsorCompanyFromBrand()" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Court-Bezeichnung (nur Premium)</label>
+            <input id="spCourtLabel" type="text" placeholder="z. B. Court #1 - Sparkasse" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+            <div style="font-size:0.72rem;color:#7A7368;line-height:1.5;margin-top:5px;">Optional. Leerlassen nutzt automatisch „Court #1/#2 - Marke" für die beiden aktiven Premium-Partner in ihrer Reihenfolge.</div>
           </div>
 
           <div style="margin-bottom:12px;">
@@ -6623,6 +6629,65 @@ function pbCompareSponsors(a, b) {
   return String(a?.id || a?.logo_url || '').localeCompare(String(b?.id || b?.logo_url || ''), 'de', { sensitivity:'base', numeric:true });
 }
 
+window.__pbCourtLabels = { 1: 'Court #1', 2: 'Court #2' };
+
+function normalizeCourtLabel(value, fallback) {
+  const label = String(value || '').trim();
+  return label || fallback;
+}
+
+function courtLabel(court, opts = {}) {
+  const n = Number(court) === 2 ? 2 : 1;
+  const fallback = opts.hash === false ? `Court ${n}` : `Court #${n}`;
+  return normalizeCourtLabel(window.__pbCourtLabels?.[n], fallback);
+}
+
+function courtLabelShort(court) {
+  return courtLabel(court, { hash:false });
+}
+
+function updateCourtLabelDom() {
+  const pairs = [
+    ['courtName1', 1], ['courtName2', 2],
+    ['aboCourtName1', 1], ['aboCourtName2', 2],
+  ];
+  pairs.forEach(([id, court]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = courtLabel(court);
+  });
+  const closure1 = document.getElementById('closureCourt1');
+  const closure2 = document.getElementById('closureCourt2');
+  const int1 = document.getElementById('intCourt1');
+  const int2 = document.getElementById('intCourt2');
+  if (closure1) closure1.textContent = `🎾 ${courtLabel(1)}`;
+  if (closure2) closure2.textContent = `🎾 ${courtLabel(2)}`;
+  if (int1) int1.textContent = courtLabel(1);
+  if (int2) int2.textContent = courtLabel(2);
+}
+
+function applyCourtPartnerLabels(rows) {
+  const premium = (rows || [])
+    .filter(s => s && s.tier === 'premium')
+    .sort(pbCompareSponsors)
+    .slice(0, 2);
+  [1, 2].forEach(court => {
+    const s = premium[court - 1];
+    const defaultPartner = s?.name ? `Court #${court} - ${s.name}` : '';
+    window.__pbCourtLabels[court] = normalizeCourtLabel(s?.court_label, defaultPartner || `Court #${court}`);
+  });
+  updateCourtLabelDom();
+}
+
+async function loadCourtPartnerLabels() {
+  try {
+    if (typeof sb === 'undefined' || !sb) return;
+    let res = await sb.from('sponsors_public').select('tier,name,sort_order,court_label');
+    if (res.error) res = await sb.from('sponsors_public').select('tier,name,sort_order');
+    if (res.error) return;
+    applyCourtPartnerLabels(res.data || []);
+  } catch(e) {}
+}
+
 // Fachliche Tabellen (Buchungen, Abos, Zahlungen, Wertkarten) referenzieren
 // public.users.id. Supabase Auth verwendet dagegen auth.users.id. Diese IDs
 // dürfen nicht verwechselt werden.
@@ -7205,6 +7270,7 @@ async function addSupabaseAboBlocksForDate(dateStr) {
 async function init() {
   PW = {...PW_FB};
   PE = {...PE_FB};
+  await loadCourtPartnerLabels();
   buildDates();
   selDate = todayStr();
   document.querySelectorAll(".date-chip").forEach(c => c.classList.toggle("selected", c.dataset.date===selDate));
@@ -7383,7 +7449,7 @@ function updDurPrices() {
   const best1 = cheapestBookCandidateForDuration(1);
   const best2 = cheapestBookCandidateForDuration(2);
   const labelFor = (best) => best
-    ? `Günstigster echter Slot: Court #${best.court}, ${String(best.hour).padStart(2,'0')}:00–${String(best.end).padStart(2,'0')}:00 Uhr`
+    ? `Günstigster echter Slot: ${courtLabel(best.court)}, ${String(best.hour).padStart(2,'0')}:00–${String(best.end).padStart(2,'0')}:00 Uhr`
     : 'Kein buchbarer Slot für diese Dauer.';
   if (dp1) dp1.textContent = best1 == null ? 'nicht verfügbar' : `ab ${fmt(mP(best1.price))}`;
   if (dp2) dp2.textContent = best2 == null ? 'nicht verfügbar' : `ab ${fmt(mP(best2.price))}`;
@@ -7533,7 +7599,7 @@ function updateSummary() {
   const discountInfo = bookingDiscountInfo();
   const ds = new Date(selDate+'T12:00:00').toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
   document.getElementById("sDate").textContent  = ds;
-  document.getElementById("sCourt").textContent = `Court #${ct}`;
+  document.getElementById("sCourt").textContent = courtLabel(ct);
   document.getElementById("sTime").textContent  = `${String(h).padStart(2,"0")}:00 – ${String(end).padStart(2,"0")}:00 Uhr`;
   document.getElementById("sDur").textContent   = `${selDur} Stunde${selDur>1?'n':''}`;
   // Preisblock wie beim Abo: fette Summe links (Orange), große dunkle Pro-Spieler-Zahl rechts.
@@ -7642,9 +7708,9 @@ function openVerabredungenPreview() {
       kind: 'pending',
       id: `watch-${selDate}-${selSlot.court}-${selSlot.hour}-${selDur}`,
       sortKey: `${selDate}-${String(selSlot.hour).padStart(2,'0')}`,
-      label: `Im Blick · ${day} · ${date} · ${hour}–${end} · Court ${selSlot.court}`,
-      mini: `${day} · ${date} · ${hour}–${end} · Court ${selSlot.court} · im Blick`,
-      day, date, dateISO: selDate, time: hour, end, hourStart: selSlot.hour, court: `Court ${selSlot.court}`, courtNum: selSlot.court, duration: `${selDur * 60} Min`, hours: selDur, paid: false
+      label: `Im Blick · ${day} · ${date} · ${hour}–${end} · ${courtLabelShort(selSlot.court)}`,
+      mini: `${day} · ${date} · ${hour}–${end} · ${courtLabelShort(selSlot.court)} · im Blick`,
+      day, date, dateISO: selDate, time: hour, end, hourStart: selSlot.hour, court: courtLabelShort(selSlot.court), courtNum: selSlot.court, duration: `${selDur * 60} Min`, hours: selDur, paid: false
     });
     return;
   }
@@ -7662,9 +7728,9 @@ function openVerabredungenForBookedSlot(court, dateISO, hourStart, duration, kin
     kind: isAbo ? 'abo' : 'paid',
     id: `${isAbo ? 'abo' : 'booking'}-${sourceId || `${dateISO}-${court}-${hourStart}`}`,
     sortKey: `${dateISO}-${String(Number(hourStart)).padStart(2,'0')}`,
-    label: `${isAbo ? 'Abo-Termin' : 'Bezahlte Buchung'} · ${day} · ${date} · ${hour}–${end} · Court ${court}`,
-    mini: `${day} · ${date} · ${hour}–${end} · Court ${court} · gebucht`,
-    day, date, dateISO, time: hour, end, hourStart: Number(hourStart), court: `Court ${court}`, courtNum: Number(court), duration: `${Number(duration) * 60} Min`, hours: Number(duration) || 2, paid: true,
+    label: `${isAbo ? 'Abo-Termin' : 'Bezahlte Buchung'} · ${day} · ${date} · ${hour}–${end} · ${courtLabelShort(court)}`,
+    mini: `${day} · ${date} · ${hour}–${end} · ${courtLabelShort(court)} · gebucht`,
+    day, date, dateISO, time: hour, end, hourStart: Number(hourStart), court: courtLabelShort(court), courtNum: Number(court), duration: `${Number(duration) * 60} Min`, hours: Number(duration) || 2, paid: true,
     bookingId: isAbo ? '' : String(sourceId || ''),
     subscriptionId: isAbo ? String(sourceId || '') : ''
   });
@@ -8410,7 +8476,7 @@ function shareMessageText(court, dateISO, hourStart, duration, kind) {
   const h1 = String(Number(hourStart)).padStart(2, '0') + ':00';
   const h2 = String(Number(hourStart) + Number(duration)).padStart(2, '0') + ':00';
   const was = kind === 'abo' ? 'ein Padel-Jahresabo' : 'einen Padel-Court';
-  return `Ich habe ${was} gebucht: Court #${court}, ${wd} ${dm} von ${h1}–${h2} Uhr ` +
+  return `Ich habe ${was} gebucht: ${courtLabel(court)}, ${wd} ${dm} von ${h1}–${h2} Uhr ` +
          `bei Padel Bielstein (Jahnstraße 13, Bielstein). Du bist dabei! 🎾`;
 }
 
@@ -8483,7 +8549,7 @@ function ccDrawContainZoom(ctx, img, x, y, w, h, zoom) {
 async function pickCardSponsors(seedStr) {
   try {
     if (typeof sb === 'undefined' || !sb) return [];
-    let res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order');
+    let res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order,court_label');
     if (res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order');
     if (res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
     if (res.error) return [];
@@ -8635,7 +8701,7 @@ async function buildShareCardBlob(court, dateISO, hourStart, duration, kind) {
   // Detail-Box (boxY/boxH sind oben definiert)
   ctx.fillStyle = P.box; ccRoundRect(ctx, PAD, boxY, innerW, boxH, 22); ctx.fill();
   ctx.strokeStyle = P.boxBorder; ctx.lineWidth = 1.5; ccRoundRect(ctx, PAD, boxY, innerW, boxH, 22); ctx.stroke();
-  const rows = [['Platz', 'Court #' + court, false], ['Tag', dayLabel, false], ['Uhrzeit', h1 + ' – ' + h2 + ' Uhr', true]];
+  const rows = [['Platz', courtLabel(court), false], ['Tag', dayLabel, false], ['Uhrzeit', h1 + ' – ' + h2 + ' Uhr', true]];
   const rowsTop = boxY + 26, rowH = (boxH - 52) / 3;
   ctx.textBaseline = 'middle';
   rows.forEach(([label, value, hot], i) => {
@@ -8814,7 +8880,7 @@ async function renderMyBookingsLists() {
       <div class="upcoming-item-head">
         <div class="upcoming-item-main">
           <div class="upcoming-item-date">${dateStr} · ${timeStr} Uhr</div>
-          <div class="upcoming-item-note">Court #${item.court}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
+          <div class="upcoming-item-note">${courtLabel(item.court)}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
         </div>
         <span class="upcoming-kind">${isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>
       </div>
@@ -8839,7 +8905,7 @@ function weatherFmtEUR(cents) {
 
 function weatherBookingLabel(b) {
   const dateStr = new Date(b.date + 'T12:00:00').toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit'});
-  return `${dateStr} · ${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start + b.duration).padStart(2,'0')}:00 Uhr · Court #${b.court}`;
+  return `${dateStr} · ${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start + b.duration).padStart(2,'0')}:00 Uhr · ${courtLabel(b.court)}`;
 }
 
 
@@ -9221,7 +9287,7 @@ async function renderMyHistory(reset) {
     return `<div class="closure-item my-booking">
       <div style="flex:1;">
         <div class="closure-item-date">${dateStr} · ${timeStr} Uhr</div>
-        <div class="closure-item-note">Court #${b.court}${price ? ' · ' + price : ''}</div>
+        <div class="closure-item-note">${courtLabel(b.court)}${price ? ' · ' + price : ''}</div>
       </div>
       ${badge}
     </div>`;
@@ -9354,7 +9420,7 @@ async function renderPlaySection() {
       <div class="play-booking-item">
         <div class="play-booking-head">
           <div class="play-booking-info">
-            <div class="play-booking-court">Court #${b.court}${aboTag}</div>
+            <div class="play-booking-court">${courtLabel(b.court)}${aboTag}</div>
             <div class="play-booking-time">${h1} – ${h2} Uhr</div>
           </div>
           <span class="${badgeCls}">${badgeTxt}</span>
@@ -9478,7 +9544,7 @@ async function openCourtDoors() {
   const btn = document.getElementById('btnCourtDoor');
   btn.disabled = true;
   const court = parseInt(btn.dataset.court || '1');
-  const doorNames = court === 1 ? 'Türen 3 + 4 (Court #1)' : 'Türen 1 + 2 (Court #2)';
+  const doorNames = court === 1 ? `Türen 3 + 4 (${courtLabel(1)})` : `Türen 1 + 2 (${courtLabel(2)})`;
   const doorIds   = court === 1 ? ['door_3','door_4'] : ['door_1','door_2'];
 
   showToast(`${doorNames} werden geöffnet …`);
@@ -10064,7 +10130,7 @@ function updateAboSummary() {
   };
   const normalWeek = (() => { let sum = 0; for (let i = 0; i < aboDur; i++) sum += singleHourPrice(h + i); return sum; })();
   const totalReg = normalWeek * 52, totalAbo = pricePerWeek * 30;
-  document.getElementById("as-court").textContent = `Court #${ct}`;
+  document.getElementById("as-court").textContent = courtLabel(ct);
   document.getElementById("as-day").textContent   = WDNAMES[aboWd];
   document.getElementById("as-time").textContent  = `${String(h).padStart(2,"0")}:00 – ${String(h+aboDur).padStart(2,"0")}:00 Uhr`;
   document.getElementById("as-dur").textContent   = `${aboDur} Stunde${aboDur>1?'n':''}`;
@@ -10387,7 +10453,7 @@ async function loadAdminWeather() {
           <div style="flex:1;min-width:220px;">
             <div style="font:800 15px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(r.user_name || r.user_email || '—')}</div>
             <div style="font-size:0.8rem;color:#7A7368;margin-top:2px;">${esc(r.user_email || '')}</div>
-            <div style="font-size:0.85rem;color:#1C1A17;margin-top:6px;">${dateStr} · ${timeStr} Uhr · Court #${r.court} · Buchungswert ${weatherFmtEUR(r.price_paid_cents || 0)}</div>
+            <div style="font-size:0.85rem;color:#1C1A17;margin-top:6px;">${dateStr} · ${timeStr} Uhr · ${courtLabel(r.court)} · Buchungswert ${weatherFmtEUR(r.price_paid_cents || 0)}</div>
             <div style="font-size:0.85rem;color:#1C1A17;margin-top:2px;">meldet <strong>${r.percent} % ausgefallen</strong> → Gutschrift ${weatherFmtEUR(credit)}</div>
             ${userNoteRow}
           </div>
@@ -10551,6 +10617,7 @@ async function loadAdminSponsors() {
             <div style="text-align:left;">
               <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
               <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;"><strong>${num}</strong> · ${tierLabel[s.tier] || s.tier} · ${active}${action}</div>
+              ${s.tier === 'premium' ? `<div style="font-size:0.74rem;color:#FF5A36;margin-top:3px;">🎾 ${esc(s.court_label || courtLabel(idx + 1))}</div>` : ''}
               ${s.website_url ? `<div style="font-size:0.74rem;color:#5C564C;margin-top:3px;word-break:break-all;">🔗 ${esc(s.website_url)}</div>` : ''}
             </div>
 
@@ -10673,6 +10740,7 @@ function editSponsor(id) {
   document.getElementById('spActionLogoUrl').value = s.action_logo_url || '';
   document.getElementById('spTier').value     = s.tier;
   document.getElementById('spName').value     = s.name;
+  document.getElementById('spCourtLabel').value = s.court_label || '';
   document.getElementById('spWebsite').value  = s.website_url || '';
   document.getElementById('spSort').value     = s.sort_order;
   document.getElementById('spActive').checked = !!s.active;
@@ -10702,6 +10770,7 @@ function resetSponsorForm() {
   document.getElementById('spActionLogoUrl').value = '';
   document.getElementById('spTier').value     = 'partner';
   document.getElementById('spName').value     = '';
+  document.getElementById('spCourtLabel').value = '';
   document.getElementById('spWebsite').value  = '';
   document.getElementById('spSort').value     = '0';
   document.getElementById('spActive').checked = true;
@@ -10830,6 +10899,7 @@ async function saveSponsor() {
   const contactEmail = document.getElementById('spContactEmail').value.trim();
   const contactPhone = document.getElementById('spContactPhone').value.trim();
   const website      = document.getElementById('spWebsite').value.trim();
+  const courtLabelValue = document.getElementById('spCourtLabel').value.trim();
   const contractCompany = document.getElementById('spContractCompany').value.trim();
   const addressStreet = document.getElementById('spAddressStreet').value.trim();
   const addressZip = document.getElementById('spAddressZip').value.trim();
@@ -10868,6 +10938,7 @@ async function saveSponsor() {
       p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort,
       p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
       p_website_url: website || null,
+      p_court_label: courtLabelValue || null,
       p_action_logo_url: actionLogoUrl,
       p_has_action_logo: hasActionLogo,
       p_action_logo_mode: actionLogoMode
@@ -11391,7 +11462,7 @@ function fbtRender(entries){
         + `<button class="fbt-chk${done?' done':''}" data-code="${fbtEsc(t.code)}"><svg viewBox="0 0 32 32" fill="none"><path d="M5 17.5 L13 25 L27 7" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>`;
     }).join('');
     const badge = en.source_type==='abo' ? '<span class="fbt-badge">Abo</span>' : '';
-    return `<div class="fbt-entry"><div class="fbt-head"><span class="ct">Court ${en.court}</span> · ${fbtEsc(en.time_label)} ${badge}</div>${tk}</div>`;
+    return `<div class="fbt-entry"><div class="fbt-head"><span class="ct">${fbtEsc(courtLabelShort(en.court))}</span> · ${fbtEsc(en.time_label)} ${badge}</div>${tk}</div>`;
   }).join('');
   box.querySelectorAll('.fbt-chk').forEach(b => b.onclick = () => fbtToggle(b));
 }
@@ -11880,7 +11951,7 @@ function renderClosureList() {
     }
     for (const g of Object.values(grouped)) {
       const timeStr = `${String(g.hour_start).padStart(2,'0')}:00 – ${String(g.hour_start+g.duration).padStart(2,'0')}:00 Uhr`;
-      const courtStr = g.courts.map(c=>`Court #${c}`).join(' + ');
+      const courtStr = g.courts.map(c=>courtLabel(c)).join(' + ');
       const idsStr = g.ids.join(',');
       const safeNote = (g.full_name||'').replace(/'/g,"\\'");
       html += `<div class="closure-item">
@@ -12014,7 +12085,7 @@ async function loadAdminBookings() {
       <tr>
         <td>${formatDateDE(b.date)}</td>
         <td>${String(b.hour_start).padStart(2,'0')}:00 – ${String(b.hour_start+b.duration).padStart(2,'0')}:00</td>
-        <td>Court #${b.court}</td>
+        <td>${courtLabel(b.court)}</td>
         <td style="color:#e0e0e0;">${b.full_name || '—'}</td>
         <td style="color:var(--gold);">${b.price_cents ? (b.price_cents/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })+' €' : '—'}</td>
       </tr>`).join('');
@@ -12038,7 +12109,7 @@ async function loadAdminAbos() {
     tbody.innerHTML = data.map(a => `
       <tr>
         <td style="color:#e0e0e0;">${a.full_name || '—'}</td>
-        <td>Court #${a.court}</td>
+        <td>${courtLabel(a.court)}</td>
         <td>${wdNames[a.weekday] || '—'}</td>
         <td>${String(a.hour_start).padStart(2,'0')}:00 – ${String(a.hour_start+a.duration).padStart(2,'0')}:00</td>
         <td style="color:var(--gold);">${a.price_per_week_cents ? (a.price_per_week_cents/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })+' €' : '—'}</td>
@@ -12461,7 +12532,7 @@ async function loadInternalBookings() {
       return `<tr>
         <td>${b.isRecurring ? WDNAMES[b.wd] : formatDateDE(b.date)}</td>
         <td>${String(b.hour_start).padStart(2,'0')}:00 – ${String(b.hour_start+b.duration).padStart(2,'0')}:00</td>
-        <td>Court #${b.court}</td>
+        <td>${courtLabel(b.court)}</td>
         <td style="color:#e0e0e0;">${b.full_name||'—'}</td>
         <td style="color:${b.price_cents>0?'var(--gold)':'#555'};">${b.price_cents>0?(b.price_cents/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })+' €':'0,00 €'}</td>
         <td style="color:#888;">${b.isRecurring?formatDateDE(b.lastDate):'<span style="color:#555;">Einzeltermin</span>'}</td>
@@ -13120,7 +13191,7 @@ function aboWideCardHTML(a, holderName, holderMail) {
         <div class="abo-col abo-col-right">
           <div class="abo-col-label">Dein fester Termin</div>
           <div class="abo-col-value">Immer wieder ${WDNAMES[a.weekday]}s<br>
-            von ${from} – ${to} Uhr auf Court ${a.court}</div>
+            von ${from} – ${to} Uhr auf ${courtLabelShort(a.court)}</div>
         </div>
       </div>
     </div>`;
@@ -13149,7 +13220,7 @@ function aboAccountCardHTML(a) {
     <div class="rw-tagline">Dein exklusives Jahresabo</div>
     <div class="rw-number">${day}</div>
     <div class="rw-headline">${from} – ${to} Uhr</div>
-    <div class="rw-subtitle">auf Court ${a.court}</div>
+    <div class="rw-subtitle">auf ${courtLabelShort(a.court)}</div>
     <div class="rw-divider"></div>
     <div class="rw-name">${name}</div>
     <div class="rw-email">${mail}</div>
@@ -13553,7 +13624,7 @@ function matchLineHTML(m) {
   const dateStr = m.when.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
   const timeStr = `${String(m.hour_start).padStart(2, '0')}:00`;
   const endStr = `${String(Number(m.hour_start) + Number(m.duration || 1)).padStart(2, '0')}:00`;
-  return `Dein nächstes Match startet am <strong>${dateStr}</strong><br>um <strong>${timeStr} Uhr</strong> auf <strong>Court ${m.court}</strong>.<br><span>${timeStr} bis ${endStr} Uhr${m.isAbo ? ' · Jahresabo' : ''}</span>`;
+  return `Dein nächstes Match startet am <strong>${dateStr}</strong><br>um <strong>${timeStr} Uhr</strong> auf <strong>${courtLabelShort(m.court)}</strong>.<br><span>${timeStr} bis ${endStr} Uhr${m.isAbo ? ' · Jahresabo' : ''}</span>`;
 }
 
 // Titelseite des Account-Stapels. nextMatch (optional) = nächster Termin.
@@ -16972,7 +17043,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     };
     try{
       if(typeof sb==='undefined' || !sb){ host.innerHTML=''; return; }
-      var res=await sb.from('sponsors_public').select('id,tier,name,logo_url,action_logo_url,action_logo_mode,has_action_logo,sort_order,website_url');
+      var res=await sb.from('sponsors_public').select('id,tier,name,logo_url,action_logo_url,action_logo_mode,has_action_logo,sort_order,website_url,court_label');
       if(res.error){
         res=await sb.from('sponsors_public').select('id,tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
       }
@@ -18300,13 +18371,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'[]');
         if(Array.isArray(cached) && cached.length) renderSplashPremiumFromRows(cached);
       }catch(e){}
-      var res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order,website_url');
+      var res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order,website_url,court_label');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order,website_url');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
       if(res.error) throw res.error;
       var rows = res.data || [];
+      applyCourtPartnerLabels(rows);
       try{ localStorage.setItem(CACHE_KEY, JSON.stringify(rows.slice(0,80))); }catch(e){}
       var pick = function(t){ return rows.filter(function(r){return r.tier===t;})
                                   .sort(function(a,b){return (a.sort_order||0)-(b.sort_order||0);}); };
