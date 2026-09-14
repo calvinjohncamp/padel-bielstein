@@ -7875,6 +7875,42 @@ if (passwordRecoveryActive) {
   setTimeout(openPasswordRecovery, 250);
 }
 
+async function ensureActiveLogin() {
+  if (currentUser) {
+    if (!currentProfile || currentProfile.auth_id !== currentUser.id) {
+      await loadProfile(currentUser.id);
+      updateUserBar();
+    }
+    return true;
+  }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session?.user) return false;
+
+    const { data: { user }, error } = await sb.auth.getUser();
+    if (error || !user) {
+      try { await sb.auth.signOut(); } catch(e) {}
+      currentUser = null;
+      currentProfile = null;
+      member = null;
+      memberAboDiscount = 0;
+      myMemberSources = [];
+      myPartner = null;
+      updateUserBar();
+      return false;
+    }
+
+    currentUser = user;
+    await loadProfile(user.id);
+    updateUserBar();
+    return true;
+  } catch(e) {
+    console.warn('Anmeldestatus konnte nicht geprüft werden', e);
+    return false;
+  }
+}
+
 async function loadProfile(authId) {
   try {
     const headers = await authHeaders();
@@ -8148,12 +8184,13 @@ async function doLogin() {
     currentUser = data.user;
     await loadProfile(data.user.id);
     updateUserBar();
+    const actionAfterLogin = pendingAction;
     closeModal();
     showToast(welcomeBackMessage());
-    if (pendingAction === 'book')    confirmBooking(true);
-    if (pendingAction === 'abo')     submitAbo(true);
-    if (pendingAction === 'card')    confirmCardPurchase(true);
-    if (pendingAction === 'loyalty') openLoyaltyCard();
+    if (actionAfterLogin === 'book')    confirmBooking(true);
+    if (actionAfterLogin === 'abo')     submitAbo(true);
+    if (actionAfterLogin === 'card')    confirmCardPurchase(true);
+    if (actionAfterLogin === 'loyalty') openLoyaltyCard();
   } catch(e) {
     showAuthErr('Netzwerkfehler – bitte versuche es erneut.');
   } finally {
@@ -9692,7 +9729,7 @@ function askPaymentChoice(priceCents, balanceCents) {
 
 async function confirmBooking(skipAuthCheck) {
   if (!selSlot) return;
-  if (!skipAuthCheck && !currentUser) {
+  if (!skipAuthCheck && !(await ensureActiveLogin())) {
     openModal('book');
     return;
   }
@@ -9839,7 +9876,7 @@ async function submitAbo(skipAuthCheck) {
     showToast('Bitte Wochentag und Slot wählen');
     return;
   }
-  if (!skipAuthCheck && !currentUser) {
+  if (!skipAuthCheck && !(await ensureActiveLogin())) {
     openModal('abo');
     return;
   }
@@ -13821,7 +13858,7 @@ async function confirmCardPurchase(skipAuthCheck) {
     return;
   }
   if (!selectedCardSize && !selectedBalance) { showCardErr('Bitte wähle zuerst eine Wertkarte.'); return; }
-  if (!skipAuthCheck && !currentUser) { openModal('card'); return; }
+  if (!skipAuthCheck && !(await ensureActiveLogin())) { openModal('card'); return; }
 
   let recipientName = '', recipientEmail = '', recipientPhone = '', giftMessage = '';
   if (cardIsGift) {
@@ -13913,7 +13950,7 @@ let accountPageAnimating = false;
 
 // index (optional): direkt zur Karte mit diesem myCardsData-Index blättern
 async function openLoyaltyCard(index) {
-  if (!currentUser) { openModal('loyalty'); return; }
+  if (!(await ensureActiveLogin())) { openModal('loyalty'); return; }
   const modal = document.getElementById('loyaltyModal');
   modal.classList.add('open');
   document.getElementById('cardPager').style.display = 'none';
@@ -18197,13 +18234,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   var MAIL_KEY = 'pb_last_email';
   // Gesetzt vom Skript ganz oben im <head> - siehe Begruendung dort.
   var FROM_STRIPE = !!window.__pbFromStripe;
-  function leave(splash){
+  async function leave(splash){
     splash.setAttribute('hidden','');
     document.documentElement.style.removeProperty('overflow');
     document.body.style.removeProperty('overflow');
-    var inEl = document.getElementById('userBarLoggedIn');
-    var loggedIn = !!(inEl && inEl.style.display !== 'none');
-    if(loggedIn) return;                       // schon angemeldet -> direkt in die App
+    if(typeof ensureActiveLogin === 'function' && await ensureActiveLogin()) return;
     try {
       openModal('login');
       var last = localStorage.getItem(MAIL_KEY) || '';
