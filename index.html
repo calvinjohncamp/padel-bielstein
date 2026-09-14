@@ -2357,7 +2357,8 @@ main {
     .balls{display:inline-flex;gap:2px;align-items:flex-end}
     .balls img{width:15px;height:15px;object-fit:contain;display:block}
     .level-legend{margin-top:8px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-    .level-legend-item{min-height:36px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.46);padding:6px 8px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:7px}
+    .level-legend-item{min-height:36px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.46);padding:6px 8px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:7px;text-align:left;cursor:pointer;font:inherit;color:inherit}
+    .level-legend-item.active{background:rgba(28,26,23,.10);border-color:rgba(28,26,23,.28);box-shadow:inset 0 0 0 1px rgba(28,26,23,.04)}
     .level-legend-letter{font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:16px;font-weight:900;line-height:.9;color:var(--coral)}
     .level-legend-main{min-width:0;display:grid;gap:1px}
     .level-legend-title{font-size:11px;font-weight:900;line-height:1.1;color:var(--ink);white-space:nowrap}
@@ -4069,7 +4070,7 @@ main {
               { value:&quot;A&quot;, label:&quot;A&quot; }, { value:&quot;B&quot;, label:&quot;B&quot; }, { value:&quot;C&quot;, label:&quot;C&quot; }, { value:&quot;D&quot;, label:&quot;D&quot; }, { value:&quot;egal&quot;, label:&quot;egal&quot; }
             ], selectedLevels, true)}
             &lt;div class=&quot;level-legend&quot; aria-label=&quot;Legende Spielstärken&quot;&gt;
-              ${Object.entries(levels).map(([level, meta]) =&gt; `&lt;div class=&quot;level-legend-item&quot; title=&quot;${esc(level)} ${esc(meta.title)} · ${esc(meta.text)}&quot;&gt;&lt;span class=&quot;level-legend-letter&quot;&gt;${esc(level)}&lt;/span&gt;&lt;span class=&quot;level-legend-main&quot;&gt;&lt;span class=&quot;level-legend-title&quot;&gt;${esc(meta.title)}&lt;/span&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${meta.balls}&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;`).join(&quot;&quot;)}
+              ${Object.entries(levels).map(([level, meta]) =&gt; `&lt;button class=&quot;level-legend-item${selectedLevels.includes(level) ? &quot; active&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-level-legend=&quot;${esc(level)}&quot; title=&quot;${esc(level)} ${esc(meta.title)} · ${esc(meta.text)}&quot; aria-pressed=&quot;${selectedLevels.includes(level) ? &quot;true&quot; : &quot;false&quot;}&quot;&gt;&lt;span class=&quot;level-legend-letter&quot;&gt;${esc(level)}&lt;/span&gt;&lt;span class=&quot;level-legend-main&quot;&gt;&lt;span class=&quot;level-legend-title&quot;&gt;${esc(meta.title)}&lt;/span&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${meta.balls}&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;`).join(&quot;&quot;)}
             &lt;/div&gt;
           &lt;/div&gt;
           &lt;div class=&quot;field&quot;&gt;
@@ -4179,17 +4180,31 @@ main {
       &lt;/div&gt;`;
     }
     function wireSegments(root = document) {
+      function syncLevelLegend(seg) {
+        const field = seg.closest(&quot;.field&quot;) || root;
+        const active = new Set($$(&quot;.chip.active&quot;, seg).map(chip =&gt; chip.dataset.value).filter(value =&gt; value &amp;&amp; value !== &quot;egal&quot;));
+        $$(&quot;[data-level-legend]&quot;, field).forEach(card =&gt; {
+          const on = active.has(card.dataset.levelLegend);
+          card.classList.toggle(&quot;active&quot;, on);
+          card.setAttribute(&quot;aria-pressed&quot;, on ? &quot;true&quot; : &quot;false&quot;);
+        });
+      }
+      function toggleLevelValue(seg, value) {
+        if (value === &quot;egal&quot;) {
+          $$(&quot;.chip&quot;, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip.dataset.value === &quot;egal&quot;));
+          syncLevelLegend(seg);
+          return;
+        }
+        $$(&quot;.chip[data-value='egal']&quot;, seg).forEach(chip =&gt; chip.classList.remove(&quot;active&quot;));
+        $$(`.chip[data-value='${value}']`, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;));
+        if (!$$(&quot;.chip.active&quot;, seg).length) $$(&quot;.chip[data-value='egal']&quot;, seg).forEach(chip =&gt; chip.classList.add(&quot;active&quot;));
+        syncLevelLegend(seg);
+      }
       $$(&quot;.seg[data-seg] .chip&quot;, root).forEach(btn =&gt; {
         btn.addEventListener(&quot;click&quot;, () =&gt; {
           const seg = btn.closest(&quot;.seg&quot;);
           if (seg.dataset.seg === &quot;level&quot;) {
-            if (btn.dataset.value === &quot;egal&quot;) {
-              $$(&quot;.chip&quot;, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip === btn));
-              return;
-            }
-            $$(&quot;.chip[data-value='egal']&quot;, seg).forEach(chip =&gt; chip.classList.remove(&quot;active&quot;));
-            btn.classList.toggle(&quot;active&quot;);
-            if (!$$(&quot;.chip.active&quot;, seg).length) $$(&quot;.chip[data-value='egal']&quot;, seg).forEach(chip =&gt; chip.classList.add(&quot;active&quot;));
+            toggleLevelValue(seg, btn.dataset.value);
             return;
           }
           $$(&quot;.chip&quot;, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip === btn));
@@ -4200,6 +4215,14 @@ main {
           }
         });
       });
+      $$(&quot;[data-level-legend]&quot;, root).forEach(card =&gt; {
+        card.addEventListener(&quot;click&quot;, () =&gt; {
+          const field = card.closest(&quot;.field&quot;) || root;
+          const seg = $(&quot;.seg[data-seg='level']&quot;, field);
+          if (seg) toggleLevelValue(seg, card.dataset.levelLegend);
+        });
+      });
+      $$(&quot;.seg[data-seg='level']&quot;, root).forEach(syncLevelLegend);
     }
     function syncMailTypeForAudience(root = document) {
       const mailSeg = $(&quot;[data-seg='mailType']&quot;, root);
