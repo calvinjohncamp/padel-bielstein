@@ -2250,6 +2250,7 @@ main {
     .booking-summary-chip{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:9px 12px;background:rgba(255,255,255,.56);color:var(--ink);font-size:13px;font-weight:950;line-height:1.18;white-space:normal;text-align:center}
     .booking-summary-chip.audience{background:var(--ink);color:var(--cream)}
     .booking-summary-chip.count{background:#F4EFE4;color:var(--muted)}
+    .cost-cover-pill{display:inline-flex!important;align-items:center;justify-content:center;border-color:rgba(255,90,54,.42)!important;background:rgba(255,90,54,.10)!important;color:var(--coral)!important;font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:12px;font-weight:950;letter-spacing:.02em;white-space:nowrap}
     .duration-line{display:block;color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-size:18px;font-weight:900}
     .editor-swipe-meta{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-top:13px;color:var(--muted);font-size:16px;font-weight:900}
     .editor-swipe-meta strong{color:var(--ink);font-weight:900}
@@ -2413,7 +2414,9 @@ main {
     .match-top{display:flex;justify-content:space-between;gap:14px;margin-bottom:16px}
     .day{font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;color:var(--coral);font-size:13px;letter-spacing:.12em;text-transform:uppercase}
     .time{font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900;font-size:30px;line-height:1;white-space:nowrap}
-    .meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+    .meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .meta-left,.meta-right{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0}
+    .meta-right{justify-content:flex-end;flex:1 1 auto}
     .meta span{padding:7px 9px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:13px;font-weight:800}
     .status-grid .list{margin-top:26px;gap:46px}
     .empty{padding:22px;border-radius:14px;background:var(--soft);color:var(--muted);text-align:center;font-weight:800}
@@ -4697,7 +4700,7 @@ main {
           &lt;div&gt;&lt;div class=&quot;day&quot;&gt;${esc(item.day)}, ${esc(item.date)}&lt;/div&gt;&lt;div class=&quot;time&quot;&gt;${esc(item.time)}-${esc(item.end)}&lt;/div&gt;&lt;/div&gt;
           &lt;span class=&quot;status progress ${complete ? &quot;complete&quot; : &quot;green&quot;}&quot;&gt;&lt;strong&gt;${esc(statusText)}&lt;/strong&gt;${detailHtml}&lt;/span&gt;
         &lt;/div&gt;
-        &lt;div class=&quot;meta&quot;&gt;&lt;span&gt;${esc(item.court)}&lt;/span&gt;&lt;span&gt;${esc(item.duration)}&lt;/span&gt;${item.mailType ? `&lt;span&gt;${esc(item.mailType)}&lt;/span&gt;` : &quot;&quot;}&lt;/div&gt;
+        &lt;div class=&quot;meta&quot;&gt;&lt;div class=&quot;meta-left&quot;&gt;&lt;span&gt;${esc(item.court)}&lt;/span&gt;&lt;span&gt;${esc(item.duration)}&lt;/span&gt;${item.mailType ? `&lt;span&gt;${esc(item.mailType)}&lt;/span&gt;` : &quot;&quot;}&lt;/div&gt;${item.costCoveredByOrganizer ? '&lt;div class=&quot;meta-right&quot;&gt;&lt;span class=&quot;cost-cover-pill&quot;&gt;Gastgeber zahlt&lt;/span&gt;&lt;/div&gt;' : &quot;&quot;}&lt;/div&gt;
         &lt;div class=&quot;player-grid&quot;&gt;${[0,1,2,3].map(i =&gt; seatHTML(item.players[i], i)).join(&quot;&quot;)}&lt;/div&gt;
       &lt;/article&gt;`;
     }
