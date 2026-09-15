@@ -3103,7 +3103,7 @@ main {
     function slotStatusPillHTML(item) {
       const confirmed = confirmedPlayerCount(item);
       if (confirmed &gt;= 4) {
-        return `&lt;span class=&quot;meetup-full&quot;&gt;&lt;strong&gt;Buchung vollständig&lt;/strong&gt;&lt;span&gt;4 Zusagen&lt;/span&gt;&lt;/span&gt;`;
+        return `&lt;span class=&quot;meetup-full&quot;&gt;&lt;strong&gt;Buchung vollständig&lt;/strong&gt;&lt;/span&gt;`;
       }
       return `&lt;span class=&quot;meetup-full&quot;&gt;&lt;strong&gt;${confirmed} von 4 zugesagt&lt;/strong&gt;&lt;/span&gt;`;
     }
@@ -3124,7 +3124,6 @@ main {
       const parts = [];
       const status = confirmed &gt;= 4 ? &quot;Buchung vollständig&quot; : confirmed ? `${confirmed} von 4 zugesagt` : &quot;Noch offen&quot;;
       if (informed) parts.push(`${informed} informiert`);
-      if (confirmed) parts.push(`${confirmed} Zusage${confirmed === 1 ? &quot;&quot; : &quot;n&quot;}`);
       return `&lt;span class=&quot;invite-summary-badge&quot;&gt;${esc(audienceLongLabel(item))}&lt;span&gt;${esc(status)}${parts.length ? ` · ${esc(parts.join(&quot; · &quot;))}` : &quot;&quot;}&lt;/span&gt;&lt;/span&gt;`;
     }
     function sourceFromMeetup(row) {
@@ -3958,7 +3957,6 @@ main {
         &lt;/div&gt;`;
       }).join(&quot;&quot;);
       const statusParts = [`${sentCount} Empfänger informiert`];
-      if (acceptedCount) statusParts.push(`${acceptedCount} Zusage${acceptedCount === 1 ? &quot;&quot; : &quot;n&quot;}`);
       if (failedCount) statusParts.push(`${failedCount} fehlgeschlagen`);
       return `&lt;div class=&quot;meetup-status-panel&quot;&gt;
         &lt;div class=&quot;meetup-status-head&quot;&gt;
@@ -4695,13 +4693,11 @@ main {
       if (kind === &quot;own&quot;) {
         const countParts = [];
         if (informed) countParts.push(`${informed}\u00a0informiert`);
-        if (accepted) countParts.push(`${accepted}\u00a0Zusage${accepted === 1 ? &quot;&quot; : &quot;n&quot;}`);
         detailLines.push(audienceLongLabel(item));
         detailLines.push(countParts.length ? countParts.join(&quot; · &quot;) : &quot;gespeichert&quot;);
       } else {
         const countParts = [];
         if (informed) countParts.push(`${informed}\u00a0informiert`);
-        if (accepted) countParts.push(`${accepted}\u00a0Zusage${accepted === 1 ? &quot;&quot; : &quot;n&quot;}`);
         detailLines.push(audienceLongLabel(item));
         detailLines.push(countParts.length ? countParts.join(&quot; · &quot;) : &quot;gespeichert&quot;);
       }
