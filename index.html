@@ -2222,6 +2222,7 @@ main {
     .pick-row.active{font-weight:900}
     .row-title{display:block;font-weight:900}
     .row-sub{margin-top:3px;color:var(--muted);font-size:13px;line-height:1.35}
+    .invite-from-line{display:block}
     .status{height:fit-content;padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:12px;font-weight:900;white-space:nowrap}
     .status.progress{border-radius:14px;line-height:1.25;text-align:right;white-space:normal;display:inline-flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:2px;max-width:100%}
     .status.progress strong{display:block;color:var(--ink);font-family:&quot;Space Grotesk&quot;,sans-serif;font-weight:900}
@@ -2470,7 +2471,7 @@ main {
     .invite-result-inline .invite-result-close{width:32px;height:32px;flex:0 0 auto;border-radius:999px;border:1px solid var(--line);background:var(--soft);font-size:18px;font-weight:900;color:var(--ink);cursor:pointer}
     [hidden]{display:none!important}
     @media(max-width:860px){.top-grid,.status-grid,.form-grid,.level-strip,.profile-card{grid-template-columns:1fr}.groups-field{grid-column:auto}.section-head{display:block}.create-head{grid-template-columns:1fr}.source-stack{justify-items:start}.source-mini{text-align:left}.pb-card{min-height:auto}.profile-action,.profile-level-control{justify-self:start;width:100%}.profile-level-control .seg{justify-content:flex-start}}
-    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-pick-side{justify-content:flex-start;flex-wrap:wrap}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.source-mini{justify-self:start;text-align:left}.booking-summary{align-items:flex-start;gap:9px}.booking-summary-left{width:100%;align-items:flex-start}.booking-summary-chip{font-size:12px;padding:8px 10px;text-align:left;justify-content:flex-start}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:end;min-width:164px;line-height:1.18;align-items:flex-end;text-align:right}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat:not(.free){grid-template-columns:auto auto minmax(0,1fr)}.seat:not(.free) .seat-index{grid-column:1;grid-row:1}.seat:not(.free) .seat-avatar{grid-column:2;grid-row:1}.seat:not(.free) .seat-main{grid-column:3;grid-row:1}.seat:not(.free) .seat-level{grid-column:3;grid-row:2}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto auto minmax(0,1fr) auto;align-items:start;gap:9px;padding:10px}.email-list .email-row:not(.has-avatar){grid-template-columns:auto minmax(0,1fr)}.email-list .email-row .mini-avatar{width:42px;height:42px}.seat-index{grid-column:1;grid-row:1;width:32px;height:32px}.email-row-avatar{grid-column:2;grid-row:1}.email-field-wrap{grid-column:3;grid-row:1;min-width:0}.email-list .email-row .email-profile{display:none}.email-row-status{grid-column:1 / -1;grid-row:2;justify-content:flex-start;flex-wrap:wrap;overflow:visible;gap:5px;margin-top:4px}.email-accept-toggle{grid-column:3;grid-row:3;justify-self:start;margin-top:2px}.email-remove{grid-column:4;grid-row:1}.email-status-pill{font-size:10px;padding:5px 7px;max-width:100%;white-space:normal;text-align:left}.match-top{display:grid;grid-template-columns:minmax(142px,max-content) minmax(0,1fr);align-items:start;gap:10px}.time{font-size:28px;white-space:nowrap}.status.progress{justify-self:stretch;width:100%;padding:10px 9px;text-align:right;align-items:flex-end}.status.progress strong,.status.progress span{overflow-wrap:normal;word-break:normal;hyphens:none}.invite-save-actions{grid-template-columns:1fr}.level-legend{grid-template-columns:repeat(2,minmax(0,1fr))}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
+    @media(max-width:520px){.appbar{padding:12px 14px;min-height:64px}.user-pill span:first-child{display:none}.brand{font-size:22px}.shell{padding-left:12px;padding-right:12px}.meet-title-row{gap:8px}.meet-info-star{width:56px;height:56px;margin-top:-9px}.meet-info-star::before{font-size:56px;transform:translateY(7px)}.pick-card{height:330px}.pick-row{grid-template-columns:1fr}.invite-from-line{display:inline}.invite-pick-side{justify-content:flex-start;flex-wrap:wrap}.invite-summary-badge{justify-self:start;width:100%;min-width:0;text-align:left}.create-card{margin-top:34px;padding:38px 16px 22px}.create-head{gap:14px}.card-title{font-size:22px}.source-mini{justify-self:start;text-align:left}.booking-summary{align-items:flex-start;gap:9px}.booking-summary-left{width:100%;align-items:flex-start}.booking-summary-chip{font-size:12px;padding:8px 10px;text-align:left;justify-content:flex-start}.meetup-status-panel{padding:14px 12px}.meetup-status-head{grid-template-columns:1fr;gap:10px}.meetup-status-title{font-size:17px}.meetup-status-title span{font-size:12px}.meetup-full{justify-self:end;min-width:164px;line-height:1.18;align-items:flex-end;text-align:right}.delivery-row{grid-template-columns:1fr;align-items:start}.delivery-state{justify-self:start}.seat{grid-template-columns:auto minmax(0,1fr);align-items:start}.seat:not(.free){grid-template-columns:auto auto minmax(0,1fr)}.seat:not(.free) .seat-index{grid-column:1;grid-row:1}.seat:not(.free) .seat-avatar{grid-column:2;grid-row:1}.seat:not(.free) .seat-main{grid-column:3;grid-row:1}.seat:not(.free) .seat-level{grid-column:3;grid-row:2}.seat-level{grid-column:2}.email-list .email-row,.email-list .email-row.has-avatar,.email-list .email-row.has-avatar.has-remove{grid-template-columns:auto auto minmax(0,1fr) auto;align-items:start;gap:9px;padding:10px}.email-list .email-row:not(.has-avatar){grid-template-columns:auto minmax(0,1fr)}.email-list .email-row .mini-avatar{width:42px;height:42px}.seat-index{grid-column:1;grid-row:1;width:32px;height:32px}.email-row-avatar{grid-column:2;grid-row:1}.email-field-wrap{grid-column:3;grid-row:1;min-width:0}.email-list .email-row:not(.has-avatar) .email-field-wrap{grid-column:2;grid-row:1}.email-list .email-row .email-profile{display:none}.email-row-status{grid-column:1 / -1;grid-row:2;justify-content:flex-start;flex-wrap:wrap;overflow:visible;gap:5px;margin-top:4px}.email-accept-toggle{grid-column:3;grid-row:3;justify-self:start;margin-top:2px}.email-list .email-row:not(.has-avatar) .email-accept-toggle{grid-column:2}.email-remove{grid-column:4;grid-row:1}.email-status-pill{font-size:10px;padding:5px 7px;max-width:100%;white-space:normal;text-align:left}.match-top{display:grid;grid-template-columns:minmax(142px,max-content) minmax(0,1fr);align-items:start;gap:10px}.time{font-size:28px;white-space:nowrap}.status.progress{justify-self:stretch;width:100%;padding:10px 9px;text-align:right;align-items:flex-end}.status.progress strong,.status.progress span{overflow-wrap:normal;word-break:normal;hyphens:none}.invite-save-actions{grid-template-columns:1fr}.level-legend{grid-template-columns:repeat(2,minmax(0,1fr))}.group-tools-row{grid-template-columns:1fr 44px 44px}.age-filter{grid-template-columns:1fr}.age-range{grid-template-columns:1fr 1fr}.cta-large{font-size:16px}.meet-info-overlay{padding-top:22px}.meet-info-card{padding:26px 20px}.meet-info-text{font-size:.98rem;line-height:1.56}}
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
@@ -3407,7 +3408,7 @@ main {
         &lt;button class=&quot;pick-row invite-pick ${tone} ${active ? &quot;active&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-invite=&quot;${esc(item.id)}&quot;&gt;
           &lt;span&gt;
             &lt;span class=&quot;row-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}-${esc(item.end)} Uhr&lt;/span&gt;
-            &lt;span class=&quot;row-sub&quot;&gt;${esc(item.court)} · von ${esc(item.from)}&lt;/span&gt;
+            &lt;span class=&quot;row-sub&quot;&gt;${esc(item.court)} · &lt;span class=&quot;invite-from-line&quot;&gt;von ${esc(item.from)}&lt;/span&gt;&lt;/span&gt;
           &lt;/span&gt;
           &lt;span class=&quot;invite-pick-side&quot;&gt;
             ${miniAvatarHTML(item.from, item.fromAvatar)}
@@ -3985,14 +3986,17 @@ main {
       const newInviteTargets = validTargets.filter(email =&gt; !sentInvite.has(normalizeEmail(email)));
       const reminderTargets = validTargets.filter(email =&gt; sentInvite.has(normalizeEmail(email)));
       const newReminderTargets = reminderTargets.filter(email =&gt; !sentReminder.has(normalizeEmail(email)));
+      const invitedReminderTargets = reminderTargets.filter(email =&gt; !isUserEmail(email));
+      const showReminder = invitedReminderTargets.length &gt;= 3;
       const canSendInvite = audience === &quot;Alle&quot;
         ? (!existing || newInviteTargets.length &gt; 0)
         : validTargets.length &gt; 0 &amp;&amp; (!existing || newInviteTargets.length &gt; 0);
       return {
         canSendInvite,
-        canSendReminder: reminderTargets.length &gt; 0 &amp;&amp; newReminderTargets.length &gt; 0,
+        showReminder,
+        canSendReminder: showReminder &amp;&amp; newReminderTargets.length &gt; 0,
         inviteHint: newInviteTargets.length ? &quot;&quot; : &quot;Alle aktuellen Empfänger sind informiert&quot;,
-        reminderHint: reminderTargets.length ? (newReminderTargets.length ? &quot;&quot; : &quot;Erinnerung bereits verschickt&quot;) : &quot;Noch keine Empfänger informiert&quot;
+        reminderHint: showReminder ? (newReminderTargets.length ? &quot;&quot; : &quot;Erinnerung bereits verschickt&quot;) : &quot;Erinnerung erst ab drei eingeladenen Mitspielern&quot;
       };
     }
     function refreshActionButtons() {
@@ -4018,6 +4022,12 @@ main {
         }
       }
       if (reminder &amp;&amp; !reminder.textContent.includes(&quot;wird&quot;)) {
+        reminder.hidden = !actions.showReminder;
+        if (!actions.showReminder) {
+          reminder.disabled = true;
+          reminder.title = actions.reminderHint || &quot;&quot;;
+          return;
+        }
         reminder.disabled = !actions.canSendReminder;
         reminder.title = actions.reminderHint || &quot;&quot;;
         if (actions.canSendReminder) {
@@ -4114,7 +4124,7 @@ main {
           &lt;div class=&quot;invite-action-buttons&quot;&gt;
             &lt;button class=&quot;btn beige cta-large&quot; type=&quot;button&quot; id=&quot;saveMeetup&quot;&gt;Änderungen speichern&lt;/button&gt;
             &lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot; ${actions.canSendInvite ? &quot;&quot; : &quot;disabled&quot;} title=&quot;${esc(actions.inviteHint)}&quot;&gt;${actions.canSendInvite ? &quot;Spieler informieren&quot; : &quot;Alle informiert&quot;}&lt;/button&gt;
-            &lt;button class=&quot;btn gray cta-large&quot; type=&quot;button&quot; id=&quot;sendReminder&quot; ${actions.canSendReminder ? &quot;&quot; : &quot;disabled&quot;} title=&quot;${esc(actions.reminderHint)}&quot;&gt;${actions.canSendReminder ? &quot;Erinnerungs-Mail schicken&quot; : &quot;Erinnerung erledigt&quot;}&lt;/button&gt;
+            &lt;button class=&quot;btn gray cta-large&quot; type=&quot;button&quot; id=&quot;sendReminder&quot; ${actions.showReminder ? &quot;&quot; : &quot;hidden&quot;} ${actions.canSendReminder ? &quot;&quot; : &quot;disabled&quot;} title=&quot;${esc(actions.reminderHint)}&quot;&gt;${actions.canSendReminder ? &quot;Erinnerungs-Mail schicken&quot; : &quot;Erinnerung erledigt&quot;}&lt;/button&gt;
           &lt;/div&gt;
         &lt;/div&gt;
       &lt;/article&gt;`;
