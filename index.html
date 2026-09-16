@@ -1574,6 +1574,10 @@ main {
   </div>
 </div>
 
+<div class="install-guide-layer" id="installGuideLayer" aria-hidden="true">
+  <iframe id="installGuideFrame" title="Installationsanleitung" src="padel-install-prototyp.html?embedded=1"></iframe>
+</div>
+
 <!-- Vorschau vor dem Aktualisieren der TFB-Mitgliederliste (Admin) -->
 <div class="modal-overlay" id="memberSyncModal">
   <div class="modal payment-choice-modal">
@@ -9867,10 +9871,29 @@ function shouldOfferInstallPrompt(force = false) {
   return true;
 }
 
+function closeInstallGuideLayer() {
+  const layer = document.getElementById('installGuideLayer');
+  if (layer) {
+    layer.classList.remove('open');
+    layer.setAttribute('aria-hidden', 'true');
+  }
+  document.body.classList.remove('install-guide-open');
+}
+
 function openInstallGuide(os) {
   rememberInstallPromptSnooze();
-  const target = `padel-install-prototyp.html?guide=${encodeURIComponent(os)}`;
-  window.location.href = target;
+  closeInstallChoiceModal(false);
+  const layer = document.getElementById('installGuideLayer');
+  const frame = document.getElementById('installGuideFrame');
+  const guideApi = frame?.contentWindow?.PadelInstallGuide;
+  if (!layer || !frame || !guideApi?.open) {
+    window.location.href = `padel-install-prototyp.html?guide=${encodeURIComponent(os)}`;
+    return;
+  }
+  layer.classList.add('open');
+  layer.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('install-guide-open');
+  guideApi.open(os);
 }
 
 function openInstallChoiceModal(force = false) {
@@ -9939,6 +9962,10 @@ document.getElementById('installChoiceAndroid')?.addEventListener('click', () =>
 document.getElementById('installChoiceLater')?.addEventListener('click', () => closeInstallChoiceModal(true));
 document.getElementById('mobileInstallPromptModal')?.addEventListener('click', (event) => {
   if (event.target && event.target.id === 'mobileInstallPromptModal') closeInstallChoiceModal(true);
+});
+window.addEventListener('message', (event) => {
+  if (event.origin !== window.location.origin && window.location.protocol !== 'file:') return;
+  if (event.data && event.data.type === 'padel-install-guide-close') closeInstallGuideLayer();
 });
 
 async function confirmBooking(skipAuthCheck) {
@@ -15764,6 +15791,26 @@ body.bielstein-theme .install-choice-icon {
 }
 body.bielstein-theme #mobileInstallPromptModal .modal-sub {
   color: #5F574C; font-weight: 600; line-height: 1.5;
+}
+body.bielstein-theme .install-guide-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: none;
+  background: #0D0D0C;
+}
+body.bielstein-theme .install-guide-layer.open {
+  display: block;
+}
+body.bielstein-theme .install-guide-layer iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: #0D0D0C;
+}
+body.bielstein-theme.install-guide-open {
+  overflow: hidden;
 }
 
 /* ── LEGENDE ── */

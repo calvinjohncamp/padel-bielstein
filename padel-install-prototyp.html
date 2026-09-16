@@ -25,7 +25,7 @@
     .os-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:7px}.os{border:1px solid #d5d0c7;background:white;border-radius:15px;padding:13px 11px;text-align:left;cursor:pointer;color:#171714}.os strong{display:block;font-size:15px}.os small{display:block;color:#777168;margin-top:4px;font-size:12px;line-height:1.25}
     .primary{width:100%;border:0;border-radius:17px;background:var(--orange);padding:16px;font-weight:850;color:#111;cursor:pointer;margin:4px 0 12px}.booking-install{margin:4px 0 0}.booking-install.is-hidden{display:none}.later{width:100%;border:0;background:none;padding:14px 0 3px;color:#6a665e;cursor:pointer}
     .tutorial{position:absolute;inset:0;background:#111;z-index:20;display:none;flex-direction:column}.tutorial.on{display:flex}.tutorial-head{padding:calc(14px + env(safe-area-inset-top)) 16px 11px;display:flex;align-items:center;gap:12px;background:#171714;border-bottom:1px solid #333}
-    .close{width:38px;height:38px;border:0;border-radius:50%;background:#302f2b;color:white;font-size:23px;cursor:pointer}.title{flex:1}.title b{display:block;font-size:16px}.title small{color:#a8a39a}.sound{width:38px;height:38px;border:0;border-radius:50%;background:#302f2b;color:white;cursor:pointer;position:relative;display:grid;place-items:center}.speaker-icon{width:24px;height:24px;display:block;overflow:visible}.speaker-icon *{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}.sound .speaker-off{opacity:0;transform-origin:12px 12px;transition:opacity .16s ease}.sound.off{color:#aaa59b}.sound.off .speaker-off{opacity:1}.sound.off .speaker-wave{opacity:.26}.counter{font-size:13px;color:#aaa59b}
+    .close{width:38px;height:38px;border:0;border-radius:50%;background:#302f2b;color:white;font-size:23px;cursor:pointer}.title{flex:1}.title b{display:block;font-size:16px}.title small{color:#a8a39a}.sound{width:38px;height:38px;border:0;border-radius:50%;background:#302f2b;color:white;cursor:pointer;position:relative;display:grid;place-items:center}.sound.needs-audio{box-shadow:0 0 0 3px #f5634380}.speaker-icon{width:24px;height:24px;display:block;overflow:visible}.speaker-icon *{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}.sound .speaker-off{opacity:0;transform-origin:12px 12px;transition:opacity .16s ease}.sound.off{color:#aaa59b}.sound.off .speaker-off{opacity:1}.sound.off .speaker-wave{opacity:.26}.counter{font-size:13px;color:#aaa59b}
     .stage{flex:1;min-height:0;display:grid;place-items:center;position:relative;padding:12px 14px;background:radial-gradient(circle at 50% 30%,#2b2b27,#111 66%)}
     .phone{height:100%;max-height:660px;aspect-ratio:1320/2868;border-radius:34px;overflow:hidden;position:relative;background:#080808;box-shadow:0 25px 80px #000;border:1px solid #54534e}
     .frame{position:absolute;inset:0;opacity:0;transition:opacity .32s;pointer-events:none}.frame.active{opacity:1;pointer-events:auto}.frame img{width:100%;height:100%;object-fit:cover;display:block}
@@ -82,13 +82,15 @@ const android=[
  {android:"dialog",x:84,y:65,title:"3. Installieren bestätigen",text:"Chrome öffnet den Installationsdialog. Tippe dort auf „Installieren“.",audio:"assets/install-audio/android-03.mp3"},
  {android:"home",x:29,y:16,title:"Fertig!",text:"Das Padel-Bielstein-Symbol erscheint auf deinem Startbildschirm.",audio:"assets/install-audio/android-04.mp3"}
 ];
-let os="ios",step=0,timer,soundOn=true,audioRun=0;
+let os="ios",step=0,timer,soundOn=true,audioRun=0,audioBlocked=false;
 const guideAudio=new Audio();
+guideAudio.preload="auto";
 const $=id=>document.getElementById(id),sheet=$("sheet"),shade=$("shade"),tutorial=$("tutorial");
 const INSTALL_PROMPT_KEY="padelInstallPromptDismissedAt";
 const INSTALL_PARAMS=new URLSearchParams(location.search);
 const INSTALL_PROMPT_PREVIEW=INSTALL_PARAMS.has("installPromptPreview");
 const START_GUIDE=INSTALL_PARAMS.get("guide");
+const EMBEDDED_GUIDE=INSTALL_PARAMS.has("embedded");
 const IS_LOCAL_PREVIEW=location.protocol==="file:"||location.hostname==="localhost"||location.hostname==="127.0.0.1";
 function blankBeforeBrowserSnapshot(){document.body.classList.add("page-exit")}
 window.addEventListener("pagehide",blankBeforeBrowserSnapshot);
@@ -102,7 +104,7 @@ function showInstallButton(){$("installAgain").classList.remove("is-hidden")}
 function promptOn(force=false){if(!shouldShowInstallPrompt(force))return;shade.classList.add("on");sheet.classList.add("on")}
 function promptOff(save=true,revealButton=true){shade.classList.remove("on");sheet.classList.remove("on");if(save)rememberPromptDismissed();if(revealButton)showInstallButton()}
 function showInstallPromptAfterBooking(){promptOn(false)}
-function openGuide(selectedOs){os=selectedOs;promptOff(true,false);step=0;$("guideTitle").textContent=os==="ios"?"Auf iPhone/iPad einrichten":"Auf Android installieren";document.querySelector(".title small").textContent=os==="ios"?"Funktioniert bei Apple nur mit Safari":"Tippe rechts oder links zum Weiterblättern";tutorial.classList.add("on");render()}
+function openGuide(selectedOs){os=selectedOs;promptOff(true,false);step=0;soundOn=true;audioBlocked=false;$("soundToggle").classList.remove("off","needs-audio");$("guideTitle").textContent=os==="ios"?"Auf iPhone/iPad einrichten":"Auf Android installieren";document.querySelector(".title small").textContent=os==="ios"?"Funktioniert bei Apple nur mit Safari":"Tippe rechts oder links zum Weiterblättern";tutorial.classList.add("on");render()}
 shade.onclick=()=>promptOff(true); $("later").onclick=()=>promptOff(true); $("installNow").onclick=()=>openGuide("ios"); $("installAgain").onclick=()=>promptOn(true);
 document.querySelectorAll(".os").forEach(b=>b.onclick=()=>openGuide(b.dataset.os));
 function frameHTML(s){
@@ -119,15 +121,20 @@ function androidFrameHTML(s){
  const extra=s.android==="menu"?menu:s.android==="dialog"?dialog:"";
  return `<div class="frame active">${androidChromePage(extra)}<span class="pulse android-pulse" style="left:${s.x}%;top:${s.y}%"></span></div>`;
 }
+function currentList(){return os==="ios"?ios:android}
+function markAudioBlocked(on){audioBlocked=on;$("soundToggle").classList.toggle("needs-audio",on);$("soundToggle").setAttribute("aria-label",on?"Ton starten":soundOn?"Ton ausschalten":"Ton einschalten")}
 function stopAudio(){audioRun++;guideAudio.pause();guideAudio.removeAttribute("src");guideAudio.load()}
 function scheduleFallback(list){clearTimeout(timer);if(step<list.length-1)timer=setTimeout(()=>go(1),3400)}
-function playStepAudio(s,list){clearTimeout(timer);stopAudio();if(!soundOn||!s.audio){scheduleFallback(list);return}const run=audioRun;guideAudio.src=s.audio;guideAudio.currentTime=0;guideAudio.onended=()=>{if(run!==audioRun)return;if(step<list.length-1)setTimeout(()=>go(1),450)};guideAudio.onerror=()=>{if(run!==audioRun)return;scheduleFallback(list)};const p=guideAudio.play();if(p&&p.catch)p.catch(()=>{if(run===audioRun)scheduleFallback(list)})}
-function render(){const list=os==="ios"?ios:android,s=list[step];$("phone").innerHTML=frameHTML(s);$("captionTitle").textContent=s.title;$("captionText").textContent=s.text;$("counter").textContent=`${step+1}/${list.length}`;$("progress").innerHTML=list.map((_,i)=>`<i class="${i<=step?(i===step?'current':'done'):''}"></i>`).join("");playStepAudio(s,list)}
-function go(n){const list=os==="ios"?ios:android;step=Math.max(0,Math.min(list.length-1,step+n));render()}
-$("soundToggle").onclick=()=>{soundOn=!soundOn;$("soundToggle").classList.toggle("off",!soundOn);$("soundToggle").setAttribute("aria-label",soundOn?"Ton ausschalten":"Ton einschalten");render()};
-$("closeGuide").onclick=()=>{tutorial.classList.remove("on");rememberPromptDismissed();showInstallButton();clearTimeout(timer);stopAudio()};$("prev").onclick=()=>go(-1);$("next").onclick=()=>go(1);
+function playStepAudio(s,list){clearTimeout(timer);stopAudio();markAudioBlocked(false);if(!soundOn||!s.audio){scheduleFallback(list);return}const run=audioRun;guideAudio.src=s.audio;guideAudio.currentTime=0;guideAudio.onended=()=>{if(run!==audioRun)return;if(step<list.length-1)setTimeout(()=>go(1),450)};guideAudio.onerror=()=>{if(run!==audioRun)return;scheduleFallback(list)};const p=guideAudio.play();if(p&&p.catch)p.catch(()=>{if(run===audioRun)markAudioBlocked(true)})}
+function unlockAudio(){if(!tutorial.classList.contains("on")||!audioBlocked)return false;soundOn=true;$("soundToggle").classList.remove("off");playStepAudio(currentList()[step],currentList());return true}
+function render(){const list=currentList(),s=list[step];$("phone").innerHTML=frameHTML(s);$("captionTitle").textContent=s.title;$("captionText").textContent=s.text;$("counter").textContent=`${step+1}/${list.length}`;$("progress").innerHTML=list.map((_,i)=>`<i class="${i<=step?(i===step?'current':'done'):''}"></i>`).join("");playStepAudio(s,list)}
+function go(n){const list=currentList();step=Math.max(0,Math.min(list.length-1,step+n));render()}
+$("soundToggle").onclick=()=>{if(unlockAudio())return;soundOn=!soundOn;$("soundToggle").classList.toggle("off",!soundOn);markAudioBlocked(false);$("soundToggle").setAttribute("aria-label",soundOn?"Ton ausschalten":"Ton einschalten");render()};
+$("closeGuide").onclick=()=>{tutorial.classList.remove("on");rememberPromptDismissed();if(!EMBEDDED_GUIDE)showInstallButton();clearTimeout(timer);stopAudio();if(EMBEDDED_GUIDE)parent.postMessage({type:"padel-install-guide-close"},"*")};$("prev").onclick=()=>go(-1);$("next").onclick=()=>go(1);
+tutorial.addEventListener("pointerdown",e=>{if(e.target.closest("button"))return;unlockAudio()},{passive:true});
 requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.add("ready")));
-if(START_GUIDE==="ios"||START_GUIDE==="android"){openGuide(START_GUIDE)}else{setTimeout(showInstallPromptAfterBooking,2800)}
+window.PadelInstallGuide={open:openGuide};
+if(START_GUIDE==="ios"||START_GUIDE==="android"){openGuide(START_GUIDE)}else if(!EMBEDDED_GUIDE){setTimeout(showInstallPromptAfterBooking,2800)}
 </script>
 
 
