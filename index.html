@@ -9780,6 +9780,13 @@ async function fetchCreditBalanceCents() {
   return (data || []).reduce((s, e) => s + (Number(e.amount_cents) || 0), 0);
 }
 
+function fetchCreditBalanceCentsFast() {
+  return Promise.race([
+    fetchCreditBalanceCents(),
+    new Promise(resolve => setTimeout(() => resolve(0), 2500)),
+  ]);
+}
+
 // Zahlungsart ausdrücklich wählen lassen. Rückgabe: 'credit' = Guthaben zuerst
 // verwenden (Rest ggf. über Stripe), 'stripe' = Guthaben unangetastet lassen
 // und den vollen Betrag über Stripe zahlen, null = Abbruch.
@@ -9825,7 +9832,7 @@ function askPaymentChoice(priceCents, balanceCents) {
 
 const BOOKING_SUCCESS_SUB =
   'Die Buchungsbestätigung sowie Informationen zum Platzzugang erhältst du per E-Mail. Weitere Details findest du unter „Jetzt spielen“ in der App.';
-const INSTALL_PROMPT_SNOOZE_KEY = 'padelInstallPromptSnoozedAt';
+const INSTALL_PROMPT_SNOOZE_KEY = 'padelInstallPromptSnoozedAtV2';
 const INSTALL_PROMPT_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
 
 function redirectToExternalCheckout(url) {
@@ -9864,6 +9871,13 @@ function rememberInstallPromptSnooze() {
   try { localStorage.setItem(INSTALL_PROMPT_SNOOZE_KEY, String(Date.now())); } catch (err) {}
 }
 
+function forgetInstallPromptSnooze() {
+  try {
+    localStorage.removeItem(INSTALL_PROMPT_SNOOZE_KEY);
+    localStorage.removeItem('padelInstallPromptSnoozedAt');
+  } catch (err) {}
+}
+
 function shouldOfferInstallPrompt(force = false) {
   if (isRunningAsInstalledApp()) return false;
   if (!isMobileInstallPromptCandidate()) return false;
@@ -9881,7 +9895,7 @@ function closeInstallGuideLayer() {
 }
 
 function openInstallGuide(os) {
-  rememberInstallPromptSnooze();
+  forgetInstallPromptSnooze();
   closeInstallChoiceModal(false);
   const layer = document.getElementById('installGuideLayer');
   const frame = document.getElementById('installGuideFrame');
@@ -9974,20 +9988,23 @@ async function confirmBooking(skipAuthCheck) {
     openModal('book');
     return;
   }
+  showToast('Zahlung wird vorbereitet …');
+  const profileReady = (async () => {
+    if (currentUser && (!currentProfile || currentProfile.auth_id !== currentUser.id)) {
+      await loadProfile(currentUser.id);
+    }
+  })();
+  const headersPromise = checkoutHeaders();
   // Letzte, frische Prüfung direkt vor der Zahlung: Belegung neu laden und
   // Auswahl gegenprüfen. Verhindert, dass für einen zwischenzeitlich (z.B.
   // durch ein anderes Mitglied) vergebenen Slot bezahlt wird. Serverseitig
   // greift zusätzlich die Prüfung in create-checkout / DB-Exclusion-Constraint.
   showLoader(true);
-  await loadBookings(selDate);
+  await Promise.all([loadBookings(selDate), profileReady]);
   renderSlots();
   showLoader(false);
   if (!selSlot) {
     return; // renderSlots() hat die Auswahl bereits verworfen + Hinweis angezeigt
-  }
-  // Profil ggf. frisch nachladen, falls es noch nicht (oder fuer einen anderen Nutzer) geladen wurde
-  if (currentUser && (!currentProfile || currentProfile.auth_id !== currentUser.id)) {
-    await loadProfile(currentUser.id);
   }
   const {court, hour} = selSlot;
   const priceRaw = rawP(hour, selDate);
@@ -9998,8 +10015,8 @@ async function confirmBooking(skipAuthCheck) {
   const fullName = currentProfile?.full_name || '';
   const custType = currentProfile?.customer_type || 'account';
   const emailTheme = getCheckoutEmailTheme();
-  const userId = await dataUserId();
-  const headers = await checkoutHeaders();
+  const userId = currentProfile?.id || await dataUserId();
+  const headers = await headersPromise;
 
   if (!userId) {
     showToast('Dein Benutzerprofil konnte nicht geladen werden. Bitte neu anmelden.');
@@ -10009,7 +10026,7 @@ async function confirmBooking(skipAuthCheck) {
   // Vor dem Absenden klaeren, ob Guthaben im Spiel ist. Frueher stand hier
   // ungeprueft "Weiter zu Stripe" - auch dann, wenn Stripe nie aufgerufen wurde,
   // weil das Guthaben die Buchung komplett deckte.
-  const balanceCents = await fetchCreditBalanceCents();
+  const balanceCents = await fetchCreditBalanceCentsFast();
   if (balanceCents === null) {
     showToast('Guthabenstand konnte nicht geprüft werden. Bitte erneut versuchen.');
     return;
