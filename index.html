@@ -1544,15 +1544,40 @@ main {
   <div class="modal payment-choice-modal booking-success-modal">
     <div class="booking-success-check">✓</div>
     <div class="modal-title" id="bookingSuccessTitle">Buchung bestätigt</div>
-    <div class="modal-sub" id="bookingSuccessSub">Die Bestätigung und alle Zugangsdaten erhältst du zusätzlich per E-Mail.</div>
+    <div class="modal-sub" id="bookingSuccessSub">Die Buchungsbestätigung sowie Informationen zum Platzzugang erhältst du per E-Mail. Weitere Details findest du unter „Jetzt spielen“ in der App.</div>
     <div class="cc-lines">
       <div class="cc-line"><span>Status</span><span id="bookingSuccessStatus">Gebucht</span></div>
-      <div class="cc-line"><span>Zugang</span><span id="bookingSuccessAccess">Siehe „Jetzt Spielen“ in der Buchungsapp</span></div>
+      <div class="cc-line"><span>Zugang</span><span id="bookingSuccessAccess">Weitere Details unter „Jetzt spielen“ in der App</span></div>
     </div>
+    <button class="modal-btn cc-option cc-credit" id="bookingSuccessInstall" type="button" hidden>
+      <span class="cc-option-copy"><strong>Als App installieren</strong><small>Anleitung erneut ansehen</small></span>
+      <span class="cc-option-mark" aria-hidden="true">↗</span>
+    </button>
     <button class="modal-btn cc-option cc-stripe" id="bookingSuccessOk">
       <span class="cc-option-copy"><strong>Alles klar</strong><small>Zurück zur Buchungsapp</small></span>
       <span class="cc-option-mark" aria-hidden="true">→</span>
     </button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="mobileInstallPromptModal">
+  <div class="modal payment-choice-modal booking-success-modal app-install-choice-modal">
+    <div class="install-choice-head">
+      <img src="assets/icons/apple-touch-icon.png" alt="" class="install-choice-icon">
+      <div>
+        <div class="modal-title">Noch nicht als App installiert?</div>
+        <div class="modal-sub">Lege Padel Bielstein auf deinen Home-Bildschirm. So öffnest du die App künftig direkt ohne Browserleiste.</div>
+      </div>
+    </div>
+    <button class="modal-btn cc-option cc-credit" id="installChoiceIos" type="button">
+      <span class="cc-option-copy"><strong>iPhone / iPad</strong><small>Anleitung für Safari-Browser ansehen</small></span>
+      <span class="cc-option-mark" aria-hidden="true">›</span>
+    </button>
+    <button class="modal-btn cc-option cc-stripe" id="installChoiceAndroid" type="button">
+      <span class="cc-option-copy"><strong>Android</strong><small>Anleitung ansehen</small></span>
+      <span class="cc-option-mark" aria-hidden="true">›</span>
+    </button>
+    <button class="modal-btn cc-cancel" id="installChoiceLater" type="button">Später</button>
   </div>
 </div>
 
@@ -7375,10 +7400,9 @@ async function init() {
     } else if (finalizedAbo) {
       await showBookingSuccessDialog({
         title: 'Jahresabo bestätigt',
-        sub: 'Die Bestätigung und alle Zugangsdaten erhältst du zusätzlich per E-Mail.',
+        sub: BOOKING_SUCCESS_SUB,
         status: 'Zahlung erfolgreich',
       });
-      maybeShowInstallPromptAfterBooking();
       await loadBookings(selDate);
       renderSlots();
       setMode('abo');
@@ -7387,10 +7411,9 @@ async function init() {
     } else {
       await showBookingSuccessDialog({
         title: 'Buchung bestätigt',
-        sub: 'Die Bestätigung und alle Zugangsdaten erhältst du zusätzlich per E-Mail.',
+        sub: BOOKING_SUCCESS_SUB,
         status: 'Zahlung erfolgreich',
       });
-      maybeShowInstallPromptAfterBooking();
       await loadBookings(selDate);
       renderSlots();
     }
@@ -9803,6 +9826,74 @@ function askPaymentChoice(priceCents, balanceCents) {
   });
 }
 
+const BOOKING_SUCCESS_SUB =
+  'Die Buchungsbestätigung sowie Informationen zum Platzzugang erhältst du per E-Mail. Weitere Details findest du unter „Jetzt spielen“ in der App.';
+const BOOKING_SUCCESS_ACCESS = 'Weitere Details unter „Jetzt spielen“ in der App';
+const INSTALL_PROMPT_SNOOZE_KEY = 'padelInstallPromptSnoozedAt';
+const INSTALL_PROMPT_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+
+function isRunningAsInstalledApp() {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches ||
+    window.navigator.standalone === true;
+}
+
+function isMobileInstallPromptCandidate() {
+  const ua = navigator.userAgent || '';
+  const uaDataMobile = navigator.userAgentData && navigator.userAgentData.mobile === true;
+  const coarseSmallScreen = window.matchMedia('(pointer: coarse)').matches &&
+    Math.min(window.innerWidth || screen.width, window.innerHeight || screen.height) <= 920;
+  return uaDataMobile || coarseSmallScreen || /Android|iPhone|iPad|iPod/i.test(ua);
+}
+
+function hasRecentInstallPromptSnooze() {
+  try {
+    const raw = localStorage.getItem(INSTALL_PROMPT_SNOOZE_KEY);
+    if (!raw) return false;
+    return Date.now() - Number(raw) < INSTALL_PROMPT_SNOOZE_MS;
+  } catch (err) {
+    return false;
+  }
+}
+
+function rememberInstallPromptSnooze() {
+  try { localStorage.setItem(INSTALL_PROMPT_SNOOZE_KEY, String(Date.now())); } catch (err) {}
+}
+
+function shouldOfferInstallPrompt(force = false) {
+  if (isRunningAsInstalledApp()) return false;
+  if (!isMobileInstallPromptCandidate()) return false;
+  if (!force && hasRecentInstallPromptSnooze()) return false;
+  return true;
+}
+
+function openInstallGuide(os) {
+  rememberInstallPromptSnooze();
+  const target = `padel-install-prototyp.html?guide=${encodeURIComponent(os)}`;
+  window.location.href = target;
+}
+
+function openInstallChoiceModal(force = false) {
+  if (!shouldOfferInstallPrompt(force)) return false;
+  const modal = document.getElementById('mobileInstallPromptModal');
+  if (!modal) return false;
+  modal.classList.add('open');
+  return true;
+}
+
+function closeInstallChoiceModal(save = true) {
+  const modal = document.getElementById('mobileInstallPromptModal');
+  if (modal) modal.classList.remove('open');
+  if (save) rememberInstallPromptSnooze();
+  revealBookingSuccessInstallButton();
+}
+
+function revealBookingSuccessInstallButton() {
+  const install = document.getElementById('bookingSuccessInstall');
+  if (!install || !shouldOfferInstallPrompt(true)) return;
+  install.hidden = false;
+}
+
 function showBookingSuccessDialog(options = {}) {
   return new Promise(resolve => {
     const modal = document.getElementById('bookingSuccessModal');
@@ -9813,32 +9904,44 @@ function showBookingSuccessDialog(options = {}) {
     const sub = document.getElementById('bookingSuccessSub');
     const status = document.getElementById('bookingSuccessStatus');
     const access = document.getElementById('bookingSuccessAccess');
+    const install = document.getElementById('bookingSuccessInstall');
 
     if (title) title.textContent = options.title || 'Buchung bestätigt';
-    if (sub) sub.textContent = options.sub || 'Die Bestätigung und alle Zugangsdaten erhältst du zusätzlich per E-Mail.';
+    if (sub) sub.textContent = options.sub || BOOKING_SUCCESS_SUB;
     if (status) status.textContent = options.status || 'Gebucht';
-    if (access) access.textContent = 'Siehe „Jetzt Spielen“ in der Buchungsapp';
+    if (access) access.textContent = BOOKING_SUCCESS_ACCESS;
+    if (install) {
+      install.hidden = true;
+      install.onclick = () => openInstallChoiceModal(true);
+    }
 
     const close = () => {
       modal.classList.remove('open');
       ok.removeEventListener('click', close);
       modal.removeEventListener('click', onBackdrop);
+      if (install) install.onclick = null;
       resolve();
     };
     const onBackdrop = (e) => { if (e.target === modal) close(); };
     ok.addEventListener('click', close);
     modal.addEventListener('click', onBackdrop);
     modal.classList.add('open');
+    if (options.installPrompt !== false) maybeShowInstallPromptAfterBooking();
   });
 }
 
 function maybeShowInstallPromptAfterBooking() {
-  // Platzhalter für den späteren App-Installationshinweis. Wichtig ist die
-  // Reihenfolge: erst Buchungsbestätigung lesen, danach frühestens installieren.
-  if (typeof window.showInstallPromptAfterBooking === 'function') {
-    setTimeout(() => window.showInstallPromptAfterBooking(), 1400);
-  }
+  setTimeout(() => {
+    if (openInstallChoiceModal(false)) revealBookingSuccessInstallButton();
+  }, 2800);
 }
+
+document.getElementById('installChoiceIos')?.addEventListener('click', () => openInstallGuide('ios'));
+document.getElementById('installChoiceAndroid')?.addEventListener('click', () => openInstallGuide('android'));
+document.getElementById('installChoiceLater')?.addEventListener('click', () => closeInstallChoiceModal(true));
+document.getElementById('mobileInstallPromptModal')?.addEventListener('click', (event) => {
+  if (event.target && event.target.id === 'mobileInstallPromptModal') closeInstallChoiceModal(true);
+});
 
 async function confirmBooking(skipAuthCheck) {
   if (!selSlot) return;
@@ -9931,10 +10034,9 @@ async function confirmBooking(skipAuthCheck) {
       const restTxt = rest.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       await showBookingSuccessDialog({
         title: 'Buchung bestätigt',
-        sub: 'Die Bestätigung und alle Zugangsdaten erhältst du zusätzlich per E-Mail.',
+        sub: BOOKING_SUCCESS_SUB,
         status: `Mit Guthaben bezahlt · Restguthaben ${restTxt} €`,
       });
-      maybeShowInstallPromptAfterBooking();
       selSlot = null;
       await loadBookings(selDate);
       renderSlots();
@@ -15565,57 +15667,57 @@ body.bielstein-theme #adminWipe .wipe-result.ok   { color: #1F8A5F; font-weight:
 body.bielstein-theme #adminWipe .wipe-result.warn { color: #B8402C; font-weight: 600; }
 
 /* ── GUTHABEN-BESTÄTIGUNG ── */
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-lines {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-lines {
   margin: 20px 0 22px; padding: 4px 14px;
   border: 1px solid #E2DACB; border-radius: 12px; background: #FFFFFF;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-line {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-line {
   display: flex; justify-content: space-between; align-items: baseline;
   padding: 11px 0; border-bottom: 1px solid #E2DACB;
   font-size: 14px; color: #7A7368;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-line:last-child { border-bottom: 0; }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-line span:last-child {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-line:last-child { border-bottom: 0; }
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-line span:last-child {
   font-family: "Space Grotesk","Arial Narrow",sans-serif;
   font-weight: 700; color: #1C1A17;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-cancel {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-cancel {
   width: auto !important; display: block; margin: 13px auto 0 !important; padding: 6px 12px !important;
   background: transparent !important; color: #7A7368 !important;
   border: 0 !important; box-shadow: none !important; font-size: 12.5px !important;
   text-transform: none !important; letter-spacing: .02em !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-cancel:hover { color: #1C1A17 !important; text-decoration: underline; }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-choice-label {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-cancel:hover { color: #1C1A17 !important; text-decoration: underline; }
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-choice-label {
   margin-bottom: 8px; color: #7A7368;
   font: 700 10.5px/1 "Space Grotesk",sans-serif; letter-spacing: .12em; text-transform: uppercase;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-option {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option {
   min-height: 68px; margin: 0 0 9px !important; padding: 13px 16px !important;
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
   border-radius: 13px !important; box-shadow: none !important; text-align: left;
   text-transform: none !important; letter-spacing: 0 !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-credit {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-credit {
   background: #FCE9E2 !important; color: #1C1A17 !important; border: 1.5px solid #F1C8B9 !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-stripe {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-stripe {
   background: #FFFFFF !important; color: #1C1A17 !important; border: 1.5px solid #D9CFBF !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-credit:hover,
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-credit:focus-visible,
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-stripe:hover,
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-stripe:focus-visible {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-credit:hover,
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-credit:focus-visible,
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-stripe:hover,
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-stripe:focus-visible {
   background: #FCE9E2 !important; border-color: #FF5A36 !important; outline: none;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-option-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-option-copy strong {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-copy strong {
   color: inherit; font: 700 15px/1.2 "Space Grotesk",sans-serif;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-option-copy small {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-copy small {
   color: inherit; opacity: .72; font: 600 11.5px/1.35 "Manrope",sans-serif;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #memberSyncModal) .cc-option-mark {
+body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-mark {
   flex: 0 0 auto; color: inherit; font: 600 20px/1 "Space Grotesk",sans-serif;
 }
 body.bielstein-theme #bookingSuccessModal .booking-success-check {
@@ -15625,6 +15727,16 @@ body.bielstein-theme #bookingSuccessModal .booking-success-check {
 }
 body.bielstein-theme #bookingSuccessModal .modal-sub {
   color: #1C1A17; font-weight: 600; line-height: 1.55;
+}
+body.bielstein-theme .install-choice-head {
+  display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px;
+}
+body.bielstein-theme .install-choice-icon {
+  width: 54px; height: 54px; border-radius: 16px; flex: 0 0 auto;
+  box-shadow: 0 8px 20px rgba(0,0,0,.16);
+}
+body.bielstein-theme #mobileInstallPromptModal .modal-sub {
+  color: #5F574C; font-weight: 600; line-height: 1.5;
 }
 
 /* ── LEGENDE ── */
