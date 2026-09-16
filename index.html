@@ -1542,20 +1542,13 @@ main {
      zuerst in Ruhe gelesen werden kann. -->
 <div class="modal-overlay" id="bookingSuccessModal">
   <div class="modal payment-choice-modal booking-success-modal">
+    <button class="booking-success-close" id="bookingSuccessClose" type="button" aria-label="Bestätigung schließen">×</button>
     <div class="booking-success-check">✓</div>
     <div class="modal-title" id="bookingSuccessTitle">Buchung bestätigt</div>
     <div class="modal-sub" id="bookingSuccessSub">Die Buchungsbestätigung sowie Informationen zum Platzzugang erhältst du per E-Mail. Weitere Details findest du unter „Jetzt spielen“ in der App.</div>
-    <div class="cc-lines">
-      <div class="cc-line"><span>Status</span><span id="bookingSuccessStatus">Gebucht</span></div>
-      <div class="cc-line booking-success-access-row"><span>Zugang</span><span id="bookingSuccessAccess" class="booking-success-access-value">Weitere Details unter „Jetzt spielen“ in der App</span></div>
-    </div>
     <button class="modal-btn cc-option cc-credit" id="bookingSuccessInstall" type="button" hidden>
       <span class="cc-option-copy"><strong>Als App installieren</strong><small>Anleitung erneut ansehen</small></span>
       <span class="cc-option-mark" aria-hidden="true">↗</span>
-    </button>
-    <button class="modal-btn cc-option cc-stripe" id="bookingSuccessOk">
-      <span class="cc-option-copy"><strong>Alles klar</strong><small>Zurück zur Buchungsapp</small></span>
-      <span class="cc-option-mark" aria-hidden="true">→</span>
     </button>
   </div>
 </div>
@@ -8174,7 +8167,7 @@ async function openPortal() {
     );
     const data = await res.json();
     if (data.url) {
-      window.location.href = data.url;
+      redirectToExternalCheckout(data.url);
     } else {
       showToast('Fehler: ' + (data.error || 'Unbekannter Fehler'));
     }
@@ -9828,9 +9821,18 @@ function askPaymentChoice(priceCents, balanceCents) {
 
 const BOOKING_SUCCESS_SUB =
   'Die Buchungsbestätigung sowie Informationen zum Platzzugang erhältst du per E-Mail. Weitere Details findest du unter „Jetzt spielen“ in der App.';
-const BOOKING_SUCCESS_ACCESS = 'Weitere Details unter „Jetzt spielen“ in der App';
 const INSTALL_PROMPT_SNOOZE_KEY = 'padelInstallPromptSnoozedAt';
 const INSTALL_PROMPT_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+
+function redirectToExternalCheckout(url) {
+  if (!url) return;
+  const target = String(url);
+  showToast('Weiter zu Stripe …');
+  window.location.assign(target);
+  setTimeout(() => {
+    if (!document.hidden) window.location.href = target;
+  }, 800);
+}
 
 function isRunningAsInstalledApp() {
   return window.matchMedia('(display-mode: standalone)').matches ||
@@ -9840,9 +9842,8 @@ function isRunningAsInstalledApp() {
 
 function isMobileInstallPromptCandidate() {
   const ua = navigator.userAgent || '';
-  const uaDataMobile = navigator.userAgentData && navigator.userAgentData.mobile === true;
   const iosDesktopUa = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1;
-  return uaDataMobile || iosDesktopUa || /Android|iPhone|iPad|iPod/i.test(ua);
+  return iosDesktopUa || /Android|iPhone|iPad|iPod/i.test(ua);
 }
 
 function hasRecentInstallPromptSnooze() {
@@ -9890,39 +9891,37 @@ function closeInstallChoiceModal(save = true) {
 function revealBookingSuccessInstallButton() {
   const install = document.getElementById('bookingSuccessInstall');
   if (!install || !shouldOfferInstallPrompt(true)) return;
+  install.style.display = '';
   install.hidden = false;
 }
 
 function showBookingSuccessDialog(options = {}) {
   return new Promise(resolve => {
     const modal = document.getElementById('bookingSuccessModal');
-    const ok = document.getElementById('bookingSuccessOk');
-    if (!modal || !ok) { resolve(); return; }
+    const closeBtn = document.getElementById('bookingSuccessClose');
+    if (!modal || !closeBtn) { resolve(); return; }
 
     const title = document.getElementById('bookingSuccessTitle');
     const sub = document.getElementById('bookingSuccessSub');
-    const status = document.getElementById('bookingSuccessStatus');
-    const access = document.getElementById('bookingSuccessAccess');
     const install = document.getElementById('bookingSuccessInstall');
 
     if (title) title.textContent = options.title || 'Buchung bestätigt';
     if (sub) sub.textContent = options.sub || BOOKING_SUCCESS_SUB;
-    if (status) status.textContent = options.status || 'Gebucht';
-    if (access) access.textContent = BOOKING_SUCCESS_ACCESS;
     if (install) {
       install.hidden = true;
+      install.style.display = shouldOfferInstallPrompt(true) ? '' : 'none';
       install.onclick = () => openInstallChoiceModal(true);
     }
 
     const close = () => {
       modal.classList.remove('open');
-      ok.removeEventListener('click', close);
+      closeBtn.removeEventListener('click', close);
       modal.removeEventListener('click', onBackdrop);
       if (install) install.onclick = null;
       resolve();
     };
     const onBackdrop = (e) => { if (e.target === modal) close(); };
-    ok.addEventListener('click', close);
+    closeBtn.addEventListener('click', close);
     modal.addEventListener('click', onBackdrop);
     modal.classList.add('open');
     if (options.installPrompt !== false) maybeShowInstallPromptAfterBooking();
@@ -10024,7 +10023,7 @@ async function confirmBooking(skipAuthCheck) {
     );
     const data = await res.json();
     if (data.url) {
-      window.location.href = data.url;
+      redirectToExternalCheckout(data.url);
     } else if (data.paid_with_credit) {
       // Vollstaendig vom Guthaben bezahlt - es gibt bewusst keine Stripe-Seite.
       // Genau dieser Fall wurde frueher als "Unbekannter Fehler" gemeldet,
@@ -10179,7 +10178,7 @@ async function submitAbo(skipAuthCheck) {
         if (data.starts_on) pendingEb.starts_on = data.starts_on;
         if (data.ends_on)   pendingEb.ends_on   = data.ends_on;
         storePendingAboCheckout(pendingEb);
-        window.location.href = data.url;
+        redirectToExternalCheckout(data.url);
       } else {
         // Gating-/Fenster-Hinweis kommt als Klartext-Meldung vom Server
         // (z. B. „nur für Mitglieder und Partner").
@@ -10268,7 +10267,7 @@ async function submitAbo(skipAuthCheck) {
         const weiter = await showAboStartConfirm(data);
         if (!weiter) { showToast('Abgebrochen – es wurde nichts gebucht und nichts abgebucht.'); return; }
       }
-      window.location.href = data.url;
+      redirectToExternalCheckout(data.url);
     } else {
       showToast('Fehler: ' + (data.error || 'Stripe-Checkout für Jahresabo noch nicht verfügbar'));
       console.error('Abo checkout error:', data);
@@ -14144,7 +14143,7 @@ async function confirmCardPurchase(skipAuthCheck) {
       // wir nachher nicht unterscheiden, ob eine Buchung oder eine Wertkarte
       // bezahlt wurde - und wuerden auf der falschen Seite landen.
       try { localStorage.setItem('pb_pending_card', '1'); } catch(e) {}
-      window.location.href = data.url;
+      redirectToExternalCheckout(data.url);
     } else {
       showCardErr('Fehler: ' + (data.error || 'Unbekannter Fehler'));
     }
@@ -15666,6 +15665,9 @@ body.bielstein-theme #adminWipe .wipe-result.ok   { color: #1F8A5F; font-weight:
 body.bielstein-theme #adminWipe .wipe-result.warn { color: #B8402C; font-weight: 600; }
 
 /* ── GUTHABEN-BESTÄTIGUNG ── */
+body.bielstein-theme [hidden] {
+  display: none !important;
+}
 body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-lines {
   margin: 20px 0 22px; padding: 4px 14px;
   border: 1px solid #E2DACB; border-radius: 12px; background: #FFFFFF;
@@ -15727,18 +15729,31 @@ body.bielstein-theme #bookingSuccessModal .booking-success-check {
 body.bielstein-theme #bookingSuccessModal .modal-sub {
   color: #1C1A17; font-weight: 600; line-height: 1.55;
 }
-body.bielstein-theme #bookingSuccessModal .booking-success-access-row {
-  display: block;
+body.bielstein-theme #bookingSuccessModal .booking-success-modal {
+  position: relative;
+  padding-top: 42px;
 }
-body.bielstein-theme #bookingSuccessModal .booking-success-access-row > span:first-child {
-  display: block;
-  margin-bottom: 7px;
+body.bielstein-theme #bookingSuccessModal .booking-success-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #E2DACB;
+  border-radius: 999px;
+  background: #FFFFFF;
+  color: #7A7368;
+  font: 800 20px/1 "Space Grotesk",sans-serif;
+  cursor: pointer;
+  box-shadow: none;
 }
-body.bielstein-theme #bookingSuccessModal .booking-success-access-value {
-  display: block;
-  max-width: 100%;
-  text-align: left;
-  line-height: 1.35;
+body.bielstein-theme #bookingSuccessModal .booking-success-close:hover,
+body.bielstein-theme #bookingSuccessModal .booking-success-close:focus-visible {
+  color: #1C1A17;
+  border-color: #FF5A36;
+  outline: none;
 }
 body.bielstein-theme .install-choice-head {
   display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px;
