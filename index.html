@@ -409,8 +409,8 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 .abo-calc-note { padding: 4px 13px 11px; font: 500 .76rem/1.4 "Manrope","Arial",sans-serif; color: #8A8276; }
 
 /* ■■ AUTH MODAL ■■ */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.2s, visibility 0s linear 0.2s; }
+.modal-overlay.open { opacity: 1; visibility: visible; pointer-events: all; transition: opacity 0.2s; }
 .modal { background: var(--card); border: 1.5px solid var(--blue); border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 420px; animation: fadeUp 0.25s ease; position: relative; }
 .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #666; font-size: 1.4rem; cursor: pointer; line-height: 1; }
 .modal-close:hover { color: #fff; }
@@ -1575,7 +1575,7 @@ main {
 </div>
 
 <div class="install-guide-layer" id="installGuideLayer" aria-hidden="true">
-  <iframe id="installGuideFrame" title="Installationsanleitung" src="padel-install-prototyp.html?embedded=1"></iframe>
+  <iframe id="installGuideFrame" title="Installationsanleitung" data-src="padel-install-prototyp.html?embedded=1"></iframe>
 </div>
 
 <!-- Vorschau vor dem Aktualisieren der TFB-Mitgliederliste (Admin) -->
@@ -9905,11 +9905,25 @@ function closeInstallGuideLayer() {
   document.body.classList.remove('install-guide-open');
 }
 
-function openInstallGuide(os) {
+let installGuideFrameReadyPromise = null;
+function prepareInstallGuideFrame() {
+  const frame = document.getElementById('installGuideFrame');
+  if (!frame) return Promise.resolve(null);
+  if (frame.contentWindow?.PadelInstallGuide?.open) return Promise.resolve(frame);
+  if (installGuideFrameReadyPromise) return installGuideFrameReadyPromise;
+  installGuideFrameReadyPromise = new Promise(resolve => {
+    const finish = () => resolve(frame);
+    frame.addEventListener('load', finish, { once: true });
+    frame.src = frame.dataset.src || 'padel-install-prototyp.html?embedded=1';
+  });
+  return installGuideFrameReadyPromise;
+}
+
+async function openInstallGuide(os) {
   forgetInstallPromptSnooze();
   closeInstallChoiceModal(false);
   const layer = document.getElementById('installGuideLayer');
-  const frame = document.getElementById('installGuideFrame');
+  const frame = await prepareInstallGuideFrame();
   const guideApi = frame?.contentWindow?.PadelInstallGuide;
   if (!layer || !frame || !guideApi?.open) {
     window.location.href = `padel-install-prototyp.html?guide=${encodeURIComponent(os)}`;
@@ -9925,6 +9939,7 @@ function openInstallChoiceModal(force = false) {
   if (!shouldOfferInstallPrompt(force)) return false;
   const modal = document.getElementById('mobileInstallPromptModal');
   if (!modal) return false;
+  prepareInstallGuideFrame();
   modal.classList.add('open');
   return true;
 }
