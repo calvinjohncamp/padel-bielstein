@@ -1547,7 +1547,7 @@ main {
     <div class="modal-sub" id="bookingSuccessSub">Die Buchungsbestätigung sowie Informationen zum Platzzugang erhältst du per E-Mail. Weitere Details findest du unter „Jetzt spielen“ in der App.</div>
     <div class="cc-lines">
       <div class="cc-line"><span>Status</span><span id="bookingSuccessStatus">Gebucht</span></div>
-      <div class="cc-line"><span>Zugang</span><span id="bookingSuccessAccess">Weitere Details unter „Jetzt spielen“ in der App</span></div>
+      <div class="cc-line booking-success-access-row"><span>Zugang</span><span id="bookingSuccessAccess" class="booking-success-access-value">Weitere Details unter „Jetzt spielen“ in der App</span></div>
     </div>
     <button class="modal-btn cc-option cc-credit" id="bookingSuccessInstall" type="button" hidden>
       <span class="cc-option-copy"><strong>Als App installieren</strong><small>Anleitung erneut ansehen</small></span>
@@ -9841,9 +9841,8 @@ function isRunningAsInstalledApp() {
 function isMobileInstallPromptCandidate() {
   const ua = navigator.userAgent || '';
   const uaDataMobile = navigator.userAgentData && navigator.userAgentData.mobile === true;
-  const coarseSmallScreen = window.matchMedia('(pointer: coarse)').matches &&
-    Math.min(window.innerWidth || screen.width, window.innerHeight || screen.height) <= 920;
-  return uaDataMobile || coarseSmallScreen || /Android|iPhone|iPad|iPod/i.test(ua);
+  const iosDesktopUa = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1;
+  return uaDataMobile || iosDesktopUa || /Android|iPhone|iPad|iPod/i.test(ua);
 }
 
 function hasRecentInstallPromptSnooze() {
@@ -15727,6 +15726,19 @@ body.bielstein-theme #bookingSuccessModal .booking-success-check {
 }
 body.bielstein-theme #bookingSuccessModal .modal-sub {
   color: #1C1A17; font-weight: 600; line-height: 1.55;
+}
+body.bielstein-theme #bookingSuccessModal .booking-success-access-row {
+  display: block;
+}
+body.bielstein-theme #bookingSuccessModal .booking-success-access-row > span:first-child {
+  display: block;
+  margin-bottom: 7px;
+}
+body.bielstein-theme #bookingSuccessModal .booking-success-access-value {
+  display: block;
+  max-width: 100%;
+  text-align: left;
+  line-height: 1.35;
 }
 body.bielstein-theme .install-choice-head {
   display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px;
