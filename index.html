@@ -6784,10 +6784,27 @@ async function loadCourtPartnerLabels() {
 // Fachliche Tabellen (Buchungen, Abos, Zahlungen, Wertkarten) referenzieren
 // public.users.id. Supabase Auth verwendet dagegen auth.users.id. Diese IDs
 // dürfen nicht verwechselt werden.
+async function loadProfileBasic(authId) {
+  try {
+    const headers = await authHeaders();
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/users?auth_id=eq.${authId}&limit=1`,
+      { headers }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data && data.length > 0) {
+      currentProfile = data[0];
+      return currentProfile;
+    }
+  } catch(e) { console.warn('Profil kurz laden fehlgeschlagen', e.message); }
+  return null;
+}
+
 async function dataUserId() {
   if (!currentUser) return null;
   if (!currentProfile || currentProfile.auth_id !== currentUser.id) {
-    await loadProfile(currentUser.id);
+    await loadProfileBasic(currentUser.id);
   }
   return currentProfile?.id || null;
 }
@@ -7971,10 +7988,11 @@ if (passwordRecoveryActive) {
   setTimeout(openPasswordRecovery, 250);
 }
 
-async function ensureActiveLogin() {
+async function ensureActiveLogin(options = {}) {
+  const loadForLogin = options.basicProfile ? loadProfileBasic : loadProfile;
   if (currentUser) {
     if (!currentProfile || currentProfile.auth_id !== currentUser.id) {
-      await loadProfile(currentUser.id);
+      await loadForLogin(currentUser.id);
       updateUserBar();
     }
     return true;
@@ -7998,7 +8016,7 @@ async function ensureActiveLogin() {
     }
 
     currentUser = user;
-    await loadProfile(user.id);
+    await loadForLogin(user.id);
     updateUserBar();
     return true;
   } catch(e) {
@@ -8009,15 +8027,8 @@ async function ensureActiveLogin() {
 
 async function loadProfile(authId) {
   try {
-    const headers = await authHeaders();
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/users?auth_id=eq.${authId}&limit=1`,
-      { headers }
-    );
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data && data.length > 0) {
-      currentProfile = data[0];
+    const profile = await loadProfileBasic(authId);
+    if (profile) {
       await loadMemberDiscount();
     }
   } catch(e) { console.warn('Profil laden fehlgeschlagen', e.message); }
@@ -9984,28 +9995,16 @@ window.addEventListener('message', (event) => {
 
 async function confirmBooking(skipAuthCheck) {
   if (!selSlot) return;
-  if (!skipAuthCheck && !(await ensureActiveLogin())) {
+  if (!skipAuthCheck && !(await ensureActiveLogin({ basicProfile: true }))) {
     openModal('book');
     return;
   }
   showToast('Zahlung wird vorbereitet …');
-  const profileReady = (async () => {
-    if (currentUser && (!currentProfile || currentProfile.auth_id !== currentUser.id)) {
-      await loadProfile(currentUser.id);
-    }
-  })();
+  const profileReady = (!currentProfile || currentProfile.auth_id !== currentUser.id)
+    ? loadProfileBasic(currentUser.id)
+    : Promise.resolve(currentProfile);
   const headersPromise = checkoutHeaders();
-  // Letzte, frische Prüfung direkt vor der Zahlung: Belegung neu laden und
-  // Auswahl gegenprüfen. Verhindert, dass für einen zwischenzeitlich (z.B.
-  // durch ein anderes Mitglied) vergebenen Slot bezahlt wird. Serverseitig
-  // greift zusätzlich die Prüfung in create-checkout / DB-Exclusion-Constraint.
-  showLoader(true);
-  await Promise.all([loadBookings(selDate), profileReady]);
-  renderSlots();
-  showLoader(false);
-  if (!selSlot) {
-    return; // renderSlots() hat die Auswahl bereits verworfen + Hinweis angezeigt
-  }
+  await profileReady;
   const {court, hour} = selSlot;
   const priceRaw = rawP(hour, selDate);
   const price = mP(priceRaw);
