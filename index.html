@@ -1036,6 +1036,13 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-color-control { display:grid; grid-template-columns:44px 1fr; gap:8px; }
 .kiosk-color-control input[type="color"] { width:44px; height:42px; padding:3px; border:1.5px solid #E2DACB; border-radius:8px; background:#fff; cursor:pointer; }
 .kiosk-designer-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.kiosk-design-savebar { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:14px; padding:12px 14px; border:1.5px solid #DDD4C7; border-radius:9px; background:#F8F4EC; }
+.kiosk-design-savebar span { color:#6E675E; font:800 .74rem "Space Grotesk",sans-serif; }
+.kiosk-design-savebar.is-dirty { border-color:#FF5A36; background:#FFF1EC; }
+.kiosk-design-savebar.is-dirty span { color:#B53B22; }
+.kiosk-design-savebar.is-saved span { color:#386B4B; }
+.kiosk-design-savebar.is-error { border-color:#B53B22; background:#FFF0ED; }
+.kiosk-design-savebar .admin-save-btn { min-width:240px; }
 .kiosk-createbar { display:grid; grid-template-columns:1fr minmax(220px,320px) auto; gap:10px; align-items:end; margin:16px 0 12px; padding:14px; border:1px solid #3A3631; border-radius:10px; background:#211E1B; }
 .kiosk-createbar-copy strong { display:block; color:#F6F1E7; font:900 .86rem "Space Grotesk",sans-serif; text-transform:uppercase; }
 .kiosk-createbar-copy span { display:block; margin-top:4px; color:#AFA79C; font-size:.72rem; }
@@ -1080,7 +1087,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-undo-toast span { font-size:.76rem; font-weight:700; }
 .kiosk-undo-toast button { border:0; border-radius:7px; padding:8px 10px; background:#FF5A36; color:#fff; font:900 .66rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; white-space:nowrap; }
 @media (max-width:900px){ .kiosk-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-admin-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-section-editor-row { grid-template-columns:28px 1fr 150px; } }
-@media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:118px 1fr; grid-template-rows:minmax(168px,auto); min-height:168px; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:168px; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-tab-actions { grid-template-columns:1fr; } }
+@media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:118px 1fr; grid-template-rows:minmax(168px,auto); min-height:168px; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:168px; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-design-savebar { align-items:stretch; flex-direction:column; } .kiosk-design-savebar .admin-save-btn { width:100%; min-width:0; } .kiosk-tab-actions { grid-template-columns:1fr; } }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
 .door-log-icon { font-size: 1rem; }
@@ -5231,10 +5238,13 @@ main {
             </div>
           </div>
           <div class="kiosk-designer-actions">
-            <button class="admin-save-btn" onclick="saveKioskSettingsFromAdmin()">Shop-Gestaltung speichern</button>
             <button class="admin-save-btn gold" onclick="addKioskSection()">Bereich hinzufügen</button>
           </div>
           <div id="kioskSectionEditor" class="kiosk-section-editor"></div>
+          <div id="kioskDesignSavebar" class="kiosk-design-savebar is-saved">
+            <span id="kioskDesignSaveStatus">Alle Änderungen gespeichert</span>
+            <button id="kioskDesignSaveButton" class="admin-save-btn" onclick="saveKioskSettingsFromAdmin()">Überschriften und Gestaltung speichern</button>
+          </div>
         </div>
         <div class="kiosk-createbar">
           <div class="kiosk-createbar-copy"><strong>Neues Produkt</strong><span>Bereich wählen und anschließend Produktdaten und Bild ergänzen.</span></div>
@@ -13751,6 +13761,7 @@ let kioskChoiceAutoDebitReady = false;
 let kioskProductsCache = null;
 let kioskDesignCache = null;
 let kioskCatalogPromise = null;
+let kioskDesignDirty = false;
 const KIOSK_CONSENT_VERSION = 'daily-tab-v1';
 
 function kioskValidColor(value, fallback = '#FF5A36') {
@@ -14055,6 +14066,7 @@ function renderKioskAdmin() {
   renderKioskSectionEditor();
   renderKioskCategoryOptions();
   renderKioskAdminPreview();
+  if (!kioskDesignDirty) setKioskDesignSaveState('saved', 'Alle Änderungen gespeichert');
 }
 
 function renderKioskAdminPreview(overrideDesign) {
@@ -14109,13 +14121,32 @@ function startNewKioskProduct() {
   setTimeout(() => document.getElementById('kioskName')?.focus(), 350);
 }
 
-function previewKioskSettings() {
+function kioskDesignFromAdminFields() {
   const design = loadKioskDesign();
   design.kicker = document.getElementById('kioskSettingKicker')?.value || '';
   design.title = document.getElementById('kioskSettingTitle')?.value || '';
   design.text = document.getElementById('kioskSettingText')?.value || '';
   design.accent = kioskValidColor(document.getElementById('kioskSettingAccent')?.value, design.accent);
+  return design;
+}
+
+function setKioskDesignSaveState(state, message) {
+  const bar = document.getElementById('kioskDesignSavebar');
+  const status = document.getElementById('kioskDesignSaveStatus');
+  if (bar) bar.className = `kiosk-design-savebar is-${state}`;
+  if (status) status.textContent = message;
+}
+
+function markKioskDesignDirty() {
+  kioskDesignDirty = true;
+  setKioskDesignSaveState('dirty', 'Ungespeicherte Änderungen');
+}
+
+function previewKioskSettings() {
+  const design = kioskDesignFromAdminFields();
+  saveKioskDesign(design);
   renderKioskAdminPreview(design);
+  markKioskDesignDirty();
 }
 
 function syncKioskColor(name, source) {
@@ -14128,24 +14159,32 @@ function syncKioskColor(name, source) {
 }
 
 async function saveKioskSettingsFromAdmin() {
-  const design = loadKioskDesign();
-  design.kicker = document.getElementById('kioskSettingKicker').value.trim() || 'Club-Kiosk';
-  design.title = document.getElementById('kioskSettingTitle').value.trim() || 'Unser Kiosk';
-  design.text = document.getElementById('kioskSettingText').value.trim();
-  design.accent = kioskValidColor(document.getElementById('kioskSettingAccent').value, design.accent);
+  const design = kioskDesignFromAdminFields();
+  design.kicker = design.kicker.trim() || 'Club-Kiosk';
+  design.title = design.title.trim() || 'Unser Kiosk';
+  design.text = design.text.trim();
+  const button = document.getElementById('kioskDesignSaveButton');
+  if (button) button.disabled = true;
+  setKioskDesignSaveState('dirty', 'Wird online gespeichert …');
   try {
     await persistKioskDesign(design);
     saveKioskDesign(design);
+    kioskDesignDirty = false;
     renderKioskAdminPreview();
     renderKiosk();
+    setKioskDesignSaveState('saved', 'Online gespeichert');
     kioskAdminMsg('kioskAdminOk', 'Shop-Gestaltung online gespeichert.');
   } catch(e) {
+    kioskDesignDirty = true;
+    setKioskDesignSaveState('error', 'Speichern fehlgeschlagen – bitte erneut versuchen');
     kioskAdminMsg('kioskAdminErr', 'Shop-Gestaltung nicht gespeichert: ' + (e.message || e), false);
+  } finally {
+    if (button) button.disabled = false;
   }
 }
 
 function updateKioskSection(id, field, value) {
-  const design = loadKioskDesign();
+  const design = kioskDesignFromAdminFields();
   const section = design.sections.find(s => s.id === id);
   if (!section) return;
   section[field] = field === 'color' ? kioskValidColor(value, section.color) : String(value);
@@ -14153,15 +14192,16 @@ function updateKioskSection(id, field, value) {
   renderKioskCategoryOptions();
   renderKioskAdminPreview();
   renderKiosk();
+  markKioskDesignDirty();
 }
 
 function addKioskSection() {
-  const design = loadKioskDesign();
+  const design = kioskDesignFromAdminFields();
   const id = 'section-' + Date.now();
   design.sections.push({ id, title:'Neuer Bereich', color:'#F6F1E7', sort:(design.sections.length + 1) * 10 });
   saveKioskDesign(design);
   renderKioskAdmin();
-  persistKioskDesign(design).catch(e => kioskAdminMsg('kioskAdminErr', 'Bereich nicht online gespeichert: ' + (e.message || e), false));
+  markKioskDesignDirty();
 }
 
 function deleteKioskSection(id) {
@@ -14170,11 +14210,12 @@ function deleteKioskSection(id) {
     return;
   }
   if (!confirm('Diesen leeren Shop-Bereich löschen?')) return;
-  const design = loadKioskDesign();
+  const design = kioskDesignFromAdminFields();
   design.sections = design.sections.filter(s => s.id !== id);
   saveKioskDesign(design);
   renderKioskAdmin();
-  persistKioskDesign(design).catch(e => kioskAdminMsg('kioskAdminErr', 'Bereich nicht online gelöscht: ' + (e.message || e), false));
+  renderKiosk();
+  markKioskDesignDirty();
 }
 
 function kioskDragOver(event) { event.preventDefault(); event.stopPropagation(); }
@@ -14216,7 +14257,7 @@ function kioskDropInSection(event, sectionId) {
 function kioskDropSection(event, targetId) {
   event.preventDefault(); event.stopPropagation();
   if (!kioskDragState || kioskDragState.type !== 'section' || kioskDragState.id === targetId) return;
-  const design = loadKioskDesign();
+  const design = kioskDesignFromAdminFields();
   const moving = design.sections.find(s => s.id === kioskDragState.id);
   const ordered = kioskDesignSections(design).filter(s => s.id !== kioskDragState.id);
   const at = Math.max(0, ordered.findIndex(s => s.id === targetId));
@@ -14226,7 +14267,7 @@ function kioskDropSection(event, targetId) {
   saveKioskDesign(design);
   kioskDragState = null;
   renderKioskAdmin(); renderKiosk();
-  persistKioskDesign(design).catch(e => kioskAdminMsg('kioskAdminErr', 'Neue Bereichsreihenfolge nicht online gespeichert: ' + (e.message || e), false));
+  markKioskDesignDirty();
 }
 
 function updateKioskPriceFields() {}
