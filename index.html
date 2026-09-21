@@ -5232,6 +5232,7 @@ main {
           <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
             Produkte erscheinen als Bildkacheln im Hoch- oder Querformat. Bis zu drei Verkaufsoptionen
             lassen sich frei benennen und bepreisen – vom Glas Kölsch bis zum T-Shirt oder Leihschläger.
+            Produkt und Bild werden beim Speichern zentral veröffentlicht und sind anschließend für alle sichtbar.
           </div>
           <input type="hidden" id="kioskEditId">
           <input type="hidden" id="kioskImageData">
@@ -5286,13 +5287,13 @@ main {
               <input id="kioskDesc" class="eb-adm-inp" type="text" maxlength="90" placeholder="Kurz und appetitlich, z. B. eiskalt aus dem Kiosk.">
             </div>
             <div style="grid-column:1 / -1;">
-              <label class="eb-adm-lbl">Bild-URL</label>
+              <label class="eb-adm-lbl">Alternativ: externe Bild-URL</label>
               <input id="kioskImageUrl" class="eb-adm-inp" type="url" placeholder="https://.../bild.jpg" oninput="previewKioskAdminImage()">
             </div>
             <div class="kiosk-admin-image-row">
               <div id="kioskImagePreview" class="kiosk-admin-preview"><span>kein Bild</span></div>
               <div>
-                <label class="eb-adm-lbl">Bild hochladen</label>
+                <label class="eb-adm-lbl">Bild zentral hochladen</label>
                 <input id="kioskImageFile" type="file" accept="image/*" onchange="handleKioskImageFile()" style="width:100%;font:500 12px 'Manrope',sans-serif;color:#1C1A17;">
                 <div id="kioskImageMeta" style="margin-top:7px;font:600 10px Manrope,sans-serif;color:#81796E;"></div>
                 <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font:700 12px Manrope,sans-serif;color:#5C564C;">
@@ -7793,7 +7794,7 @@ function setMode(m) {
   if (m==='play') { renderPlaySection(); }
   if (m==='gutscheine') { renderCardSizeGrid(); loadMyCards(); renderAboCard();
     var gc=document.getElementById('giftCard'); if(gc) gc.style.display = currentUser ? 'block' : 'none'; }
-  if (m==='kiosk') { renderKiosk(); }
+  if (m==='kiosk') { renderKiosk(); refreshKioskCatalog(); }
   if (m==='partner' && typeof renderPartnerBoard==='function') { renderPartnerBoard(); }
   if (m==='verabredungen') { setTimeout(requestMeetFrameHeight, 80); setTimeout(requestMeetFrameHeight, 500); }
   if (m==='admin') {
@@ -12015,7 +12016,7 @@ function setAdminTab(tab) {
   // Wetterausfälle laden bei JEDEM Öffnen neu - hier ändern sich Zustände
   // durch Entscheidungen, ein veralteter Stand wäre irreführend.
   if (tab==='weather') { loadAdminWeather(); }
-  if (tab==='kiosk') { renderKioskAdmin(); }
+  if (tab==='kiosk') { renderKioskAdmin(); refreshKioskCatalog(true); }
   if (tab==='sponsors') { loadAdminSponsors(); if(typeof fillSponsorsEnabledAdmin==='function') fillSponsorsEnabledAdmin(); if(typeof loadActionLogoSlideshowSettings==='function') loadActionLogoSlideshowSettings(); }
   if (tab==='freibad'  && !adminTabLoaded.freibad)  { loadAdminFreibad();  adminTabLoaded.freibad=true; }
   if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
@@ -13325,8 +13326,6 @@ function jsSingleQuoted(s) {
 }
 
 const KIOSK_STORAGE_KEY = 'pb_kiosk_products_v1';
-const KIOSK_ZUNFT_PNG_FIX_KEY = 'pb_kiosk_zunft_png_fix_v1';
-const KIOSK_ZUNFT_PNG_ASSET = 'assets/kiosk/zunft-koelsch.png?v=20260921';
 const KIOSK_DEFAULT_PRODUCTS = [
   { id:'racket', category:'equipment', name:'Padel-Schläger', desc:'Premium-Schläger für dein Match.', buyPrice:79, rent60:4, rent120:7, sort:10, active:true, image:'' },
   { id:'balls', category:'equipment', name:'Padelbälle', desc:'Frische Bälle, direkt spielbereit.', buyPrice:7.5, rent60:2, rent120:3, sort:20, active:true, image:'' },
@@ -13622,18 +13621,19 @@ async function handleKioskImageFile() {
     document.getElementById('kioskImageUrl').value = '';
     previewKioskAdminImage();
     const storedBytes = Math.round((optimized.dataUrl.length - optimized.dataUrl.indexOf(',') - 1) * 0.75);
-    if (meta) meta.textContent = `${optimized.width} × ${optimized.height} · ${kioskImageSize(storedBytes)} · Transparenz bleibt erhalten`;
+    if (meta) meta.textContent = `${optimized.width} × ${optimized.height} · ${kioskImageSize(storedBytes)} · bereit zum zentralen Upload`;
   } catch(e) {
     if (meta) meta.textContent = '';
     kioskAdminMsg('kioskAdminErr', e.message || 'Das Bild konnte nicht vorbereitet werden.', false);
   }
 }
 
-function saveKioskProduct() {
+async function saveKioskProduct() {
   const name = document.getElementById('kioskName').value.trim();
   if (!name) { kioskAdminMsg('kioskAdminErr', 'Bitte einen Produktnamen eingeben.', false); return; }
   const rows = loadKioskProducts();
   const id = document.getElementById('kioskEditId').value || ('kiosk-' + Date.now());
+  const previous = rows.find(p => p.id === id) || null;
   const category = document.getElementById('kioskCategory').value;
   const next = {
     id,
@@ -13687,6 +13687,9 @@ let kioskRemoteSyncUser = '';
 let kioskUndoTimer = null;
 let kioskPendingChoice = null;
 let kioskChoiceAutoDebitReady = false;
+let kioskProductsCache = null;
+let kioskDesignCache = null;
+let kioskCatalogPromise = null;
 const KIOSK_CONSENT_VERSION = 'daily-tab-v1';
 
 function kioskValidColor(value, fallback = '#FF5A36') {
@@ -13695,10 +13698,11 @@ function kioskValidColor(value, fallback = '#FF5A36') {
 }
 
 function loadKioskDesign() {
+  if (kioskDesignCache) return JSON.parse(JSON.stringify(kioskDesignCache));
   try {
     const parsed = JSON.parse(localStorage.getItem(KIOSK_DESIGN_STORAGE_KEY) || 'null');
     if (parsed && Array.isArray(parsed.sections) && parsed.sections.length) {
-      return {
+      kioskDesignCache = {
         ...KIOSK_DEFAULT_DESIGN,
         ...parsed,
         accent: kioskValidColor(parsed.accent),
@@ -13709,12 +13713,15 @@ function loadKioskDesign() {
           sort: Number(s.sort) || (i + 1) * 10,
         })),
       };
+      return JSON.parse(JSON.stringify(kioskDesignCache));
     }
   } catch(e) {}
-  return JSON.parse(JSON.stringify(KIOSK_DEFAULT_DESIGN));
+  kioskDesignCache = JSON.parse(JSON.stringify(KIOSK_DEFAULT_DESIGN));
+  return JSON.parse(JSON.stringify(kioskDesignCache));
 }
 
 function saveKioskDesign(design) {
+  kioskDesignCache = JSON.parse(JSON.stringify(design));
   try { localStorage.setItem(KIOSK_DESIGN_STORAGE_KEY, JSON.stringify(design)); } catch(e) {}
 }
 
@@ -13741,24 +13748,8 @@ function normalizeKioskProduct(p) {
   };
 }
 
-function migrateKioskZunftPng(rows) {
-  if (localStorage.getItem(KIOSK_ZUNFT_PNG_FIX_KEY) === '1') return rows;
-  let changed = false;
-  const next = rows.map(product => {
-    const isZunft = product.id === 'kiosk-1789985039814'
-      || (/zunft/i.test(String(product.name || '')) && /k(?:ö|oe|o)lsch/i.test(String(product.name || '')));
-    if (!isZunft) return product;
-    changed = true;
-    return { ...product, image:KIOSK_ZUNFT_PNG_ASSET };
-  });
-  try {
-    if (changed) localStorage.setItem(KIOSK_STORAGE_KEY, JSON.stringify(next));
-    localStorage.setItem(KIOSK_ZUNFT_PNG_FIX_KEY, '1');
-  } catch(e) {}
-  return next;
-}
-
 function loadKioskProducts() {
+  if (Array.isArray(kioskProductsCache)) return kioskProductsCache.map(p => normalizeKioskProduct({ ...p }));
   let rows = [];
   try {
     const raw = localStorage.getItem(KIOSK_STORAGE_KEY);
@@ -13766,13 +13757,20 @@ function loadKioskProducts() {
   } catch(e) {}
   if (!Array.isArray(rows) || !rows.length) rows = KIOSK_DEFAULT_PRODUCTS.map(p => ({ ...p }));
   if (rows.some(p => ['koelsch-glass','koelsch-kranz'].includes(p.id))) rows = migrateKioskBeerProducts(rows);
-  rows = migrateKioskZunftPng(rows);
-  return rows.map(normalizeKioskProduct);
+  rows = rows.map(product => {
+    const image = String(product.image || '');
+    const wasBundledZunftImage = image === 'assets/kiosk/zunft-koelsch.png?v=20260921'
+      || image === 'assets/zunft-koelsch.png?v=20260921';
+    return wasBundledZunftImage ? { ...product, image:'' } : product;
+  });
+  kioskProductsCache = rows.map(normalizeKioskProduct);
+  return kioskProductsCache.map(p => normalizeKioskProduct({ ...p }));
 }
 
 function saveKioskProducts(rows) {
   try {
-    localStorage.setItem(KIOSK_STORAGE_KEY, JSON.stringify(rows.map(normalizeKioskProduct)));
+    kioskProductsCache = rows.map(p => normalizeKioskProduct({ ...p }));
+    localStorage.setItem(KIOSK_STORAGE_KEY, JSON.stringify(kioskProductsCache));
     return true;
   } catch(e) {
     console.error('Kiosk-Sortiment konnte nicht lokal gespeichert werden.', e);
@@ -13780,6 +13778,130 @@ function saveKioskProducts(rows) {
     showToast('Produkt nicht gespeichert: Browser-Speicher voll.');
     return false;
   }
+}
+
+function kioskProductFromDb(row) {
+  const variants = Array.isArray(row?.variants) ? row.variants.map((variant, index) => ({
+    id:String(variant.id || ('option-' + (index + 1))),
+    label:String(variant.label || 'Auswahl'),
+    price:Number(variant.price_cents || 0) / 100,
+    kind:String(variant.kind || 'buy'),
+    minutes:Number(variant.minutes) || null,
+  })) : [];
+  return normalizeKioskProduct({
+    id:String(row.id),
+    category:String(row.category_id),
+    name:String(row.name || ''),
+    desc:String(row.description || ''),
+    layout:row.layout === 'landscape' ? 'landscape' : 'portrait',
+    image:String(row.image_url || ''),
+    imagePath:String(row.image_path || ''),
+    variants,
+    sort:Number(row.sort_order) || 0,
+    active:row.active !== false,
+    onTab:row.on_tab !== false,
+  });
+}
+
+function kioskProductToDb(product) {
+  return {
+    id:String(product.id),
+    category_id:String(product.category),
+    name:String(product.name || '').trim(),
+    description:String(product.desc || '').trim(),
+    layout:product.layout === 'landscape' ? 'landscape' : 'portrait',
+    image_url:product.image || null,
+    image_path:product.imagePath || null,
+    variants:kioskLegacyVariants(product).map(variant => ({
+      id:String(variant.id),
+      label:String(variant.label),
+      price_cents:Math.round(Number(variant.price) * 100),
+      kind:String(variant.kind || 'buy'),
+      minutes:Number(variant.minutes) || null,
+    })),
+    sort_order:Number(product.sort) || 0,
+    active:product.active !== false,
+    on_tab:product.onTab !== false,
+  };
+}
+
+function kioskDesignFromDb(row) {
+  const sections = Array.isArray(row?.sections) && row.sections.length ? row.sections : KIOSK_DEFAULT_DESIGN.sections;
+  return {
+    kicker:String(row?.kicker || KIOSK_DEFAULT_DESIGN.kicker),
+    title:String(row?.title || KIOSK_DEFAULT_DESIGN.title),
+    text:String(row?.intro || KIOSK_DEFAULT_DESIGN.text),
+    accent:kioskValidColor(row?.accent, KIOSK_DEFAULT_DESIGN.accent),
+    sections:sections.map((section, index) => ({
+      id:String(section.id || ('section-' + index)),
+      title:String(section.title || 'Bereich'),
+      color:kioskValidColor(section.color, '#F6F1E7'),
+      sort:Number(section.sort) || (index + 1) * 10,
+    })),
+  };
+}
+
+async function persistKioskDesign(design) {
+  const { error } = await sb.from('kiosk_settings').upsert({
+    id:true,
+    kicker:design.kicker,
+    title:design.title,
+    intro:design.text,
+    accent:kioskValidColor(design.accent),
+    sections:design.sections,
+  }, { onConflict:'id' });
+  if (error) throw error;
+}
+
+async function persistKioskProducts(rows) {
+  if (!rows.length) return;
+  const { error } = await sb.from('kiosk_products').upsert(rows.map(kioskProductToDb), { onConflict:'id' });
+  if (error) throw error;
+}
+
+async function refreshKioskCatalog(force = false) {
+  if (kioskCatalogPromise && !force) return kioskCatalogPromise;
+  kioskCatalogPromise = (async () => {
+    const [settingsResult, productsResult] = await Promise.all([
+      sb.from('kiosk_settings').select('id,kicker,title,intro,accent,sections').eq('id', true).maybeSingle(),
+      sb.from('kiosk_products').select('id,category_id,name,description,layout,image_url,image_path,variants,sort_order,active,on_tab').order('sort_order', { ascending:true }),
+    ]);
+    if (settingsResult.error) throw settingsResult.error;
+    if (productsResult.error) throw productsResult.error;
+    if (settingsResult.data) saveKioskDesign(kioskDesignFromDb(settingsResult.data));
+    kioskProductsCache = (productsResult.data || []).map(kioskProductFromDb);
+    try { localStorage.setItem(KIOSK_STORAGE_KEY, JSON.stringify(kioskProductsCache)); } catch(e) {}
+    if (curMode === 'kiosk') renderKiosk();
+    if (curMode === 'admin' && document.getElementById('adminKiosk')?.style.display !== 'none') renderKioskAdmin();
+  })().catch(error => {
+    console.error('Zentraler Kiosk-Katalog konnte nicht geladen werden.', error);
+    if (curMode === 'admin') kioskAdminMsg('kioskAdminErr', 'Online-Katalog nicht erreichbar: ' + (error.message || error), false);
+  }).finally(() => { kioskCatalogPromise = null; });
+  return kioskCatalogPromise;
+}
+
+function kioskDataUrlToBlob(dataUrl) {
+  const parts = String(dataUrl || '').split(',');
+  const mime = parts[0]?.match(/data:([^;]+)/i)?.[1] || 'image/webp';
+  const binary = atob(parts[1] || '');
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type:mime });
+}
+
+async function uploadKioskProductImage(productId, dataUrl) {
+  const blob = kioskDataUrlToBlob(dataUrl);
+  const ext = blob.type === 'image/png' ? 'png' : blob.type === 'image/jpeg' ? 'jpg' : 'webp';
+  const safeId = String(productId).replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 80);
+  const path = `${safeId}/${Date.now()}.${ext}`;
+  const { error } = await sb.storage.from('kiosk-products').upload(path, blob, {
+    upsert:false,
+    cacheControl:'31536000',
+    contentType:blob.type,
+  });
+  if (error) throw error;
+  const publicUrl = sb.storage.from('kiosk-products').getPublicUrl(path).data.publicUrl;
+  return { image:publicUrl, imagePath:path };
 }
 
 function kioskSorted(rows = loadKioskProducts()) {
@@ -13914,16 +14036,21 @@ function syncKioskColor(name, source) {
   previewKioskSettings();
 }
 
-function saveKioskSettingsFromAdmin() {
+async function saveKioskSettingsFromAdmin() {
   const design = loadKioskDesign();
   design.kicker = document.getElementById('kioskSettingKicker').value.trim() || 'Club-Kiosk';
   design.title = document.getElementById('kioskSettingTitle').value.trim() || 'Unser Kiosk';
   design.text = document.getElementById('kioskSettingText').value.trim();
   design.accent = kioskValidColor(document.getElementById('kioskSettingAccent').value, design.accent);
-  saveKioskDesign(design);
-  renderKioskAdminPreview();
-  renderKiosk();
-  kioskAdminMsg('kioskAdminOk', 'Shop-Gestaltung gespeichert.');
+  try {
+    await persistKioskDesign(design);
+    saveKioskDesign(design);
+    renderKioskAdminPreview();
+    renderKiosk();
+    kioskAdminMsg('kioskAdminOk', 'Shop-Gestaltung online gespeichert.');
+  } catch(e) {
+    kioskAdminMsg('kioskAdminErr', 'Shop-Gestaltung nicht gespeichert: ' + (e.message || e), false);
+  }
 }
 
 function updateKioskSection(id, field, value) {
@@ -13943,6 +14070,7 @@ function addKioskSection() {
   design.sections.push({ id, title:'Neuer Bereich', color:'#F6F1E7', sort:(design.sections.length + 1) * 10 });
   saveKioskDesign(design);
   renderKioskAdmin();
+  persistKioskDesign(design).catch(e => kioskAdminMsg('kioskAdminErr', 'Bereich nicht online gespeichert: ' + (e.message || e), false));
 }
 
 function deleteKioskSection(id) {
@@ -13955,6 +14083,7 @@ function deleteKioskSection(id) {
   design.sections = design.sections.filter(s => s.id !== id);
   saveKioskDesign(design);
   renderKioskAdmin();
+  persistKioskDesign(design).catch(e => kioskAdminMsg('kioskAdminErr', 'Bereich nicht online gelöscht: ' + (e.message || e), false));
 }
 
 function kioskDragOver(event) { event.preventDefault(); event.stopPropagation(); }
@@ -13975,6 +14104,7 @@ function kioskDropProduct(event, targetId, sectionId) {
   saveKioskProducts(rows);
   kioskDragState = null;
   renderKioskAdminPreview(); renderKiosk();
+  persistKioskProducts(rows).catch(e => kioskAdminMsg('kioskAdminErr', 'Neue Reihenfolge nicht online gespeichert: ' + (e.message || e), false));
 }
 
 function kioskDropInSection(event, sectionId) {
@@ -13989,6 +14119,7 @@ function kioskDropInSection(event, sectionId) {
   saveKioskProducts(rows);
   kioskDragState = null;
   renderKioskAdminPreview(); renderKiosk();
+  persistKioskProducts(rows).catch(e => kioskAdminMsg('kioskAdminErr', 'Neue Position nicht online gespeichert: ' + (e.message || e), false));
 }
 
 function kioskDropSection(event, targetId) {
@@ -14004,6 +14135,7 @@ function kioskDropSection(event, targetId) {
   saveKioskDesign(design);
   kioskDragState = null;
   renderKioskAdmin(); renderKiosk();
+  persistKioskDesign(design).catch(e => kioskAdminMsg('kioskAdminErr', 'Neue Bereichsreihenfolge nicht online gespeichert: ' + (e.message || e), false));
 }
 
 function updateKioskPriceFields() {}
@@ -14044,19 +14176,28 @@ function editKioskProduct(id) {
   document.getElementById('kioskName').scrollIntoView({ behavior:'smooth', block:'center' });
 }
 
-function saveKioskProduct() {
+async function saveKioskProduct() {
   const name = document.getElementById('kioskName').value.trim();
   if (!name) { kioskAdminMsg('kioskAdminErr', 'Bitte einen Produktnamen eingeben.', false); return; }
   const rows = loadKioskProducts();
   const id = document.getElementById('kioskEditId').value || ('kiosk-' + Date.now());
+  const previous = rows.find(p => p.id === id) || null;
   const priceIds = ['kioskBuyPrice','kioskPackPrice','kioskRent60'];
-  const variants = [0,1,2].map(i => ({
-    id:'option-' + (i + 1),
-    label:document.getElementById('kioskAction' + (i + 1) + 'Label').value.trim(),
-    price:Number(document.getElementById(priceIds[i]).value),
-    kind:'buy', minutes:null,
-  })).filter(v => v.label && v.price > 0);
+  const previousVariants = previous ? kioskLegacyVariants(previous) : [];
+  const variants = [0,1,2].map(i => {
+    const label = document.getElementById('kioskAction' + (i + 1) + 'Label').value.trim();
+    const minuteMatch = label.match(/(?:^|\D)(60|120)(?:\D|$)/);
+    const minutes = minuteMatch ? Number(minuteMatch[1]) : (previousVariants[i]?.minutes || null);
+    return {
+      id:String(previousVariants[i]?.id || (minutes ? `rent-${minutes}` : ('option-' + (i + 1)))),
+      label,
+      price:Number(document.getElementById(priceIds[i]).value),
+      kind:minutes ? 'rent' : String(previousVariants[i]?.kind || 'buy'),
+      minutes,
+    };
+  }).filter(v => v.label && v.price > 0);
   if (!variants.length) { kioskAdminMsg('kioskAdminErr', 'Bitte mindestens eine Verkaufsoption mit Preis anlegen.', false); return; }
+  const chosenImage = currentKioskImageValue();
   const next = {
     id, name,
     category:document.getElementById('kioskCategory').value,
@@ -14068,23 +14209,53 @@ function saveKioskProduct() {
     rent120:null,
     sort:Number(document.getElementById('kioskSort').value) || 0,
     desc:document.getElementById('kioskDesc').value.trim(),
-    image:currentKioskImageValue(),
+    image:chosenImage,
+    imagePath:previous?.imagePath || '',
     active:document.getElementById('kioskActive').checked,
     onTab:document.getElementById('kioskOnTab').checked,
   };
-  const idx = rows.findIndex(p => p.id === id); if (idx >= 0) rows[idx] = next; else rows.push(next);
-  if (!saveKioskProducts(rows)) return;
-  renderKioskAdminPreview(); renderKiosk(); resetKioskForm();
-  kioskAdminMsg('kioskAdminOk', 'Produkt gespeichert.');
+  let uploadedPath = '';
+  try {
+    if (/^data:image\//i.test(chosenImage)) {
+      kioskAdminMsg('kioskAdminOk', 'Bild wird zentral hochgeladen …');
+      const uploaded = await uploadKioskProductImage(id, chosenImage);
+      next.image = uploaded.image;
+      next.imagePath = uploaded.imagePath;
+      uploadedPath = uploaded.imagePath;
+    } else if (chosenImage !== previous?.image) {
+      next.imagePath = '';
+    }
+    const { error } = await sb.from('kiosk_products').upsert(kioskProductToDb(next), { onConflict:'id' });
+    if (error) throw error;
+    const idx = rows.findIndex(p => p.id === id);
+    if (idx >= 0) rows[idx] = next; else rows.push(next);
+    if (!saveKioskProducts(rows)) return;
+    if (previous?.imagePath && previous.imagePath !== next.imagePath) {
+      await sb.storage.from('kiosk-products').remove([previous.imagePath]);
+    }
+    renderKioskAdminPreview(); renderKiosk(); resetKioskForm();
+    kioskAdminMsg('kioskAdminOk', 'Produkt und Bild sind jetzt für alle online gespeichert.');
+  } catch(e) {
+    if (uploadedPath) await sb.storage.from('kiosk-products').remove([uploadedPath]);
+    kioskAdminMsg('kioskAdminErr', 'Produkt nicht gespeichert: ' + (e.message || e), false);
+  }
 }
 
-function deleteKioskProduct() {
+async function deleteKioskProduct() {
   const id = document.getElementById('kioskEditId').value;
   if (!id) { kioskAdminMsg('kioskAdminErr', 'Bitte zuerst ein Produkt zum Bearbeiten wählen.', false); return; }
   if (!confirm('Dieses Produkt wirklich löschen?')) return;
-  if (!saveKioskProducts(loadKioskProducts().filter(p => p.id !== id))) return;
-  renderKioskAdminPreview(); renderKiosk(); resetKioskForm();
-  kioskAdminMsg('kioskAdminOk', 'Produkt gelöscht.');
+  const product = loadKioskProducts().find(p => p.id === id);
+  try {
+    const { error } = await sb.from('kiosk_products').delete().eq('id', id);
+    if (error) throw error;
+    if (product?.imagePath) await sb.storage.from('kiosk-products').remove([product.imagePath]);
+    if (!saveKioskProducts(loadKioskProducts().filter(p => p.id !== id))) return;
+    renderKioskAdminPreview(); renderKiosk(); resetKioskForm();
+    kioskAdminMsg('kioskAdminOk', 'Produkt online gelöscht.');
+  } catch(e) {
+    kioskAdminMsg('kioskAdminErr', 'Produkt nicht gelöscht: ' + (e.message || e), false);
+  }
 }
 
 function kioskTabKey() { return KIOSK_TAB_STORAGE_KEY + ':' + (currentUser?.id || currentProfile?.email || 'local'); }
@@ -14163,7 +14334,7 @@ async function checkoutKioskImmediately(product, variant, tabItemIds = []) {
   try {
     const res = await fetch('https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout', {
       method:'POST', headers,
-      body:JSON.stringify({ booking_type:'kiosk', product_id:product.id, product_name:`${product.name} · ${variant.label}`, category:product.category, action:'buy', variant:variant.id, price_cents:Math.round(variant.price * 100), tab_item_ids:tabItemIds.join(','), purchaser_email:currentProfile?.email || currentUser?.email || '', full_name:currentProfile?.full_name || '' }),
+      body:JSON.stringify({ booking_type:'kiosk', product_id:product.id, variant:variant.id, tab_item_ids:tabItemIds.join(','), purchaser_email:currentProfile?.email || currentUser?.email || '', full_name:currentProfile?.full_name || '' }),
     });
     const data = await res.json();
     if (data.url) redirectToExternalCheckout(data.url); else setKioskErr(data.error || 'Zahlung konnte nicht gestartet werden.');
@@ -14250,17 +14421,19 @@ async function payKioskTabNow() {
 async function persistKioskTabItem(item) {
   try {
     if (typeof sb === 'undefined' || !currentUser?.id) return false;
-    const { error } = await sb.from('kiosk_tab_items').insert({
-      auth_user_id:currentUser.id,
-      client_item_id:item.id,
-      product_id:item.productId,
-      product_name:item.productName,
-      variant_id:item.variantId,
-      variant_label:item.variantLabel,
-      price_cents:Math.round(Number(item.price) * 100),
-      status:'open',
+    const { data, error } = await sb.rpc('kiosk_add_tab_item', {
+      p_client_item_id:item.id,
+      p_product_id:item.productId,
+      p_variant_id:item.variantId,
     });
-    return !error;
+    if (error) return false;
+    if (data) {
+      item.productName = data.product_name;
+      item.variantLabel = data.variant_label;
+      item.price = Number(data.price_cents) / 100;
+      item.at = data.created_at;
+    }
+    return true;
   } catch(e) { return false; }
 }
 
