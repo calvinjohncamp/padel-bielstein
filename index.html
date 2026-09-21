@@ -989,6 +989,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-basket strong { font:900 1.35rem "Space Grotesk",sans-serif; color:#FF5A36; }
 .kiosk-basket small { display:block; margin-top:4px; color:#BDB5A9; font-size:.66rem; }
 .kiosk-section { margin-top:6px; }
+.kiosk-section + .kiosk-section { margin-top:30px; }
 .kiosk-section-head { display:flex; align-items:center; gap:14px; margin:0 0 10px; }
 .kiosk-section-head h3 { margin:0; flex:0 0 auto; color:#F6F1E7; font:900 .82rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.14em; text-transform:uppercase; }
 .kiosk-section-head:after { content:""; height:1px; flex:1; background:var(--border); }
@@ -998,22 +999,23 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-card.is-square,.kiosk-card.is-portrait { grid-template-columns:1fr; min-height:0; }
 .kiosk-card.is-square { grid-template-rows:220px minmax(164px,auto); }
 .kiosk-card.is-portrait { grid-template-rows:260px minmax(164px,auto); }
-.kiosk-img { background:linear-gradient(135deg,#FFFFFF,#EFE7D8); min-height:158px; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
-.kiosk-img img { width:100%; height:100%; object-fit:cover; display:block; }
+.kiosk-img { background:linear-gradient(135deg,#FFFFFF,#EFE7D8); min-height:158px; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; position:relative; }
+.kiosk-img img { width:100%; height:100%; object-fit:cover; object-position:center bottom; display:block; }
 .kiosk-card.is-square .kiosk-img { height:220px; min-height:0; box-sizing:border-box; }
 .kiosk-card.is-portrait .kiosk-img { height:260px; min-height:0; box-sizing:border-box; }
 .kiosk-card.fit-contain .kiosk-img { align-items:flex-end; padding:16px 18px 0; }
 .kiosk-card.fit-contain .kiosk-img img { object-fit:contain; object-position:center bottom; }
 .kiosk-card.fit-cover .kiosk-img { padding:0; }
-.kiosk-card.fit-cover .kiosk-img img { object-fit:cover; object-position:center; }
+.kiosk-card.fit-cover .kiosk-img img { object-fit:cover; object-position:center bottom; }
 .kiosk-img-placeholder { width:64px; height:96px; border:2px solid #FF5A36; border-radius:18px 18px 12px 12px; position:relative; }
 .kiosk-img-placeholder:before { content:""; position:absolute; left:18px; right:18px; top:-18px; height:20px; border:2px solid #FF5A36; border-bottom:0; border-radius:7px 7px 0 0; }
 .kiosk-img-placeholder:after { content:""; position:absolute; left:10px; right:10px; top:40px; height:28px; border:2px solid #FF5A36; border-radius:6px; }
 .kiosk-body { padding:15px; display:flex; flex-direction:column; gap:10px; }
 .kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:164px; box-sizing:border-box; }
+.kiosk-copy { margin:auto 0; min-width:0; }
 .kiosk-title { font:900 1.02rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.02em; text-transform:uppercase; line-height:1.05; }
-.kiosk-desc { color:#6E675E; font-size:.78rem; line-height:1.4; min-height:2.2em; }
-.kiosk-actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:auto; }
+.kiosk-desc { color:#6E675E; font-size:.78rem; line-height:1.4; margin-top:8px; }
+.kiosk-actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:0; }
 .kiosk-action { flex:1 1 auto; min-width:92px; border:0; border-radius:9px; background:#1C1A17; color:#fff; padding:10px 11px; font:900 .72rem "Space Grotesk",sans-serif; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; }
 .kiosk-action.secondary { background:#FF5A36; color:#fff; }
 .kiosk-action:hover { filter:brightness(1.06); transform:translateY(-1px); }
@@ -13617,20 +13619,47 @@ async function optimizeKioskImage(file) {
       element.onerror = () => reject(new Error('Das Bild konnte nicht gelesen werden.'));
       element.src = objectUrl;
     });
+    const scanMaxSide = 1400;
+    const scanScale = Math.min(1, scanMaxSide / Math.max(image.naturalWidth, image.naturalHeight));
+    const scanWidth = Math.max(1, Math.round(image.naturalWidth * scanScale));
+    const scanHeight = Math.max(1, Math.round(image.naturalHeight * scanScale));
+    const scanCanvas = document.createElement('canvas');
+    scanCanvas.width = scanWidth;
+    scanCanvas.height = scanHeight;
+    const scanContext = scanCanvas.getContext('2d', { willReadFrequently:true });
+    if (!scanContext) throw new Error('Das Bild konnte nicht verarbeitet werden.');
+    scanContext.clearRect(0, 0, scanWidth, scanHeight);
+    scanContext.drawImage(image, 0, 0, scanWidth, scanHeight);
+    const pixels = scanContext.getImageData(0, 0, scanWidth, scanHeight).data;
+    let minX = scanWidth, minY = scanHeight, maxX = -1, maxY = -1;
+    for (let y = 0; y < scanHeight; y += 1) {
+      for (let x = 0; x < scanWidth; x += 1) {
+        if (pixels[(y * scanWidth + x) * 4 + 3] > 8) {
+          minX = Math.min(minX, x); minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+        }
+      }
+    }
+    const hasVisiblePixels = maxX >= minX && maxY >= minY;
+    const trimmed = hasVisiblePixels && (minX > 1 || minY > 1 || maxX < scanWidth - 2 || maxY < scanHeight - 2);
+    const sourceX = trimmed ? minX / scanScale : 0;
+    const sourceY = trimmed ? minY / scanScale : 0;
+    const sourceWidth = trimmed ? (maxX - minX + 1) / scanScale : image.naturalWidth;
+    const sourceHeight = trimmed ? (maxY - minY + 1) / scanScale : image.naturalHeight;
     const maxSide = 1000;
-    const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
-    const width = Math.max(1, Math.round(image.naturalWidth * scale));
-    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const scale = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
+    const width = Math.max(1, Math.round(sourceWidth * scale));
+    const height = Math.max(1, Math.round(sourceHeight * scale));
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext('2d');
     if (!context) throw new Error('Das Bild konnte nicht verarbeitet werden.');
     context.clearRect(0, 0, width, height);
-    context.drawImage(image, 0, 0, width, height);
+    context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, width, height);
     let dataUrl = canvas.toDataURL('image/webp', 0.9);
     if (!dataUrl.startsWith('data:image/webp')) dataUrl = canvas.toDataURL('image/png');
-    return { dataUrl, width, height };
+    return { dataUrl, width, height, trimmed };
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
@@ -13652,7 +13681,7 @@ async function handleKioskImageFile() {
     previewKioskAdminImage();
     const storedBytes = Math.round((optimized.dataUrl.length - optimized.dataUrl.indexOf(',') - 1) * 0.75);
     const formatLabel = suggestedLayout === 'portrait' ? 'Hochformat' : suggestedLayout === 'landscape' ? 'Querformat' : 'Quadrat';
-    if (meta) meta.textContent = `${optimized.width} × ${optimized.height} · ${kioskImageSize(storedBytes)} · ${formatLabel} automatisch erkannt`;
+    if (meta) meta.textContent = `${optimized.width} × ${optimized.height} · ${kioskImageSize(storedBytes)} · ${formatLabel} automatisch erkannt${optimized.trimmed ? ' · transparente Ränder entfernt' : ''}`;
   } catch(e) {
     if (meta) meta.textContent = '';
     kioskAdminMsg('kioskAdminErr', e.message || 'Das Bild konnte nicht vorbereitet werden.', false);
@@ -13986,8 +14015,10 @@ function kioskProductCard(p, admin = false) {
   return `<article class="kiosk-card is-${layout} fit-${imageFit}" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
     <div class="kiosk-img">${img}</div>
     <div class="kiosk-body">
-      <div class="kiosk-title">${esc(p.name)}</div>
-      <div class="kiosk-desc">${esc(p.desc || '')}</div>
+      <div class="kiosk-copy">
+        <div class="kiosk-title">${esc(p.name)}</div>
+        <div class="kiosk-desc">${esc(p.desc || '')}</div>
+      </div>
       <div class="kiosk-actions">${actions}</div>
     </div>
   </article>`;
