@@ -1002,11 +1002,17 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-section-head h3 { margin:0; flex:0 0 auto; color:#F6F1E7; font:900 1.23rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.14em; text-transform:uppercase; }
 .kiosk-section-head:after { content:""; height:1px; flex:1; background:var(--border); }
 .kiosk-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
-.kiosk-info-row { grid-column:1 / -1; display:flex; align-items:flex-start; gap:16px; padding:18px 22px; border:1px solid #51433B; border-left:5px solid #FF5A36; border-radius:8px; background:#2B2622; color:#F6F1E7; }
+.kiosk-info-row { grid-column:1 / -1; display:flex; align-items:flex-start; gap:16px; padding:18px 22px; border:1px solid #E2DACB; border-left:5px solid #FF5A36; border-radius:8px; background:#F6F1E7; color:#1C1A17; }
+.kiosk-info-row.is-dark { border-color:#51433B; border-left-color:#FF5A36; background:#2B2622; color:#F6F1E7; }
 .kiosk-info-row-mark { flex:none; display:grid; place-items:center; width:28px; height:28px; border:1px solid #FF5A36; border-radius:50%; color:#FF5A36; font:900 1rem "Space Grotesk",sans-serif; }
 .kiosk-info-row-copy { min-width:0; }
-.kiosk-info-row-title { font:900 1rem "Space Grotesk",sans-serif; text-transform:uppercase; }
-.kiosk-info-row-text { margin:5px 0 0; color:#DDD5CA; font-size:.84rem; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; }
+.kiosk-info-row-title { font:900 1rem "Space Grotesk",sans-serif; text-transform:uppercase; overflow-wrap:anywhere; }
+.kiosk-info-row.title-size-normal .kiosk-info-row-title { font-size:1.25rem; }
+.kiosk-info-row.title-size-large .kiosk-info-row-title { font-size:1.55rem; }
+.kiosk-info-row-text { margin:5px 0 0; color:#514A43; font-size:.84rem; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; }
+.kiosk-info-row.is-dark .kiosk-info-row-text { color:#DDD5CA; }
+.kiosk-info-row.text-size-normal .kiosk-info-row-text { font-size:1rem; }
+.kiosk-info-row.text-size-large .kiosk-info-row-text { font-size:1.2rem; }
 .kiosk-card { background:#F6F1E7; color:#1C1A17; border:1.5px solid #E2DACB; border-radius:14px; overflow:hidden; display:grid; grid-template-columns:minmax(118px,42%) 1fr; min-height:184px; box-shadow:0 8px 22px rgba(0,0,0,.18); }
 .kiosk-card.is-landscape { grid-column:span 2; grid-template-columns:minmax(220px,46%) 1fr; min-height:220px; }
 .kiosk-card.is-square,.kiosk-card.is-portrait { grid-template-columns:1fr; min-height:0; }
@@ -1085,6 +1091,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-form-note { grid-column:1 / -1; display:none; padding:12px 14px; border:1.5px solid #DDD4C7; border-radius:9px; background:#F8F4EC; color:#625B52; font-size:.74rem; line-height:1.55; }
 .kiosk-form-note.show { display:block; }
 .kiosk-free-text-option { display:none; }
+.kiosk-info-option { display:none; }
 .kiosk-admin-image-row { grid-column:1 / -1; display:grid; grid-template-columns:180px 1fr; gap:14px; align-items:end; }
 .kiosk-admin-preview { height:112px; border:1.5px solid #E2DACB; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; color:#A59D92; font:800 10px "Space Grotesk",sans-serif; letter-spacing:.12em; text-transform:uppercase; }
 .kiosk-admin-preview img { width:100%; height:100%; object-fit:contain; object-position:center bottom; display:block; }
@@ -5462,6 +5469,27 @@ main {
             <div id="kioskInfoTextWrap" style="grid-column:1 / -1;display:none;">
               <label class="eb-adm-lbl">Hinweistext</label>
               <textarea id="kioskInfoText" class="eb-adm-inp" rows="4" maxlength="1000" placeholder="Information für deine Besucher"></textarea>
+            </div>
+            <div class="kiosk-info-option" style="grid-column:1 / -1;">
+              <label style="display:flex;align-items:center;gap:8px;font:700 12px Manrope,sans-serif;color:#5C564C;">
+                <input id="kioskInfoDark" type="checkbox"> Dunkler Hintergrund mit heller Schrift
+              </label>
+            </div>
+            <div class="kiosk-info-option">
+              <label class="eb-adm-lbl">Größe der Überschrift</label>
+              <select id="kioskInfoTitleSize" class="eb-adm-inp">
+                <option value="small">Klein</option>
+                <option value="normal">Normal</option>
+                <option value="large">Groß</option>
+              </select>
+            </div>
+            <div class="kiosk-info-option">
+              <label class="eb-adm-lbl">Größe des Hinweistextes</label>
+              <select id="kioskInfoTextSize" class="eb-adm-inp">
+                <option value="small">Klein</option>
+                <option value="normal">Normal</option>
+                <option value="large">Groß</option>
+              </select>
             </div>
             <div class="kiosk-visual-option" style="grid-column:1 / -1;">
               <label class="eb-adm-lbl">Alternativ: externe Bild-URL</label>
@@ -13989,6 +14017,9 @@ function kioskTileMeta(p) {
   const textAlign = p?.textAlign || fromVariants?.text_align || fromVariants?.textAlign;
   const titleSize = p?.titleSize || fromVariants?.title_size || fromVariants?.titleSize;
   const subtitleSize = p?.subtitleSize || fromVariants?.subtitle_size || fromVariants?.subtitleSize;
+  const infoTheme = p?.infoTheme || fromVariants?.info_theme;
+  const infoTitleSize = p?.infoTitleSize || fromVariants?.info_title_size;
+  const infoTextSize = p?.infoTextSize || fromVariants?.info_text_size;
   return {
     tileRole: ['free','info'].includes(role) ? role : 'product',
     textPosition: ['left','right','bottom'].includes(position) ? position : 'bottom',
@@ -13996,6 +14027,9 @@ function kioskTileMeta(p) {
     textAlign: ['left','center','right'].includes(textAlign) ? textAlign : 'left',
     titleSize: ['small','normal','large'].includes(titleSize) ? titleSize : 'normal',
     subtitleSize: ['small','normal','large'].includes(subtitleSize) ? subtitleSize : 'small',
+    infoTheme: infoTheme === 'dark' ? 'dark' : 'light',
+    infoTitleSize: ['small','normal','large'].includes(infoTitleSize) ? infoTitleSize : 'small',
+    infoTextSize: ['small','normal','large'].includes(infoTextSize) ? infoTextSize : 'small',
   };
 }
 
@@ -14015,6 +14049,9 @@ function normalizeKioskProduct(p) {
     textAlign:meta.textAlign,
     titleSize:meta.titleSize,
     subtitleSize:meta.subtitleSize,
+    infoTheme:meta.infoTheme,
+    infoTitleSize:meta.infoTitleSize,
+    infoTextSize:meta.infoTextSize,
     onTab: meta.tileRole !== 'product' ? false : (typeof p.onTab === 'boolean' ? p.onTab : p.category !== 'equipment'),
     variants,
   };
@@ -14134,6 +14171,9 @@ function kioskProductToDb(product) {
       text_align:meta.textAlign,
       title_size:meta.titleSize,
       subtitle_size:meta.subtitleSize,
+      info_theme:meta.infoTheme,
+      info_title_size:meta.infoTitleSize,
+      info_text_size:meta.infoTextSize,
       draft_options:draftOptions,
     });
   }
@@ -14269,7 +14309,7 @@ function kioskProductCard(p, admin = false) {
     ? ` draggable="true" onclick="editKioskProduct('${jsSingleQuoted(p.id)}')" ondragstart="kioskStartProductDrag(event,'${jsSingleQuoted(p.id)}')" ondragover="kioskDragOver(event)" ondrop="kioskDropProduct(event,'${jsSingleQuoted(p.id)}','${jsSingleQuoted(p.category)}')"`
     : '';
   if (meta.tileRole === 'info') {
-    return `<aside class="kiosk-info-row" role="note" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
+    return `<aside class="kiosk-info-row${meta.infoTheme === 'dark' ? ' is-dark' : ''} title-size-${meta.infoTitleSize} text-size-${meta.infoTextSize}" role="note" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
       <span class="kiosk-info-row-mark" aria-hidden="true">i</span>
       <div class="kiosk-info-row-copy"><div class="kiosk-info-row-title">${esc(p.name)}</div>${p.desc ? `<p class="kiosk-info-row-text">${esc(p.desc)}</p>` : ''}</div>
     </aside>`;
@@ -14417,6 +14457,9 @@ function startNewKioskInfoRow() {
   startNewKioskProduct();
   document.getElementById('kioskTileRole').value = 'info';
   document.getElementById('kioskLayout').value = 'landscape';
+  document.getElementById('kioskInfoDark').checked = false;
+  document.getElementById('kioskInfoTitleSize').value = 'small';
+  document.getElementById('kioskInfoTextSize').value = 'small';
   updateKioskEditorMode();
 }
 
@@ -14434,6 +14477,7 @@ function updateKioskEditorMode() {
   if (isInfo && layout) layout.value = 'landscape';
   if (textPosition) textPosition.disabled = role !== 'free';
   document.querySelectorAll('.kiosk-free-text-option').forEach(el => { el.style.display = role === 'free' ? 'block' : 'none'; });
+  document.querySelectorAll('.kiosk-info-option').forEach(el => { el.style.display = isInfo ? 'block' : 'none'; });
   document.querySelectorAll('.kiosk-visual-option').forEach(el => { el.style.display = isInfo ? 'none' : ''; });
   const descWrap = document.getElementById('kioskDesc')?.parentElement;
   if (descWrap) descWrap.style.display = isInfo ? 'none' : '';
@@ -14633,6 +14677,9 @@ function resetKioskForm() {
   document.getElementById('kioskTextAlign').value = 'left';
   document.getElementById('kioskTileTitleSize').value = 'normal';
   document.getElementById('kioskTileSubtitleSize').value = 'small';
+  document.getElementById('kioskInfoDark').checked = false;
+  document.getElementById('kioskInfoTitleSize').value = 'small';
+  document.getElementById('kioskInfoTextSize').value = 'small';
   document.getElementById('kioskImageFit').value = 'contain';
   document.getElementById('kioskImagePosition').value = 'auto';
   document.getElementById('kioskSort').value = '';
@@ -14658,6 +14705,9 @@ function editKioskProduct(id) {
   document.getElementById('kioskTextAlign').value = meta.textAlign;
   document.getElementById('kioskTileTitleSize').value = meta.titleSize;
   document.getElementById('kioskTileSubtitleSize').value = meta.subtitleSize;
+  document.getElementById('kioskInfoDark').checked = meta.infoTheme === 'dark';
+  document.getElementById('kioskInfoTitleSize').value = meta.infoTitleSize;
+  document.getElementById('kioskInfoTextSize').value = meta.infoTextSize;
   document.getElementById('kioskImageFit').value = p.imageFit || 'contain';
   document.getElementById('kioskImagePosition').value = meta.imagePosition;
   const variants = kioskAllVariants(p);
@@ -14724,6 +14774,9 @@ async function saveKioskProduct() {
     textAlign:document.getElementById('kioskTextAlign').value,
     titleSize:document.getElementById('kioskTileTitleSize').value,
     subtitleSize:document.getElementById('kioskTileSubtitleSize').value,
+    infoTheme:document.getElementById('kioskInfoDark').checked ? 'dark' : 'light',
+    infoTitleSize:document.getElementById('kioskInfoTitleSize').value,
+    infoTextSize:document.getElementById('kioskInfoTextSize').value,
     variants,
     buyPrice:variants[0]?.price || null,
     packPrice:variants[1]?.price || null,
