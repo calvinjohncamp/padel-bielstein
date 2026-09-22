@@ -1013,6 +1013,9 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-info-row.is-dark .kiosk-info-row-text { color:#DDD5CA; }
 .kiosk-info-row.text-size-normal .kiosk-info-row-text { font-size:1rem; }
 .kiosk-info-row.text-size-large .kiosk-info-row-text { font-size:1.2rem; }
+.kiosk-info-row.is-after-section { margin-top:12px; }
+.kiosk-info-dropzone { margin-top:12px; padding:12px; border:1px dashed #8A786A; border-radius:8px; color:#C9C1B6; text-align:center; font:700 .72rem "Space Grotesk",sans-serif; }
+.kiosk-info-dropzone.drag-over { border-color:#FF5A36; background:rgba(255,90,54,.12); color:#F6F1E7; }
 .kiosk-card { background:#F6F1E7; color:#1C1A17; border:1.5px solid #E2DACB; border-radius:14px; overflow:hidden; display:grid; grid-template-columns:minmax(118px,42%) 1fr; min-height:184px; box-shadow:0 8px 22px rgba(0,0,0,.18); }
 .kiosk-card.is-landscape { grid-column:span 2; grid-template-columns:minmax(220px,46%) 1fr; min-height:220px; }
 .kiosk-card.is-square,.kiosk-card.is-portrait { grid-template-columns:1fr; min-height:0; }
@@ -5165,7 +5168,7 @@ main {
         <div class="kiosk-tab-total"><span>Offener Betrag</span><strong id="kioskTabTotal">0,00 €</strong></div>
         <label class="kiosk-consent" id="kioskTabConsentWrap">
           <input id="kioskTabConsentCheck" type="checkbox" onchange="updateKioskConsentButtons()">
-          <span>Ich stimme zu, dass Padel Bielstein meine an diesem Tag auf dem Bierdeckel gebuchten Artikel um 23:59 Uhr in einer Summe über mein bei Stripe hinterlegtes Zahlungsmittel belastet. Die Summe ergibt sich aus meinen einzelnen Buchungen, die ich jeweils nur zehn Sekunden lang rückgängig machen kann.</span>
+          <span>Ich stimme zu, dass Padel Bielstein meine an diesem Tag auf dem Bierdeckel gebuchten Artikel um 23:59 Uhr in einer Summe über mein bei Stripe hinterlegtes Zahlungsmittel belastet. Die Summe ergibt sich aus meinen einzelnen Buchungen, die ich jeweils eine Minute lang rückgängig machen kann.</span>
         </label>
         <div class="kiosk-tab-actions">
           <button class="kiosk-action" type="button" onclick="enableKioskAutoDebit('tab')" id="kioskAutoDebitBtn">Automatische Abbuchung einrichten</button>
@@ -5184,7 +5187,7 @@ main {
         </div>
         <label class="kiosk-consent" id="kioskChoiceConsentWrap">
           <input id="kioskChoiceConsentCheck" type="checkbox" onchange="updateKioskConsentButtons()">
-          <span>Ich stimme zu, dass Padel Bielstein meine an diesem Tag auf dem Bierdeckel gebuchten Artikel um 23:59 Uhr in einer Summe über mein bei Stripe hinterlegtes Zahlungsmittel belastet. Die Summe ergibt sich aus meinen einzelnen Buchungen, die ich jeweils nur zehn Sekunden lang rückgängig machen kann.</span>
+          <span>Ich stimme zu, dass Padel Bielstein meine an diesem Tag auf dem Bierdeckel gebuchten Artikel um 23:59 Uhr in einer Summe über mein bei Stripe hinterlegtes Zahlungsmittel belastet. Die Summe ergibt sich aus meinen einzelnen Buchungen, die ich jeweils eine Minute lang rückgängig machen kann.</span>
         </label>
         <div class="kiosk-tab-actions">
           <button class="kiosk-action" type="button" onclick="kioskChoiceDirect()">Direkt bezahlen</button>
@@ -13929,6 +13932,7 @@ const KIOSK_DEFAULT_DESIGN = {
 let kioskDragState = null;
 let kioskRemoteSyncUser = '';
 let kioskUndoTimer = null;
+const KIOSK_UNDO_MS = 60 * 1000;
 let kioskPendingChoice = null;
 let kioskChoiceAutoDebitReady = false;
 let kioskProductsCache = null;
@@ -14020,6 +14024,7 @@ function kioskTileMeta(p) {
   const infoTheme = p?.infoTheme || fromVariants?.info_theme;
   const infoTitleSize = p?.infoTitleSize || fromVariants?.info_title_size;
   const infoTextSize = p?.infoTextSize || fromVariants?.info_text_size;
+  const infoPlacement = p?.infoPlacement || fromVariants?.info_placement;
   return {
     tileRole: ['free','info'].includes(role) ? role : 'product',
     textPosition: ['left','right','bottom'].includes(position) ? position : 'bottom',
@@ -14030,6 +14035,7 @@ function kioskTileMeta(p) {
     infoTheme: infoTheme === 'dark' ? 'dark' : 'light',
     infoTitleSize: ['small','normal','large'].includes(infoTitleSize) ? infoTitleSize : 'small',
     infoTextSize: ['small','normal','large'].includes(infoTextSize) ? infoTextSize : 'small',
+    infoPlacement: infoPlacement === 'after' ? 'after' : 'section',
   };
 }
 
@@ -14052,6 +14058,7 @@ function normalizeKioskProduct(p) {
     infoTheme:meta.infoTheme,
     infoTitleSize:meta.infoTitleSize,
     infoTextSize:meta.infoTextSize,
+    infoPlacement:meta.infoPlacement,
     onTab: meta.tileRole !== 'product' ? false : (typeof p.onTab === 'boolean' ? p.onTab : p.category !== 'equipment'),
     variants,
   };
@@ -14174,6 +14181,7 @@ function kioskProductToDb(product) {
       info_theme:meta.infoTheme,
       info_title_size:meta.infoTitleSize,
       info_text_size:meta.infoTextSize,
+      info_placement:meta.infoPlacement,
       draft_options:draftOptions,
     });
   }
@@ -14294,12 +14302,16 @@ function kioskDesignSections(design = loadKioskDesign()) {
 function kioskSectionMarkup(section, rows, admin = false) {
   const items = rows.filter(p => p.category === section.id);
   if (!items.length && !admin) return '';
+  const after = items.filter(p => kioskTileMeta(p).tileRole === 'info' && kioskTileMeta(p).infoPlacement === 'after');
+  const inGrid = items.filter(p => !after.includes(p));
   const drag = admin
     ? ` draggable="true" ondragstart="kioskStartSectionDrag(event,'${jsSingleQuoted(section.id)}')" ondragover="kioskDragOver(event)" ondrop="kioskDropSection(event,'${jsSingleQuoted(section.id)}')"`
     : '';
   return `<section class="kiosk-section" data-kiosk-section="${esc(section.id)}"${drag}>
     <div class="kiosk-section-head"><h3 style="color:${esc(kioskValidColor(section.color,'#F6F1E7'))}">${esc(section.title)}</h3></div>
-    <div class="kiosk-grid" ondragover="kioskDragOver(event)" ondrop="kioskDropInSection(event,'${jsSingleQuoted(section.id)}')">${items.map(p => kioskProductCard(p, admin)).join('')}${admin && !items.length ? '<div class="play-empty" style="grid-column:1/-1;padding:24px;">Produkte hierher ziehen</div>' : ''}</div>
+    <div class="kiosk-grid" ondragover="kioskDragOver(event)" ondrop="kioskDropInSection(event,'${jsSingleQuoted(section.id)}')">${inGrid.map(p => kioskProductCard(p, admin)).join('')}${admin && !items.length ? '<div class="play-empty" style="grid-column:1/-1;padding:24px;">Produkte hierher ziehen</div>' : ''}</div>
+    ${after.map(p => kioskProductCard(p, admin)).join('')}
+    ${admin ? `<div class="kiosk-info-dropzone" ondragover="kioskInfoDropOver(event)" ondragleave="this.classList.remove('drag-over')" ondrop="kioskDropInfoAfterSection(event,'${jsSingleQuoted(section.id)}')">Informationszeile nach diesem Bereich ablegen</div>` : ''}
   </section>`;
 }
 
@@ -14309,7 +14321,7 @@ function kioskProductCard(p, admin = false) {
     ? ` draggable="true" onclick="editKioskProduct('${jsSingleQuoted(p.id)}')" ondragstart="kioskStartProductDrag(event,'${jsSingleQuoted(p.id)}')" ondragover="kioskDragOver(event)" ondrop="kioskDropProduct(event,'${jsSingleQuoted(p.id)}','${jsSingleQuoted(p.category)}')"`
     : '';
   if (meta.tileRole === 'info') {
-    return `<aside class="kiosk-info-row${meta.infoTheme === 'dark' ? ' is-dark' : ''} title-size-${meta.infoTitleSize} text-size-${meta.infoTextSize}" role="note" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
+    return `<aside class="kiosk-info-row${meta.infoTheme === 'dark' ? ' is-dark' : ''}${meta.infoPlacement === 'after' ? ' is-after-section' : ''} title-size-${meta.infoTitleSize} text-size-${meta.infoTextSize}" role="note" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
       <span class="kiosk-info-row-mark" aria-hidden="true">i</span>
       <div class="kiosk-info-row-copy"><div class="kiosk-info-row-title">${esc(p.name)}</div>${p.desc ? `<p class="kiosk-info-row-text">${esc(p.desc)}</p>` : ''}</div>
     </aside>`;
@@ -14613,7 +14625,7 @@ function deleteKioskSection(id) {
 }
 
 function kioskDragOver(event) { event.preventDefault(); event.stopPropagation(); }
-function kioskStartProductDrag(event, id) { event.stopPropagation(); kioskDragState = { type:'product', id }; event.dataTransfer.effectAllowed = 'move'; }
+function kioskStartProductDrag(event, id) { event.stopPropagation(); kioskDragState = { type:'product', id }; event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', id); }
 function kioskStartSectionDrag(event, id) { event.stopPropagation(); kioskDragState = { type:'section', id }; event.dataTransfer.effectAllowed = 'move'; }
 
 function kioskDropProduct(event, targetId, sectionId) {
@@ -14622,8 +14634,23 @@ function kioskDropProduct(event, targetId, sectionId) {
   const rows = loadKioskProducts();
   const moving = rows.find(p => p.id === kioskDragState.id);
   if (!moving) return;
+  const target = rows.find(p => p.id === targetId);
+  const targetIsAfter = target && kioskTileMeta(target).tileRole === 'info' && kioskTileMeta(target).infoPlacement === 'after';
+  if (targetIsAfter && kioskTileMeta(moving).tileRole === 'info') {
+    moving.category = sectionId;
+    moving.infoPlacement = 'after';
+    const after = kioskSorted(rows).filter(p => p.category === sectionId && p.id !== moving.id && kioskTileMeta(p).infoPlacement === 'after');
+    after.splice(after.findIndex(p => p.id === targetId), 0, moving);
+    after.forEach((p, i) => p.sort = (i + 1) * 10);
+    saveKioskProducts(rows);
+    kioskDragState = null;
+    renderKioskAdminPreview(); renderKiosk();
+    persistKioskProducts(rows).catch(e => kioskAdminMsg('kioskAdminErr', 'Neue Reihenfolge nicht online gespeichert: ' + (e.message || e), false));
+    return;
+  }
   moving.category = sectionId;
-  const ordered = kioskSorted(rows).filter(p => p.category === sectionId && p.id !== moving.id);
+  moving.infoPlacement = 'section';
+  const ordered = kioskSorted(rows).filter(p => p.category === sectionId && p.id !== moving.id && kioskTileMeta(p).infoPlacement !== 'after');
   const at = Math.max(0, ordered.findIndex(p => p.id === targetId));
   ordered.splice(at, 0, moving);
   ordered.forEach((p, i) => p.sort = (i + 1) * 10);
@@ -14640,8 +14667,33 @@ function kioskDropInSection(event, sectionId) {
   const moving = rows.find(p => p.id === kioskDragState.id);
   if (!moving) return;
   moving.category = sectionId;
-  const inSection = kioskSorted(rows).filter(p => p.category === sectionId && p.id !== moving.id);
+  moving.infoPlacement = 'section';
+  const inSection = kioskSorted(rows).filter(p => p.category === sectionId && p.id !== moving.id && kioskTileMeta(p).infoPlacement !== 'after');
   moving.sort = (inSection.length + 1) * 10;
+  saveKioskProducts(rows);
+  kioskDragState = null;
+  renderKioskAdminPreview(); renderKiosk();
+  persistKioskProducts(rows).catch(e => kioskAdminMsg('kioskAdminErr', 'Neue Position nicht online gespeichert: ' + (e.message || e), false));
+}
+
+function kioskInfoDropOver(event) {
+  if (kioskDragState?.type !== 'product') return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.classList.add('drag-over');
+}
+
+function kioskDropInfoAfterSection(event, sectionId) {
+  event.preventDefault(); event.stopPropagation();
+  event.currentTarget.classList.remove('drag-over');
+  if (kioskDragState?.type !== 'product') return;
+  const rows = loadKioskProducts();
+  const moving = rows.find(p => p.id === kioskDragState.id);
+  if (!moving || kioskTileMeta(moving).tileRole !== 'info') return;
+  const after = kioskSorted(rows).filter(p => p.category === sectionId && p.id !== moving.id && kioskTileMeta(p).infoPlacement === 'after');
+  moving.category = sectionId;
+  moving.infoPlacement = 'after';
+  [...after, moving].forEach((p, i) => p.sort = (i + 1) * 10);
   saveKioskProducts(rows);
   kioskDragState = null;
   renderKioskAdminPreview(); renderKiosk();
@@ -14777,6 +14829,7 @@ async function saveKioskProduct() {
     infoTheme:document.getElementById('kioskInfoDark').checked ? 'dark' : 'light',
     infoTitleSize:document.getElementById('kioskInfoTitleSize').value,
     infoTextSize:document.getElementById('kioskInfoTextSize').value,
+    infoPlacement:tileRole === 'info' ? previous?.infoPlacement || 'section' : 'section',
     variants,
     buyPrice:variants[0]?.price || null,
     packPrice:variants[1]?.price || null,
@@ -14866,7 +14919,7 @@ async function openKioskChoice(product, variant) {
   const consent = document.getElementById('kioskChoiceConsentCheck'); if (consent) consent.checked = false;
   const consentWrap = document.getElementById('kioskChoiceConsentWrap'); if (consentWrap) consentWrap.style.display = kioskChoiceAutoDebitReady ? 'none' : 'flex';
   const note = document.getElementById('kioskChoiceNote'); if (note) note.textContent = kioskChoiceAutoDebitReady
-    ? 'Der Artikel wird sofort notiert. Danach hast du genau zehn Sekunden zum Rückgängigmachen.'
+    ? 'Der Artikel wird sofort notiert. Danach hast du eine Minute zum Rückgängigmachen.'
     : 'Für den Bierdeckel hinterlegst du einmalig ein Zahlungsmittel bei Stripe. Anschließend wählst du den Artikel erneut aus.';
   updateKioskConsentButtons();
   document.getElementById('kioskChoiceModal')?.classList.add('show');
@@ -14906,7 +14959,6 @@ async function addKioskItemToTab(product, variant) {
     showToast('Bierdeckel-Buchung nicht gespeichert.');
     return;
   }
-  items[items.length - 1].at = new Date().toISOString();
   saveKioskTab(items);
   renderKioskTabSummary();
   showKioskUndo(items[items.length - 1]);
@@ -14934,7 +14986,7 @@ function renderKioskTabSummary() {
   const count = document.getElementById('kioskBasketCount'); if (count) count.textContent = items.length ? `${items.length} ${items.length === 1 ? 'Artikel' : 'Artikel'} offen` : 'Noch keine Artikel';
   const list = document.getElementById('kioskTabItems');
   if (list) list.innerHTML = items.length ? items.slice().reverse().map(item => {
-    const undoable = Date.now() - Date.parse(item.at || 0) < 10000;
+    const undoable = Date.now() - Date.parse(item.at || 0) < KIOSK_UNDO_MS;
     const bookedAt = kioskTabBookedAt(item.at);
     const control = undoable
       ? `<button class="kiosk-tab-remove" onclick="removeKioskTabItem('${jsSingleQuoted(item.id)}')" title="Buchung rückgängig machen">×</button>`
@@ -14962,17 +15014,30 @@ function kioskTabBookedAt(value) {
 
 function openKioskTab() { renderKioskTabSummary(); document.getElementById('kioskTabModal')?.classList.add('show'); }
 function closeKioskTab() { document.getElementById('kioskTabModal')?.classList.remove('show'); }
-function removeKioskTabItem(id) {
+async function removeKioskTabItem(id) {
   const items = loadKioskTab();
   const item = items.find(row => row.id === id);
-  if (!item || Date.now() - Date.parse(item.at || 0) >= 10000) {
-    showToast('Die 10 Sekunden sind abgelaufen. Die Buchung ist jetzt fest.');
+  if (!item || Date.now() - Date.parse(item.at || 0) >= KIOSK_UNDO_MS) {
+    showToast('Die Minute ist abgelaufen. Die Buchung ist jetzt fest.');
     renderKioskTabSummary();
     return;
   }
-  saveKioskTab(items.filter(row => row.id !== id));
+  if (typeof sb === 'undefined' || !currentUser?.id) {
+    showToast('Rückgängig machen gerade nicht möglich. Bitte erneut versuchen.');
+    return;
+  }
+  let deleted = false;
+  try {
+    const { data, error } = await sb.from('kiosk_tab_items').delete().eq('auth_user_id', currentUser.id).eq('client_item_id', id).eq('status', 'open').select('id');
+    deleted = !error && Array.isArray(data) && data.length > 0;
+  } catch(e) {}
+  if (!deleted) {
+    showToast('Die Buchung konnte nicht rückgängig gemacht werden. Bitte den Bierdeckel prüfen.');
+    renderKioskTabSummary();
+    return;
+  }
+  saveKioskTab(loadKioskTab().filter(row => row.id !== id));
   renderKioskTabSummary();
-  try { if (typeof sb !== 'undefined' && currentUser?.id) sb.from('kiosk_tab_items').delete().eq('auth_user_id', currentUser.id).eq('client_item_id', id).eq('status', 'open'); } catch(e) {}
   const toast = document.getElementById('kioskUndoToast'); if (toast) toast.classList.remove('show');
   showToast('Buchung rückgängig gemacht.');
 }
@@ -14986,7 +15051,7 @@ function showKioskUndo(item) {
   text.textContent = `${item.productName} · ${item.variantLabel} ist gebucht.`;
   button.onclick = () => removeKioskTabItem(item.id);
   const tick = () => {
-    const remaining = Math.max(0, 10000 - (Date.now() - Date.parse(item.at)));
+    const remaining = Math.max(0, KIOSK_UNDO_MS - (Date.now() - Date.parse(item.at)));
     button.textContent = `Rückgängig (${Math.ceil(remaining / 1000)} s)`;
     if (!remaining) {
       clearInterval(kioskUndoTimer); kioskUndoTimer = null;
