@@ -1021,6 +1021,14 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-card.is-free .kiosk-copy { margin:0; min-height:0; }
 .kiosk-card.is-free .kiosk-title { color:#F6F1E7; font-size:clamp(1.55rem,2.4vw,2.35rem); line-height:.98; }
 .kiosk-card.is-free .kiosk-desc { color:#CFC6B8; font-size:.92rem; line-height:1.5; max-width:32em; }
+.kiosk-card.is-free.align-center .kiosk-copy { text-align:center; }
+.kiosk-card.is-free.align-right .kiosk-copy { text-align:right; }
+.kiosk-card.is-free.align-center .kiosk-desc { margin-left:auto; margin-right:auto; }
+.kiosk-card.is-free.align-right .kiosk-desc { margin-left:auto; }
+.kiosk-card.is-free.title-size-small .kiosk-title { font-size:1.35rem; }
+.kiosk-card.is-free.title-size-large .kiosk-title { font-size:2.8rem; }
+.kiosk-card.is-free.subtitle-size-normal .kiosk-desc { font-size:1.15rem; }
+.kiosk-card.is-free.subtitle-size-large .kiosk-desc { font-size:1.4rem; }
 .kiosk-card.is-free .kiosk-actions { display:none; }
 .kiosk-img { background:linear-gradient(135deg,#FFFFFF,#EFE7D8); min-height:158px; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; position:relative; }
 .kiosk-img img { width:100%; height:100%; object-fit:cover; object-position:center bottom; display:block; }
@@ -1058,8 +1066,11 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-price { display:block; font:800 .68rem Manrope,sans-serif; letter-spacing:0; text-transform:none; opacity:.82; margin-top:2px; }
 .kiosk-admin-form { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
 .kiosk-price-fields { display:contents; }
+.kiosk-sale-option { grid-column:1 / -1; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; border-top:1px solid #DDD4C7; padding-top:12px; }
+.kiosk-sale-option strong { grid-column:1 / -1; font:900 .74rem "Space Grotesk",sans-serif; text-transform:uppercase; color:#1C1A17; }
 .kiosk-form-note { grid-column:1 / -1; display:none; padding:12px 14px; border:1.5px solid #DDD4C7; border-radius:9px; background:#F8F4EC; color:#625B52; font-size:.74rem; line-height:1.55; }
 .kiosk-form-note.show { display:block; }
+.kiosk-free-text-option { display:none; }
 .kiosk-admin-image-row { grid-column:1 / -1; display:grid; grid-template-columns:180px 1fr; gap:14px; align-items:end; }
 .kiosk-admin-preview { height:112px; border:1.5px solid #E2DACB; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; color:#A59D92; font:800 10px "Space Grotesk",sans-serif; letter-spacing:.12em; text-transform:uppercase; }
 .kiosk-admin-preview img { width:100%; height:100%; object-fit:contain; object-position:center bottom; display:block; }
@@ -1126,7 +1137,9 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-undo-toast span { font-size:.76rem; font-weight:700; }
 .kiosk-undo-toast button { border:0; border-radius:7px; padding:8px 10px; background:#FF5A36; color:#fff; font:900 .66rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; white-space:nowrap; }
 @media (max-width:900px){ .kiosk-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-admin-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-section-editor-row { grid-template-columns:28px 1fr 150px; } }
+@media (max-width:900px){ .kiosk-sale-option { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:118px 1fr; grid-template-rows:minmax(168px,auto); min-height:168px; } .kiosk-card.is-free,.kiosk-card.is-free.is-landscape,.kiosk-card.is-free.is-portrait,.kiosk-card.is-free.text-left,.kiosk-card.is-free.text-right,.kiosk-card.is-free.text-bottom { grid-template-columns:1fr; grid-template-rows:220px auto; min-height:0; } .kiosk-card.is-free.text-right .kiosk-img { order:0; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } .kiosk-card.is-free .kiosk-img { min-height:220px; padding:0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:168px; } .kiosk-card.is-free .kiosk-body { min-height:0; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-design-savebar { align-items:stretch; flex-direction:column; } .kiosk-design-savebar .admin-save-btn { width:100%; min-width:0; } .kiosk-tab-actions { grid-template-columns:1fr; } }
+@media (max-width:620px){ .kiosk-sale-option { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-card.is-featured-equipment.is-portrait { grid-template-rows:minmax(168px,auto); } .kiosk-card.is-featured-equipment.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } }
 @media (max-width:620px){ .kiosk-section-head { padding-left:0; } }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
@@ -5347,6 +5360,30 @@ main {
                 <option value="right">Rechts neben dem Bild</option>
               </select>
             </div>
+            <div class="kiosk-free-text-option">
+              <label class="eb-adm-lbl">Textausrichtung</label>
+              <select id="kioskTextAlign" class="eb-adm-inp">
+                <option value="left">Linksbündig</option>
+                <option value="center">Zentriert</option>
+                <option value="right">Rechtsbündig</option>
+              </select>
+            </div>
+            <div class="kiosk-free-text-option">
+              <label class="eb-adm-lbl">Größe der Überschrift</label>
+              <select id="kioskTileTitleSize" class="eb-adm-inp">
+                <option value="small">Klein</option>
+                <option value="normal">Normal</option>
+                <option value="large">Groß</option>
+              </select>
+            </div>
+            <div class="kiosk-free-text-option">
+              <label class="eb-adm-lbl">Größe des Untertitels</label>
+              <select id="kioskTileSubtitleSize" class="eb-adm-inp">
+                <option value="small">Klein</option>
+                <option value="normal">Normal</option>
+                <option value="large">Groß</option>
+              </select>
+            </div>
             <div>
               <label class="eb-adm-lbl">Bilddarstellung</label>
               <select id="kioskImageFit" class="eb-adm-inp" onchange="previewKioskAdminImage()">
@@ -5365,29 +5402,26 @@ main {
             </div>
             <div id="kioskFreeTileNote" class="kiosk-form-note">Freie Kacheln brauchen keinen Preis. Sie sind für große Bilder, Hinweise, CI-Flächen oder Shop-Kampagnen gedacht und können als Hochformat oder doppelt breite Querformat-Kachel erscheinen.</div>
             <div id="kioskPriceFields" class="kiosk-price-fields">
-              <div>
-                <label class="eb-adm-lbl">Beschriftung Option 1</label>
-                <input id="kioskAction1Label" class="eb-adm-inp" type="text" placeholder="z. B. Kaufen oder Glas">
+              <div class="kiosk-sale-option">
+                <strong>Verkaufsoption 1</strong>
+                <div><label class="eb-adm-lbl">Aktion</label><input id="kioskAction1Label" class="eb-adm-inp" type="text" placeholder="z. B. Kaufen oder Glas"></div>
+                <div><label class="eb-adm-lbl">Mengenangabe</label><input id="kioskAction1Quantity" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. ein Stück"></div>
+                <div><label class="eb-adm-lbl">Verkaufseinheit</label><input id="kioskAction1Unit" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. Stück"></div>
+                <div><label class="eb-adm-lbl">Preis (€)</label><input id="kioskBuyPrice" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="3.50"></div>
               </div>
-              <div>
-                <label class="eb-adm-lbl">Preis Option 1 (€)</label>
-                <input id="kioskBuyPrice" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="3.50">
+              <div class="kiosk-sale-option">
+                <strong>Verkaufsoption 2</strong>
+                <div><label class="eb-adm-lbl">Aktion</label><input id="kioskAction2Label" class="eb-adm-inp" type="text" placeholder="z. B. Kaufen oder Kranz"></div>
+                <div><label class="eb-adm-lbl">Mengenangabe</label><input id="kioskAction2Quantity" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. fünf Stück"></div>
+                <div><label class="eb-adm-lbl">Verkaufseinheit</label><input id="kioskAction2Unit" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. Dose"></div>
+                <div><label class="eb-adm-lbl">Preis (€)</label><input id="kioskPackPrice" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="20.00"></div>
               </div>
-              <div>
-                <label class="eb-adm-lbl">Beschriftung Option 2</label>
-                <input id="kioskAction2Label" class="eb-adm-inp" type="text" placeholder="z. B. Kranz (10 Gläser)">
-              </div>
-              <div>
-                <label class="eb-adm-lbl">Preis Option 2 (€)</label>
-                <input id="kioskPackPrice" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="20.00">
-              </div>
-              <div>
-                <label class="eb-adm-lbl">Beschriftung Option 3</label>
-                <input id="kioskAction3Label" class="eb-adm-inp" type="text" placeholder="z. B. 120 Min.">
-              </div>
-              <div>
-                <label class="eb-adm-lbl">Preis Option 3 (€)</label>
-                <input id="kioskRent60" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="4.00">
+              <div class="kiosk-sale-option">
+                <strong>Verkaufsoption 3</strong>
+                <div><label class="eb-adm-lbl">Aktion</label><input id="kioskAction3Label" class="eb-adm-inp" type="text" placeholder="z. B. Leihen oder Kaufen"></div>
+                <div><label class="eb-adm-lbl">Mengenangabe</label><input id="kioskAction3Quantity" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. zehn Stück"></div>
+                <div><label class="eb-adm-lbl">Verkaufseinheit</label><input id="kioskAction3Unit" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. Packung"></div>
+                <div><label class="eb-adm-lbl">Preis (€)</label><input id="kioskRent60" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="4.00"></div>
               </div>
             </div>
             <input id="kioskRent120" type="hidden">
@@ -13878,10 +13912,10 @@ function saveKioskDesign(design) {
   try { localStorage.setItem(KIOSK_DESIGN_STORAGE_KEY, JSON.stringify(design)); } catch(e) {}
 }
 
-function kioskLegacyVariants(p) {
+function kioskAllVariants(p) {
   if (Array.isArray(p.variants) && p.variants.length) {
-    return p.variants.filter(v => String(v.id || '') !== '_meta' && Number(v.price) > 0 && String(v.label || '').trim()).slice(0, 3)
-      .map((v, i) => ({ id:String(v.id || ('option-' + (i + 1))), label:String(v.label), price:Number(v.price), kind:String(v.kind || 'buy'), minutes:Number(v.minutes) || null }));
+    return p.variants.filter(v => String(v.id || '') !== '_meta' && String(v.label || '').trim()).slice(0, 3)
+      .map((v, i) => ({ id:String(v.id || ('option-' + (i + 1))), label:String(v.label), actionLabel:String(v.actionLabel || v.label), quantityLabel:String(v.quantityLabel || ''), unitLabel:String(v.unitLabel || ''), price:Number(v.price), kind:String(v.kind || 'buy'), minutes:Number(v.minutes) || null }));
   }
   const result = [];
   if (Number(p.buyPrice) > 0) result.push({ id:p.category === 'beer' ? 'glass' : 'buy', label:p.category === 'beer' ? 'Glas' : 'Kaufen', price:Number(p.buyPrice), kind:'buy', minutes:null });
@@ -13891,6 +13925,10 @@ function kioskLegacyVariants(p) {
   return result.slice(0, 3);
 }
 
+function kioskLegacyVariants(p) {
+  return kioskAllVariants(p).filter(v => Number(v.price) > 0);
+}
+
 function kioskTileMeta(p) {
   const fromVariants = Array.isArray(p?.variants)
     ? p.variants.find(v => String(v?.id || '') === '_meta' || String(v?.kind || '') === 'display')
@@ -13898,15 +13936,21 @@ function kioskTileMeta(p) {
   const role = p?.tileRole || fromVariants?.tile_role || fromVariants?.tileRole;
   const position = p?.textPosition || fromVariants?.text_position || fromVariants?.textPosition;
   const imagePosition = p?.imagePosition || fromVariants?.image_position || fromVariants?.imagePosition;
+  const textAlign = p?.textAlign || fromVariants?.text_align || fromVariants?.textAlign;
+  const titleSize = p?.titleSize || fromVariants?.title_size || fromVariants?.titleSize;
+  const subtitleSize = p?.subtitleSize || fromVariants?.subtitle_size || fromVariants?.subtitleSize;
   return {
     tileRole: role === 'free' ? 'free' : 'product',
     textPosition: ['left','right','bottom'].includes(position) ? position : 'bottom',
     imagePosition: ['top','center','bottom'].includes(imagePosition) ? imagePosition : 'auto',
+    textAlign: ['left','center','right'].includes(textAlign) ? textAlign : 'left',
+    titleSize: ['small','normal','large'].includes(titleSize) ? titleSize : 'normal',
+    subtitleSize: ['small','normal','large'].includes(subtitleSize) ? subtitleSize : 'small',
   };
 }
 
 function normalizeKioskProduct(p) {
-  const variants = kioskLegacyVariants(p);
+  const variants = kioskAllVariants(p);
   const meta = kioskTileMeta(p);
   const layout = ['portrait','square','landscape'].includes(p.layout)
     ? p.layout
@@ -13918,6 +13962,9 @@ function normalizeKioskProduct(p) {
     tileRole:meta.tileRole,
     textPosition:meta.textPosition,
     imagePosition:meta.imagePosition,
+    textAlign:meta.textAlign,
+    titleSize:meta.titleSize,
+    subtitleSize:meta.subtitleSize,
     onTab: meta.tileRole === 'free' ? false : (typeof p.onTab === 'boolean' ? p.onTab : p.category !== 'equipment'),
     variants,
   };
@@ -13956,13 +14003,33 @@ function saveKioskProducts(rows) {
 }
 
 function kioskProductFromDb(row) {
-  const variants = Array.isArray(row?.variants) ? row.variants.map((variant, index) => ({
+  const rawVariants = Array.isArray(row?.variants) ? row.variants : [];
+  const metaVariant = rawVariants.find(variant => String(variant?.id || '') === '_meta');
+  const variants = rawVariants.filter(variant => String(variant?.id || '') !== '_meta').map((variant, index) => ({
     id:String(variant.id || ('option-' + (index + 1))),
     label:String(variant.label || 'Auswahl'),
+    actionLabel:String(variant.action_label || variant.label || 'Auswahl'),
+    quantityLabel:String(variant.quantity_label || ''),
+    unitLabel:String(variant.unit_label || ''),
     price:Number(variant.price_cents || 0) / 100,
     kind:String(variant.kind || 'buy'),
     minutes:Number(variant.minutes) || null,
-  })) : [];
+    slot:Number.isInteger(variant.slot) ? variant.slot : index,
+  }));
+  if (Array.isArray(metaVariant?.draft_options)) {
+    metaVariant.draft_options.forEach(draft => variants.push({
+      id:String(draft.id || 'option-draft'),
+      label:String(draft.label || ''),
+      actionLabel:String(draft.action_label || draft.label || ''),
+      quantityLabel:String(draft.quantity_label || ''),
+      unitLabel:String(draft.unit_label || ''),
+      price:0,
+      kind:String(draft.kind || 'buy'),
+      minutes:Number(draft.minutes) || null,
+      slot:Number.isInteger(draft.slot) ? draft.slot : variants.length,
+    }));
+    variants.sort((a, b) => a.slot - b.slot);
+  }
   return normalizeKioskProduct({
     id:String(row.id),
     category:String(row.category_id),
@@ -13982,14 +14049,29 @@ function kioskProductFromDb(row) {
 
 function kioskProductToDb(product) {
   const meta = kioskTileMeta(product);
-  const variants = kioskLegacyVariants(product).map(variant => ({
+  const allVariants = kioskAllVariants(product);
+  const variants = allVariants.flatMap((variant, slot) => Number(variant.price) > 0 ? [{
     id:String(variant.id),
     label:String(variant.label),
+    action_label:String(variant.actionLabel || variant.label),
+    quantity_label:String(variant.quantityLabel || ''),
+    unit_label:String(variant.unitLabel || ''),
     price_cents:Math.round(Number(variant.price) * 100),
     kind:String(variant.kind || 'buy'),
     minutes:Number(variant.minutes) || null,
-  }));
-  if (meta.tileRole === 'free' || meta.imagePosition !== 'auto') {
+    slot,
+  }] : []);
+  const draftOptions = allVariants.flatMap((variant, slot) => Number(variant.price) > 0 ? [] : [{
+    id:String(variant.id),
+    label:String(variant.label),
+    action_label:String(variant.actionLabel || variant.label),
+    quantity_label:String(variant.quantityLabel || ''),
+    unit_label:String(variant.unitLabel || ''),
+    kind:String(variant.kind || 'buy'),
+    minutes:Number(variant.minutes) || null,
+    slot,
+  }]);
+  if (meta.tileRole === 'free' || meta.imagePosition !== 'auto' || draftOptions.length) {
     variants.unshift({
       id:'_meta',
       label:meta.tileRole === 'free' ? 'Freie Kachel' : 'Bildausrichtung',
@@ -13999,6 +14081,10 @@ function kioskProductToDb(product) {
       tile_role:meta.tileRole,
       text_position:meta.textPosition,
       image_position:meta.imagePosition,
+      text_align:meta.textAlign,
+      title_size:meta.titleSize,
+      subtitle_size:meta.subtitleSize,
+      draft_options:draftOptions,
     });
   }
   return {
@@ -14138,17 +14224,19 @@ function kioskProductCard(p, admin = false) {
   const actions = orderedVariants.map((v, index) => {
     const isRental = v.kind === 'rent' || !!v.minutes;
     const label = isRental && !/^leih/i.test(v.label) ? `Leihen · ${v.label}` : v.label;
+    const unit = v.unitLabel && !v.quantityLabel.toLocaleLowerCase('de-DE').includes(v.unitLabel.toLocaleLowerCase('de-DE'))
+      ? `<small>${esc(v.unitLabel)}</small>` : '';
     const click = admin
       ? `event.stopPropagation()`
       : `checkoutKiosk('${jsSingleQuoted(p.id)}','${jsSingleQuoted(v.id)}')`;
-    return `<button type="button" class="kiosk-action${isRental ? ' secondary is-rental' : hasRentals ? ' is-buy' : index ? ' secondary' : ''}" onclick="${click}">${esc(label)}<span class="kiosk-price">${esc(kioskMoney(v.price))}</span></button>`;
+    return `<button type="button" class="kiosk-action${isRental ? ' secondary is-rental' : hasRentals ? ' is-buy' : index ? ' secondary' : ''}" onclick="${click}">${esc(label)}${unit}<span class="kiosk-price">${esc(kioskMoney(v.price))}</span></button>`;
   }).join('');
   const adminAttrs = admin
     ? ` draggable="true" onclick="editKioskProduct('${jsSingleQuoted(p.id)}')" ondragstart="kioskStartProductDrag(event,'${jsSingleQuoted(p.id)}')" ondragover="kioskDragOver(event)" ondrop="kioskDropProduct(event,'${jsSingleQuoted(p.id)}','${jsSingleQuoted(p.category)}')"`
     : '';
   const layout = ['portrait','square','landscape'].includes(p.layout) ? p.layout : 'portrait';
   const imageFit = p.imageFit === 'cover' ? 'cover' : 'contain';
-  const freeClass = isFree ? ` is-free text-${meta.textPosition}` : '';
+  const freeClass = isFree ? ` is-free text-${meta.textPosition} align-${meta.textAlign} title-size-${meta.titleSize} subtitle-size-${meta.subtitleSize}` : '';
   const equipmentClass = !isFree && ['racket','balls'].includes(p.id) ? ' is-featured-equipment' : '';
   return `<article class="kiosk-card is-${layout} fit-${imageFit}${freeClass}${equipmentClass}" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
     <div class="kiosk-img">${img}</div>
@@ -14274,6 +14362,7 @@ function updateKioskEditorMode() {
   const onTabWrap = document.getElementById('kioskOnTabWrap');
   if (role === 'free' && layout?.value === 'square') layout.value = 'landscape';
   if (textPosition) textPosition.disabled = role !== 'free';
+  document.querySelectorAll('.kiosk-free-text-option').forEach(el => { el.style.display = role === 'free' ? 'block' : 'none'; });
   if (priceFields) priceFields.style.display = role === 'free' ? 'none' : 'contents';
   if (freeNote) freeNote.classList.toggle('show', role === 'free');
   if (onTabWrap) onTabWrap.style.display = role === 'free' ? 'none' : 'flex';
@@ -14441,13 +14530,16 @@ function kioskDropSection(event, targetId) {
 function updateKioskPriceFields() {}
 
 function resetKioskForm() {
-  ['kioskEditId','kioskImageData','kioskName','kioskBuyPrice','kioskPackPrice','kioskRent60','kioskRent120','kioskDesc','kioskImageUrl','kioskAction1Label','kioskAction2Label','kioskAction3Label'].forEach(id => {
+  ['kioskEditId','kioskImageData','kioskName','kioskBuyPrice','kioskPackPrice','kioskRent60','kioskRent120','kioskDesc','kioskImageUrl','kioskAction1Label','kioskAction2Label','kioskAction3Label','kioskAction1Quantity','kioskAction2Quantity','kioskAction3Quantity','kioskAction1Unit','kioskAction2Unit','kioskAction3Unit'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   renderKioskCategoryOptions(loadKioskDesign().sections[0]?.id);
   document.getElementById('kioskLayout').value = 'portrait';
   document.getElementById('kioskTileRole').value = 'product';
   document.getElementById('kioskTextPosition').value = 'bottom';
+  document.getElementById('kioskTextAlign').value = 'left';
+  document.getElementById('kioskTileTitleSize').value = 'normal';
+  document.getElementById('kioskTileSubtitleSize').value = 'small';
   document.getElementById('kioskImageFit').value = 'contain';
   document.getElementById('kioskImagePosition').value = 'auto';
   document.getElementById('kioskSort').value = '';
@@ -14469,11 +14561,16 @@ function editKioskProduct(id) {
   document.getElementById('kioskLayout').value = p.layout || 'portrait';
   document.getElementById('kioskTileRole').value = meta.tileRole;
   document.getElementById('kioskTextPosition').value = meta.textPosition;
+  document.getElementById('kioskTextAlign').value = meta.textAlign;
+  document.getElementById('kioskTileTitleSize').value = meta.titleSize;
+  document.getElementById('kioskTileSubtitleSize').value = meta.subtitleSize;
   document.getElementById('kioskImageFit').value = p.imageFit || 'contain';
   document.getElementById('kioskImagePosition').value = meta.imagePosition;
-  const variants = kioskLegacyVariants(p);
+  const variants = kioskAllVariants(p);
   [0,1,2].forEach(i => {
-    document.getElementById('kioskAction' + (i + 1) + 'Label').value = variants[i]?.label || '';
+    document.getElementById('kioskAction' + (i + 1) + 'Label').value = variants[i]?.actionLabel || '';
+    document.getElementById('kioskAction' + (i + 1) + 'Quantity').value = variants[i]?.quantityLabel || '';
+    document.getElementById('kioskAction' + (i + 1) + 'Unit').value = variants[i]?.unitLabel || '';
     document.getElementById(i === 0 ? 'kioskBuyPrice' : i === 1 ? 'kioskPackPrice' : 'kioskRent60').value = variants[i]?.price ?? '';
   });
   document.getElementById('kioskSort').value = p.sort ?? 10;
@@ -14496,22 +14593,26 @@ async function saveKioskProduct() {
   const id = document.getElementById('kioskEditId').value || ('kiosk-' + Date.now());
   const previous = rows.find(p => p.id === id) || null;
   const priceIds = ['kioskBuyPrice','kioskPackPrice','kioskRent60'];
-  const previousVariants = previous ? kioskLegacyVariants(previous) : [];
+  const previousVariants = previous ? kioskAllVariants(previous) : [];
   const tileRole = document.getElementById('kioskTileRole')?.value === 'free' ? 'free' : 'product';
   const textPosition = document.getElementById('kioskTextPosition')?.value || 'bottom';
   const variants = tileRole === 'free' ? [] : [0,1,2].map(i => {
-    const label = document.getElementById('kioskAction' + (i + 1) + 'Label').value.trim();
-    const minuteMatch = label.match(/(?:^|\D)(60|120)(?:\D|$)/);
-    const minutes = minuteMatch ? Number(minuteMatch[1]) : (previousVariants[i]?.minutes || null);
+    const actionLabel = document.getElementById('kioskAction' + (i + 1) + 'Label').value.trim();
+    const quantityLabel = document.getElementById('kioskAction' + (i + 1) + 'Quantity').value.trim();
+    const unitLabel = document.getElementById('kioskAction' + (i + 1) + 'Unit').value.trim();
+    const label = [actionLabel, quantityLabel].filter(Boolean).join(' ');
+    const minuteMatch = /min/i.test(label) ? label.match(/(?:^|\D)(60|120)(?:\D|$)/) : null;
+    const isRental = /^leih/i.test(actionLabel) || !!minuteMatch;
+    const minutes = isRental ? (minuteMatch ? Number(minuteMatch[1]) : previousVariants[i]?.minutes || null) : null;
     return {
       id:String(previousVariants[i]?.id || (minutes ? `rent-${minutes}` : ('option-' + (i + 1)))),
-      label,
+      label, actionLabel, quantityLabel, unitLabel,
       price:Number(document.getElementById(priceIds[i]).value),
-      kind:minutes ? 'rent' : String(previousVariants[i]?.kind || 'buy'),
+      kind:isRental ? 'rent' : 'buy',
       minutes,
     };
-  }).filter(v => v.label && v.price > 0);
-  if (tileRole !== 'free' && !variants.length) { kioskAdminMsg('kioskAdminErr', 'Bitte mindestens eine Verkaufsoption mit Preis anlegen.', false); return; }
+  }).filter(v => v.actionLabel);
+  if (tileRole !== 'free' && !variants.some(v => v.price > 0)) { kioskAdminMsg('kioskAdminErr', 'Bitte mindestens eine Verkaufsoption mit Preis anlegen.', false); return; }
   const chosenImage = currentKioskImageValue();
   const category = document.getElementById('kioskCategory').value;
   const automaticSort = Math.max(0, ...rows.filter(p => p.category === category && p.id !== id).map(p => Number(p.sort) || 0)) + 10;
@@ -14523,6 +14624,9 @@ async function saveKioskProduct() {
     imagePosition:document.getElementById('kioskImagePosition').value,
     tileRole,
     textPosition:['left','right','bottom'].includes(textPosition) ? textPosition : 'bottom',
+    textAlign:document.getElementById('kioskTextAlign').value,
+    titleSize:document.getElementById('kioskTileTitleSize').value,
+    subtitleSize:document.getElementById('kioskTileSubtitleSize').value,
     variants,
     buyPrice:variants[0]?.price || null,
     packPrice:variants[1]?.price || null,
