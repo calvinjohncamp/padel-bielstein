@@ -1064,6 +1064,10 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-action:hover { filter:brightness(1.06); transform:translateY(-1px); }
 .kiosk-action small { display:block; font:700 .58rem Manrope,sans-serif; letter-spacing:0; text-transform:none; opacity:.8; }
 .kiosk-price { display:block; font:800 .68rem Manrope,sans-serif; letter-spacing:0; text-transform:none; opacity:.82; margin-top:2px; }
+.kiosk-action.is-quantity-option .kiosk-price { font-size:.9rem; font-weight:900; opacity:1; margin-top:5px; }
+.kiosk-action.is-simple-purchase { min-height:50px; }
+.kiosk-action.is-simple-purchase .kiosk-price { font-size:1rem; font-weight:900; opacity:1; margin-top:4px; }
+.kiosk-action.is-simple-purchase.is-price-only .kiosk-price { font-size:1.12rem; margin-top:0; }
 .kiosk-admin-form { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
 .kiosk-price-fields { display:contents; }
 .kiosk-sale-option { grid-column:1 / -1; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; border-top:1px solid #DDD4C7; padding-top:12px; }
@@ -5405,21 +5409,21 @@ main {
               <div class="kiosk-sale-option">
                 <strong>Verkaufsoption 1</strong>
                 <div><label class="eb-adm-lbl">Aktion</label><input id="kioskAction1Label" class="eb-adm-inp" type="text" placeholder="z. B. Kaufen oder Glas"></div>
-                <div><label class="eb-adm-lbl">Mengenangabe</label><input id="kioskAction1Quantity" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. ein Stück"></div>
+                <div><label class="eb-adm-lbl">Auswahltext</label><input id="kioskAction1Quantity" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. Ein Stück"></div>
                 <div><label class="eb-adm-lbl">Verkaufseinheit</label><input id="kioskAction1Unit" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. Stück"></div>
                 <div><label class="eb-adm-lbl">Preis (€)</label><input id="kioskBuyPrice" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="3.50"></div>
               </div>
               <div class="kiosk-sale-option">
                 <strong>Verkaufsoption 2</strong>
                 <div><label class="eb-adm-lbl">Aktion</label><input id="kioskAction2Label" class="eb-adm-inp" type="text" placeholder="z. B. Kaufen oder Kranz"></div>
-                <div><label class="eb-adm-lbl">Mengenangabe</label><input id="kioskAction2Quantity" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. fünf Stück"></div>
+                <div><label class="eb-adm-lbl">Auswahltext</label><input id="kioskAction2Quantity" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. Eine Dose (fünf Stück)"></div>
                 <div><label class="eb-adm-lbl">Verkaufseinheit</label><input id="kioskAction2Unit" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. Dose"></div>
                 <div><label class="eb-adm-lbl">Preis (€)</label><input id="kioskPackPrice" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="20.00"></div>
               </div>
               <div class="kiosk-sale-option">
                 <strong>Verkaufsoption 3</strong>
                 <div><label class="eb-adm-lbl">Aktion</label><input id="kioskAction3Label" class="eb-adm-inp" type="text" placeholder="z. B. Leihen oder Kaufen"></div>
-                <div><label class="eb-adm-lbl">Mengenangabe</label><input id="kioskAction3Quantity" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. zehn Stück"></div>
+                <div><label class="eb-adm-lbl">Auswahltext</label><input id="kioskAction3Quantity" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. Zehn Stück"></div>
                 <div><label class="eb-adm-lbl">Verkaufseinheit</label><input id="kioskAction3Unit" class="eb-adm-inp" type="text" maxlength="40" placeholder="z. B. Packung"></div>
                 <div><label class="eb-adm-lbl">Preis (€)</label><input id="kioskRent60" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="4.00"></div>
               </div>
@@ -13926,7 +13930,20 @@ function kioskAllVariants(p) {
 }
 
 function kioskLegacyVariants(p) {
-  return kioskAllVariants(p).filter(v => Number(v.price) > 0);
+  return kioskAllVariants(p).filter(v => Number(v.price) > 0)
+    .map(v => ({ ...v, label:kioskVariantDisplayLabel(v) }));
+}
+
+function kioskVariantDisplayLabel(variant) {
+  const quantity = String(variant.quantityLabel || '').trim();
+  return quantity && variant.kind !== 'rent' && !variant.minutes
+    ? quantity
+    : String(variant.label || '');
+}
+
+function kioskVisibleOptionLabel(productId, variant) {
+  const label = String(variant.quantityLabel || variant.label || '').trim();
+  return ['racket','balls'].includes(productId) ? String(variant.label || '') : label.replace(/^kaufen\b[\s·:]*/i, '').trim();
 }
 
 function kioskTileMeta(p) {
@@ -14052,7 +14069,7 @@ function kioskProductToDb(product) {
   const allVariants = kioskAllVariants(product);
   const variants = allVariants.flatMap((variant, slot) => Number(variant.price) > 0 ? [{
     id:String(variant.id),
-    label:String(variant.label),
+    label:kioskVariantDisplayLabel(variant),
     action_label:String(variant.actionLabel || variant.label),
     quantity_label:String(variant.quantityLabel || ''),
     unit_label:String(variant.unitLabel || ''),
@@ -14218,18 +14235,22 @@ function kioskProductCard(p, admin = false) {
   const imagePosition = meta.imagePosition === 'auto' ? '' : ` style="object-position:center ${meta.imagePosition}"`;
   const img = p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name)}"${imagePosition}>` : '<div class="kiosk-img-placeholder" aria-hidden="true"></div>';
   const isFree = meta.tileRole === 'free';
+  const isEquipmentChoice = ['racket','balls'].includes(p.id);
   const variants = isFree ? [] : kioskLegacyVariants(p);
   const hasRentals = variants.some(v => v.kind === 'rent' || v.minutes);
   const orderedVariants = hasRentals ? variants.slice().sort((a, b) => Number(a.kind === 'rent' || !!a.minutes) - Number(b.kind === 'rent' || !!b.minutes)) : variants;
   const actions = orderedVariants.map((v, index) => {
     const isRental = v.kind === 'rent' || !!v.minutes;
-    const label = isRental && !/^leih/i.test(v.label) ? `Leihen · ${v.label}` : v.label;
-    const unit = v.unitLabel && !v.quantityLabel.toLocaleLowerCase('de-DE').includes(v.unitLabel.toLocaleLowerCase('de-DE'))
+    const isSimplePurchase = !isEquipmentChoice && !isRental;
+    const isQuantityOption = !isSimplePurchase && !isRental && !!String(v.quantityLabel || '').trim();
+    const label = isRental && !/^leih/i.test(v.label) ? `Leihen · ${v.label}` : kioskVisibleOptionLabel(p.id, v);
+    const unit = !isSimplePurchase && !isQuantityOption && v.unitLabel && !v.quantityLabel.toLocaleLowerCase('de-DE').includes(v.unitLabel.toLocaleLowerCase('de-DE'))
       ? `<small>${esc(v.unitLabel)}</small>` : '';
     const click = admin
       ? `event.stopPropagation()`
       : `checkoutKiosk('${jsSingleQuoted(p.id)}','${jsSingleQuoted(v.id)}')`;
-    return `<button type="button" class="kiosk-action${isRental ? ' secondary is-rental' : hasRentals ? ' is-buy' : index ? ' secondary' : ''}" onclick="${click}">${esc(label)}${unit}<span class="kiosk-price">${esc(kioskMoney(v.price))}</span></button>`;
+    const price = kioskMoney(v.price);
+    return `<button type="button" class="kiosk-action${isRental ? ' secondary is-rental' : hasRentals ? ' is-buy' : index ? ' secondary' : ''}${isQuantityOption ? ' is-quantity-option' : ''}${isSimplePurchase ? ' is-simple-purchase' : ''}${!label ? ' is-price-only' : ''}" aria-label="${esc(`${p.name}: ${label ? label + ', ' : ''}${price}`)}" onclick="${click}">${label ? esc(label) : ''}${unit}<span class="kiosk-price">${esc(price)}</span></button>`;
   }).join('');
   const adminAttrs = admin
     ? ` draggable="true" onclick="editKioskProduct('${jsSingleQuoted(p.id)}')" ondragstart="kioskStartProductDrag(event,'${jsSingleQuoted(p.id)}')" ondragover="kioskDragOver(event)" ondrop="kioskDropProduct(event,'${jsSingleQuoted(p.id)}','${jsSingleQuoted(p.category)}')"`
@@ -14711,7 +14732,7 @@ async function openKioskChoice(product, variant) {
   kioskPendingChoice = { product, variant };
   kioskChoiceAutoDebitReady = await kioskAutoDebitReady();
   const name = document.getElementById('kioskChoiceName'); if (name) name.textContent = product.name;
-  const variantEl = document.getElementById('kioskChoiceVariant'); if (variantEl) variantEl.textContent = variant.label;
+  const variantEl = document.getElementById('kioskChoiceVariant'); if (variantEl) variantEl.textContent = kioskVisibleOptionLabel(product.id, variant);
   const price = document.getElementById('kioskChoicePrice'); if (price) price.textContent = kioskMoney(variant.price);
   const consent = document.getElementById('kioskChoiceConsentCheck'); if (consent) consent.checked = false;
   const consentWrap = document.getElementById('kioskChoiceConsentWrap'); if (consentWrap) consentWrap.style.display = kioskChoiceAutoDebitReady ? 'none' : 'flex';
@@ -14760,7 +14781,8 @@ async function addKioskItemToTab(product, variant) {
   saveKioskTab(items);
   renderKioskTabSummary();
   showKioskUndo(items[items.length - 1]);
-  showToast(`${product.name} · ${variant.label} auf deinen Bierdeckel gebucht.`);
+  const selection = kioskVisibleOptionLabel(product.id, variant);
+  showToast(`${product.name}${selection ? ' · ' + selection : ''} auf deinen Bierdeckel gebucht.`);
 }
 
 async function checkoutKioskImmediately(product, variant, tabItemIds = []) {
@@ -14788,7 +14810,8 @@ function renderKioskTabSummary() {
     const control = undoable
       ? `<button class="kiosk-tab-remove" onclick="removeKioskTabItem('${jsSingleQuoted(item.id)}')" title="Buchung rückgängig machen">×</button>`
       : '<span class="kiosk-tab-locked" title="Nicht mehr rückgängig zu machen">gebucht</span>';
-    return `<div class="kiosk-tab-item"><div><strong>${esc(item.productName)}</strong><span class="kiosk-tab-item-meta">${esc(item.variantLabel)} · ${esc(bookedAt)}</span></div><b>${esc(kioskMoney(item.price))}</b>${control}</div>`;
+    const selection = kioskVisibleOptionLabel(item.productId, { label:item.variantLabel });
+    return `<div class="kiosk-tab-item"><div><strong>${esc(item.productName)}</strong><span class="kiosk-tab-item-meta">${selection ? esc(selection) + ' · ' : ''}${esc(bookedAt)}</span></div><b>${esc(kioskMoney(item.price))}</b>${control}</div>`;
   }).join('') : '<div style="color:#777;padding:20px 0;text-align:center;">Dein Bierdeckel ist noch leer.</div>';
   const totalEl = document.getElementById('kioskTabTotal'); if (totalEl) totalEl.textContent = kioskMoney(total) || '0,00 €';
   const auto = localStorage.getItem('pb_kiosk_auto_debit') === '1';
