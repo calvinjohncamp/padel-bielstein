@@ -977,10 +977,9 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 @media (max-width:520px){ .pbp-premwrap { grid-template-columns:1fr; } .pbp-grid-partner,.pbp-grid-regional { grid-template-columns:repeat(2,1fr); } .pbp-grid .pbp-tile { height:66px; } .pbp-tile-prem img { max-width:70%; } .pbp-tile-prem { height:116px; } .pbp-head { gap:14px; } }
 
 /* ── KIOSK ── */
-#modeKiosk { background:#171513; color:#F6F1E7; border:1px solid #34302C; border-radius:14px; padding:16px; }
-#pbSponsorKiosk { margin:24px 0 8px; }
-#pbSponsorKiosk .pbsp-kicker { color:#B8B0A5; }
-.kiosk-shell { display:flex; flex-direction:column; gap:8px; }
+#modeKiosk { color:#1C1A17; }
+#pbSponsorKiosk { margin:28px 0 22px; }
+.kiosk-shell { display:flex; flex-direction:column; gap:8px; background:#171513; color:#F6F1E7; border:1px solid #34302C; border-radius:14px; padding:16px; }
 .kiosk-hero { background:#1C1A17; color:#F6F1E7; border-radius:18px; padding:clamp(18px,3vw,30px); padding-left:18px; display:grid; grid-template-columns:1fr auto; gap:18px; align-items:end; overflow:hidden; position:relative; }
 .kiosk-kicker { font:900 .72rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.16em; text-transform:uppercase; color:#FF5A36; margin-bottom:8px; }
 .kiosk-hero h2 { margin:0; font:900 clamp(1.65rem,4vw,3.2rem)/.96 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:0; text-transform:uppercase; }
@@ -1112,6 +1111,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-section-delete { border:0; background:#F1E8DC; color:#9D3523; border-radius:7px; height:34px; cursor:pointer; font-weight:900; }
 .kiosk-preview-label { display:flex; justify-content:space-between; gap:16px; color:#9B948A; font:800 .68rem "Space Grotesk",sans-serif; letter-spacing:.1em; text-transform:uppercase; margin:0 4px 8px; }
 .kiosk-admin-stage { background:#171513; border:1px solid #34302C; border-radius:14px; padding:16px; min-height:240px; }
+.kiosk-admin-stage .kiosk-shell { background:transparent; border:0; border-radius:0; padding:0; }
 .kiosk-admin-stage .kiosk-hero { margin-bottom:0; }
 .kiosk-admin-stage .kiosk-card { cursor:pointer; }
 .kiosk-admin-stage .kiosk-card[draggable="true"],.kiosk-admin-stage .kiosk-section[draggable="true"] { position:relative; }
@@ -1146,7 +1146,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-undo-toast button { border:0; border-radius:7px; padding:8px 10px; background:#FF5A36; color:#fff; font:900 .66rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; white-space:nowrap; }
 @media (max-width:900px){ .kiosk-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-admin-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-section-editor-row { grid-template-columns:28px 1fr 150px; } }
 @media (max-width:900px){ .kiosk-sale-option { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-@media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:118px 1fr; grid-template-rows:minmax(168px,auto); min-height:168px; } .kiosk-card.is-free,.kiosk-card.is-free.is-landscape,.kiosk-card.is-free.is-portrait,.kiosk-card.is-free.text-left,.kiosk-card.is-free.text-right,.kiosk-card.is-free.text-bottom { grid-template-columns:1fr; grid-template-rows:220px auto; min-height:0; } .kiosk-card.is-free.text-right .kiosk-img { order:0; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } .kiosk-card.is-free .kiosk-img { min-height:220px; padding:0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:168px; } .kiosk-card.is-free .kiosk-body { min-height:0; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-design-savebar { align-items:stretch; flex-direction:column; } .kiosk-design-savebar .admin-save-btn { width:100%; min-width:0; } .kiosk-tab-actions { grid-template-columns:1fr; } }
+@media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:0 14px; } #modeKiosk .kiosk-shell { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:118px 1fr; grid-template-rows:minmax(168px,auto); min-height:168px; } .kiosk-card.is-free,.kiosk-card.is-free.is-landscape,.kiosk-card.is-free.is-portrait,.kiosk-card.is-free.text-left,.kiosk-card.is-free.text-right,.kiosk-card.is-free.text-bottom { grid-template-columns:1fr; grid-template-rows:220px auto; min-height:0; } .kiosk-card.is-free.text-right .kiosk-img { order:0; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } .kiosk-card.is-free .kiosk-img { min-height:220px; padding:0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:168px; } .kiosk-card.is-free .kiosk-body { min-height:0; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-design-savebar { align-items:stretch; flex-direction:column; } .kiosk-design-savebar .admin-save-btn { width:100%; min-width:0; } .kiosk-tab-actions { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-sale-option { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-price-fields.is-simple .kiosk-sale-option { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-card.is-featured-equipment.is-portrait { grid-template-rows:minmax(168px,auto); } .kiosk-card.is-featured-equipment.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } }
@@ -5281,6 +5281,16 @@ main {
     <!-- ── KIOSK ── -->
     <div id="adminKiosk" style="display:none;">
       <div class="admin-section">
+        <div class="admin-section-title">Kiosk-Seite (6. Tab)</div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">Blendet den Kiosk im Hauptmenü für alle Besucher ein oder aus. Produkte und Einstellungen bleiben erhalten.</div>
+          <div class="seg-toggle" style="flex:0 0 auto;">
+            <button type="button" id="kioskTabOff" class="seg-btn" onclick="setKioskTabEnabled(false)">Aus</button>
+            <button type="button" id="kioskTabOn" class="seg-btn seg-active" onclick="setKioskTabEnabled(true)">Ein</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-section">
         <div class="admin-section-title">Shop-Designer</div>
         <div class="admin-card kiosk-designer-controls">
           <div class="kiosk-admin-form">
@@ -6032,25 +6042,25 @@ main {
 
     <div id="adminSponsors" style="display:none;">
       <div class="admin-section">
-        <div class="admin-section-title">📣 Werbung / Partner-Anzeige (global)</div>
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-          <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
-            Master-Schalter für <strong>alle</strong> Partner-/Sponsoren-Anzeigen in der ganzen App (Startseite, Buchen, Abo, Jetzt spielen, Guthaben und der Partner-Tab). Auf <strong>„Aus"</strong> läuft das Buchungssystem komplett werbefrei – die Abstände passen sich automatisch an.
-          </div>
-          <div class="seg-toggle" style="flex:0 0 auto;">
-            <button type="button" id="adsOff" class="seg-btn" onclick="setSponsorsEnabled(false)">Aus</button>
-            <button type="button" id="adsOn" class="seg-btn seg-active" onclick="setSponsorsEnabled(true)">Ein</button>
-          </div>
-        </div>
-      </div>
-      <div class="admin-section">
-        <div class="admin-section-title">Partner-Seite (5. Tab)</div>
+        <div class="admin-section-title">Partner-Seite (7. Tab)</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
           <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
             Blendet den öffentlichen Tab <strong>„Partner"</strong> (Premium / Partner / Regional) im Hauptmenü ein oder aus. Standardmäßig aus – ist der Schalter „An“, sehen ihn alle Besucher.
           </div>
           <button id="partnerTabToggle" type="button" onclick="togglePartnerTab()"
             style="flex:0 0 auto;min-width:96px;padding:10px 18px;border:1.5px solid #E2DACB;border-radius:9px;background:#fff;color:#7A7368;font:800 13px 'Space Grotesk',sans-serif;letter-spacing:.04em;cursor:pointer;transition:all .15s;">– –</button>
+        </div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">📣 Werbung / Partner-Anzeige (global)</div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
+            Master-Schalter für <strong>alle</strong> Partner-/Sponsoren-Anzeigen in der ganzen App (Startseite, Buchen, Abo, Jetzt spielen, Verabreden, Guthaben, Kiosk und Partner-Tab). Auf <strong>„Aus"</strong> läuft das Buchungssystem komplett werbefrei – die Abstände passen sich automatisch an.
+          </div>
+          <div class="seg-toggle" style="flex:0 0 auto;">
+            <button type="button" id="adsOff" class="seg-btn" onclick="setSponsorsEnabled(false)">Aus</button>
+            <button type="button" id="adsOn" class="seg-btn seg-active" onclick="setSponsorsEnabled(true)">Ein</button>
+          </div>
         </div>
       </div>
       <div class="admin-section">
@@ -7925,6 +7935,7 @@ function refreshVerabredungenFrame() {
 //  MODE
 // ============================================================
 function setMode(m) {
+  if (m === 'kiosk' && window.__kioskTabOn === false) m = 'book';
   curMode = m;
   document.getElementById('modeBook').style.display       = m==='book'       ? 'block' : 'none';
   document.getElementById('modeAbo').style.display        = m==='abo'        ? 'block' : 'none';
@@ -7949,6 +7960,7 @@ function setMode(m) {
   if (m==='gutscheine') { renderCardSizeGrid(); loadMyCards(); renderAboCard();
     var gc=document.getElementById('giftCard'); if(gc) gc.style.display = currentUser ? 'block' : 'none'; }
   if (m==='kiosk') { renderKiosk(); refreshKioskCatalog(); }
+  if (typeof window.showSponsorForMode === 'function') window.showSponsorForMode(m);
   if (m==='partner' && typeof renderPartnerBoard==='function') { renderPartnerBoard(); }
   if (m==='verabredungen') { setTimeout(requestMeetFrameHeight, 80); setTimeout(requestMeetFrameHeight, 500); }
   if (m==='admin') {
@@ -12170,8 +12182,8 @@ function setAdminTab(tab) {
   // Wetterausfälle laden bei JEDEM Öffnen neu - hier ändern sich Zustände
   // durch Entscheidungen, ein veralteter Stand wäre irreführend.
   if (tab==='weather') { loadAdminWeather(); }
-  if (tab==='kiosk') { renderKioskAdmin(); refreshKioskCatalog(true); }
-  if (tab==='sponsors') { loadAdminSponsors(); if(typeof fillSponsorsEnabledAdmin==='function') fillSponsorsEnabledAdmin(); if(typeof loadActionLogoSlideshowSettings==='function') loadActionLogoSlideshowSettings(); }
+  if (tab==='kiosk') { renderKioskAdmin(); refreshKioskCatalog(true); if(typeof loadKioskTabFlag==='function') loadKioskTabFlag(); }
+  if (tab==='sponsors') { loadAdminSponsors(); if(typeof loadPartnerFlag==='function') loadPartnerFlag(); if(typeof fillSponsorsEnabledAdmin==='function') fillSponsorsEnabledAdmin(); if(typeof loadActionLogoSlideshowSettings==='function') loadActionLogoSlideshowSettings(); }
   if (tab==='freibad'  && !adminTabLoaded.freibad)  { loadAdminFreibad();  adminTabLoaded.freibad=true; }
   if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
   if (tab==='internal' && !adminTabLoaded.internal) { loadInternalBookings(); adminTabLoaded.internal=true; }
@@ -19375,7 +19387,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     toggle();
   })();
 
-  /* Partner-Seite (5. Tab): Galerie im Look der Eingangs-Displays.
+  /* Partner-Seite (7. Tab): Galerie im Look der Eingangs-Displays.
      Liest die aktiven Sponsoren aus sponsors_public – neue Partner erscheinen
      automatisch. Premium groß oben, dann Partner, dann Regionale Partner.
      Reine Anzeige – Fehler nie an die App weiterreichen. */
@@ -19443,7 +19455,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     }catch(e){ host.innerHTML=''; }
   };
 
-  /* Partner-Tab (5. Tab) global schaltbar, Default AUS. Sichtbarkeit steht in
+  /* Partner-Tab (7. Tab) global schaltbar, Default AUS. Sichtbarkeit steht in
      app_settings.partner_tab_enabled, für alle lesbar über die View app_flags. */
   window.__partnerTabOn = false;
   window.applyPartnerTabVisibility = function(on){
@@ -19486,6 +19498,35 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     }finally{ if(btn) btn.disabled=false; }
   };
 
+  window.__kioskTabOn = true;
+  window.applyKioskTabVisibility = function(on){
+    window.__kioskTabOn = on !== false;
+    var tab=document.getElementById('tabKiosk');
+    if(tab) tab.style.display = window.__kioskTabOn ? '' : 'none';
+    var off=document.getElementById('kioskTabOff'), onb=document.getElementById('kioskTabOn');
+    if(off && onb){ off.classList.toggle('seg-active', !window.__kioskTabOn); onb.classList.toggle('seg-active', window.__kioskTabOn); }
+    if(!window.__kioskTabOn && typeof curMode!=='undefined' && curMode==='kiosk') setMode('book');
+  };
+  window.loadKioskTabFlag = async function(){
+    try{
+      if(typeof sb==='undefined' || !sb) return;
+      var r=await sb.from('app_flags').select('kiosk_enabled').maybeSingle();
+      if(!r.error && r.data) window.applyKioskTabVisibility(r.data.kiosk_enabled !== false);
+    }catch(e){}
+  };
+  window.setKioskTabEnabled = async function(on){
+    var off=document.getElementById('kioskTabOff'), onb=document.getElementById('kioskTabOn');
+    if(off) off.disabled=true;
+    if(onb) onb.disabled=true;
+    try{
+      var r=await sb.rpc('admin_set_kiosk_enabled', { p_enabled:!!on });
+      if(r.error) throw r.error;
+      window.applyKioskTabVisibility(on);
+      if(typeof showToast==='function') showToast(on ? 'Kiosk ist jetzt sichtbar.' : 'Kiosk ist vorübergehend ausgeblendet.');
+    }catch(e){ alert('Kiosk-Schalter konnte nicht gespeichert werden: '+(e?.message || e)); }
+    finally{ if(off) off.disabled=false; if(onb) onb.disabled=false; }
+  };
+
   /* Globaler Werbe-/Partner-Master-Schalter: blendet ALLE Sponsoren-Anzeigen +
      den Partner-Tab app-weit ein/aus. Flag app_settings.sponsors_enabled
      (Skript 44), lesbar über app_flags. Fehlt das Skript, bleibt Werbung an. */
@@ -19501,13 +19542,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     window.__sponsorsEnabled = (on !== false);
     ['pbSplashSponsor','pbSponsorBook','pbSponsorAbo','pbSponsorPlay','pbSponsorGuthaben','pbSponsorKiosk'].forEach(function(id){
       var el=document.getElementById(id);
-      if(el) el.style.display = window.__sponsorsEnabled ? '' : 'none';
+      if(el) el.style.display = window.__sponsorsEnabled && el.innerHTML ? '' : 'none';
     });
     var meetSponsor = typeof window.getMeetSponsorSlot==='function' ? window.getMeetSponsorSlot() : null;
     if(meetSponsor) meetSponsor.style.display = window.__sponsorsEnabled ? '' : 'none';
     // Partner-Tab an der (gemerkten) Absicht + Master-Schalter ausrichten.
     if(typeof window.applyPartnerTabVisibility==='function') window.applyPartnerTabVisibility(window.__partnerTabOn);
     if(typeof window.fillSponsorsEnabledAdmin==='function') window.fillSponsorsEnabledAdmin();
+    if(window.__sponsorsEnabled && typeof window.showSponsorForMode==='function') window.showSponsorForMode(curMode);
   };
   window.fillSponsorsEnabledAdmin = function(){
     var on = window.__sponsorsEnabled !== false;
@@ -20642,6 +20684,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 (function(){
   var ROT_KEY='pbSponsorRot';
   var CACHE_KEY='pbSponsorsPublicCache';
+  var SEEN_KEY='pbSponsorsSeenThisVisit';
+  var appPlaylist=[], appAssignments={}, rotationIndex=0, rotationReady=false;
+  var seenKeys={};
+  try{ seenKeys=JSON.parse(sessionStorage.getItem(SEEN_KEY)||'{}'); }catch(e){}
+  if(!seenKeys || typeof seenKeys!=='object' || Array.isArray(seenKeys)) seenKeys={};
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
   function normUrl(u){
     u=String(u||'').trim();
@@ -20685,7 +20732,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var a=tile(left,false), b=tile(right,false);
     var inner=(a||b) ? ('<div class="pbsp-duo">'+a+b+'</div>') : '';
     el.innerHTML = inner ? ('<div class="pbsp-kicker">'+kicker+'</div>'+inner) : '';
-    el.style.display = window.__sponsorsEnabled === false ? 'none' : '';
+    el.style.display = window.__sponsorsEnabled === false || !inner ? 'none' : '';
   }
   function fillMeetDuo(kicker, left, right, retry){
     var el = null;
@@ -20708,6 +20755,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var items=(premiumRows||[]).slice(0,2).map(function(s){ return tile(s,true,true); }).filter(Boolean);
     while(items.length<2) items.push(emptyPremiumTile(items.length+1));
     el.innerHTML = '<div class="pbsp-kicker">'+kicker+'</div><div class="pbsp-duo">'+items.join('')+'</div>';
+    el.style.display = window.__sponsorsEnabled === false ? 'none' : '';
   }
   function renderSplashPremiumFromRows(rows){
     var prem=(rows||[]).filter(function(r){return r.tier==='premium';})
@@ -20724,6 +20772,37 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     }
     return pair;
   }
+  var appSlots={
+    book:['pbSponsorBook','Das Wetter wird dir präsentiert von'],
+    play:['pbSponsorPlay','Dein Spieltag wird dir präsentiert von'],
+    gutscheine:['pbSponsorGuthaben','Dein Guthaben wird dir präsentiert von'],
+    abo:['pbSponsorAbo','Dein Abo wird dir präsentiert von'],
+    verabredungen:['pbSponsorMeet','Dein Matchplan wird dir präsentiert von'],
+    kiosk:['pbSponsorKiosk','Der TFB Kiosk wird dir präsentiert von']
+  };
+  function sponsorKey(s){ return s ? String(s.logo_url || s.id || s.name || '').trim().toLowerCase() : ''; }
+  function nextAppPair(){
+    var pair=[], used={}, N=appPlaylist.length;
+    var assignedCount=Object.keys(appAssignments).length;
+    for(var step=0;step<N && pair.length<2;step++){
+      var s=appPlaylist[(rotationIndex*2+assignedCount*2+step)%N], key=sponsorKey(s);
+      if(key && !seenKeys[key] && !used[key] && displayLogoUrl(s) && !(s.tier==='premium' && pair.some(function(item){ return item.tier==='premium'; }))){
+        used[key]=true;
+        pair.push(s);
+      }
+    }
+    pair.forEach(function(s){ seenKeys[sponsorKey(s)]=true; });
+    try{ sessionStorage.setItem(SEEN_KEY,JSON.stringify(seenKeys)); }catch(e){}
+    return sortPremiumLeft(pair);
+  }
+  window.showSponsorForMode=function(mode){
+    var slot=appSlots[mode];
+    if(!slot || !appPlaylist.length || window.__sponsorsEnabled === false) return;
+    if(!Object.prototype.hasOwnProperty.call(appAssignments,mode)) appAssignments[mode]=nextAppPair();
+    var pair=appAssignments[mode];
+    if(mode==='verabredungen') fillMeetDuo(slot[1],pair[0],pair[1]);
+    else fillDuo(slot[0],slot[1],pair[0],pair[1]);
+  };
   async function loadSponsorsDisplay(){
     try{
       if(typeof sb==='undefined' || !sb) return;
@@ -20743,8 +20822,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       var pick = function(t){ return rows.filter(function(r){return r.tier===t;})
                                   .sort(function(a,b){return (a.sort_order||0)-(b.sort_order||0);}); };
       var prem=pick('premium'), part=pick('partner'), reg=pick('regional');
-      var idx=parseInt(localStorage.getItem(ROT_KEY)||'0',10)||0;
-      try{ localStorage.setItem(ROT_KEY, String(idx+1)); }catch(e){}
+      if(!rotationReady){
+        rotationIndex=parseInt(localStorage.getItem(ROT_KEY)||'0',10)||0;
+        try{ localStorage.setItem(ROT_KEY, String(rotationIndex+1)); }catch(e){}
+        rotationReady=true;
+      }
 
       // Splash: zwei gleichwertige Premium-Partnerplaetze.
       if(prem.length) fillPremiumDuo('pbSplashSponsor', 'Präsentiert von unseren Premium-Partnern', prem);
@@ -20767,56 +20849,18 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         pushWeighted(playlist, part, 3);
         pushWeighted(playlist, reg,  1);
       }
-      var N=playlist.length;
-      function sponsorKey(s){
-        return s ? String(s.name || s.logo_url || s.id || '').trim().toLowerCase() : '';
-      }
-      function nextUnique(start, used, shown, premiumSeen, allowShownRepeat){
-        if(N===0) return null;
-        var m=function(i){ return playlist[((i%N)+N)%N]; };
-        for(var step=0; step<N; step++){
-          var s=m(start+step), key=sponsorKey(s);
-          if(premiumSeen && s && s.tier==='premium') continue;
-          if(key && !used[key] && (allowShownRepeat || !shown[key])){
-            used[key]=true;
-            shown[key]=true;
-            return s;
-          }
-        }
-        return null;
-      }
-      // Pro Seitenaufruf jedes Logo nur einmal zeigen. Falls zu wenige aktive
-      // Partner fuer alle Flaechen vorhanden sind, bleiben die Flaechen gefuellt.
-      var shownKeys={};
-      var premiumShown=false;
-      function pair(start){
-        var used={};
-        var a=nextUnique(start, used, shownKeys, premiumShown, false);
-        if(!a) a=nextUnique(start, used, shownKeys, premiumShown, true);
-        var b=nextUnique(start+1, used, shownKeys, premiumShown || (a && a.tier==='premium'), false);
-        if(!b) b=nextUnique(start+1, used, shownKeys, premiumShown || (a && a.tier==='premium'), true);
-        var out=sortPremiumLeft([a,b]);
-        if((out[0] && out[0].tier==='premium') || (out[1] && out[1].tier==='premium')) premiumShown=true;
-        return out;
-      }
-      if(N){
-        var q=Math.floor(N/4)||1, base=idx*2;
-        var pB=pair(base), pP=pair(base+q), pG=pair(base+2*q), pA=pair(base+3*q), pM=pair(base+4*q), pK=pair(base+5*q);
-        fillDuo('pbSponsorBook',     'Das Wetter wird dir präsentiert von',    pB[0], pB[1]);
-        fillDuo('pbSponsorPlay',     'Dein Spieltag wird dir präsentiert von', pP[0], pP[1]);
-        fillDuo('pbSponsorGuthaben', 'Dein Guthaben wird dir präsentiert von', pG[0], pG[1]);
-        fillDuo('pbSponsorAbo',      'Dein Abo wird dir präsentiert von',      pA[0], pA[1]);
-        fillMeetDuo('Dein Matchplan wird dir präsentiert von', pM[0], pM[1]);
-        fillDuo('pbSponsorKiosk',    'Der TFB Kiosk wird dir präsentiert von', pK[0], pK[1]);
-      }
+      appPlaylist=playlist;
+      window.showSponsorForMode(typeof curMode==='undefined' ? 'book' : curMode);
     }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
   }
   window.loadSponsorsDisplay = loadSponsorsDisplay;
   function initSponsorArea(){
-    loadSponsorsDisplay();
+    Promise.all([
+      typeof loadSponsorsEnabled==='function' ? loadSponsorsEnabled() : null,
+      typeof loadKioskTabFlag==='function' ? loadKioskTabFlag() : null
+    ]).then(loadSponsorsDisplay);
     if(typeof loadActionLogoSlideshowSettings==='function') loadActionLogoSlideshowSettings();
     if(typeof loadPartnerFlag==='function') loadPartnerFlag();
-    if(typeof loadSponsorsEnabled==='function') loadSponsorsEnabled();
     if(typeof loadShareCardTheme==='function') loadShareCardTheme();
     if(typeof loadEarlybird==='function') loadEarlybird();
     if(typeof loadSplash==='function') loadSplash();
