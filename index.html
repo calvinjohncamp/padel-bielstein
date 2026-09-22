@@ -5354,6 +5354,15 @@ main {
                 <option value="cover">Foto · flächenfüllend</option>
               </select>
             </div>
+            <div>
+              <label class="eb-adm-lbl">Bildausrichtung</label>
+              <select id="kioskImagePosition" class="eb-adm-inp" onchange="previewKioskAdminImage()">
+                <option value="auto">Automatisch</option>
+                <option value="top">Oben</option>
+                <option value="center">Mittig</option>
+                <option value="bottom">Unten</option>
+              </select>
+            </div>
             <div id="kioskFreeTileNote" class="kiosk-form-note">Freie Kacheln brauchen keinen Preis. Sie sind für große Bilder, Hinweise, CI-Flächen oder Shop-Kampagnen gedacht und können als Hochformat oder doppelt breite Querformat-Kachel erscheinen.</div>
             <div id="kioskPriceFields" class="kiosk-price-fields">
               <div>
@@ -13675,7 +13684,11 @@ function previewKioskAdminImage() {
   if (!box) return;
   const src = currentKioskImageValue();
   const fit = document.getElementById('kioskImageFit')?.value === 'cover' ? 'cover' : 'contain';
-  box.innerHTML = src ? `<img src="${esc(src)}" alt="" style="object-fit:${fit}">` : '<span>kein Bild</span>';
+  const position = document.getElementById('kioskImagePosition')?.value;
+  const id = document.getElementById('kioskEditId')?.value;
+  const autoPosition = document.getElementById('kioskTileRole')?.value === 'free' || ['racket','balls'].includes(id) ? 'center' : 'bottom';
+  const imagePosition = ['top','center','bottom'].includes(position) ? position : autoPosition;
+  box.innerHTML = src ? `<img src="${esc(src)}" alt="" style="object-fit:${fit};object-position:center ${imagePosition}">` : '<span>kein Bild</span>';
 }
 
 function kioskImageSize(bytes) {
@@ -13749,16 +13762,9 @@ async function handleKioskImageFile() {
     const optimized = await optimizeKioskImage(file);
     document.getElementById('kioskImageData').value = optimized.dataUrl;
     document.getElementById('kioskImageUrl').value = '';
-    const ratio = optimized.width / optimized.height;
-    const isFreeTile = document.getElementById('kioskTileRole')?.value === 'free';
-    const suggestedLayout = ratio < 0.82 ? 'portrait' : ratio > 1.25 || isFreeTile ? 'landscape' : 'square';
-    const layoutInput = document.getElementById('kioskLayout');
-    if (layoutInput) layoutInput.value = suggestedLayout;
-    updateKioskEditorMode();
     previewKioskAdminImage();
     const storedBytes = Math.round((optimized.dataUrl.length - optimized.dataUrl.indexOf(',') - 1) * 0.75);
-    const formatLabel = suggestedLayout === 'portrait' ? 'Hochformat' : suggestedLayout === 'landscape' ? 'Querformat' : 'Quadrat';
-    if (meta) meta.textContent = `${optimized.width} × ${optimized.height} · ${kioskImageSize(storedBytes)} · ${formatLabel} automatisch erkannt${optimized.trimmed ? ' · transparente Ränder entfernt' : ''}`;
+    if (meta) meta.textContent = `${optimized.width} × ${optimized.height} · ${kioskImageSize(storedBytes)}${optimized.trimmed ? ' · transparente Ränder entfernt' : ''}`;
   } catch(e) {
     if (meta) meta.textContent = '';
     kioskAdminMsg('kioskAdminErr', e.message || 'Das Bild konnte nicht vorbereitet werden.', false);
@@ -13891,9 +13897,11 @@ function kioskTileMeta(p) {
     : null;
   const role = p?.tileRole || fromVariants?.tile_role || fromVariants?.tileRole;
   const position = p?.textPosition || fromVariants?.text_position || fromVariants?.textPosition;
+  const imagePosition = p?.imagePosition || fromVariants?.image_position || fromVariants?.imagePosition;
   return {
     tileRole: role === 'free' ? 'free' : 'product',
     textPosition: ['left','right','bottom'].includes(position) ? position : 'bottom',
+    imagePosition: ['top','center','bottom'].includes(imagePosition) ? imagePosition : 'auto',
   };
 }
 
@@ -13909,6 +13917,7 @@ function normalizeKioskProduct(p) {
     imageFit:p.imageFit === 'cover' ? 'cover' : 'contain',
     tileRole:meta.tileRole,
     textPosition:meta.textPosition,
+    imagePosition:meta.imagePosition,
     onTab: meta.tileRole === 'free' ? false : (typeof p.onTab === 'boolean' ? p.onTab : p.category !== 'equipment'),
     variants,
   };
@@ -13980,15 +13989,16 @@ function kioskProductToDb(product) {
     kind:String(variant.kind || 'buy'),
     minutes:Number(variant.minutes) || null,
   }));
-  if (meta.tileRole === 'free') {
+  if (meta.tileRole === 'free' || meta.imagePosition !== 'auto') {
     variants.unshift({
       id:'_meta',
-      label:'Freie Kachel',
+      label:meta.tileRole === 'free' ? 'Freie Kachel' : 'Bildausrichtung',
       price_cents:0,
       kind:'display',
       minutes:null,
-      tile_role:'free',
+      tile_role:meta.tileRole,
       text_position:meta.textPosition,
+      image_position:meta.imagePosition,
     });
   }
   return {
@@ -14118,8 +14128,9 @@ function kioskSectionMarkup(section, rows, admin = false) {
 }
 
 function kioskProductCard(p, admin = false) {
-  const img = p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name)}">` : '<div class="kiosk-img-placeholder" aria-hidden="true"></div>';
   const meta = kioskTileMeta(p);
+  const imagePosition = meta.imagePosition === 'auto' ? '' : ` style="object-position:center ${meta.imagePosition}"`;
+  const img = p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name)}"${imagePosition}>` : '<div class="kiosk-img-placeholder" aria-hidden="true"></div>';
   const isFree = meta.tileRole === 'free';
   const variants = isFree ? [] : kioskLegacyVariants(p);
   const hasRentals = variants.some(v => v.kind === 'rent' || v.minutes);
@@ -14438,6 +14449,7 @@ function resetKioskForm() {
   document.getElementById('kioskTileRole').value = 'product';
   document.getElementById('kioskTextPosition').value = 'bottom';
   document.getElementById('kioskImageFit').value = 'contain';
+  document.getElementById('kioskImagePosition').value = 'auto';
   document.getElementById('kioskSort').value = '';
   document.getElementById('kioskActive').checked = true;
   document.getElementById('kioskOnTab').checked = true;
@@ -14458,6 +14470,7 @@ function editKioskProduct(id) {
   document.getElementById('kioskTileRole').value = meta.tileRole;
   document.getElementById('kioskTextPosition').value = meta.textPosition;
   document.getElementById('kioskImageFit').value = p.imageFit || 'contain';
+  document.getElementById('kioskImagePosition').value = meta.imagePosition;
   const variants = kioskLegacyVariants(p);
   [0,1,2].forEach(i => {
     document.getElementById('kioskAction' + (i + 1) + 'Label').value = variants[i]?.label || '';
@@ -14507,6 +14520,7 @@ async function saveKioskProduct() {
     category,
     layout:document.getElementById('kioskLayout').value,
     imageFit:document.getElementById('kioskImageFit').value,
+    imagePosition:document.getElementById('kioskImagePosition').value,
     tileRole,
     textPosition:['left','right','bottom'].includes(textPosition) ? textPosition : 'bottom',
     variants,
