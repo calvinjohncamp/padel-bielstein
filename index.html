@@ -991,7 +991,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-section { margin-top:6px; }
 .kiosk-section + .kiosk-section { margin-top:30px; }
 .kiosk-section-head { display:flex; align-items:center; gap:14px; margin:0 0 10px; }
-.kiosk-section-head h3 { margin:0; flex:0 0 auto; color:#F6F1E7; font:900 .82rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.14em; text-transform:uppercase; }
+.kiosk-section-head h3 { margin:0; flex:0 0 auto; color:#F6F1E7; font:900 1.23rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.14em; text-transform:uppercase; }
 .kiosk-section-head:after { content:""; height:1px; flex:1; background:var(--border); }
 .kiosk-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
 .kiosk-card { background:#F6F1E7; color:#1C1A17; border:1.5px solid #E2DACB; border-radius:14px; overflow:hidden; display:grid; grid-template-columns:minmax(118px,42%) 1fr; min-height:184px; box-shadow:0 8px 22px rgba(0,0,0,.18); }
@@ -999,6 +999,22 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-card.is-square,.kiosk-card.is-portrait { grid-template-columns:1fr; min-height:0; }
 .kiosk-card.is-square { grid-template-rows:260px minmax(164px,auto); }
 .kiosk-card.is-portrait { grid-template-rows:260px minmax(164px,auto); }
+.kiosk-card.is-free { background:#1C1A17; color:#F6F1E7; border-color:#3D3630; box-shadow:0 12px 32px rgba(0,0,0,.26); }
+.kiosk-card.is-free.is-landscape { min-height:424px; }
+.kiosk-card.is-free.is-landscape.text-bottom { grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) auto; }
+.kiosk-card.is-free.is-landscape.text-left { grid-template-columns:minmax(180px,34%) minmax(0,1fr); }
+.kiosk-card.is-free.is-landscape.text-right { grid-template-columns:minmax(0,1fr) minmax(180px,34%); }
+.kiosk-card.is-free.is-landscape.text-right .kiosk-img { order:1; }
+.kiosk-card.is-free.is-portrait { grid-template-rows:300px minmax(124px,auto); }
+.kiosk-card.is-free .kiosk-img { background:#12100E; align-items:center; padding:0; }
+.kiosk-card.is-free .kiosk-img img { object-position:center; }
+.kiosk-card.is-free.fit-contain .kiosk-img { padding:12px; }
+.kiosk-card.is-free.fit-contain .kiosk-img img { object-fit:contain; }
+.kiosk-card.is-free .kiosk-body { justify-content:center; gap:0; padding:clamp(18px,2.4vw,28px); }
+.kiosk-card.is-free .kiosk-copy { margin:0; min-height:0; }
+.kiosk-card.is-free .kiosk-title { color:#F6F1E7; font-size:clamp(1.55rem,2.4vw,2.35rem); line-height:.98; }
+.kiosk-card.is-free .kiosk-desc { color:#CFC6B8; font-size:.92rem; line-height:1.5; max-width:32em; }
+.kiosk-card.is-free .kiosk-actions { display:none; }
 .kiosk-img { background:linear-gradient(135deg,#FFFFFF,#EFE7D8); min-height:158px; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; position:relative; }
 .kiosk-img img { width:100%; height:100%; object-fit:cover; object-position:center bottom; display:block; }
 .kiosk-card.is-square .kiosk-img { height:260px; min-height:0; box-sizing:border-box; }
@@ -1013,7 +1029,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-body { padding:15px; display:flex; flex-direction:column; gap:10px; }
 .kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:164px; box-sizing:border-box; }
 .kiosk-copy { width:100%; min-width:0; min-height:64px; margin:auto 0; box-sizing:border-box; }
-.kiosk-title { font:900 1.02rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.02em; text-transform:uppercase; line-height:1.05; }
+.kiosk-title { font:900 1.53rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.02em; text-transform:uppercase; line-height:1.05; }
 .kiosk-desc { color:#6E675E; font-size:.78rem; line-height:1.4; margin-top:8px; }
 .kiosk-actions { width:100%; display:flex; flex-wrap:wrap; gap:7px; margin-top:0; box-sizing:border-box; }
 .kiosk-action { flex:1 1 auto; min-width:92px; border:0; border-radius:9px; background:#1C1A17; color:#fff; padding:10px 11px; font:900 .72rem "Space Grotesk",sans-serif; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; }
@@ -1022,6 +1038,9 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-action small { display:block; font:700 .58rem Manrope,sans-serif; letter-spacing:0; text-transform:none; opacity:.8; }
 .kiosk-price { display:block; font:800 .68rem Manrope,sans-serif; letter-spacing:0; text-transform:none; opacity:.82; margin-top:2px; }
 .kiosk-admin-form { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.kiosk-price-fields { display:contents; }
+.kiosk-form-note { grid-column:1 / -1; display:none; padding:12px 14px; border:1.5px solid #DDD4C7; border-radius:9px; background:#F8F4EC; color:#625B52; font-size:.74rem; line-height:1.55; }
+.kiosk-form-note.show { display:block; }
 .kiosk-admin-image-row { grid-column:1 / -1; display:grid; grid-template-columns:180px 1fr; gap:14px; align-items:end; }
 .kiosk-admin-preview { height:112px; border:1.5px solid #E2DACB; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; color:#A59D92; font:800 10px "Space Grotesk",sans-serif; letter-spacing:.12em; text-transform:uppercase; }
 .kiosk-admin-preview img { width:100%; height:100%; object-fit:contain; object-position:center bottom; display:block; }
@@ -1046,6 +1065,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-createbar { display:grid; grid-template-columns:1fr minmax(220px,320px) auto; gap:10px; align-items:end; margin:16px 0 12px; padding:14px; border:1px solid #3A3631; border-radius:10px; background:#211E1B; }
 .kiosk-createbar-copy strong { display:block; color:#F6F1E7; font:900 .86rem "Space Grotesk",sans-serif; text-transform:uppercase; }
 .kiosk-createbar-copy span { display:block; margin-top:4px; color:#AFA79C; font-size:.72rem; }
+.kiosk-createbar-actions { display:flex; gap:8px; flex-wrap:wrap; }
 .kiosk-card.is-just-saved { animation:kioskSaved 1.7s ease; }
 @keyframes kioskSaved { 0%,35% { outline:4px solid #FF5A36; outline-offset:4px; } 100% { outline-color:transparent; outline-offset:8px; } }
 .kiosk-section-editor { display:grid; gap:8px; margin-top:16px; }
@@ -1087,7 +1107,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-undo-toast span { font-size:.76rem; font-weight:700; }
 .kiosk-undo-toast button { border:0; border-radius:7px; padding:8px 10px; background:#FF5A36; color:#fff; font:900 .66rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; white-space:nowrap; }
 @media (max-width:900px){ .kiosk-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-admin-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-section-editor-row { grid-template-columns:28px 1fr 150px; } }
-@media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:118px 1fr; grid-template-rows:minmax(168px,auto); min-height:168px; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:168px; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-design-savebar { align-items:stretch; flex-direction:column; } .kiosk-design-savebar .admin-save-btn { width:100%; min-width:0; } .kiosk-tab-actions { grid-template-columns:1fr; } }
+@media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:118px 1fr; grid-template-rows:minmax(168px,auto); min-height:168px; } .kiosk-card.is-free,.kiosk-card.is-free.is-landscape,.kiosk-card.is-free.is-portrait,.kiosk-card.is-free.text-left,.kiosk-card.is-free.text-right,.kiosk-card.is-free.text-bottom { grid-template-columns:1fr; grid-template-rows:220px auto; min-height:0; } .kiosk-card.is-free.text-right .kiosk-img { order:0; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } .kiosk-card.is-free .kiosk-img { min-height:220px; padding:0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:168px; } .kiosk-card.is-free .kiosk-body { min-height:0; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-design-savebar { align-items:stretch; flex-direction:column; } .kiosk-design-savebar .admin-save-btn { width:100%; min-width:0; } .kiosk-tab-actions { grid-template-columns:1fr; } }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
 .door-log-icon { font-size: 1rem; }
@@ -5252,7 +5272,10 @@ main {
             <label class="eb-adm-lbl" style="color:#C9C1B6;">Direkt einordnen in</label>
             <select id="kioskNewCategory" class="eb-adm-inp"></select>
           </div>
-          <button class="admin-save-btn" onclick="startNewKioskProduct()">＋ Produkt hinzufügen</button>
+          <div class="kiosk-createbar-actions">
+            <button class="admin-save-btn" onclick="startNewKioskProduct()">＋ Produkt hinzufügen</button>
+            <button class="admin-save-btn gold" onclick="startNewKioskFreeTile()">＋ Freie Kachel</button>
+          </div>
         </div>
         <div class="kiosk-preview-label"><span>Live-Vorschau</span><span>Produkte und Bereiche mit dem Griff verschieben</span></div>
         <div id="kioskAdminPreview" class="kiosk-admin-stage"></div>
@@ -5261,9 +5284,9 @@ main {
         <div class="admin-section-title" id="kioskProductEditorTitle">Neues Produkt anlegen</div>
         <div class="admin-card">
           <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
-            Produkte erscheinen als Bildkacheln im Hoch-, Quadrat- oder Querformat. Bis zu drei Verkaufsoptionen
-            lassen sich frei benennen und bepreisen – vom Glas Kölsch bis zum T-Shirt oder Leihschläger.
-            Produkt und Bild werden beim Speichern zentral veröffentlicht und sind anschließend für alle sichtbar.
+            Produkte und freie Bild/Text-Kacheln erscheinen im Hochformat oder als doppelt breite Bühne.
+            Für Produkte lassen sich bis zu drei Verkaufsoptionen frei benennen und bepreisen; freie Kacheln
+            dienen für große Bilder, CI-Flächen, Hinweise oder Kampagnen ohne Checkout.
           </div>
           <input type="hidden" id="kioskEditId">
           <input type="hidden" id="kioskImageData">
@@ -5279,10 +5302,25 @@ main {
             </div>
             <div>
               <label class="eb-adm-lbl">Kachelformat</label>
-              <select id="kioskLayout" class="eb-adm-inp">
+              <select id="kioskLayout" class="eb-adm-inp" onchange="updateKioskEditorMode()">
                 <option value="portrait">Hochformat · Flaschen &amp; Dosen</option>
                 <option value="square">Quadrat · kompakte Produkte</option>
-                <option value="landscape">Querformat · breite Motive</option>
+                <option value="landscape">Doppelte Breite · Querformat</option>
+              </select>
+            </div>
+            <div>
+              <label class="eb-adm-lbl">Kacheltyp</label>
+              <select id="kioskTileRole" class="eb-adm-inp" onchange="updateKioskEditorMode()">
+                <option value="product">Produkt mit Preis</option>
+                <option value="free">Freie Bild/Text-Kachel</option>
+              </select>
+            </div>
+            <div>
+              <label class="eb-adm-lbl">Textposition</label>
+              <select id="kioskTextPosition" class="eb-adm-inp" onchange="previewKioskAdminImage()">
+                <option value="bottom">Unter dem Bild</option>
+                <option value="left">Links neben dem Bild</option>
+                <option value="right">Rechts neben dem Bild</option>
               </select>
             </div>
             <div>
@@ -5292,29 +5330,32 @@ main {
                 <option value="cover">Foto · flächenfüllend</option>
               </select>
             </div>
-            <div>
-              <label class="eb-adm-lbl">Beschriftung Option 1</label>
-              <input id="kioskAction1Label" class="eb-adm-inp" type="text" placeholder="z. B. Kaufen oder Glas">
-            </div>
-            <div>
-              <label class="eb-adm-lbl">Preis Option 1 (€)</label>
-              <input id="kioskBuyPrice" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="3.50">
-            </div>
-            <div>
-              <label class="eb-adm-lbl">Beschriftung Option 2</label>
-              <input id="kioskAction2Label" class="eb-adm-inp" type="text" placeholder="z. B. Kranz (10 Gläser)">
-            </div>
-            <div>
-              <label class="eb-adm-lbl">Preis Option 2 (€)</label>
-              <input id="kioskPackPrice" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="20.00">
-            </div>
-            <div>
-              <label class="eb-adm-lbl">Beschriftung Option 3</label>
-              <input id="kioskAction3Label" class="eb-adm-inp" type="text" placeholder="z. B. 120 Min.">
-            </div>
-            <div>
-              <label class="eb-adm-lbl">Preis Option 3 (€)</label>
-              <input id="kioskRent60" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="4.00">
+            <div id="kioskFreeTileNote" class="kiosk-form-note">Freie Kacheln brauchen keinen Preis. Sie sind für große Bilder, Hinweise, CI-Flächen oder Shop-Kampagnen gedacht und können als Hochformat oder doppelt breite Querformat-Kachel erscheinen.</div>
+            <div id="kioskPriceFields" class="kiosk-price-fields">
+              <div>
+                <label class="eb-adm-lbl">Beschriftung Option 1</label>
+                <input id="kioskAction1Label" class="eb-adm-inp" type="text" placeholder="z. B. Kaufen oder Glas">
+              </div>
+              <div>
+                <label class="eb-adm-lbl">Preis Option 1 (€)</label>
+                <input id="kioskBuyPrice" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="3.50">
+              </div>
+              <div>
+                <label class="eb-adm-lbl">Beschriftung Option 2</label>
+                <input id="kioskAction2Label" class="eb-adm-inp" type="text" placeholder="z. B. Kranz (10 Gläser)">
+              </div>
+              <div>
+                <label class="eb-adm-lbl">Preis Option 2 (€)</label>
+                <input id="kioskPackPrice" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="20.00">
+              </div>
+              <div>
+                <label class="eb-adm-lbl">Beschriftung Option 3</label>
+                <input id="kioskAction3Label" class="eb-adm-inp" type="text" placeholder="z. B. 120 Min.">
+              </div>
+              <div>
+                <label class="eb-adm-lbl">Preis Option 3 (€)</label>
+                <input id="kioskRent60" class="eb-adm-inp" type="number" min="0" step="0.10" placeholder="4.00">
+              </div>
             </div>
             <input id="kioskRent120" type="hidden">
             <input id="kioskSort" type="hidden">
@@ -5335,7 +5376,7 @@ main {
                 <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font:700 12px Manrope,sans-serif;color:#5C564C;">
                   <input id="kioskActive" type="checkbox" checked> im Kiosk anzeigen
                 </label>
-                <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font:700 12px Manrope,sans-serif;color:#5C564C;">
+                <label id="kioskOnTabWrap" style="display:flex;align-items:center;gap:8px;margin-top:10px;font:700 12px Manrope,sans-serif;color:#5C564C;">
                   <input id="kioskOnTab" type="checkbox" checked> auf den Bierdeckel buchen
                 </label>
               </div>
@@ -13685,9 +13726,11 @@ async function handleKioskImageFile() {
     document.getElementById('kioskImageData').value = optimized.dataUrl;
     document.getElementById('kioskImageUrl').value = '';
     const ratio = optimized.width / optimized.height;
-    const suggestedLayout = ratio < 0.82 ? 'portrait' : ratio > 1.25 ? 'landscape' : 'square';
+    const isFreeTile = document.getElementById('kioskTileRole')?.value === 'free';
+    const suggestedLayout = ratio < 0.82 ? 'portrait' : ratio > 1.25 || isFreeTile ? 'landscape' : 'square';
     const layoutInput = document.getElementById('kioskLayout');
     if (layoutInput) layoutInput.value = suggestedLayout;
+    updateKioskEditorMode();
     previewKioskAdminImage();
     const storedBytes = Math.round((optimized.dataUrl.length - optimized.dataUrl.indexOf(',') - 1) * 0.75);
     const formatLabel = suggestedLayout === 'portrait' ? 'Hochformat' : suggestedLayout === 'landscape' ? 'Querformat' : 'Quadrat';
@@ -13799,7 +13842,7 @@ function saveKioskDesign(design) {
 
 function kioskLegacyVariants(p) {
   if (Array.isArray(p.variants) && p.variants.length) {
-    return p.variants.filter(v => Number(v.price) > 0 && String(v.label || '').trim()).slice(0, 3)
+    return p.variants.filter(v => String(v.id || '') !== '_meta' && Number(v.price) > 0 && String(v.label || '').trim()).slice(0, 3)
       .map((v, i) => ({ id:String(v.id || ('option-' + (i + 1))), label:String(v.label), price:Number(v.price), kind:String(v.kind || 'buy'), minutes:Number(v.minutes) || null }));
   }
   const result = [];
@@ -13810,8 +13853,21 @@ function kioskLegacyVariants(p) {
   return result.slice(0, 3);
 }
 
+function kioskTileMeta(p) {
+  const fromVariants = Array.isArray(p?.variants)
+    ? p.variants.find(v => String(v?.id || '') === '_meta' || String(v?.kind || '') === 'display')
+    : null;
+  const role = p?.tileRole || fromVariants?.tile_role || fromVariants?.tileRole;
+  const position = p?.textPosition || fromVariants?.text_position || fromVariants?.textPosition;
+  return {
+    tileRole: role === 'free' ? 'free' : 'product',
+    textPosition: ['left','right','bottom'].includes(position) ? position : 'bottom',
+  };
+}
+
 function normalizeKioskProduct(p) {
   const variants = kioskLegacyVariants(p);
+  const meta = kioskTileMeta(p);
   const layout = ['portrait','square','landscape'].includes(p.layout)
     ? p.layout
     : (!p.layout && p.category === 'equipment' ? 'landscape' : 'portrait');
@@ -13819,7 +13875,9 @@ function normalizeKioskProduct(p) {
     ...p,
     layout,
     imageFit:p.imageFit === 'cover' ? 'cover' : 'contain',
-    onTab: typeof p.onTab === 'boolean' ? p.onTab : p.category !== 'equipment',
+    tileRole:meta.tileRole,
+    textPosition:meta.textPosition,
+    onTab: meta.tileRole === 'free' ? false : (typeof p.onTab === 'boolean' ? p.onTab : p.category !== 'equipment'),
     variants,
   };
 }
@@ -13877,10 +13935,30 @@ function kioskProductFromDb(row) {
     sort:Number(row.sort_order) || 0,
     active:row.active !== false,
     onTab:row.on_tab !== false,
+    ...kioskTileMeta({ variants:Array.isArray(row?.variants) ? row.variants : [] }),
   });
 }
 
 function kioskProductToDb(product) {
+  const meta = kioskTileMeta(product);
+  const variants = kioskLegacyVariants(product).map(variant => ({
+    id:String(variant.id),
+    label:String(variant.label),
+    price_cents:Math.round(Number(variant.price) * 100),
+    kind:String(variant.kind || 'buy'),
+    minutes:Number(variant.minutes) || null,
+  }));
+  if (meta.tileRole === 'free') {
+    variants.unshift({
+      id:'_meta',
+      label:'Freie Kachel',
+      price_cents:0,
+      kind:'display',
+      minutes:null,
+      tile_role:'free',
+      text_position:meta.textPosition,
+    });
+  }
   return {
     id:String(product.id),
     category_id:String(product.category),
@@ -13890,16 +13968,10 @@ function kioskProductToDb(product) {
     image_fit:product.imageFit === 'cover' ? 'cover' : 'contain',
     image_url:product.image || null,
     image_path:product.imagePath || null,
-    variants:kioskLegacyVariants(product).map(variant => ({
-      id:String(variant.id),
-      label:String(variant.label),
-      price_cents:Math.round(Number(variant.price) * 100),
-      kind:String(variant.kind || 'buy'),
-      minutes:Number(variant.minutes) || null,
-    })),
+    variants,
     sort_order:Number(product.sort) || 0,
     active:product.active !== false,
-    on_tab:product.onTab !== false,
+    on_tab:meta.tileRole === 'free' ? false : product.onTab !== false,
   };
 }
 
@@ -14012,7 +14084,9 @@ function kioskSectionMarkup(section, rows, admin = false) {
 
 function kioskProductCard(p, admin = false) {
   const img = p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name)}">` : '<div class="kiosk-img-placeholder" aria-hidden="true"></div>';
-  const actions = kioskLegacyVariants(p).map((v, i) => {
+  const meta = kioskTileMeta(p);
+  const isFree = meta.tileRole === 'free';
+  const actions = isFree ? '' : kioskLegacyVariants(p).map((v, i) => {
     const click = admin
       ? `event.stopPropagation()`
       : `checkoutKiosk('${jsSingleQuoted(p.id)}','${jsSingleQuoted(v.id)}')`;
@@ -14023,14 +14097,15 @@ function kioskProductCard(p, admin = false) {
     : '';
   const layout = ['portrait','square','landscape'].includes(p.layout) ? p.layout : 'portrait';
   const imageFit = p.imageFit === 'cover' ? 'cover' : 'contain';
-  return `<article class="kiosk-card is-${layout} fit-${imageFit}" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
+  const freeClass = isFree ? ` is-free text-${meta.textPosition}` : '';
+  return `<article class="kiosk-card is-${layout} fit-${imageFit}${freeClass}" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
     <div class="kiosk-img">${img}</div>
     <div class="kiosk-body">
       <div class="kiosk-copy">
         <div class="kiosk-title">${esc(p.name)}</div>
         <div class="kiosk-desc">${esc(p.desc || '')}</div>
       </div>
-      <div class="kiosk-actions">${actions}</div>
+      ${actions ? `<div class="kiosk-actions">${actions}</div>` : ''}
     </div>
   </article>`;
 }
@@ -14119,6 +14194,40 @@ function startNewKioskProduct() {
   if (title) title.textContent = 'Neues Produkt anlegen';
   document.getElementById('kioskProductEditor')?.scrollIntoView({ behavior:'smooth', block:'start' });
   setTimeout(() => document.getElementById('kioskName')?.focus(), 350);
+}
+
+function startNewKioskFreeTile() {
+  startNewKioskProduct();
+  const role = document.getElementById('kioskTileRole');
+  const layout = document.getElementById('kioskLayout');
+  const fit = document.getElementById('kioskImageFit');
+  const textPosition = document.getElementById('kioskTextPosition');
+  const title = document.getElementById('kioskProductEditorTitle');
+  if (role) role.value = 'free';
+  if (layout) layout.value = 'landscape';
+  if (fit) fit.value = 'cover';
+  if (textPosition) textPosition.value = 'bottom';
+  if (title) title.textContent = 'Freie Bild/Text-Kachel anlegen';
+  updateKioskEditorMode();
+}
+
+function updateKioskEditorMode() {
+  const role = document.getElementById('kioskTileRole')?.value === 'free' ? 'free' : 'product';
+  const layout = document.getElementById('kioskLayout');
+  const textPosition = document.getElementById('kioskTextPosition');
+  const priceFields = document.getElementById('kioskPriceFields');
+  const freeNote = document.getElementById('kioskFreeTileNote');
+  const onTabWrap = document.getElementById('kioskOnTabWrap');
+  if (role === 'free' && layout?.value === 'square') layout.value = 'landscape';
+  if (textPosition) textPosition.disabled = role !== 'free';
+  if (priceFields) priceFields.style.display = role === 'free' ? 'none' : 'contents';
+  if (freeNote) freeNote.classList.toggle('show', role === 'free');
+  if (onTabWrap) onTabWrap.style.display = role === 'free' ? 'none' : 'flex';
+  if (role === 'free') {
+    const onTab = document.getElementById('kioskOnTab');
+    if (onTab) onTab.checked = false;
+  }
+  previewKioskAdminImage();
 }
 
 function kioskDesignFromAdminFields() {
@@ -14278,22 +14387,28 @@ function resetKioskForm() {
   });
   renderKioskCategoryOptions(loadKioskDesign().sections[0]?.id);
   document.getElementById('kioskLayout').value = 'portrait';
+  document.getElementById('kioskTileRole').value = 'product';
+  document.getElementById('kioskTextPosition').value = 'bottom';
   document.getElementById('kioskImageFit').value = 'contain';
   document.getElementById('kioskSort').value = '';
   document.getElementById('kioskActive').checked = true;
   document.getElementById('kioskOnTab').checked = true;
   const file = document.getElementById('kioskImageFile'); if (file) file.value = '';
-  const meta = document.getElementById('kioskImageMeta'); if (meta) meta.textContent = '';
+  const imageMeta = document.getElementById('kioskImageMeta'); if (imageMeta) imageMeta.textContent = '';
   const title = document.getElementById('kioskProductEditorTitle'); if (title) title.textContent = 'Neues Produkt anlegen';
+  updateKioskEditorMode();
   previewKioskAdminImage();
 }
 
 function editKioskProduct(id) {
   const p = loadKioskProducts().find(row => row.id === id); if (!p) return;
+  const meta = kioskTileMeta(p);
   renderKioskCategoryOptions(p.category);
   document.getElementById('kioskEditId').value = p.id;
   document.getElementById('kioskName').value = p.name || '';
   document.getElementById('kioskLayout').value = p.layout || 'portrait';
+  document.getElementById('kioskTileRole').value = meta.tileRole;
+  document.getElementById('kioskTextPosition').value = meta.textPosition;
   document.getElementById('kioskImageFit').value = p.imageFit || 'contain';
   const variants = kioskLegacyVariants(p);
   [0,1,2].forEach(i => {
@@ -14306,8 +14421,9 @@ function editKioskProduct(id) {
   document.getElementById('kioskImageData').value = /^data:/i.test(p.image || '') ? p.image : '';
   document.getElementById('kioskActive').checked = p.active !== false;
   document.getElementById('kioskOnTab').checked = p.onTab !== false;
-  const meta = document.getElementById('kioskImageMeta'); if (meta) meta.textContent = '';
+  const imageMeta = document.getElementById('kioskImageMeta'); if (imageMeta) imageMeta.textContent = '';
   const title = document.getElementById('kioskProductEditorTitle'); if (title) title.textContent = 'Produkt bearbeiten';
+  updateKioskEditorMode();
   previewKioskAdminImage();
   document.getElementById('kioskName').scrollIntoView({ behavior:'smooth', block:'center' });
 }
@@ -14320,7 +14436,9 @@ async function saveKioskProduct() {
   const previous = rows.find(p => p.id === id) || null;
   const priceIds = ['kioskBuyPrice','kioskPackPrice','kioskRent60'];
   const previousVariants = previous ? kioskLegacyVariants(previous) : [];
-  const variants = [0,1,2].map(i => {
+  const tileRole = document.getElementById('kioskTileRole')?.value === 'free' ? 'free' : 'product';
+  const textPosition = document.getElementById('kioskTextPosition')?.value || 'bottom';
+  const variants = tileRole === 'free' ? [] : [0,1,2].map(i => {
     const label = document.getElementById('kioskAction' + (i + 1) + 'Label').value.trim();
     const minuteMatch = label.match(/(?:^|\D)(60|120)(?:\D|$)/);
     const minutes = minuteMatch ? Number(minuteMatch[1]) : (previousVariants[i]?.minutes || null);
@@ -14332,7 +14450,7 @@ async function saveKioskProduct() {
       minutes,
     };
   }).filter(v => v.label && v.price > 0);
-  if (!variants.length) { kioskAdminMsg('kioskAdminErr', 'Bitte mindestens eine Verkaufsoption mit Preis anlegen.', false); return; }
+  if (tileRole !== 'free' && !variants.length) { kioskAdminMsg('kioskAdminErr', 'Bitte mindestens eine Verkaufsoption mit Preis anlegen.', false); return; }
   const chosenImage = currentKioskImageValue();
   const category = document.getElementById('kioskCategory').value;
   const automaticSort = Math.max(0, ...rows.filter(p => p.category === category && p.id !== id).map(p => Number(p.sort) || 0)) + 10;
@@ -14341,6 +14459,8 @@ async function saveKioskProduct() {
     category,
     layout:document.getElementById('kioskLayout').value,
     imageFit:document.getElementById('kioskImageFit').value,
+    tileRole,
+    textPosition:['left','right','bottom'].includes(textPosition) ? textPosition : 'bottom',
     variants,
     buyPrice:variants[0]?.price || null,
     packPrice:variants[1]?.price || null,
@@ -14351,7 +14471,7 @@ async function saveKioskProduct() {
     image:chosenImage,
     imagePath:previous?.imagePath || '',
     active:document.getElementById('kioskActive').checked,
-    onTab:document.getElementById('kioskOnTab').checked,
+    onTab:tileRole === 'free' ? false : document.getElementById('kioskOnTab').checked,
   };
   let uploadedPath = '';
   try {
