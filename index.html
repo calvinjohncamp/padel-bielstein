@@ -978,6 +978,8 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 
 /* ── KIOSK ── */
 #modeKiosk { background:#171513; color:#F6F1E7; border:1px solid #34302C; border-radius:14px; padding:16px; }
+#pbSponsorKiosk { margin:24px 0 8px; }
+#pbSponsorKiosk .pbsp-kicker { color:#B8B0A5; }
 .kiosk-shell { display:flex; flex-direction:column; gap:8px; }
 .kiosk-hero { background:#1C1A17; color:#F6F1E7; border-radius:18px; padding:clamp(18px,3vw,30px); padding-left:18px; display:grid; grid-template-columns:1fr auto; gap:18px; align-items:end; overflow:hidden; position:relative; }
 .kiosk-kicker { font:900 .72rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.16em; text-transform:uppercase; color:#FF5A36; margin-bottom:8px; }
@@ -5138,6 +5140,7 @@ main {
       <div id="kioskGrid"></div>
       <div class="modal-err" id="kioskErr"></div>
     </section>
+    <div id="pbSponsorKiosk" class="pbsp-slot" aria-label="Partner des TFB-Kiosks"></div>
     <div class="kiosk-tab-modal" id="kioskTabModal" onclick="if(event.target===this) closeKioskTab()">
       <div class="kiosk-tab-panel">
         <button class="kiosk-tab-close" type="button" onclick="closeKioskTab()" aria-label="Schließen">×</button>
@@ -19496,7 +19499,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   };
   window.applySponsorVisibility = function(on){
     window.__sponsorsEnabled = (on !== false);
-    ['pbSplashSponsor','pbSponsorBook','pbSponsorAbo','pbSponsorPlay','pbSponsorGuthaben'].forEach(function(id){
+    ['pbSplashSponsor','pbSponsorBook','pbSponsorAbo','pbSponsorPlay','pbSponsorGuthaben','pbSponsorKiosk'].forEach(function(id){
       var el=document.getElementById(id);
       if(el) el.style.display = window.__sponsorsEnabled ? '' : 'none';
     });
@@ -20798,12 +20801,13 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
       if(N){
         var q=Math.floor(N/4)||1, base=idx*2;
-        var pB=pair(base), pP=pair(base+q), pG=pair(base+2*q), pA=pair(base+3*q), pM=pair(base+4*q);
+        var pB=pair(base), pP=pair(base+q), pG=pair(base+2*q), pA=pair(base+3*q), pM=pair(base+4*q), pK=pair(base+5*q);
         fillDuo('pbSponsorBook',     'Das Wetter wird dir präsentiert von',    pB[0], pB[1]);
         fillDuo('pbSponsorPlay',     'Dein Spieltag wird dir präsentiert von', pP[0], pP[1]);
         fillDuo('pbSponsorGuthaben', 'Dein Guthaben wird dir präsentiert von', pG[0], pG[1]);
         fillDuo('pbSponsorAbo',      'Dein Abo wird dir präsentiert von',      pA[0], pA[1]);
         fillMeetDuo('Dein Matchplan wird dir präsentiert von', pM[0], pM[1]);
+        fillDuo('pbSponsorKiosk',    'Der TFB Kiosk wird dir präsentiert von', pK[0], pK[1]);
       }
     }catch(e){ /* Sponsoren sind Beiwerk – Fehler nie an die App weiterreichen */ }
   }
