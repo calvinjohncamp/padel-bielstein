@@ -979,18 +979,23 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 /* ── KIOSK ── */
 #modeKiosk { background:#171513; color:#F6F1E7; border:1px solid #34302C; border-radius:14px; padding:16px; }
 .kiosk-shell { display:flex; flex-direction:column; gap:8px; }
-.kiosk-hero { background:#1C1A17; color:#F6F1E7; border-radius:18px; padding:clamp(18px,3vw,30px); display:grid; grid-template-columns:1fr auto; gap:18px; align-items:end; overflow:hidden; position:relative; }
-.kiosk-hero:before { content:""; position:absolute; inset:auto -8% -46% 48%; height:210px; background:radial-gradient(circle, rgba(255,90,54,.20), rgba(255,90,54,0) 62%); pointer-events:none; }
+.kiosk-hero { background:#1C1A17; color:#F6F1E7; border-radius:18px; padding:clamp(18px,3vw,30px); padding-left:18px; display:grid; grid-template-columns:1fr auto; gap:18px; align-items:end; overflow:hidden; position:relative; }
 .kiosk-kicker { font:900 .72rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.16em; text-transform:uppercase; color:#FF5A36; margin-bottom:8px; }
 .kiosk-hero h2 { margin:0; font:900 clamp(1.65rem,4vw,3.2rem)/.96 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:0; text-transform:uppercase; }
 .kiosk-hero p { max-width:680px; margin:12px 0 0; color:#BDB5A9; font-size:.92rem; line-height:1.55; }
+.kiosk-kicker.size-normal { font-size:1rem; }
+.kiosk-kicker.size-large { font-size:1.35rem; }
+.kiosk-hero h2.size-small { font-size:clamp(1.2rem,2.4vw,1.8rem); }
+.kiosk-hero h2.size-normal { font-size:clamp(1.45rem,3vw,2.45rem); }
+.kiosk-hero p.size-normal { font-size:1.12rem; }
+.kiosk-hero p.size-large { font-size:1.35rem; }
 .kiosk-basket { position:relative; min-width:142px; border:1px solid rgba(255,255,255,.16); border-radius:14px; padding:13px 15px; background:rgba(255,255,255,.06); color:inherit; text-align:left; cursor:pointer; font:inherit; }
 .kiosk-basket span { display:block; font:800 .64rem "Space Grotesk",sans-serif; letter-spacing:.14em; text-transform:uppercase; color:#BDB5A9; margin-bottom:4px; }
 .kiosk-basket strong { font:900 1.35rem "Space Grotesk",sans-serif; color:#FF5A36; }
 .kiosk-basket small { display:block; margin-top:4px; color:#BDB5A9; font-size:.66rem; }
 .kiosk-section { margin-top:6px; }
 .kiosk-section + .kiosk-section { margin-top:30px; }
-.kiosk-section-head { display:flex; align-items:center; gap:14px; margin:0 0 10px; }
+.kiosk-section-head { display:flex; align-items:center; gap:14px; margin:0 0 10px; padding-left:16px; }
 .kiosk-section-head h3 { margin:0; flex:0 0 auto; color:#F6F1E7; font:900 1.23rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.14em; text-transform:uppercase; }
 .kiosk-section-head:after { content:""; height:1px; flex:1; background:var(--border); }
 .kiosk-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
@@ -999,6 +1004,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-card.is-square,.kiosk-card.is-portrait { grid-template-columns:1fr; min-height:0; }
 .kiosk-card.is-square { grid-template-rows:260px minmax(164px,auto); }
 .kiosk-card.is-portrait { grid-template-rows:260px minmax(164px,auto); }
+.kiosk-card.is-featured-equipment.is-portrait { grid-template-rows:338px minmax(164px,auto); }
 .kiosk-card.is-free { background:#1C1A17; color:#F6F1E7; border-color:#3D3630; box-shadow:0 12px 32px rgba(0,0,0,.26); }
 .kiosk-card.is-free.is-landscape { min-height:424px; }
 .kiosk-card.is-free.is-landscape.text-bottom { grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) auto; }
@@ -1011,6 +1017,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-card.is-free.fit-contain .kiosk-img { padding:12px; }
 .kiosk-card.is-free.fit-contain .kiosk-img img { object-fit:contain; }
 .kiosk-card.is-free .kiosk-body { justify-content:center; gap:0; padding:clamp(18px,2.4vw,28px); }
+.kiosk-card.is-free.text-bottom .kiosk-body { justify-content:flex-end; padding-bottom:15px; }
 .kiosk-card.is-free .kiosk-copy { margin:0; min-height:0; }
 .kiosk-card.is-free .kiosk-title { color:#F6F1E7; font-size:clamp(1.55rem,2.4vw,2.35rem); line-height:.98; }
 .kiosk-card.is-free .kiosk-desc { color:#CFC6B8; font-size:.92rem; line-height:1.5; max-width:32em; }
@@ -1019,6 +1026,8 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-img img { width:100%; height:100%; object-fit:cover; object-position:center bottom; display:block; }
 .kiosk-card.is-square .kiosk-img { height:260px; min-height:0; box-sizing:border-box; }
 .kiosk-card.is-portrait .kiosk-img { height:260px; min-height:0; box-sizing:border-box; }
+.kiosk-card.is-featured-equipment.is-portrait .kiosk-img { height:338px; }
+.kiosk-card.is-featured-equipment.is-portrait.fit-contain .kiosk-img img { object-position:center center; }
 .kiosk-card.fit-contain .kiosk-img { align-items:flex-end; padding:16px 18px 0; }
 .kiosk-card.fit-contain .kiosk-img img { object-fit:contain; object-position:center bottom; }
 .kiosk-card.fit-cover .kiosk-img { padding:0; }
@@ -1029,9 +1038,19 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-body { padding:15px; display:flex; flex-direction:column; gap:10px; }
 .kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:164px; box-sizing:border-box; }
 .kiosk-copy { width:100%; min-width:0; min-height:64px; margin:auto 0; box-sizing:border-box; }
+.kiosk-card.is-featured-equipment.is-portrait .kiosk-copy { margin-top:auto; margin-bottom:0; }
+@media (min-width:901px){
+  .kiosk-card.is-featured-equipment.is-portrait.fit-contain .kiosk-img { overflow:visible; z-index:1; background:linear-gradient(to bottom,#FFFFFF,#F6F1E7); }
+  .kiosk-card.is-featured-equipment.is-portrait.fit-contain .kiosk-img::before { content:""; position:absolute; left:18%; right:18%; bottom:-40px; height:78px; background:radial-gradient(ellipse at 50% 100%,rgba(28,26,23,.16),rgba(28,26,23,.07) 38%,transparent 76%); pointer-events:none; }
+  .kiosk-card.is-featured-equipment.is-portrait.fit-contain .kiosk-img img { position:relative; z-index:1; transform:translateY(40px); }
+  .kiosk-card.is-featured-equipment.is-portrait .kiosk-copy { margin-bottom:7px; }
+}
 .kiosk-title { font:900 1.53rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.02em; text-transform:uppercase; line-height:1.05; }
 .kiosk-desc { color:#6E675E; font-size:.78rem; line-height:1.4; margin-top:8px; }
 .kiosk-actions { width:100%; display:flex; flex-wrap:wrap; gap:7px; margin-top:0; box-sizing:border-box; }
+.kiosk-actions.has-rentals { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.kiosk-actions.has-rentals .kiosk-action.is-buy { grid-column:1 / -1; }
+.kiosk-actions.has-rentals .kiosk-action { min-width:0; }
 .kiosk-action { flex:1 1 auto; min-width:92px; border:0; border-radius:9px; background:#1C1A17; color:#fff; padding:10px 11px; font:900 .72rem "Space Grotesk",sans-serif; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; }
 .kiosk-action.secondary { background:#FF5A36; color:#fff; }
 .kiosk-action:hover { filter:brightness(1.06); transform:translateY(-1px); }
@@ -1108,6 +1127,8 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-undo-toast button { border:0; border-radius:7px; padding:8px 10px; background:#FF5A36; color:#fff; font:900 .66rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; white-space:nowrap; }
 @media (max-width:900px){ .kiosk-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-admin-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-section-editor-row { grid-template-columns:28px 1fr 150px; } }
 @media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:118px 1fr; grid-template-rows:minmax(168px,auto); min-height:168px; } .kiosk-card.is-free,.kiosk-card.is-free.is-landscape,.kiosk-card.is-free.is-portrait,.kiosk-card.is-free.text-left,.kiosk-card.is-free.text-right,.kiosk-card.is-free.text-bottom { grid-template-columns:1fr; grid-template-rows:220px auto; min-height:0; } .kiosk-card.is-free.text-right .kiosk-img { order:0; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } .kiosk-card.is-free .kiosk-img { min-height:220px; padding:0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:168px; } .kiosk-card.is-free .kiosk-body { min-height:0; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-design-savebar { align-items:stretch; flex-direction:column; } .kiosk-design-savebar .admin-save-btn { width:100%; min-width:0; } .kiosk-tab-actions { grid-template-columns:1fr; } }
+@media (max-width:620px){ .kiosk-card.is-featured-equipment.is-portrait { grid-template-rows:minmax(168px,auto); } .kiosk-card.is-featured-equipment.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } }
+@media (max-width:620px){ .kiosk-section-head { padding-left:0; } }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
 .door-log-icon { font-size: 1rem; }
@@ -5241,20 +5262,23 @@ main {
         <div class="admin-card kiosk-designer-controls">
           <div class="kiosk-admin-form">
             <div>
-              <label class="eb-adm-lbl">Kleine Überschrift</label>
+              <label class="eb-adm-lbl">Obere Zeile</label>
               <input id="kioskSettingKicker" class="eb-adm-inp" type="text" oninput="previewKioskSettings()">
+              <select id="kioskSettingKickerSize" class="eb-adm-inp" aria-label="Größe der oberen Zeile" onchange="previewKioskSettings()" style="margin-top:8px;"><option value="small">Klein</option><option value="normal">Normal</option><option value="large">Groß</option></select>
             </div>
             <div>
-              <label class="eb-adm-lbl">Headline</label>
+              <label class="eb-adm-lbl">Hauptüberschrift</label>
               <input id="kioskSettingTitle" class="eb-adm-inp" type="text" oninput="previewKioskSettings()">
+              <select id="kioskSettingTitleSize" class="eb-adm-inp" aria-label="Größe der Hauptüberschrift" onchange="previewKioskSettings()" style="margin-top:8px;"><option value="small">Klein</option><option value="normal">Normal</option><option value="large">Groß</option></select>
             </div>
             <div>
               <label class="eb-adm-lbl">Akzentfarbe</label>
               <div class="kiosk-color-control"><input id="kioskSettingAccentPicker" type="color" oninput="syncKioskColor('accent','picker')"><input id="kioskSettingAccent" class="eb-adm-inp" type="text" maxlength="7" oninput="syncKioskColor('accent','hex')"></div>
             </div>
             <div style="grid-column:1 / -1;">
-              <label class="eb-adm-lbl">Einleitung</label>
+              <label class="eb-adm-lbl">Untere Zeile</label>
               <input id="kioskSettingText" class="eb-adm-inp" type="text" maxlength="180" oninput="previewKioskSettings()">
+              <select id="kioskSettingTextSize" class="eb-adm-inp" aria-label="Größe der unteren Zeile" onchange="previewKioskSettings()" style="margin-top:8px;"><option value="small">Klein</option><option value="normal">Normal</option><option value="large">Groß</option></select>
             </div>
           </div>
           <div class="kiosk-designer-actions">
@@ -13788,6 +13812,7 @@ const KIOSK_DEFAULT_DESIGN = {
   kicker: 'Club-Kiosk',
   title: 'Padel, Drinks, fertig.',
   text: 'Leihe Ausrüstung für dein Match oder nimm dir etwas aus unserem Club-Kiosk.',
+  heroSizes: { kicker:'small', title:'large', text:'small' },
   accent: '#FF5A36',
   sections: [
     { id:'equipment', title:'Sportecke', color:'#F6F1E7', sort:10 },
@@ -13812,6 +13837,12 @@ function kioskValidColor(value, fallback = '#FF5A36') {
   return /^#[0-9A-F]{6}$/.test(color) ? color : fallback;
 }
 
+function kioskValidHeroSizes(sizes) {
+  const defaults = KIOSK_DEFAULT_DESIGN.heroSizes;
+  return Object.fromEntries(['kicker','title','text'].map(key => [key,
+    ['small','normal','large'].includes(sizes?.[key]) ? sizes[key] : defaults[key]]));
+}
+
 function loadKioskDesign() {
   if (kioskDesignCache) return JSON.parse(JSON.stringify(kioskDesignCache));
   try {
@@ -13821,6 +13852,7 @@ function loadKioskDesign() {
         ...KIOSK_DEFAULT_DESIGN,
         ...parsed,
         accent: kioskValidColor(parsed.accent),
+        heroSizes:kioskValidHeroSizes(parsed.heroSizes),
         sections: parsed.sections.map((s, i) => ({
           id: String(s.id || ('section-' + i)),
           title: String(s.title || 'Bereich'),
@@ -13981,6 +14013,7 @@ function kioskDesignFromDb(row) {
     kicker:String(row?.kicker || KIOSK_DEFAULT_DESIGN.kicker),
     title:String(row?.title || KIOSK_DEFAULT_DESIGN.title),
     text:String(row?.intro || KIOSK_DEFAULT_DESIGN.text),
+    heroSizes:kioskValidHeroSizes(sections[0]?.heroSizes),
     accent:kioskValidColor(row?.accent, KIOSK_DEFAULT_DESIGN.accent),
     sections:sections.map((section, index) => ({
       id:String(section.id || ('section-' + index)),
@@ -13998,7 +14031,9 @@ async function persistKioskDesign(design) {
     title:design.title,
     intro:design.text,
     accent:kioskValidColor(design.accent),
-    sections:design.sections,
+    sections:design.sections.map((section, index) => index === 0
+      ? { ...section, heroSizes:kioskValidHeroSizes(design.heroSizes) }
+      : section),
   }, { onConflict:'id' });
   if (error) throw error;
 }
@@ -14086,11 +14121,16 @@ function kioskProductCard(p, admin = false) {
   const img = p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name)}">` : '<div class="kiosk-img-placeholder" aria-hidden="true"></div>';
   const meta = kioskTileMeta(p);
   const isFree = meta.tileRole === 'free';
-  const actions = isFree ? '' : kioskLegacyVariants(p).map((v, i) => {
+  const variants = isFree ? [] : kioskLegacyVariants(p);
+  const hasRentals = variants.some(v => v.kind === 'rent' || v.minutes);
+  const orderedVariants = hasRentals ? variants.slice().sort((a, b) => Number(a.kind === 'rent' || !!a.minutes) - Number(b.kind === 'rent' || !!b.minutes)) : variants;
+  const actions = orderedVariants.map((v, index) => {
+    const isRental = v.kind === 'rent' || !!v.minutes;
+    const label = isRental && !/^leih/i.test(v.label) ? `Leihen · ${v.label}` : v.label;
     const click = admin
       ? `event.stopPropagation()`
       : `checkoutKiosk('${jsSingleQuoted(p.id)}','${jsSingleQuoted(v.id)}')`;
-    return `<button type="button" class="kiosk-action${i ? ' secondary' : ''}" onclick="${click}">${esc(v.label)}<span class="kiosk-price">${esc(kioskMoney(v.price))}</span></button>`;
+    return `<button type="button" class="kiosk-action${isRental ? ' secondary is-rental' : hasRentals ? ' is-buy' : index ? ' secondary' : ''}" onclick="${click}">${esc(label)}<span class="kiosk-price">${esc(kioskMoney(v.price))}</span></button>`;
   }).join('');
   const adminAttrs = admin
     ? ` draggable="true" onclick="editKioskProduct('${jsSingleQuoted(p.id)}')" ondragstart="kioskStartProductDrag(event,'${jsSingleQuoted(p.id)}')" ondragover="kioskDragOver(event)" ondrop="kioskDropProduct(event,'${jsSingleQuoted(p.id)}','${jsSingleQuoted(p.category)}')"`
@@ -14098,14 +14138,15 @@ function kioskProductCard(p, admin = false) {
   const layout = ['portrait','square','landscape'].includes(p.layout) ? p.layout : 'portrait';
   const imageFit = p.imageFit === 'cover' ? 'cover' : 'contain';
   const freeClass = isFree ? ` is-free text-${meta.textPosition}` : '';
-  return `<article class="kiosk-card is-${layout} fit-${imageFit}${freeClass}" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
+  const equipmentClass = !isFree && ['racket','balls'].includes(p.id) ? ' is-featured-equipment' : '';
+  return `<article class="kiosk-card is-${layout} fit-${imageFit}${freeClass}${equipmentClass}" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
     <div class="kiosk-img">${img}</div>
     <div class="kiosk-body">
       <div class="kiosk-copy">
         <div class="kiosk-title">${esc(p.name)}</div>
         <div class="kiosk-desc">${esc(p.desc || '')}</div>
       </div>
-      ${actions ? `<div class="kiosk-actions">${actions}</div>` : ''}
+      ${actions ? `<div class="kiosk-actions${hasRentals ? ' has-rentals' : ''}">${actions}</div>` : ''}
     </div>
   </article>`;
 }
@@ -14115,9 +14156,10 @@ function applyKioskHero(host, design) {
   const title = host.querySelector?.('.kiosk-hero h2');
   const copy = host.querySelector?.('.kiosk-hero p');
   const amount = host.querySelector?.('.kiosk-basket strong');
-  if (kicker) { kicker.textContent = design.kicker; kicker.style.color = design.accent; }
-  if (title) title.textContent = design.title;
-  if (copy) copy.textContent = design.text;
+  const sizes = kioskValidHeroSizes(design.heroSizes);
+  if (kicker) { kicker.textContent = design.kicker; kicker.style.color = design.accent; kicker.className = `kiosk-kicker size-${sizes.kicker}`; }
+  if (title) { title.textContent = design.title; title.className = `size-${sizes.title}`; }
+  if (copy) { copy.textContent = design.text; copy.className = `size-${sizes.text}`; }
   if (amount) amount.style.color = design.accent;
 }
 
@@ -14136,7 +14178,8 @@ function renderKiosk() {
 
 function renderKioskAdmin() {
   const design = loadKioskDesign();
-  const fields = { kioskSettingKicker:design.kicker, kioskSettingTitle:design.title, kioskSettingText:design.text, kioskSettingAccent:design.accent, kioskSettingAccentPicker:design.accent };
+  const sizes = kioskValidHeroSizes(design.heroSizes);
+  const fields = { kioskSettingKicker:design.kicker, kioskSettingTitle:design.title, kioskSettingText:design.text, kioskSettingKickerSize:sizes.kicker, kioskSettingTitleSize:sizes.title, kioskSettingTextSize:sizes.text, kioskSettingAccent:design.accent, kioskSettingAccentPicker:design.accent };
   Object.entries(fields).forEach(([id, value]) => { const el = document.getElementById(id); if (el) el.value = value; });
   renderKioskSectionEditor();
   renderKioskCategoryOptions();
@@ -14235,6 +14278,11 @@ function kioskDesignFromAdminFields() {
   design.kicker = document.getElementById('kioskSettingKicker')?.value || '';
   design.title = document.getElementById('kioskSettingTitle')?.value || '';
   design.text = document.getElementById('kioskSettingText')?.value || '';
+  design.heroSizes = kioskValidHeroSizes({
+    kicker:document.getElementById('kioskSettingKickerSize')?.value,
+    title:document.getElementById('kioskSettingTitleSize')?.value,
+    text:document.getElementById('kioskSettingTextSize')?.value,
+  });
   design.accent = kioskValidColor(document.getElementById('kioskSettingAccent')?.value, design.accent);
   return design;
 }
