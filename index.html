@@ -1070,6 +1070,15 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
   .kiosk-card.is-featured-equipment.is-portrait.fit-contain .kiosk-img img { position:relative; z-index:1; transform:translateY(40px); }
   .kiosk-card.is-featured-equipment.is-portrait .kiosk-copy { margin-bottom:7px; }
 }
+@media (min-width:621px) and (max-width:1180px){
+  .kiosk-section.has-featured-equipment .kiosk-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .kiosk-section.has-featured-equipment .kiosk-card.is-featured-equipment.is-portrait.fit-contain .kiosk-img { overflow:hidden; }
+  .kiosk-section.has-featured-equipment .kiosk-card.is-featured-equipment.is-portrait.fit-contain .kiosk-img::before { bottom:0; height:50px; }
+  .kiosk-section.has-featured-equipment .kiosk-card.is-featured-equipment.is-portrait.fit-contain .kiosk-img img { transform:none; }
+  .kiosk-section.has-featured-equipment .kiosk-card.is-free.is-landscape.text-bottom { grid-template-rows:auto auto; min-height:0; }
+  .kiosk-section.has-featured-equipment .kiosk-card.is-free.is-landscape.text-bottom .kiosk-img { aspect-ratio:16 / 9; min-height:0; }
+  .kiosk-section.has-featured-equipment .kiosk-card.is-free.is-landscape.text-bottom .kiosk-img img { object-fit:contain; }
+}
 .kiosk-title { font:900 1.53rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.02em; text-transform:uppercase; line-height:1.05; }
 .kiosk-desc { color:#6E675E; font-size:.78rem; line-height:1.4; margin-top:8px; }
 .kiosk-actions { width:100%; display:flex; flex-wrap:wrap; gap:7px; margin-top:0; box-sizing:border-box; }
@@ -14307,7 +14316,7 @@ function kioskSectionMarkup(section, rows, admin = false) {
   const drag = admin
     ? ` draggable="true" ondragstart="kioskStartSectionDrag(event,'${jsSingleQuoted(section.id)}')" ondragover="kioskDragOver(event)" ondrop="kioskDropSection(event,'${jsSingleQuoted(section.id)}')"`
     : '';
-  return `<section class="kiosk-section" data-kiosk-section="${esc(section.id)}"${drag}>
+  return `<section class="kiosk-section${items.some(p => ['racket','balls'].includes(p.id)) ? ' has-featured-equipment' : ''}" data-kiosk-section="${esc(section.id)}"${drag}>
     <div class="kiosk-section-head"><h3 style="color:${esc(kioskValidColor(section.color,'#F6F1E7'))}">${esc(section.title)}</h3></div>
     <div class="kiosk-grid" ondragover="kioskDragOver(event)" ondrop="kioskDropInSection(event,'${jsSingleQuoted(section.id)}')">${inGrid.map(p => kioskProductCard(p, admin)).join('')}${admin && !items.length ? '<div class="play-empty" style="grid-column:1/-1;padding:24px;">Produkte hierher ziehen</div>' : ''}</div>
     ${after.map(p => kioskProductCard(p, admin)).join('')}
