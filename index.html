@@ -11380,6 +11380,27 @@ async function adminDecideWeather(reportId, approve) {
 //  Upload nur für Admins). Geschrieben wird ausschließlich über die
 //  geprüften SECURITY-DEFINER-Funktionen – nie direkt in die Tabelle.
 // ============================================================
+const SPONSOR_TIER_CONFIG = {
+  premium:  { label: 'Premium-Partner', limit: 2 },
+  partner:  { label: 'Partner (1.000 \u20ac)', limit: 12 },
+  regional: { label: 'Regionalpartner', limit: 24 }
+};
+const SPONSOR_TIER_ORDER = ['premium', 'partner', 'regional'];
+
+function addSponsorInTier(tier) {
+  if (!SPONSOR_TIER_CONFIG[tier]) return;
+  const count = (window.__sponsorRows || []).filter(s => s.tier === tier).length;
+  const limit = SPONSOR_TIER_CONFIG[tier].limit;
+  if (count >= limit) {
+    alert(`In der Kategorie \u201e${SPONSOR_TIER_CONFIG[tier].label}\u201c sind bereits alle ${limit} Pl\u00e4tze belegt.`);
+    return;
+  }
+  resetSponsorForm();
+  document.getElementById('spTier').value = tier;
+  document.getElementById('adminSponsors').scrollIntoView({ behavior:'smooth', block:'start' });
+  setTimeout(() => document.getElementById('spName')?.focus(), 350);
+}
+
 async function loadAdminSponsors() {
   const box = document.getElementById('sponsorsAdminList');
   if (!box) return;
@@ -11396,11 +11417,6 @@ async function loadAdminSponsors() {
   window.__sponsorRows = rows;
   loadSponsorWeights();
   if(typeof refreshPartnerToggleBtn==='function') refreshPartnerToggleBtn(window.__partnerTabOn);
-
-  if (!rows.length) {
-    box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:24px;">Noch keine Sponsoren angelegt.</div>';
-    return;
-  }
 
   // Sponsoren nach Tier gruppieren und nummerieren
   const byTier = { premium: [], partner: [], regional: [] };
@@ -11419,9 +11435,11 @@ async function loadAdminSponsors() {
     return '?';
   };
 
-  box.innerHTML = Object.entries(byTier).flatMap(([tier, tierRows]) => {
-    if (!tierRows.length) return [];
-    return tierRows.map((s, idx) => {
+  box.innerHTML = SPONSOR_TIER_ORDER.map((tier, tierIndex) => {
+    const tierRows = byTier[tier];
+    const config = SPONSOR_TIER_CONFIG[tier];
+    const isFull = tierRows.length >= config.limit;
+    const cards = tierRows.map((s, idx) => {
       const actionMode = s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
       // Firmenlogo (180×81px wie in Admin-Form)
       const mainLogo = s.logo_url
@@ -11443,8 +11461,10 @@ async function loadAdminSponsors() {
       const hasContact = s.contact_name || s.contact_email || s.contact_phone || discountEmailDomains;
       const hasAddress = s.contract_company || s.address_street || s.address_zip || s.address_city || s.address_country || s.contract_note;
       const num = getNum(s, idx, tier);
-      const canMoveUp = idx > 0;
-      const canMoveDown = idx < tierRows.length - 1;
+      const previousTier = SPONSOR_TIER_ORDER[tierIndex - 1];
+      const nextTier = SPONSOR_TIER_ORDER[tierIndex + 1];
+      const canMoveUp = idx > 0 || (previousTier && byTier[previousTier].length < SPONSOR_TIER_CONFIG[previousTier].limit);
+      const canMoveDown = idx < tierRows.length - 1 || (nextTier && byTier[nextTier].length < SPONSOR_TIER_CONFIG[nextTier].limit);
 
       return `
         <div style="display:grid;grid-template-columns:180px 180px 1fr auto;gap:14px;align-items:center;background:#fff;border:1.5px solid #E2DACB;border-radius:12px;padding:14px;margin-bottom:10px;">
@@ -11498,6 +11518,16 @@ async function loadAdminSponsors() {
           </div>
         </div>`;
     }).join('');
+    return `<section style="margin-bottom:22px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:11px 13px;background:#FBF9F4;border:1.5px solid #E2DACB;border-radius:10px;">
+        <div>
+          <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${config.label}</div>
+          <div style="font:600 11px 'Manrope',sans-serif;color:${isFull ? '#B8402C' : '#7A7368'};margin-top:2px;">${tierRows.length} von maximal ${config.limit} belegt</div>
+        </div>
+        <button type="button" onclick="addSponsorInTier('${tier}')" ${isFull ? 'disabled' : ''} style="padding:9px 12px;border:0;border-radius:8px;background:${isFull ? '#E2DACB' : '#FF5A36'};color:${isFull ? '#7A7368' : '#1C1A17'};font:800 12px 'Space Grotesk',sans-serif;cursor:${isFull ? 'not-allowed' : 'pointer'};">+ Neuer Partner</button>
+      </div>
+      ${cards || '<div style="color:#7A7368;text-align:center;padding:18px;border:1.5px dashed #E2DACB;border-radius:10px;">Noch kein Partner in dieser Kategorie.</div>'}
+    </section>`;
   }).join('');
 }
 
@@ -11764,12 +11794,11 @@ async function saveSponsor() {
   const invalidDomains = domainParts.filter(v => !/^@[a-z0-9.-]+\.[a-z]{2,}$/i.test(v));
   if (invalidDomains.length) { alert('Bitte Rabatt-Mailendungen mit @ eintragen, z. B. @sparkasse-gm.de.'); return; }
   if (discountEmailDomains && tier !== 'premium') { alert('Mailendungen für den Partner-Rabatt sind nur bei Premium-Partnern vorgesehen.'); return; }
-  if (tier === 'premium' && active) {
-    const activePremiumCount = (window.__sponsorRows || []).filter(s => s.tier === 'premium' && s.active && s.id !== id).length;
-    if (activePremiumCount >= 2) {
-      alert('Es können maximal zwei aktive Premium-Partner gepflegt werden. Bitte zuerst einen Premium-Partner deaktivieren oder ändern.');
-      return;
-    }
+  const tierConfig = SPONSOR_TIER_CONFIG[tier];
+  const occupiedInTier = (window.__sponsorRows || []).filter(s => s.tier === tier && s.id !== id).length;
+  if (tierConfig && occupiedInTier >= tierConfig.limit) {
+    alert(`In der Kategorie „${tierConfig.label}“ sind maximal ${tierConfig.limit} Partner erlaubt. Bitte zuerst einen Partner verschieben oder löschen.`);
+    return;
   }
 
   const prev = btn.textContent;
