@@ -20896,7 +20896,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   var ROT_KEY='pbSponsorRot';
   var CACHE_KEY='pbSponsorsPublicCache';
   var SEEN_KEY='pbSponsorsSeenThisVisit';
-  var appPlaylist=[], appAssignments={}, rotationIndex=0, rotationReady=false;
+  var appPlaylist=[], appAssignments={}, rotationIndex=0, rotationReady=false, rotationPromise=null;
   var seenKeys={};
   try{ seenKeys=JSON.parse(sessionStorage.getItem(SEEN_KEY)||'{}'); }catch(e){}
   if(!seenKeys || typeof seenKeys!=='object' || Array.isArray(seenKeys)) seenKeys={};
@@ -20973,9 +20973,45 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       .sort(function(a,b){return (a.sort_order||0)-(b.sort_order||0);});
     if(prem.length) fillPremiumDuo('pbSplashSponsor', 'Präsentiert von unseren Premium-Partnern', prem);
   }
-  function pushWeighted(list, rows, weight){
-    var w=Math.max(parseInt(weight,10)||0,0);
-    for(var i=0;i<w;i++) rows.forEach(function(c){ list.push(c); });
+  function buildFairPlaylist(groups){
+    var active=(groups||[]).map(function(group){
+      var rows=(group.rows||[]).filter(function(row){ return displayLogoUrl(row); });
+      var weight=Math.max(parseInt(group.weight,10)||0,0);
+      return { rows:rows, total:rows.length*weight, current:0, cursor:0 };
+    }).filter(function(group){ return group.rows.length && group.total; });
+    var playlist=[], total=active.reduce(function(sum,group){ return sum+group.total; },0);
+    for(var slot=0;slot<total;slot++){
+      active.forEach(function(group){ group.current+=group.total; });
+      var chosen=active[0];
+      for(var i=1;i<active.length;i++){
+        if(active[i].current>chosen.current) chosen=active[i];
+      }
+      chosen.current-=total;
+      playlist.push(chosen.rows[chosen.cursor%chosen.rows.length]);
+      chosen.cursor++;
+    }
+    return playlist;
+  }
+  async function loadRotationIndex(){
+    if(rotationReady) return rotationIndex;
+    if(rotationPromise) return rotationPromise;
+    rotationPromise=(async function(){
+      try{
+        var rpc=await sb.rpc('next_app_sponsor_index');
+        if(!rpc.error && rpc.data!==null && rpc.data!==undefined){
+          rotationIndex=Math.max(0,parseInt(rpc.data,10)||0);
+          rotationReady=true;
+          return rotationIndex;
+        }
+      }catch(e){}
+      try{
+        rotationIndex=parseInt(localStorage.getItem(ROT_KEY)||'0',10)||0;
+        localStorage.setItem(ROT_KEY,String(rotationIndex+1));
+      }catch(e){ rotationIndex=0; }
+      rotationReady=true;
+      return rotationIndex;
+    })();
+    return rotationPromise;
   }
   function sortPremiumLeft(pair){
     if(pair[1] && pair[1].tier==='premium' && !(pair[0] && pair[0].tier==='premium')){
@@ -21031,19 +21067,17 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       applyCourtPartnerLabels(rows);
       try{ localStorage.setItem(CACHE_KEY, JSON.stringify(rows.slice(0,80))); }catch(e){}
       var pick = function(t){ return rows.filter(function(r){return r.tier===t;})
-                                  .sort(function(a,b){return (a.sort_order||0)-(b.sort_order||0);}); };
+                                  .sort(function(a,b){
+                                    return (a.sort_order||0)-(b.sort_order||0) || String(a.name||'').localeCompare(String(b.name||''),'de');
+                                  }); };
       var prem=pick('premium'), part=pick('partner'), reg=pick('regional');
-      if(!rotationReady){
-        rotationIndex=parseInt(localStorage.getItem(ROT_KEY)||'0',10)||0;
-        try{ localStorage.setItem(ROT_KEY, String(rotationIndex+1)); }catch(e){}
-        rotationReady=true;
-      }
+      await loadRotationIndex();
 
       // Splash: zwei gleichwertige Premium-Partnerplaetze.
       if(prem.length) fillPremiumDuo('pbSplashSponsor', 'Präsentiert von unseren Premium-Partnern', prem);
 
-      // Gewichtete Reihum-Liste nach den Admin-Werten.
-      var wM=3, wP=3, wR=1, playlist=[];
+      // Gewichtete, gleichmaessig gemischte Reihum-Liste nach den Admin-Werten.
+      var wM=3, wP=3, wR=1;
       try{
         var cfg = await sb.from('app_settings')
           .select('app_weight_premium,app_weight_partner,app_weight_regional').eq('id', true).single();
@@ -21053,12 +21087,16 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
           wR = Number(cfg.data.app_weight_regional) || 1;
         }
       }catch(e){}
-      pushWeighted(playlist, prem, wM);
-      pushWeighted(playlist, part, wP);
-      pushWeighted(playlist, reg,  wR);
+      var playlist=buildFairPlaylist([
+        {rows:prem,weight:wM},
+        {rows:part,weight:wP},
+        {rows:reg,weight:wR}
+      ]);
       if(!playlist.length){
-        pushWeighted(playlist, part, 3);
-        pushWeighted(playlist, reg,  1);
+        playlist=buildFairPlaylist([
+          {rows:part,weight:3},
+          {rows:reg,weight:1}
+        ]);
       }
       appPlaylist=playlist;
       window.showSponsorForMode(typeof curMode==='undefined' ? 'book' : curMode);
