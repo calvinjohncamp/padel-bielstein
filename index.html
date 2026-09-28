@@ -14032,8 +14032,8 @@ function kioskAllVariants(p) {
   const result = [];
   if (Number(p.buyPrice) > 0) result.push({ id:p.category === 'beer' ? 'glass' : 'buy', label:p.category === 'beer' ? 'Glas' : 'Kaufen', price:Number(p.buyPrice), kind:'buy', minutes:null });
   if (p.category === 'beer' && Number(p.packPrice) > 0) result.push({ id:'wreath', label:'Kranz (10 Gläser)', price:Number(p.packPrice), kind:'buy', minutes:null });
-  if (Number(p.rent60) > 0) result.push({ id:'rent-60', label:'60 Min.', price:Number(p.rent60), kind:'rent', minutes:60 });
-  if (Number(p.rent120) > 0) result.push({ id:'rent-120', label:'120 Min.', price:Number(p.rent120), kind:'rent', minutes:120 });
+  if (Number(p.rent60) > 0) result.push({ id:'rent-60', label:'60 Minuten leihen', price:Number(p.rent60), kind:'rent', minutes:60 });
+  if (Number(p.rent120) > 0) result.push({ id:'rent-120', label:'120 Minuten leihen', price:Number(p.rent120), kind:'rent', minutes:120 });
   return result.slice(0, 3);
 }
 
@@ -14051,6 +14051,9 @@ function kioskVariantDisplayLabel(variant) {
 
 function kioskVisibleOptionLabel(productId, variant) {
   const label = String(variant.quantityLabel || variant.label || '').trim();
+  const rentalMinutes = Number(variant.minutes) || Number(label.match(/^(60|120)\s*Min(?:uten)?\.?$/i)?.[1]);
+  if ((variant.kind === 'rent' || rentalMinutes) && rentalMinutes) return `${rentalMinutes} Minuten leihen`;
+  if (variant.kind === 'rent') return /^leih/i.test(label) ? label : `Leihen · ${label}`;
   return ['racket','balls'].includes(productId) ? String(variant.label || '') : label.replace(/^kaufen\b[\s·:]*/i, '').trim();
 }
 
@@ -14380,7 +14383,7 @@ function kioskProductCard(p, admin = false) {
     const isRental = v.kind === 'rent' || !!v.minutes;
     const isSimplePurchase = !isEquipmentChoice && !isRental;
     const isQuantityOption = !isSimplePurchase && !isRental && !!String(v.quantityLabel || '').trim();
-    const label = isRental && !/^leih/i.test(v.label) ? `Leihen · ${v.label}` : kioskVisibleOptionLabel(p.id, v);
+    const label = kioskVisibleOptionLabel(p.id, v);
     const unit = !isSimplePurchase && !isQuantityOption && v.unitLabel && !v.quantityLabel.toLocaleLowerCase('de-DE').includes(v.unitLabel.toLocaleLowerCase('de-DE'))
       ? `<small>${esc(v.unitLabel)}</small>` : '';
     const click = admin
