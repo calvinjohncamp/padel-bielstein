@@ -1156,6 +1156,17 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 @keyframes kioskSaved { 0%,35% { outline:4px solid #FF5A36; outline-offset:4px; } 100% { outline-color:transparent; outline-offset:8px; } }
 #kioskProductEditor { display:none; position:fixed; z-index:10040; inset:5vh max(24px,calc((100vw - 1120px) / 2)); max-height:90vh; overflow:auto; margin:0; padding:24px; border:1px solid #D7CDBF; border-radius:10px; background:#F6F1E7; box-shadow:0 28px 90px rgba(0,0,0,.48); }
 #kioskProductEditor.show { display:block; }
+#kioskProductEditor.is-free-editor { inset:8vh max(24px,calc((100vw - 820px) / 2)); max-height:84vh; }
+#kioskProductEditor.is-free-editor .kiosk-admin-form { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+#kioskProductEditor.is-free-editor .kiosk-form-note { margin-top:2px; }
+#kioskProductEditor.is-free-editor #kioskNameWrap { grid-column:1 / -1; order:1; }
+#kioskProductEditor.is-free-editor #kioskDescWrap { order:2; }
+#kioskProductEditor.is-free-editor #kioskCopyVisibleWrap { order:3; }
+#kioskProductEditor.is-free-editor #kioskTextAlignWrap { order:4; }
+#kioskProductEditor.is-free-editor #kioskTeaserWidthWrap { order:5; }
+#kioskProductEditor.is-free-editor #kioskLinkTargetWrap { order:6; }
+#kioskProductEditor.is-free-editor .kiosk-admin-image-row { order:7; }
+#kioskProductEditor.is-free-editor #kioskFreeTileNote { order:8; }
 .kiosk-editor-close { position:sticky; z-index:2; top:0; float:right; display:grid; place-items:center; width:36px; height:36px; border:0; border-radius:50%; background:#1C1A17; color:#F6F1E7; font-size:1.35rem; cursor:pointer; }
 .kiosk-section-editor { display:grid; gap:8px; margin-top:16px; }
 .kiosk-section-editor-row { display:grid; grid-template-columns:28px minmax(160px,1fr) 170px 110px 42px; gap:8px; align-items:center; padding:9px; border:1px solid #E2DACB; border-radius:9px; background:#F8F4EC; }
@@ -1181,8 +1192,8 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-row-toolbar select { height:32px; border:1px solid #4A433C; border-radius:6px; padding:0 28px 0 9px; background:#26221F; color:#F6F1E7; font:800 .65rem "Space Grotesk",sans-serif; }
 .kiosk-row-toolbar button,.kiosk-card-tools button { display:grid; place-items:center; width:32px; height:32px; border:1px solid #4A433C; border-radius:6px; background:#26221F; color:#F6F1E7; font-size:.9rem; cursor:pointer; }
 .kiosk-row-toolbar button:disabled,.kiosk-card-tools button:disabled { opacity:.28; cursor:default; }
-.kiosk-heading-colors { display:flex; gap:4px; }
-.kiosk-heading-colors button { width:24px; height:24px; border-radius:50%; padding:0; box-shadow:0 0 0 1px #4A433C; }
+.kiosk-heading-colors { display:flex; gap:9px; margin:0 8px; padding:2px; }
+.kiosk-heading-colors button { width:27px; height:27px; border-radius:50%; padding:0; box-shadow:0 0 0 1px #4A433C; }
 .kiosk-heading-colors button.is-beige { background:#F6F1E7; }
 .kiosk-heading-colors button.is-orange { background:#FF5A36; }
 .kiosk-heading-colors button.is-selected { box-shadow:0 0 0 2px #171513,0 0 0 4px #F6F1E7; }
@@ -1237,7 +1248,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 @media (max-width:900px){ .kiosk-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-admin-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-section-editor-row { grid-template-columns:28px 1fr 150px; } }
 @media (max-width:900px){ .kiosk-sale-option { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:0 14px; } #modeKiosk .kiosk-shell { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-basket { width:100%; min-width:0; grid-template-columns:100px minmax(0,1fr) 32px; min-height:106px; padding:7px 9px 7px 4px; } .kiosk-basket-coaster { width:94px; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:118px 1fr; grid-template-rows:minmax(168px,auto); min-height:168px; } .kiosk-card.is-free,.kiosk-card.is-free.is-landscape,.kiosk-card.is-free.is-portrait,.kiosk-card.is-free.text-left,.kiosk-card.is-free.text-right,.kiosk-card.is-free.text-bottom { grid-template-columns:1fr; grid-template-rows:220px auto; min-height:0; } .kiosk-card.is-free.text-right .kiosk-img { order:0; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } .kiosk-card.is-free .kiosk-img { min-height:220px; padding:0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:168px; } .kiosk-card.is-free .kiosk-body { min-height:0; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-design-savebar { align-items:stretch; flex-direction:column; } .kiosk-design-savebar .admin-save-btn { width:100%; min-width:0; } .kiosk-tab-actions { grid-template-columns:1fr; } }
-@media (max-width:620px){ #kioskProductEditor { inset:12px; max-height:calc(100vh - 24px); padding:18px 14px; } .kiosk-row-toolbar { flex-wrap:wrap; } .kiosk-row-toolbar span { width:100%; } }
+@media (max-width:620px){ #kioskProductEditor,#kioskProductEditor.is-free-editor { inset:12px; max-height:calc(100vh - 24px); padding:18px 14px; } #kioskProductEditor.is-free-editor .kiosk-admin-form { grid-template-columns:1fr; } .kiosk-row-toolbar { flex-wrap:wrap; } .kiosk-row-toolbar span { width:100%; } }
 @media (max-width:620px){ .kiosk-sale-option { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-price-fields.is-simple .kiosk-sale-option { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-card.is-featured-equipment.is-portrait { grid-template-rows:minmax(168px,auto); } .kiosk-card.is-featured-equipment.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } }
@@ -5452,7 +5463,7 @@ main {
           </div>
           <div class="kiosk-createbar-actions">
             <button class="admin-save-btn" onclick="startNewKioskProduct()">＋ Produkt hinzufügen</button>
-            <button class="admin-save-btn gold" onclick="startNewKioskFreeTile()">＋ Freie Kachel</button>
+            <button class="admin-save-btn gold" onclick="startNewKioskFreeTile()">＋ Werbung</button>
             <button class="admin-save-btn gold" onclick="startNewKioskInfoRow()">＋ Informationszeile</button>
           </div>
         </div>
@@ -5463,7 +5474,7 @@ main {
         <button type="button" class="kiosk-editor-close" onclick="closeKioskProductEditor()" aria-label="Produkteditor schließen" title="Schließen">×</button>
         <div class="admin-section-title" id="kioskProductEditorTitle">Neues Produkt anlegen</div>
         <div class="admin-card">
-          <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
+          <div id="kioskEditorIntro" style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
             Produkte und freie Bild/Text-Kacheln erscheinen im Hochformat oder als doppelt breite Bühne.
             Informationszeilen laufen über die ganze Shop-Breite und lassen sich mehrfach zwischen Kacheln platzieren.
             Für Produkte lassen sich bis zu drei Verkaufsoptionen frei benennen und bepreisen.
@@ -5471,16 +5482,16 @@ main {
           <input type="hidden" id="kioskEditId">
           <input type="hidden" id="kioskImageData">
           <div class="kiosk-admin-form">
-            <div>
+            <div id="kioskNameWrap">
               <label id="kioskNameLabel" class="eb-adm-lbl">Produktname</label>
               <input id="kioskName" class="eb-adm-inp" type="text" placeholder="z. B. Coca-Cola">
             </div>
-            <div>
+            <div class="kiosk-product-context-option">
               <label class="eb-adm-lbl">Shop-Bereich</label>
               <select id="kioskCategory" class="eb-adm-inp" onchange="updateKioskPriceFields()">
               </select>
             </div>
-            <div class="kiosk-visual-option">
+            <div class="kiosk-visual-option kiosk-free-advanced-option">
               <label class="eb-adm-lbl">Kachelformat</label>
               <select id="kioskLayout" class="eb-adm-inp" onchange="updateKioskEditorMode()">
                 <option value="portrait">Hochformat · Flaschen &amp; Dosen</option>
@@ -5488,7 +5499,7 @@ main {
                 <option value="landscape">Doppelte Breite · Querformat</option>
               </select>
             </div>
-            <div>
+            <div class="kiosk-role-option">
               <label class="eb-adm-lbl">Kacheltyp</label>
               <select id="kioskTileRole" class="eb-adm-inp" onchange="updateKioskEditorMode()">
                 <option value="product">Produkt mit Preis</option>
@@ -5496,7 +5507,7 @@ main {
                 <option value="info">Informationszeile · volle Breite</option>
               </select>
             </div>
-            <div class="kiosk-visual-option">
+            <div class="kiosk-visual-option kiosk-free-advanced-option">
               <label class="eb-adm-lbl">Textposition</label>
               <select id="kioskTextPosition" class="eb-adm-inp" onchange="previewKioskAdminImage()">
                 <option value="bottom">Unter dem Bild</option>
@@ -5504,20 +5515,26 @@ main {
                 <option value="right">Rechts neben dem Bild</option>
               </select>
             </div>
-            <div class="kiosk-free-text-option">
+            <div id="kioskTextAlignWrap" class="kiosk-free-text-option">
               <label class="eb-adm-lbl">Textausrichtung</label>
               <select id="kioskTextAlign" class="eb-adm-inp">
                 <option value="left">Linksbündig</option>
-                <option value="center">Zentriert</option>
                 <option value="right">Rechtsbündig</option>
               </select>
             </div>
-            <div class="kiosk-free-text-option">
+            <div id="kioskTeaserWidthWrap" class="kiosk-free-text-option">
+              <label class="eb-adm-lbl">Breite der Werbung</label>
+              <select id="kioskTeaserWidth" class="eb-adm-inp">
+                <option value="half">Halbe Breite</option>
+                <option value="full">Volle Breite</option>
+              </select>
+            </div>
+            <div id="kioskCopyVisibleWrap" class="kiosk-free-text-option">
               <label style="display:flex;align-items:center;gap:8px;margin-top:25px;font:700 12px Manrope,sans-serif;color:#5C564C;">
                 <input id="kioskFreeCopyVisible" type="checkbox" checked> Überschrift und Unterzeile anzeigen
               </label>
             </div>
-            <div class="kiosk-free-text-option">
+            <div class="kiosk-free-text-option kiosk-free-advanced-option">
               <label class="eb-adm-lbl">Größe der Überschrift</label>
               <select id="kioskTileTitleSize" class="eb-adm-inp">
                 <option value="small">Klein</option>
@@ -5525,7 +5542,7 @@ main {
                 <option value="large">Groß</option>
               </select>
             </div>
-            <div class="kiosk-free-text-option">
+            <div class="kiosk-free-text-option kiosk-free-advanced-option">
               <label class="eb-adm-lbl">Größe des Untertitels</label>
               <select id="kioskTileSubtitleSize" class="eb-adm-inp">
                 <option value="small">Klein</option>
@@ -5533,20 +5550,20 @@ main {
                 <option value="large">Groß</option>
               </select>
             </div>
-            <div class="kiosk-free-text-option">
+            <div id="kioskLinkTargetWrap" class="kiosk-free-text-option">
               <label class="eb-adm-lbl">Bild verlinken mit</label>
               <select id="kioskLinkTargetRow" class="eb-adm-inp">
                 <option value="">Keine Verlinkung</option>
               </select>
             </div>
-            <div class="kiosk-visual-option">
+            <div class="kiosk-visual-option kiosk-free-advanced-option">
               <label class="eb-adm-lbl">Bilddarstellung</label>
               <select id="kioskImageFit" class="eb-adm-inp" onchange="previewKioskAdminImage()">
                 <option value="contain">Freigestellt · vollständig</option>
                 <option value="cover">Foto · flächenfüllend</option>
               </select>
             </div>
-            <div class="kiosk-visual-option">
+            <div class="kiosk-visual-option kiosk-free-advanced-option">
               <label class="eb-adm-lbl">Bildausrichtung</label>
               <select id="kioskImagePosition" class="eb-adm-inp" onchange="previewKioskAdminImage()">
                 <option value="auto">Automatisch</option>
@@ -5555,7 +5572,7 @@ main {
                 <option value="bottom">Unten</option>
               </select>
             </div>
-            <div id="kioskFreeTileNote" class="kiosk-form-note">Freie Kacheln brauchen keinen Preis. Sie sind für große Bilder, Hinweise, CI-Flächen oder Shop-Kampagnen gedacht und können als Hochformat oder doppelt breite Querformat-Kachel erscheinen.</div>
+            <div id="kioskFreeTileNote" class="kiosk-form-note">Werbung besteht aus einem Bild, einem optionalen Link und zwei optionalen Textzeilen. Die Zeilenüberschrift bearbeitest du direkt über der Werbung in der Vorschau.</div>
             <div id="kioskPriceFields" class="kiosk-price-fields">
               <div class="kiosk-sale-option">
                 <strong>Verkaufsoption 1</strong>
@@ -5581,8 +5598,8 @@ main {
             </div>
             <input id="kioskRent120" type="hidden">
             <input id="kioskSort" type="hidden">
-            <div style="grid-column:1 / -1;">
-              <label class="eb-adm-lbl">Kurztext</label>
+            <div id="kioskDescWrap" style="grid-column:1 / -1;">
+              <label id="kioskDescLabel" class="eb-adm-lbl">Kurztext</label>
               <input id="kioskDesc" class="eb-adm-inp" type="text" maxlength="90" placeholder="Kurz und appetitlich, z. B. eiskalt aus dem Kiosk.">
             </div>
             <div id="kioskInfoTextWrap" style="grid-column:1 / -1;display:none;">
@@ -5610,7 +5627,7 @@ main {
                 <option value="large">Groß</option>
               </select>
             </div>
-            <div class="kiosk-visual-option" style="grid-column:1 / -1;">
+            <div class="kiosk-visual-option kiosk-free-advanced-option" style="grid-column:1 / -1;">
               <label class="eb-adm-lbl">Alternativ: externe Bild-URL</label>
               <input id="kioskImageUrl" class="eb-adm-inp" type="url" placeholder="https://.../bild.jpg" oninput="previewKioskAdminImage()">
             </div>
@@ -5618,11 +5635,11 @@ main {
               <div id="kioskImagePreview" class="kiosk-admin-preview"><span>kein Bild</span></div>
               <div>
                 <div id="kioskImageUploadWrap">
-                  <label class="eb-adm-lbl">Bild zentral hochladen</label>
+                  <label id="kioskImageUploadLabel" class="eb-adm-lbl">Bild zentral hochladen</label>
                   <input id="kioskImageFile" type="file" accept="image/*" onchange="handleKioskImageFile()" style="width:100%;font:500 12px 'Manrope',sans-serif;color:#1C1A17;">
                   <div id="kioskImageMeta" style="margin-top:7px;font:600 10px Manrope,sans-serif;color:#81796E;"></div>
                 </div>
-                <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font:700 12px Manrope,sans-serif;color:#5C564C;">
+                <label id="kioskActiveWrap" style="display:flex;align-items:center;gap:8px;margin-top:12px;font:700 12px Manrope,sans-serif;color:#5C564C;">
                   <input id="kioskActive" type="checkbox" checked> im Kiosk anzeigen
                 </label>
                 <label id="kioskOnTabWrap" style="display:flex;align-items:center;gap:8px;margin-top:10px;font:700 12px Manrope,sans-serif;color:#5C564C;">
@@ -5633,8 +5650,8 @@ main {
           </div>
           <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
             <button id="kioskSaveButton" class="admin-save-btn" onclick="saveKioskProduct()">Produkt speichern</button>
-            <button class="admin-save-btn gold" onclick="resetKioskForm()">Neu / Abbrechen</button>
-            <button class="admin-save-btn danger" onclick="deleteKioskProduct()">Produkt löschen</button>
+            <button id="kioskCancelButton" class="admin-save-btn gold" onclick="resetKioskForm()">Neu / Abbrechen</button>
+            <button id="kioskDeleteButton" class="admin-save-btn danger" onclick="deleteKioskProduct()">Produkt löschen</button>
           </div>
           <div class="admin-ok" id="kioskAdminOk"></div>
           <div class="admin-err" id="kioskAdminErr"></div>
@@ -14857,7 +14874,7 @@ function startNewKioskFreeTile() {
   if (layout) layout.value = 'landscape';
   if (fit) fit.value = 'cover';
   if (textPosition) textPosition.value = 'bottom';
-  if (title) title.textContent = 'Freie Bild/Text-Kachel anlegen';
+  if (title) title.textContent = 'Werbung anlegen';
   updateKioskEditorMode();
 }
 
@@ -14881,12 +14898,15 @@ function updateKioskEditorMode() {
   const freeNote = document.getElementById('kioskFreeTileNote');
   const onTabWrap = document.getElementById('kioskOnTabWrap');
   const isInfo = role === 'info';
+  const isFree = role === 'free';
   if (role === 'free' && layout?.value === 'square') layout.value = 'landscape';
   if (isInfo && layout) layout.value = 'landscape';
   if (textPosition) textPosition.disabled = role !== 'free';
-  document.querySelectorAll('.kiosk-free-text-option').forEach(el => { el.style.display = role === 'free' ? 'block' : 'none'; });
+  document.querySelectorAll('.kiosk-free-text-option').forEach(el => { el.style.display = isFree ? 'block' : 'none'; });
+  document.querySelectorAll('.kiosk-product-context-option,.kiosk-role-option').forEach(el => { el.style.display = isFree ? 'none' : ''; });
   document.querySelectorAll('.kiosk-info-option').forEach(el => { el.style.display = isInfo ? 'block' : 'none'; });
   document.querySelectorAll('.kiosk-visual-option').forEach(el => { el.style.display = isInfo ? 'none' : ''; });
+  document.querySelectorAll('.kiosk-free-advanced-option').forEach(el => { el.style.display = isFree || isInfo ? 'none' : ''; });
   const descWrap = document.getElementById('kioskDesc')?.parentElement;
   if (descWrap) descWrap.style.display = isInfo ? 'none' : '';
   const infoTextWrap = document.getElementById('kioskInfoTextWrap');
@@ -14898,25 +14918,72 @@ function updateKioskEditorMode() {
   const imageRow = document.querySelector('#kioskProductEditor .kiosk-admin-image-row');
   if (imageRow) imageRow.style.gridTemplateColumns = isInfo ? '1fr' : '';
   const nameLabel = document.getElementById('kioskNameLabel');
-  if (nameLabel) nameLabel.textContent = isInfo ? 'Überschrift' : 'Produktname';
+  if (nameLabel) nameLabel.textContent = isInfo ? 'Überschrift' : isFree ? 'Unterschrift 1' : 'Produktname';
+  const descLabel = document.getElementById('kioskDescLabel');
+  if (descLabel) descLabel.textContent = isFree ? 'Unterschrift 2' : 'Kurztext';
   const nameInput = document.getElementById('kioskName');
-  if (nameInput) nameInput.placeholder = isInfo ? 'z. B. Wichtiger Hinweis' : 'z. B. Coca-Cola';
+  if (nameInput) nameInput.placeholder = isInfo ? 'z. B. Wichtiger Hinweis' : isFree ? 'Erste Textzeile unter dem Bild' : 'z. B. Coca-Cola';
+  const descInput = document.getElementById('kioskDesc');
+  if (descInput) descInput.placeholder = isFree ? 'Zweite Textzeile unter dem Bild' : 'Kurz und appetitlich, z. B. eiskalt aus dem Kiosk.';
+  const intro = document.getElementById('kioskEditorIntro');
+  if (intro) intro.textContent = isFree
+    ? 'Hier bearbeitest du nur die Werbung. Die optionale Zeilenüberschrift steht direkt über der Kachel in der Vorschau.'
+    : isInfo
+      ? 'Informationszeilen laufen über die ganze Shop-Breite und lassen sich zwischen den Produktkacheln platzieren.'
+      : 'Für Produkte lassen sich Bild, Beschreibung und bis zu drei Verkaufsoptionen frei benennen und bepreisen.';
   const editorTitle = document.getElementById('kioskProductEditorTitle');
-  if (editorTitle) editorTitle.textContent = isInfo ? (document.getElementById('kioskEditId')?.value ? 'Informationszeile bearbeiten' : 'Informationszeile anlegen') : role === 'free' ? (document.getElementById('kioskEditId')?.value ? 'Freie Bild/Text-Kachel bearbeiten' : 'Freie Bild/Text-Kachel anlegen') : (document.getElementById('kioskEditId')?.value ? 'Produkt bearbeiten' : 'Neues Produkt anlegen');
+  if (editorTitle) editorTitle.textContent = isInfo ? (document.getElementById('kioskEditId')?.value ? 'Informationszeile bearbeiten' : 'Informationszeile anlegen') : isFree ? (document.getElementById('kioskEditId')?.value ? 'Werbung bearbeiten' : 'Werbung anlegen') : (document.getElementById('kioskEditId')?.value ? 'Produkt bearbeiten' : 'Neues Produkt anlegen');
   const saveButton = document.getElementById('kioskSaveButton');
-  if (saveButton) saveButton.textContent = isInfo ? 'Informationszeile speichern' : role === 'free' ? 'Freie Kachel speichern' : 'Produkt speichern';
+  if (saveButton) saveButton.textContent = isInfo ? 'Informationszeile speichern' : isFree ? 'Werbung speichern' : 'Produkt speichern';
+  const cancelButton = document.getElementById('kioskCancelButton');
+  if (cancelButton) cancelButton.textContent = isFree || isInfo ? 'Abbrechen' : 'Neu / Abbrechen';
+  const deleteButton = document.getElementById('kioskDeleteButton');
+  if (deleteButton) deleteButton.textContent = isInfo ? 'Informationszeile löschen' : isFree ? 'Werbung löschen' : 'Produkt löschen';
+  const uploadLabel = document.getElementById('kioskImageUploadLabel');
+  if (uploadLabel) uploadLabel.textContent = isFree ? 'Werbebild ersetzen' : 'Bild zentral hochladen';
+  document.getElementById('kioskProductEditor')?.classList.toggle('is-free-editor', isFree);
   if (priceFields) {
     priceFields.style.display = role === 'product' ? 'contents' : 'none';
     priceFields.classList.toggle('is-simple', role === 'product' && !isEquipmentChoice);
   }
-  if (freeNote) freeNote.classList.toggle('show', role === 'free');
+  if (freeNote) freeNote.classList.toggle('show', isFree);
   if (onTabWrap) onTabWrap.style.display = role === 'product' ? 'flex' : 'none';
+  const activeWrap = document.getElementById('kioskActiveWrap');
+  if (activeWrap) activeWrap.style.display = isFree ? 'none' : 'flex';
   if (role !== 'product') {
     const onTab = document.getElementById('kioskOnTab');
     if (onTab) onTab.checked = false;
   }
-  if (role === 'free') renderKioskLinkTargetOptions(document.getElementById('kioskLinkTargetRow')?.value || '');
+  if (isFree) renderKioskLinkTargetOptions(document.getElementById('kioskLinkTargetRow')?.value || '');
   previewKioskAdminImage();
+}
+
+function kioskFreeTileWidth(id, design = loadKioskDesign(), products = loadKioskProducts()) {
+  const row = kioskLayoutRows(design, products).find(item => item.productIds.includes(id));
+  return row?.columns === 'full' ? 'full' : 'half';
+}
+
+function applyKioskFreeTileWidth(design, id, width, products = loadKioskProducts()) {
+  const rows = kioskLayoutRows(design, products);
+  const rowIndex = rows.findIndex(row => row.productIds.includes(id));
+  if (rowIndex < 0) return false;
+  const targetColumns = width === 'full' ? 'full' : 'two';
+  const row = rows[rowIndex];
+  if (row.productIds.length === 1) {
+    if (row.columns === targetColumns) return false;
+    row.columns = targetColumns;
+  } else {
+    row.productIds = row.productIds.filter(productId => productId !== id);
+    rows.splice(rowIndex + 1, 0, {
+      id:`row-${id}-${Date.now()}`,
+      heading:'',
+      color:'#F6F1E7',
+      columns:targetColumns,
+      productIds:[id],
+    });
+  }
+  design.rows = kioskCompactRows(rows);
+  return true;
 }
 
 function kioskDesignFromAdminFields() {
@@ -15359,6 +15426,7 @@ function resetKioskForm() {
   document.getElementById('kioskTileTitleSize').value = 'normal';
   document.getElementById('kioskTileSubtitleSize').value = 'small';
   document.getElementById('kioskFreeCopyVisible').checked = true;
+  document.getElementById('kioskTeaserWidth').value = 'full';
   document.getElementById('kioskInfoDark').checked = false;
   document.getElementById('kioskInfoTitleSize').value = 'small';
   document.getElementById('kioskInfoTextSize').value = 'small';
@@ -15390,6 +15458,7 @@ function editKioskProduct(id) {
   document.getElementById('kioskTileTitleSize').value = meta.titleSize;
   document.getElementById('kioskTileSubtitleSize').value = meta.subtitleSize;
   document.getElementById('kioskFreeCopyVisible').checked = meta.copyVisible;
+  document.getElementById('kioskTeaserWidth').value = kioskFreeTileWidth(p.id);
   document.getElementById('kioskInfoDark').checked = meta.infoTheme === 'dark';
   document.getElementById('kioskInfoTitleSize').value = meta.infoTitleSize;
   document.getElementById('kioskInfoTextSize').value = meta.infoTextSize;
@@ -15499,6 +15568,13 @@ async function saveKioskProduct() {
     const idx = rows.findIndex(p => p.id === id);
     if (idx >= 0) rows[idx] = next; else rows.push(next);
     if (!saveKioskProducts(rows)) return;
+    if (tileRole === 'free') {
+      const design = loadKioskDesign();
+      if (applyKioskFreeTileWidth(design, id, document.getElementById('kioskTeaserWidth').value, rows)) {
+        saveKioskDesign(design);
+        await persistKioskDesign(design);
+      }
+    }
     if (previous?.imagePath && previous.imagePath !== next.imagePath) {
       await sb.storage.from('kiosk-products').remove([previous.imagePath]);
     }
