@@ -1188,6 +1188,8 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-card-tools { position:absolute; z-index:5; top:8px; right:8px; display:flex; gap:4px; }
 .kiosk-card-tools button { background:rgba(28,26,23,.9); }
 .kiosk-inline-copy { display:block; width:100%; min-width:0; border:0; border-radius:4px; padding:3px 4px; margin-left:-4px; background:transparent; font-family:inherit; outline:none; box-sizing:border-box; }
+.kiosk-card.is-free.align-center .kiosk-inline-copy { text-align:center; }
+.kiosk-card.is-free.align-right .kiosk-inline-copy { text-align:right; }
 .kiosk-inline-copy:hover { background:rgba(255,255,255,.05); }
 .kiosk-inline-copy:focus { background:rgba(255,255,255,.08); box-shadow:0 0 0 2px #FF5A36; }
 .kiosk-admin-stage .kiosk-card[draggable="true"],.kiosk-admin-stage .kiosk-info-row[draggable="true"],.kiosk-admin-stage .kiosk-section[draggable="true"] { position:relative; }
@@ -14574,7 +14576,14 @@ function kioskProductMoveState(productId, layoutRowId) {
   const rowIndex = rows.findIndex(row => row.id === layoutRowId);
   const row = rows[rowIndex];
   if (row?.columns === 'full') return { up:rowIndex > 0, down:rowIndex >= 0 && rowIndex < rows.length - 1, full:true };
-  const ids = rows.filter(item => item.columns !== 'full').flatMap(item => item.productIds);
+  if (kioskIsInfoProductId(productId)) {
+    return {
+      up:rows.slice(0, rowIndex).some(item => item.columns !== 'full'),
+      down:rows.slice(rowIndex + 1).some(item => item.columns !== 'full'),
+      full:false,
+    };
+  }
+  const ids = rows.filter(item => item.columns !== 'full').flatMap(item => kioskRowProductIds(item));
   const index = ids.indexOf(productId);
   return { up:index > 0, down:index >= 0 && index < ids.length - 1, full:false };
 }
@@ -14946,26 +14955,86 @@ function moveKioskLayoutRow(id, direction) {
   markKioskDesignDirty();
 }
 
-function kioskRedistributeProductSlots(rows, orderedIds, counts) {
+function kioskIsInfoProductId(id, products = loadKioskProducts()) {
+  return kioskTileMeta(products.find(product => product.id === id)).tileRole === 'info';
+}
+
+function kioskRowProductIds(row, products = loadKioskProducts()) {
+  return row.productIds.filter(id => !kioskIsInfoProductId(id, products));
+}
+
+function kioskRowCapacity(row) {
+  return row.columns === 'two' ? 2 : row.columns === 'four' ? 4 : 1;
+}
+
+function kioskRedistributeProductSlots(rows, orderedIds, startIndex = 0, products = loadKioskProducts()) {
   let offset = 0;
-  rows.filter(row => row.columns !== 'full').forEach((row, index) => {
-    row.productIds = orderedIds.slice(offset, offset + counts[index]);
-    offset += counts[index];
+  rows.forEach((row, index) => {
+    if (index < startIndex || row.columns === 'full') return;
+    const infoIds = row.productIds.filter(id => kioskIsInfoProductId(id, products));
+    const capacity = kioskRowCapacity(row);
+    row.productIds = [...infoIds, ...orderedIds.slice(offset, offset + capacity)];
+    offset += capacity;
   });
+}
+
+function kioskRowsFrom(rows, startIndex, products = loadKioskProducts()) {
+  return rows.slice(startIndex)
+    .filter(row => row.columns !== 'full')
+    .flatMap(row => kioskRowProductIds(row, products));
+}
+
+function kioskCompactRows(rows) {
+  return rows.filter(row => row.productIds.length);
+}
+
+function kioskAdjacentMovableRowIndex(rows, rowIndex, direction) {
+  for (let index = rowIndex + Number(direction); index >= 0 && index < rows.length; index += Number(direction)) {
+    if (rows[index].columns !== 'full') return index;
+  }
+  return -1;
 }
 
 function moveKioskProductInLayout(id, direction) {
   const design = loadKioskDesign();
   const rows = kioskLayoutRows(design);
-  const movableRows = rows.filter(row => row.columns !== 'full');
-  const counts = movableRows.map(row => row.productIds.length);
-  const orderedIds = movableRows.flatMap(row => row.productIds);
-  const from = orderedIds.indexOf(id);
-  const to = Math.max(0, Math.min(orderedIds.length - 1, from + Number(direction)));
-  if (from < 0 || from === to) return;
-  [orderedIds[from], orderedIds[to]] = [orderedIds[to], orderedIds[from]];
-  kioskRedistributeProductSlots(rows, orderedIds, counts);
-  design.rows = rows;
+  const products = loadKioskProducts();
+  const rowIndex = rows.findIndex(row => row.productIds.includes(id));
+  if (rowIndex < 0 || rows[rowIndex].columns === 'full') return;
+
+  if (kioskIsInfoProductId(id, products)) {
+    const targetIndex = kioskAdjacentMovableRowIndex(rows, rowIndex, direction);
+    if (targetIndex < 0) return;
+    rows[rowIndex].productIds = rows[rowIndex].productIds.filter(productId => productId !== id);
+    rows[targetIndex].productIds = [id, ...rows[targetIndex].productIds.filter(productId => productId !== id)];
+    design.rows = kioskCompactRows(rows);
+  } else {
+    const rowIds = kioskRowProductIds(rows[rowIndex], products);
+    const localIndex = rowIds.indexOf(id);
+    if (localIndex < 0) return;
+    let startIndex = rowIndex;
+    let orderedIds;
+    let from;
+
+    if (Number(direction) < 0 && localIndex === 0) {
+      const previousIndex = kioskAdjacentMovableRowIndex(rows, rowIndex, -1);
+      if (previousIndex < 0) return;
+      startIndex = previousIndex;
+      orderedIds = kioskRowsFrom(rows, startIndex, products);
+      from = orderedIds.indexOf(id);
+      if (kioskRowProductIds(rows[previousIndex], products).length >= kioskRowCapacity(rows[previousIndex])) {
+        [orderedIds[from], orderedIds[from - 1]] = [orderedIds[from - 1], orderedIds[from]];
+      }
+    } else {
+      orderedIds = kioskRowsFrom(rows, startIndex, products);
+      from = orderedIds.indexOf(id);
+      const to = from + Number(direction);
+      if (from < 0 || to < 0 || to >= orderedIds.length) return;
+      [orderedIds[from], orderedIds[to]] = [orderedIds[to], orderedIds[from]];
+    }
+    kioskRedistributeProductSlots(rows, orderedIds, startIndex, products);
+    design.rows = kioskCompactRows(rows);
+  }
   saveKioskDesign(design);
   renderKioskAdminPreview();
   renderKiosk();
@@ -14974,18 +15043,33 @@ function moveKioskProductInLayout(id, direction) {
 
 function kioskReorderProductSlots(design, movingId, targetId, insertAfter = false) {
   const rows = kioskLayoutRows(design);
-  const movableRows = rows.filter(row => row.columns !== 'full');
-  const counts = movableRows.map(row => row.productIds.length);
-  const orderedIds = movableRows.flatMap(row => row.productIds);
+  const products = loadKioskProducts();
+  const movingRowIndex = rows.findIndex(row => row.productIds.includes(movingId));
+  const targetRowIndex = rows.findIndex(row => row.productIds.includes(targetId));
+  if (movingRowIndex < 0 || targetRowIndex < 0) return false;
+  if (kioskIsInfoProductId(movingId, products)) {
+    rows[movingRowIndex].productIds = rows[movingRowIndex].productIds.filter(id => id !== movingId);
+    rows[targetRowIndex].productIds = [movingId, ...rows[targetRowIndex].productIds.filter(id => id !== movingId)];
+    design.rows = kioskCompactRows(rows);
+    return true;
+  }
+  const startIndex = Math.min(movingRowIndex, targetRowIndex);
+  const orderedIds = kioskRowsFrom(rows, startIndex, products);
   const from = orderedIds.indexOf(movingId);
   if (from < 0) return false;
   orderedIds.splice(from, 1);
-  let targetIndex = orderedIds.indexOf(targetId);
-  if (targetIndex < 0) return false;
-  if (insertAfter) targetIndex += 1;
+  let targetIndex;
+  if (kioskIsInfoProductId(targetId, products)) {
+    targetIndex = rows.slice(startIndex, targetRowIndex).filter(row => row.columns !== 'full')
+      .reduce((total, row) => total + kioskRowProductIds(row, products).length, 0);
+  } else {
+    targetIndex = orderedIds.indexOf(targetId);
+    if (targetIndex < 0) return false;
+    if (insertAfter) targetIndex += 1;
+  }
   orderedIds.splice(targetIndex, 0, movingId);
-  kioskRedistributeProductSlots(rows, orderedIds, counts);
-  design.rows = rows;
+  kioskRedistributeProductSlots(rows, orderedIds, startIndex, products);
+  design.rows = kioskCompactRows(rows);
   return true;
 }
 
@@ -15017,7 +15101,9 @@ function kioskDropInLayoutRow(event, targetRowId) {
   const targetRow = rows.find(row => row.id === targetRowId);
   if (!movingRow || !targetRow || movingRow.columns === 'full' || targetRow.columns === 'full' || !targetRow.productIds.length) return;
   const movingId = kioskDragState.id;
-  if (!kioskReorderProductSlots(design, movingId, targetRow.productIds[targetRow.productIds.length - 1], true)) return;
+  const targetProducts = kioskRowProductIds(targetRow);
+  const targetId = targetProducts[targetProducts.length - 1] || targetRow.productIds[0];
+  if (!kioskReorderProductSlots(design, movingId, targetId, Boolean(targetProducts.length))) return;
   kioskDragState = null;
   saveKioskDesign(design);
   renderKioskAdminPreview();
