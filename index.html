@@ -1181,6 +1181,18 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-row-toolbar select { height:32px; border:1px solid #4A433C; border-radius:6px; padding:0 28px 0 9px; background:#26221F; color:#F6F1E7; font:800 .65rem "Space Grotesk",sans-serif; }
 .kiosk-row-toolbar button,.kiosk-card-tools button { display:grid; place-items:center; width:32px; height:32px; border:1px solid #4A433C; border-radius:6px; background:#26221F; color:#F6F1E7; font-size:.9rem; cursor:pointer; }
 .kiosk-row-toolbar button:disabled,.kiosk-card-tools button:disabled { opacity:.28; cursor:default; }
+.kiosk-heading-colors { display:flex; gap:4px; }
+.kiosk-heading-colors button { width:24px; height:24px; border-radius:50%; padding:0; box-shadow:0 0 0 1px #4A433C; }
+.kiosk-heading-colors button.is-beige { background:#F6F1E7; }
+.kiosk-heading-colors button.is-orange { background:#FF5A36; }
+.kiosk-heading-colors button.is-selected { box-shadow:0 0 0 2px #171513,0 0 0 4px #F6F1E7; }
+.kiosk-hidden-empty,.kiosk-hidden-products summary { width:auto!important; height:32px; display:flex; align-items:center; border:1px solid #4A433C; border-radius:6px; padding:0 9px; background:#26221F; color:#F6F1E7; font:800 .62rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; list-style:none; white-space:nowrap; }
+.kiosk-hidden-products { position:relative; }
+.kiosk-hidden-products summary::-webkit-details-marker { display:none; }
+.kiosk-hidden-products>div { position:absolute; z-index:12; top:38px; right:0; width:min(280px,80vw); padding:6px; border:1px solid #4A433C; border-radius:7px; background:#26221F; box-shadow:0 14px 32px rgba(0,0,0,.34); }
+.kiosk-hidden-products>div button { width:100%; height:auto; display:flex; justify-content:space-between; gap:12px; padding:9px; border:0; text-align:left; }
+.kiosk-hidden-products>div button span { overflow:hidden; text-overflow:ellipsis; }
+.kiosk-hidden-products>div button b { color:#FF5A36; font-size:.58rem; }
 .kiosk-row-heading-input { min-width:0; flex:0 1 42ch; border:0; border-radius:4px; padding:2px 4px; background:transparent; color:#F6F1E7; font:900 1.23rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.14em; text-transform:uppercase; outline:none; }
 .kiosk-row-heading-input::placeholder { color:#777067; }
 .kiosk-row-heading-input:focus { background:rgba(255,255,255,.07); box-shadow:0 0 0 2px #FF5A36; }
@@ -1193,7 +1205,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-inline-copy:hover { background:rgba(255,255,255,.05); }
 .kiosk-inline-copy:focus { background:rgba(255,255,255,.08); box-shadow:0 0 0 2px #FF5A36; }
 .kiosk-admin-stage .kiosk-card[draggable="true"],.kiosk-admin-stage .kiosk-info-row[draggable="true"],.kiosk-admin-stage .kiosk-section[draggable="true"] { position:relative; }
-.kiosk-admin-stage .kiosk-card[draggable="true"]:before,.kiosk-admin-stage .kiosk-info-row[draggable="true"]:before { content:"⋮⋮"; position:absolute; z-index:3; top:8px; right:120px; background:rgba(28,26,23,.78); color:#fff; border-radius:6px; padding:6px 7px; cursor:grab; }
+.kiosk-admin-stage .kiosk-card[draggable="true"]:before,.kiosk-admin-stage .kiosk-info-row[draggable="true"]:before { content:"⋮⋮"; position:absolute; z-index:3; top:8px; right:156px; background:rgba(28,26,23,.78); color:#fff; border-radius:6px; padding:6px 7px; cursor:grab; }
 .kiosk-admin-stage .kiosk-section.drag-over,.kiosk-admin-stage .kiosk-card.drag-over,.kiosk-admin-stage .kiosk-info-row.drag-over { outline:3px solid #FF5A36; outline-offset:3px; }
 .kiosk-tab-modal { position:fixed; inset:0; z-index:10020; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.68); backdrop-filter:blur(8px); }
 .kiosk-tab-modal.show { display:flex; }
@@ -1230,6 +1242,8 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 @media (max-width:620px){ .kiosk-price-fields.is-simple .kiosk-sale-option { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-card.is-featured-equipment.is-portrait { grid-template-rows:minmax(168px,auto); } .kiosk-card.is-featured-equipment.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } }
 @media (max-width:620px){ .kiosk-section-head { padding-left:0; } }
+.kiosk-card.is-free.copy-hidden,.kiosk-card.is-free.copy-hidden.is-landscape,.kiosk-card.is-free.copy-hidden.is-portrait { grid-template-columns:1fr; grid-template-rows:minmax(0,1fr); }
+.kiosk-card.is-free.copy-hidden .kiosk-img { grid-column:1 / -1; grid-row:1 / -1; order:0; min-height:0; }
 @media (max-width:1180px){
   .kiosk-section.has-featured-equipment .kiosk-card.is-free.is-landscape.text-bottom { grid-template-rows:auto auto; min-height:0; }
   .kiosk-section.has-featured-equipment .kiosk-card.is-free.is-landscape.text-bottom .kiosk-img { aspect-ratio:auto; height:auto; min-height:0; padding:0; }
@@ -5497,6 +5511,11 @@ main {
                 <option value="center">Zentriert</option>
                 <option value="right">Rechtsbündig</option>
               </select>
+            </div>
+            <div class="kiosk-free-text-option">
+              <label style="display:flex;align-items:center;gap:8px;margin-top:25px;font:700 12px Manrope,sans-serif;color:#5C564C;">
+                <input id="kioskFreeCopyVisible" type="checkbox" checked> Überschrift und Unterzeile anzeigen
+              </label>
             </div>
             <div class="kiosk-free-text-option">
               <label class="eb-adm-lbl">Größe der Überschrift</label>
@@ -14083,7 +14102,7 @@ function kioskValidHeroSizes(sizes) {
 }
 
 function kioskDefaultLayoutRows(products = loadKioskProducts(), sections = KIOSK_DEFAULT_DESIGN.sections) {
-  const active = kioskSorted(products).filter(product => product.active !== false);
+  const active = kioskSorted(products);
   const rows = [];
   const assigned = new Set();
   const showcase = active.find(product => product.id === 'kiosk-1790058993632');
@@ -14128,11 +14147,15 @@ function kioskNormalizeLayoutRows(layoutRows, products = loadKioskProducts(), se
       productIds,
     };
   }).filter(row => row.productIds.length);
-  const missing = products.filter(product => product.active !== false && !used.has(String(product.id)));
+  const missing = products.filter(product => !used.has(String(product.id)));
   missing.forEach(product => {
     const compatible = normalized.slice().reverse().find(row => {
       const firstProduct = products.find(item => item.id === row.productIds[0]);
-      return row.columns === 'four' && row.productIds.length < 4 && firstProduct?.category === product.category;
+      const visibleProducts = row.productIds.filter(id => {
+        const item = products.find(candidate => candidate.id === id);
+        return item?.active !== false && kioskTileMeta(item).tileRole !== 'info';
+      });
+      return row.columns === 'four' && visibleProducts.length < 4 && firstProduct?.category === product.category;
     });
     if (compatible) compatible.productIds.push(String(product.id));
     else normalized.push({ id:`row-${product.id}`, heading:'', color:'#F6F1E7', columns:product.id === 'kiosk-1790058993632' ? 'full' : 'four', productIds:[String(product.id)] });
@@ -14219,6 +14242,7 @@ function kioskTileMeta(p) {
   const infoTextSize = p?.infoTextSize || fromVariants?.info_text_size;
   const infoPlacement = p?.infoPlacement || fromVariants?.info_placement;
   const linkTargetRowId = p?.linkTargetRowId || fromVariants?.link_target_row_id || fromVariants?.linkTargetRowId;
+  const copyVisible = p?.copyVisible ?? fromVariants?.copy_visible ?? fromVariants?.copyVisible;
   return {
     tileRole: ['free','info'].includes(role) ? role : 'product',
     textPosition: ['left','right','bottom'].includes(position) ? position : 'bottom',
@@ -14231,6 +14255,7 @@ function kioskTileMeta(p) {
     infoTextSize: ['small','normal','large'].includes(infoTextSize) ? infoTextSize : 'small',
     infoPlacement: infoPlacement === 'after' ? 'after' : 'section',
     linkTargetRowId:String(linkTargetRowId || ''),
+    copyVisible:copyVisible !== false,
   };
 }
 
@@ -14255,6 +14280,7 @@ function normalizeKioskProduct(p) {
     infoTextSize:meta.infoTextSize,
     infoPlacement:meta.infoPlacement,
     linkTargetRowId:meta.linkTargetRowId,
+    copyVisible:meta.copyVisible,
     onTab: meta.tileRole !== 'product' ? false : (typeof p.onTab === 'boolean' ? p.onTab : p.category !== 'equipment'),
     variants,
   };
@@ -14379,6 +14405,7 @@ function kioskProductToDb(product) {
       info_text_size:meta.infoTextSize,
       info_placement:meta.infoPlacement,
       link_target_row_id:meta.linkTargetRowId,
+      copy_visible:meta.copyVisible,
       draft_options:draftOptions,
     });
   }
@@ -14524,13 +14551,18 @@ function kioskLayoutRows(design = loadKioskDesign(), products = loadKioskProduct
 }
 
 function kioskLayoutRowMarkup(row, products, admin = false, index = 0, total = 1) {
-  const items = row.productIds.map(id => products.find(product => product.id === id)).filter(Boolean);
-  if (!items.length) return '';
-  const anchor = items[0]?.category || row.id;
+  const allItems = row.productIds.map(id => products.find(product => product.id === id)).filter(Boolean);
+  const items = allItems.filter(product => product.active !== false);
+  const hiddenItems = allItems.filter(product => product.active === false);
+  if (!allItems.length || (!admin && !items.length)) return '';
+  const anchor = items[0]?.category || allItems[0]?.category || row.id;
   const heading = admin
-    ? `<input class="kiosk-row-heading-input" type="text" value="${esc(row.heading)}" placeholder="Optionale Überschrift" aria-label="Überschrift dieser Zeile" oninput="updateKioskLayoutRow('${jsSingleQuoted(row.id)}','heading',this.value)">`
+    ? `<input class="kiosk-row-heading-input" style="color:${esc(kioskValidColor(row.color, '#F6F1E7'))}" type="text" value="${esc(row.heading)}" placeholder="Optionale Überschrift" aria-label="Überschrift dieser Zeile" oninput="updateKioskLayoutRow('${jsSingleQuoted(row.id)}','heading',this.value)">`
     : row.heading ? `<h3 style="color:${esc(kioskValidColor(row.color, '#F6F1E7'))}">${esc(row.heading)}</h3>` : '';
   const headingWrap = heading ? `<div class="kiosk-section-head">${heading}</div>` : '';
+  const hiddenControl = hiddenItems.length
+    ? `<details class="kiosk-hidden-products"><summary>Ausgeblendet ${hiddenItems.length}</summary><div>${hiddenItems.map(product => `<button type="button" onclick="setKioskProductVisibility('${jsSingleQuoted(product.id)}',true)"><span>${esc(product.name)}</span><b>Einblenden</b></button>`).join('')}</div></details>`
+    : '<button type="button" class="kiosk-hidden-empty" disabled>Ausgeblendet 0</button>';
   const controls = admin ? `<div class="kiosk-row-toolbar" aria-label="Zeile bearbeiten">
     <span>Zeile ${index + 1}</span>
     <select aria-label="Breite dieser Zeile" onchange="updateKioskLayoutRow('${jsSingleQuoted(row.id)}','columns',this.value)">
@@ -14538,6 +14570,11 @@ function kioskLayoutRowMarkup(row, products, admin = false, index = 0, total = 1
       <option value="two"${row.columns === 'two' ? ' selected' : ''}>2 Produkte</option>
       <option value="full"${row.columns === 'full' ? ' selected' : ''}>Volle Breite</option>
     </select>
+    <div class="kiosk-heading-colors" aria-label="Farbe der Überschrift">
+      <button type="button" class="is-beige${kioskValidColor(row.color, '#F6F1E7') === '#F6F1E7' ? ' is-selected' : ''}" onclick="updateKioskLayoutRow('${jsSingleQuoted(row.id)}','color','#F6F1E7')" title="Überschrift Signature Beige" aria-label="Überschrift Signature Beige"></button>
+      <button type="button" class="is-orange${kioskValidColor(row.color, '#F6F1E7') === '#FF5A36' ? ' is-selected' : ''}" onclick="updateKioskLayoutRow('${jsSingleQuoted(row.id)}','color','#FF5A36')" title="Überschrift Signature Orange" aria-label="Überschrift Signature Orange"></button>
+    </div>
+    ${hiddenControl}
     <button type="button" onclick="moveKioskLayoutRow('${jsSingleQuoted(row.id)}',-1)" title="Zeile nach oben" aria-label="Zeile nach oben"${index === 0 ? ' disabled' : ''}>↑</button>
     <button type="button" onclick="moveKioskLayoutRow('${jsSingleQuoted(row.id)}',1)" title="Zeile nach unten" aria-label="Zeile nach unten"${index === total - 1 ? ' disabled' : ''}>↓</button>
   </div>` : '';
@@ -14577,9 +14614,10 @@ function kioskProductMoveState(productId, layoutRowId) {
   const row = rows[rowIndex];
   if (row?.columns === 'full') return { up:rowIndex > 0, down:rowIndex >= 0 && rowIndex < rows.length - 1, full:true };
   if (kioskIsInfoProductId(productId)) {
+    const itemIndex = row?.productIds.indexOf(productId) ?? -1;
     return {
-      up:rows.slice(0, rowIndex).some(item => item.columns !== 'full'),
-      down:rows.slice(rowIndex + 1).some(item => item.columns !== 'full'),
+      up:itemIndex > 0 || rows.slice(0, rowIndex).some(item => item.columns !== 'full'),
+      down:itemIndex >= 0 && (itemIndex < row.productIds.length - 1 || rows.slice(rowIndex + 1).some(item => item.columns !== 'full')),
       full:false,
     };
   }
@@ -14599,6 +14637,7 @@ function kioskProductCard(p, admin = false, layoutRowId = '') {
     <button type="button" onclick="event.stopPropagation();${moveAction},-1)" title="Element nach oben" aria-label="Element nach oben"${moveState.up ? '' : ' disabled'}>↑</button>
     <button type="button" onclick="event.stopPropagation();${moveAction},1)" title="Element nach unten" aria-label="Element nach unten"${moveState.down ? '' : ' disabled'}>↓</button>
     <button type="button" onclick="event.stopPropagation();editKioskProduct('${jsSingleQuoted(p.id)}')" title="Element bearbeiten" aria-label="Element bearbeiten">✎</button>
+    ${meta.tileRole === 'product' ? `<button type="button" onclick="event.stopPropagation();setKioskProductVisibility('${jsSingleQuoted(p.id)}',false)" title="Produkt ausblenden" aria-label="Produkt ausblenden">−</button>` : ''}
   </div>` : '';
   if (meta.tileRole === 'info') {
     return `<aside class="kiosk-info-row${meta.infoTheme === 'dark' ? ' is-dark' : ''}${meta.infoPlacement === 'after' ? ' is-after-section' : ''} title-size-${meta.infoTitleSize} text-size-${meta.infoTextSize}" role="note" data-kiosk-product="${esc(p.id)}"${adminAttrs}>${adminTools}
@@ -14635,7 +14674,7 @@ function kioskProductCard(p, admin = false, layoutRowId = '') {
   }).join('');
   const layout = ['portrait','square','landscape'].includes(p.layout) ? p.layout : 'portrait';
   const imageFit = p.imageFit === 'cover' ? 'cover' : 'contain';
-  const freeClass = isFree ? ` is-free text-${meta.textPosition} align-${meta.textAlign} title-size-${meta.titleSize} subtitle-size-${meta.subtitleSize}` : '';
+  const freeClass = isFree ? ` is-free text-${meta.textPosition} align-${meta.textAlign} title-size-${meta.titleSize} subtitle-size-${meta.subtitleSize}${meta.copyVisible ? '' : ' copy-hidden'}` : '';
   const equipmentClass = !isFree && ['racket','balls'].includes(p.id) ? ' is-featured-equipment' : '';
   const copyMarkup = admin && isFree
     ? `<input class="kiosk-title kiosk-inline-copy" type="text" value="${esc(p.name)}" aria-label="Überschrift der Bildkachel" draggable="false" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation()" oninput="editKioskTileText('${jsSingleQuoted(p.id)}','name',this.value)"><input class="kiosk-desc kiosk-inline-copy" type="text" value="${esc(p.desc || '')}" aria-label="Unterzeile der Bildkachel" draggable="false" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation()" oninput="editKioskTileText('${jsSingleQuoted(p.id)}','desc',this.value)">`
@@ -14643,12 +14682,12 @@ function kioskProductCard(p, admin = false, layoutRowId = '') {
   return `<article class="kiosk-card is-${layout} fit-${imageFit}${freeClass}${equipmentClass}" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
     ${adminTools}
     ${imageMarkup}
-    <div class="kiosk-body">
+    ${isFree && !meta.copyVisible ? '' : `<div class="kiosk-body">
       <div class="kiosk-copy">
         ${copyMarkup}
       </div>
       ${actions ? `<div class="kiosk-actions${hasRentals ? ' has-rentals' : ''}">${actions}</div>` : ''}
-    </div>
+    </div>`}
   </article>`;
 }
 
@@ -14669,7 +14708,7 @@ function renderKiosk() {
   if (!host) return;
   settleSuccessfulKioskTab();
   const design = loadKioskDesign();
-  const rows = kioskSorted().filter(p => p.active !== false);
+  const rows = kioskSorted();
   const layoutRows = kioskLayoutRows(design, rows);
   host.innerHTML = layoutRows.map((row, index) => kioskLayoutRowMarkup(row, rows, false, index, layoutRows.length)).join('');
   applyKioskHero(document.getElementById('modeKiosk'), design);
@@ -14692,7 +14731,7 @@ function renderKioskAdminPreview(overrideDesign) {
   const host = document.getElementById('kioskAdminPreview');
   if (!host) return;
   const design = overrideDesign || loadKioskDesign();
-  const rows = kioskSorted().filter(p => p.active !== false);
+  const rows = kioskSorted();
   const tabItems = loadKioskTab();
   const tabTotal = tabItems.reduce((sum, item) => sum + Number(item.price || 0), 0);
   const tabCount = tabItems.length ? `${tabItems.length} Artikel offen` : 'Noch keine Artikel';
@@ -14760,6 +14799,39 @@ function editKioskTileText(id, field, value) {
       kioskAdminMsg('kioskAdminErr', 'Text nicht gespeichert: ' + (e.message || e), false);
     }
   }, 650));
+}
+
+async function setKioskProductVisibility(id, visible) {
+  const products = loadKioskProducts();
+  const product = products.find(item => item.id === id);
+  if (!product) return;
+  const previousProducts = products.map(item => ({ ...item }));
+  const design = loadKioskDesign();
+  const previousDesign = JSON.parse(JSON.stringify(design));
+  const rows = kioskLayoutRows(design, products);
+  const rowIndex = rows.findIndex(row => row.productIds.includes(id));
+  product.active = Boolean(visible);
+  if (rowIndex >= 0 && rows[rowIndex].columns !== 'full') {
+    const orderedIds = kioskRowsFrom(rows, rowIndex, products);
+    kioskRedistributeProductSlots(rows, orderedIds, rowIndex, products);
+    design.rows = kioskCompactRows(rows);
+  }
+  saveKioskProducts(products);
+  saveKioskDesign(design);
+  renderKioskAdminPreview();
+  renderKiosk();
+  setKioskDesignSaveState('dirty', visible ? 'Produkt wird eingeblendet …' : 'Produkt wird ausgeblendet …');
+  try {
+    await Promise.all([persistKioskProducts([product]), persistKioskDesign(design)]);
+    setKioskDesignSaveState('saved', visible ? 'Produkt automatisch eingeblendet' : 'Produkt automatisch ausgeblendet');
+  } catch(e) {
+    saveKioskProducts(previousProducts);
+    saveKioskDesign(previousDesign);
+    renderKioskAdminPreview();
+    renderKiosk();
+    setKioskDesignSaveState('error', 'Sichtbarkeit konnte nicht gespeichert werden');
+    kioskAdminMsg('kioskAdminErr', 'Sichtbarkeit nicht gespeichert: ' + (e.message || e), false);
+  }
 }
 
 function startNewKioskProduct() {
@@ -14933,6 +15005,7 @@ function updateKioskLayoutRow(id, field, value) {
   if (!row) return;
   if (field === 'heading') row.heading = String(value || '');
   if (field === 'columns' && ['four','two','full'].includes(value)) row.columns = value;
+  if (field === 'color') row.color = ['#F6F1E7','#FF5A36'].includes(String(value).toUpperCase()) ? String(value).toUpperCase() : '#F6F1E7';
   design.rows = kioskLayoutRows(design).map(item => item.id === id ? row : item);
   saveKioskDesign(design);
   renderKiosk();
@@ -14959,8 +15032,13 @@ function kioskIsInfoProductId(id, products = loadKioskProducts()) {
   return kioskTileMeta(products.find(product => product.id === id)).tileRole === 'info';
 }
 
+function kioskIsVisibleFlowProductId(id, products = loadKioskProducts()) {
+  const product = products.find(item => item.id === id);
+  return Boolean(product && product.active !== false && !kioskIsInfoProductId(id, products));
+}
+
 function kioskRowProductIds(row, products = loadKioskProducts()) {
-  return row.productIds.filter(id => !kioskIsInfoProductId(id, products));
+  return row.productIds.filter(id => kioskIsVisibleFlowProductId(id, products));
 }
 
 function kioskRowCapacity(row) {
@@ -14971,9 +15049,12 @@ function kioskRedistributeProductSlots(rows, orderedIds, startIndex = 0, product
   let offset = 0;
   rows.forEach((row, index) => {
     if (index < startIndex || row.columns === 'full') return;
-    const infoIds = row.productIds.filter(id => kioskIsInfoProductId(id, products));
+    const visibleIndexes = row.productIds.flatMap((id, itemIndex) => kioskIsVisibleFlowProductId(id, products) ? [itemIndex] : []);
+    const firstVisibleIndex = visibleIndexes.length ? visibleIndexes[0] : row.productIds.length;
+    const fixedBefore = row.productIds.filter((id, itemIndex) => itemIndex < firstVisibleIndex && !kioskIsVisibleFlowProductId(id, products));
+    const fixedAfter = row.productIds.filter((id, itemIndex) => itemIndex >= firstVisibleIndex && !kioskIsVisibleFlowProductId(id, products));
     const capacity = kioskRowCapacity(row);
-    row.productIds = [...infoIds, ...orderedIds.slice(offset, offset + capacity)];
+    row.productIds = [...fixedBefore, ...orderedIds.slice(offset, offset + capacity), ...fixedAfter];
     offset += capacity;
   });
 }
@@ -15003,10 +15084,20 @@ function moveKioskProductInLayout(id, direction) {
   if (rowIndex < 0 || rows[rowIndex].columns === 'full') return;
 
   if (kioskIsInfoProductId(id, products)) {
-    const targetIndex = kioskAdjacentMovableRowIndex(rows, rowIndex, direction);
-    if (targetIndex < 0) return;
-    rows[rowIndex].productIds = rows[rowIndex].productIds.filter(productId => productId !== id);
-    rows[targetIndex].productIds = [id, ...rows[targetIndex].productIds.filter(productId => productId !== id)];
+    const itemIndex = rows[rowIndex].productIds.indexOf(id);
+    if (Number(direction) < 0 && itemIndex > 0) {
+      rows[rowIndex].productIds.splice(itemIndex, 1);
+      rows[rowIndex].productIds.unshift(id);
+    } else if (Number(direction) > 0 && itemIndex < rows[rowIndex].productIds.length - 1) {
+      rows[rowIndex].productIds.splice(itemIndex, 1);
+      rows[rowIndex].productIds.push(id);
+    } else {
+      const targetIndex = kioskAdjacentMovableRowIndex(rows, rowIndex, direction);
+      if (targetIndex < 0) return;
+      rows[rowIndex].productIds = rows[rowIndex].productIds.filter(productId => productId !== id);
+      if (Number(direction) < 0) rows[targetIndex].productIds.push(id);
+      else rows[targetIndex].productIds.unshift(id);
+    }
     design.rows = kioskCompactRows(rows);
   } else {
     const rowIds = kioskRowProductIds(rows[rowIndex], products);
@@ -15049,7 +15140,8 @@ function kioskReorderProductSlots(design, movingId, targetId, insertAfter = fals
   if (movingRowIndex < 0 || targetRowIndex < 0) return false;
   if (kioskIsInfoProductId(movingId, products)) {
     rows[movingRowIndex].productIds = rows[movingRowIndex].productIds.filter(id => id !== movingId);
-    rows[targetRowIndex].productIds = [movingId, ...rows[targetRowIndex].productIds.filter(id => id !== movingId)];
+    const targetIndex = rows[targetRowIndex].productIds.indexOf(targetId);
+    rows[targetRowIndex].productIds.splice(Math.max(0, targetIndex + (insertAfter ? 1 : 0)), 0, movingId);
     design.rows = kioskCompactRows(rows);
     return true;
   }
@@ -15266,6 +15358,7 @@ function resetKioskForm() {
   document.getElementById('kioskTextAlign').value = 'left';
   document.getElementById('kioskTileTitleSize').value = 'normal';
   document.getElementById('kioskTileSubtitleSize').value = 'small';
+  document.getElementById('kioskFreeCopyVisible').checked = true;
   document.getElementById('kioskInfoDark').checked = false;
   document.getElementById('kioskInfoTitleSize').value = 'small';
   document.getElementById('kioskInfoTextSize').value = 'small';
@@ -15296,6 +15389,7 @@ function editKioskProduct(id) {
   document.getElementById('kioskTextAlign').value = meta.textAlign;
   document.getElementById('kioskTileTitleSize').value = meta.titleSize;
   document.getElementById('kioskTileSubtitleSize').value = meta.subtitleSize;
+  document.getElementById('kioskFreeCopyVisible').checked = meta.copyVisible;
   document.getElementById('kioskInfoDark').checked = meta.infoTheme === 'dark';
   document.getElementById('kioskInfoTitleSize').value = meta.infoTitleSize;
   document.getElementById('kioskInfoTextSize').value = meta.infoTextSize;
@@ -15371,6 +15465,7 @@ async function saveKioskProduct() {
     textAlign:document.getElementById('kioskTextAlign').value,
     titleSize:document.getElementById('kioskTileTitleSize').value,
     subtitleSize:document.getElementById('kioskTileSubtitleSize').value,
+    copyVisible:tileRole === 'free' ? document.getElementById('kioskFreeCopyVisible').checked : true,
     infoTheme:document.getElementById('kioskInfoDark').checked ? 'dark' : 'light',
     infoTitleSize:document.getElementById('kioskInfoTitleSize').value,
     infoTextSize:document.getElementById('kioskInfoTextSize').value,
