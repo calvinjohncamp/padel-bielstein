@@ -1253,6 +1253,17 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 @media (max-width:620px){ .kiosk-price-fields.is-simple .kiosk-sale-option { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-card.is-featured-equipment.is-portrait { grid-template-rows:minmax(168px,auto); } .kiosk-card.is-featured-equipment.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } }
 @media (max-width:620px){ .kiosk-section-head { padding-left:0; } }
+@media (max-width:620px) and (orientation:portrait){
+  #modeKiosk .kiosk-card:not(.is-free) { height:204px; min-height:204px; max-height:204px; grid-template-columns:112px minmax(0,1fr); grid-template-rows:204px; }
+  #modeKiosk .kiosk-card:not(.is-free) .kiosk-img { height:204px; min-height:0; padding:10px 8px 0; }
+  #modeKiosk .kiosk-card:not(.is-free).fit-cover .kiosk-img { padding:0; }
+  #modeKiosk .kiosk-card:not(.is-free) .kiosk-body { height:204px; min-height:0; padding:12px; gap:7px; overflow:hidden; box-sizing:border-box; }
+  #modeKiosk .kiosk-card:not(.is-free) .kiosk-copy { min-height:0; margin:0 0 auto; }
+  #modeKiosk .kiosk-card:not(.is-free) .kiosk-title { font-size:1.12rem; line-height:1.02; }
+  #modeKiosk .kiosk-card:not(.is-free) .kiosk-desc { margin-top:5px; font-size:.69rem; line-height:1.3; }
+  #modeKiosk .kiosk-card:not(.is-free) .kiosk-actions { gap:6px; margin-top:auto; }
+  #modeKiosk .kiosk-card:not(.is-free) .kiosk-action { min-width:0; padding:8px 7px; font-size:.62rem; }
+}
 .kiosk-card.is-free.copy-hidden,.kiosk-card.is-free.copy-hidden.is-landscape,.kiosk-card.is-free.copy-hidden.is-portrait { grid-template-columns:1fr; grid-template-rows:minmax(0,1fr); }
 .kiosk-card.is-free.copy-hidden .kiosk-img { grid-column:1 / -1; grid-row:1 / -1; order:0; min-height:0; }
 @media (max-width:1180px){
@@ -14567,6 +14578,19 @@ function kioskLayoutRows(design = loadKioskDesign(), products = loadKioskProduct
   return rows;
 }
 
+function kioskIsPhoneViewport() {
+  const width = Number(window.innerWidth) || Infinity;
+  const height = Number(window.innerHeight) || Infinity;
+  return Math.min(width, height) <= 620 && Math.max(width, height) <= 950;
+}
+
+function kioskRowsForDisplay(rows) {
+  if (!kioskIsPhoneViewport()) return rows;
+  const showcaseIndex = rows.findIndex(row => row.productIds.includes('kiosk-1790058993632'));
+  if (showcaseIndex <= 0) return rows;
+  return [rows[showcaseIndex], ...rows.slice(0, showcaseIndex), ...rows.slice(showcaseIndex + 1)];
+}
+
 function kioskLayoutRowMarkup(row, products, admin = false, index = 0, total = 1) {
   const allItems = row.productIds.map(id => products.find(product => product.id === id)).filter(Boolean);
   const items = allItems.filter(product => product.active !== false);
@@ -14726,7 +14750,7 @@ function renderKiosk() {
   settleSuccessfulKioskTab();
   const design = loadKioskDesign();
   const rows = kioskSorted();
-  const layoutRows = kioskLayoutRows(design, rows);
+  const layoutRows = kioskRowsForDisplay(kioskLayoutRows(design, rows));
   host.innerHTML = layoutRows.map((row, index) => kioskLayoutRowMarkup(row, rows, false, index, layoutRows.length)).join('');
   applyKioskHero(document.getElementById('modeKiosk'), design);
   renderKioskTabSummary();
