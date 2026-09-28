@@ -992,7 +992,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-hero h2.size-normal { font-size:clamp(1.45rem,3vw,2.45rem); }
 .kiosk-hero p.size-normal { font-size:1.12rem; }
 .kiosk-hero p.size-large { font-size:1.35rem; }
-.kiosk-basket { position:relative; width:max-content; max-width:100%; min-height:118px; border:0; border-radius:0; padding:8px 0; background:transparent; color:inherit; text-align:left; cursor:pointer; font:inherit; display:grid; grid-template-columns:104px max-content 30px; column-gap:18px; align-items:center; justify-content:start; box-shadow:none; overflow:visible; }
+.kiosk-basket { position:relative; min-width:262px; min-height:118px; border:0; border-radius:0; padding:8px 0; background:transparent; color:inherit; text-align:left; cursor:pointer; font:inherit; display:grid; grid-template-columns:112px minmax(86px,1fr) 30px; gap:8px; align-items:center; box-shadow:none; overflow:visible; }
 .kiosk-basket-coaster { display:block; width:104px; aspect-ratio:1; margin:-5px 0 -5px -3px; transform:rotate(-7deg); transform-origin:center; filter:drop-shadow(0 9px 8px rgba(0,0,0,.38)); transition:transform .2s ease; }
 .kiosk-basket-coaster img { display:block; width:100%; height:100%; object-fit:contain; }
 .kiosk-basket-summary { display:flex; flex-direction:column; align-items:flex-start; min-width:0; }
@@ -1004,7 +1004,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-basket:hover .kiosk-basket-arrow,.kiosk-basket:focus-visible .kiosk-basket-arrow { transform:translateX(2px); background:#FF5A36; }
 .kiosk-basket:focus-visible,.kiosk-showcase-jump:focus-visible { outline:3px solid #FF5A36; outline-offset:3px; }
 @media (min-width:901px){
-  .kiosk-basket { min-height:134px; grid-template-columns:120px max-content 30px; column-gap:20px; }
+  .kiosk-basket { min-width:310px; min-height:134px; grid-template-columns:128px minmax(94px,1fr) 30px; column-gap:16px; }
   .kiosk-basket-coaster { width:120px; margin:-6px 0 -6px -4px; }
 }
 .kiosk-section { margin-top:6px; scroll-margin-top:92px; }
@@ -1060,7 +1060,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-card.is-free.subtitle-size-normal .kiosk-desc { font-size:1.15rem; }
 .kiosk-card.is-free.subtitle-size-large .kiosk-desc { font-size:1.4rem; }
 .kiosk-card.is-free .kiosk-actions { display:none; }
-.kiosk-section.has-featured-equipment .kiosk-card.is-free.is-landscape.text-bottom { grid-column:1 / -1; }
+.kiosk-section.has-featured-equipment .kiosk-card.is-free.is-landscape.text-bottom { grid-column:1 / -1; order:-1; }
 .kiosk-img { background:linear-gradient(135deg,#FFFFFF,#EFE7D8); min-height:158px; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; position:relative; }
 .kiosk-img img { width:100%; height:100%; object-fit:cover; object-position:center bottom; display:block; }
 .kiosk-showcase-jump { width:100%; border:0; margin:0; color:inherit; font:inherit; cursor:pointer; appearance:none; }
@@ -1163,15 +1163,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-admin-stage .kiosk-hero { margin-bottom:0; }
 .kiosk-admin-stage .kiosk-card,.kiosk-admin-stage .kiosk-info-row { cursor:pointer; }
 .kiosk-admin-stage .kiosk-card[draggable="true"],.kiosk-admin-stage .kiosk-info-row[draggable="true"],.kiosk-admin-stage .kiosk-section[draggable="true"] { position:relative; }
-.kiosk-admin-card-controls { position:absolute; z-index:5; top:8px; right:8px; display:flex; gap:4px; padding:4px; border-radius:8px; background:rgba(28,26,23,.9); box-shadow:0 5px 16px rgba(0,0,0,.24); }
-.kiosk-admin-card-controls button,.kiosk-admin-order-controls button { display:grid; place-items:center; width:32px; height:32px; border:1px solid rgba(255,255,255,.22); border-radius:6px; background:#27231F; color:#F6F1E7; font:900 .9rem "Space Grotesk",sans-serif; cursor:pointer; }
-.kiosk-admin-card-controls button:hover,.kiosk-admin-order-controls button:hover { background:#FF5A36; }
-.kiosk-section-admin-head { padding:6px 0 6px 16px; }
-.kiosk-section-title-input { flex:0 1 auto; width:min(420px,55%); min-width:150px; border:1px solid transparent; border-radius:6px; padding:5px 7px; background:transparent; font:900 1.23rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.14em; text-transform:uppercase; }
-.kiosk-section-title-input:hover,.kiosk-section-title-input:focus { border-color:#FF5A36; outline:0; background:rgba(255,255,255,.06); }
-.kiosk-section-head-line { height:1px; flex:1; background:var(--border); }
-.kiosk-admin-order-controls { display:flex; gap:5px; flex:none; }
-.kiosk-admin-order-controls .is-delete { color:#FF9B84; }
+.kiosk-admin-stage .kiosk-card[draggable="true"]:before,.kiosk-admin-stage .kiosk-info-row[draggable="true"]:before { content:"⋮⋮"; position:absolute; z-index:3; top:8px; right:8px; background:rgba(28,26,23,.78); color:#fff; border-radius:6px; padding:4px 6px; cursor:grab; }
 .kiosk-admin-stage .kiosk-section.drag-over,.kiosk-admin-stage .kiosk-card.drag-over,.kiosk-admin-stage .kiosk-info-row.drag-over { outline:3px solid #FF5A36; outline-offset:3px; }
 .kiosk-tab-modal { position:fixed; inset:0; z-index:10020; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.68); backdrop-filter:blur(8px); }
 .kiosk-tab-modal.show { display:flex; }
@@ -1202,7 +1194,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-undo-toast button { border:0; border-radius:7px; padding:8px 10px; background:#FF5A36; color:#fff; font:900 .66rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; white-space:nowrap; }
 @media (max-width:900px){ .kiosk-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-admin-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-section-editor-row { grid-template-columns:28px 1fr 150px; } }
 @media (max-width:900px){ .kiosk-sale-option { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-@media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:0 14px; } #modeKiosk .kiosk-shell { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-basket { width:max-content; min-width:0; grid-template-columns:94px max-content 32px; column-gap:16px; min-height:106px; padding:7px 0 7px 4px; } .kiosk-basket-coaster { width:94px; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:112px minmax(0,1fr); grid-template-rows:176px; height:176px; min-height:176px; } .kiosk-card.is-free,.kiosk-card.is-free.is-landscape,.kiosk-card.is-free.is-portrait,.kiosk-card.is-free.text-left,.kiosk-card.is-free.text-right,.kiosk-card.is-free.text-bottom { height:auto; grid-template-columns:1fr; grid-template-rows:220px auto; min-height:0; } .kiosk-card.is-free.text-right .kiosk-img { order:0; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:176px; min-width:0; min-height:0; padding:10px 8px 0; } .kiosk-card.is-free .kiosk-img { height:auto; min-height:220px; padding:0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { height:176px; min-width:0; min-height:0; padding:13px; } .kiosk-card.is-free .kiosk-body { height:auto; min-height:0; } .kiosk-card.is-featured-equipment { height:220px; grid-template-rows:220px; min-height:220px; } .kiosk-card.is-featured-equipment .kiosk-img,.kiosk-card.is-featured-equipment .kiosk-body { height:220px; } .kiosk-title { font-size:1.25rem; } .kiosk-desc { margin-top:5px; } .kiosk-action { min-width:0; padding:9px 8px; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-design-savebar { align-items:stretch; flex-direction:column; } .kiosk-design-savebar .admin-save-btn { width:100%; min-width:0; } .kiosk-tab-actions { grid-template-columns:1fr; } .kiosk-section-admin-head { padding-left:0; gap:8px; } .kiosk-section-title-input { width:min(100%,280px); min-width:0; font-size:1rem; } .kiosk-admin-order-controls button { width:30px; height:30px; } }
+@media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:0 14px; } #modeKiosk .kiosk-shell { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-basket { width:100%; min-width:0; grid-template-columns:100px minmax(0,1fr) 32px; min-height:106px; padding:7px 9px 7px 4px; } .kiosk-basket-coaster { width:94px; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:118px 1fr; grid-template-rows:minmax(168px,auto); min-height:168px; } .kiosk-card.is-free,.kiosk-card.is-free.is-landscape,.kiosk-card.is-free.is-portrait,.kiosk-card.is-free.text-left,.kiosk-card.is-free.text-right,.kiosk-card.is-free.text-bottom { grid-template-columns:1fr; grid-template-rows:220px auto; min-height:0; } .kiosk-card.is-free.text-right .kiosk-img { order:0; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } .kiosk-card.is-free .kiosk-img { min-height:220px; padding:0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:168px; } .kiosk-card.is-free .kiosk-body { min-height:0; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-design-savebar { align-items:stretch; flex-direction:column; } .kiosk-design-savebar .admin-save-btn { width:100%; min-width:0; } .kiosk-tab-actions { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-sale-option { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-price-fields.is-simple .kiosk-sale-option { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-card.is-featured-equipment.is-portrait { grid-template-rows:minmax(168px,auto); } .kiosk-card.is-featured-equipment.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } }
@@ -5404,9 +5396,10 @@ main {
           <div class="kiosk-designer-actions">
             <button class="admin-save-btn gold" onclick="addKioskSection()">Bereich hinzufügen</button>
           </div>
+          <div id="kioskSectionEditor" class="kiosk-section-editor"></div>
           <div id="kioskDesignSavebar" class="kiosk-design-savebar is-saved">
             <span id="kioskDesignSaveStatus">Alle Änderungen gespeichert</span>
-            <button id="kioskDesignSaveButton" class="admin-save-btn" onclick="saveKioskSettingsFromAdmin()">Gestaltung und Bereiche speichern</button>
+            <button id="kioskDesignSaveButton" class="admin-save-btn" onclick="saveKioskSettingsFromAdmin()">Überschriften und Gestaltung speichern</button>
           </div>
         </div>
         <div class="kiosk-createbar">
@@ -5421,7 +5414,7 @@ main {
             <button class="admin-save-btn gold" onclick="startNewKioskInfoRow()">＋ Informationszeile</button>
           </div>
         </div>
-        <div class="kiosk-preview-label"><span>Live-Vorschau</span><span>Überschriften direkt bearbeiten, Bereiche und Elemente mit ↑ ↓ verschieben</span></div>
+        <div class="kiosk-preview-label"><span>Live-Vorschau</span><span>Kacheln, Hinweise und Bereiche mit dem Griff verschieben</span></div>
         <div id="kioskAdminPreview" class="kiosk-admin-stage"></div>
       </div>
       <div class="admin-section" id="kioskProductEditor">
@@ -14408,19 +14401,8 @@ function kioskSectionMarkup(section, rows, admin = false) {
   const drag = admin
     ? ` draggable="true" ondragstart="kioskStartSectionDrag(event,'${jsSingleQuoted(section.id)}')" ondragover="kioskDragOver(event)" ondrop="kioskDropSection(event,'${jsSingleQuoted(section.id)}')"`
     : '';
-  const sectionHead = admin
-    ? `<div class="kiosk-section-head kiosk-section-admin-head">
-        <input class="kiosk-section-title-input" value="${esc(section.title)}" aria-label="Bereichsüberschrift" style="color:${esc(kioskValidColor(section.color,'#F6F1E7'))}" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation()" oninput="updateKioskSectionInline('${jsSingleQuoted(section.id)}',this.value)">
-        <span class="kiosk-section-head-line" aria-hidden="true"></span>
-        <div class="kiosk-admin-order-controls" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation()">
-          <button type="button" onclick="moveKioskSection('${jsSingleQuoted(section.id)}',-1)" aria-label="Bereich nach oben verschieben" title="Bereich nach oben verschieben">↑</button>
-          <button type="button" onclick="moveKioskSection('${jsSingleQuoted(section.id)}',1)" aria-label="Bereich nach unten verschieben" title="Bereich nach unten verschieben">↓</button>
-          <button type="button" class="is-delete" onclick="deleteKioskSection('${jsSingleQuoted(section.id)}')" aria-label="Bereich löschen" title="Bereich löschen">×</button>
-        </div>
-      </div>`
-    : `<div class="kiosk-section-head"><h3 style="color:${esc(kioskValidColor(section.color,'#F6F1E7'))}">${esc(section.title)}</h3></div>`;
   return `<section class="kiosk-section${items.some(p => ['racket','balls'].includes(p.id)) ? ' has-featured-equipment' : ''}" data-kiosk-section="${esc(section.id)}"${drag}>
-    ${sectionHead}
+    <div class="kiosk-section-head"><h3 style="color:${esc(kioskValidColor(section.color,'#F6F1E7'))}">${esc(section.title)}</h3></div>
     <div class="kiosk-grid" ondragover="kioskDragOver(event)" ondrop="kioskDropInSection(event,'${jsSingleQuoted(section.id)}')">${inGrid.map(p => kioskProductCard(p, admin)).join('')}${admin && !items.length ? '<div class="play-empty" style="grid-column:1/-1;padding:24px;">Produkte hierher ziehen</div>' : ''}</div>
     ${after.map(p => kioskProductCard(p, admin)).join('')}
     ${admin ? `<div class="kiosk-info-dropzone" ondragover="kioskInfoDropOver(event)" ondragleave="this.classList.remove('drag-over')" ondrop="kioskDropInfoAfterSection(event,'${jsSingleQuoted(section.id)}')">Informationszeile nach diesem Bereich ablegen</div>` : ''}
@@ -14442,16 +14424,8 @@ function kioskProductCard(p, admin = false) {
   const adminAttrs = admin
     ? ` draggable="true" onclick="editKioskProduct('${jsSingleQuoted(p.id)}')" ondragstart="kioskStartProductDrag(event,'${jsSingleQuoted(p.id)}')" ondragover="kioskDragOver(event)" ondrop="kioskDropProduct(event,'${jsSingleQuoted(p.id)}','${jsSingleQuoted(p.category)}')"`
     : '';
-  const adminControls = admin
-    ? `<div class="kiosk-admin-card-controls" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation()">
-        <button type="button" onclick="moveKioskProduct('${jsSingleQuoted(p.id)}',-1)" aria-label="Element nach oben verschieben" title="Element nach oben verschieben">↑</button>
-        <button type="button" onclick="moveKioskProduct('${jsSingleQuoted(p.id)}',1)" aria-label="Element nach unten verschieben" title="Element nach unten verschieben">↓</button>
-        <button type="button" onclick="editKioskProduct('${jsSingleQuoted(p.id)}')" aria-label="Element bearbeiten" title="Element bearbeiten">✎</button>
-      </div>`
-    : '';
   if (meta.tileRole === 'info') {
     return `<aside class="kiosk-info-row${meta.infoTheme === 'dark' ? ' is-dark' : ''}${meta.infoPlacement === 'after' ? ' is-after-section' : ''} title-size-${meta.infoTitleSize} text-size-${meta.infoTextSize}" role="note" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
-      ${adminControls}
       <span class="kiosk-info-row-mark" aria-hidden="true">i</span>
       <div class="kiosk-info-row-copy"><div class="kiosk-info-row-title">${esc(p.name)}</div>${p.desc ? `<p class="kiosk-info-row-text">${esc(p.desc)}</p>` : ''}</div>
     </aside>`;
@@ -14486,7 +14460,6 @@ function kioskProductCard(p, admin = false) {
   const freeClass = isFree ? ` is-free text-${meta.textPosition} align-${meta.textAlign} title-size-${meta.titleSize} subtitle-size-${meta.subtitleSize}` : '';
   const equipmentClass = !isFree && ['racket','balls'].includes(p.id) ? ' is-featured-equipment' : '';
   return `<article class="kiosk-card is-${layout} fit-${imageFit}${freeClass}${equipmentClass}" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
-    ${adminControls}
     ${imageMarkup}
     <div class="kiosk-body">
       <div class="kiosk-copy">
@@ -14528,6 +14501,7 @@ function renderKioskAdmin() {
   const sizes = kioskValidHeroSizes(design.heroSizes);
   const fields = { kioskSettingKicker:design.kicker, kioskSettingTitle:design.title, kioskSettingText:design.text, kioskSettingKickerSize:sizes.kicker, kioskSettingTitleSize:sizes.title, kioskSettingTextSize:sizes.text, kioskSettingAccent:design.accent, kioskSettingAccentPicker:design.accent };
   Object.entries(fields).forEach(([id, value]) => { const el = document.getElementById(id); if (el) el.value = value; });
+  renderKioskSectionEditor();
   renderKioskCategoryOptions();
   renderKioskAdminPreview();
   if (!kioskDesignDirty) setKioskDesignSaveState('saved', 'Alle Änderungen gespeichert');
@@ -14736,32 +14710,6 @@ function updateKioskSection(id, field, value) {
   markKioskDesignDirty();
 }
 
-function updateKioskSectionInline(id, value) {
-  const design = kioskDesignFromAdminFields();
-  const section = design.sections.find(s => s.id === id);
-  if (!section) return;
-  section.title = String(value);
-  saveKioskDesign(design);
-  renderKioskCategoryOptions(id);
-  markKioskDesignDirty();
-}
-
-function moveKioskSection(id, direction) {
-  const design = kioskDesignFromAdminFields();
-  const ordered = kioskDesignSections(design);
-  const index = ordered.findIndex(section => section.id === id);
-  const target = index + Number(direction);
-  if (index < 0 || target < 0 || target >= ordered.length) return;
-  [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
-  ordered.forEach((section, position) => { section.sort = (position + 1) * 10; });
-  design.sections = ordered;
-  saveKioskDesign(design);
-  renderKioskAdminPreview();
-  renderKioskCategoryOptions(id);
-  renderKiosk();
-  markKioskDesignDirty();
-}
-
 function addKioskSection() {
   const design = kioskDesignFromAdminFields();
   const id = 'section-' + Date.now();
@@ -14788,24 +14736,6 @@ function deleteKioskSection(id) {
 function kioskDragOver(event) { event.preventDefault(); event.stopPropagation(); }
 function kioskStartProductDrag(event, id) { event.stopPropagation(); kioskDragState = { type:'product', id }; event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', id); }
 function kioskStartSectionDrag(event, id) { event.stopPropagation(); kioskDragState = { type:'section', id }; event.dataTransfer.effectAllowed = 'move'; }
-
-function moveKioskProduct(id, direction) {
-  const rows = loadKioskProducts();
-  const moving = rows.find(product => product.id === id);
-  if (!moving) return;
-  const meta = kioskTileMeta(moving);
-  const peers = kioskSorted(rows).filter(product => product.category === moving.category
-    && kioskTileMeta(product).infoPlacement === meta.infoPlacement);
-  const index = peers.findIndex(product => product.id === id);
-  const target = index + Number(direction);
-  if (index < 0 || target < 0 || target >= peers.length) return;
-  [peers[index], peers[target]] = [peers[target], peers[index]];
-  peers.forEach((product, position) => { product.sort = (position + 1) * 10; });
-  if (!saveKioskProducts(rows)) return;
-  renderKioskAdminPreview();
-  renderKiosk();
-  persistKioskProducts(rows).catch(error => kioskAdminMsg('kioskAdminErr', 'Neue Reihenfolge nicht online gespeichert: ' + (error.message || error), false));
-}
 
 function kioskDropProduct(event, targetId, sectionId) {
   event.preventDefault(); event.stopPropagation();
