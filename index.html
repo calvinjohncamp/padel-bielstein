@@ -1015,6 +1015,9 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-section-head h3 { margin:0; flex:0 0 auto; color:#F6F1E7; font:900 1.23rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.14em; text-transform:uppercase; }
 .kiosk-section-head:after { content:""; height:1px; flex:1; background:var(--border); }
 .kiosk-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.kiosk-layout-row.columns-two .kiosk-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.kiosk-layout-row.columns-full .kiosk-grid { grid-template-columns:minmax(0,1fr); }
+.kiosk-layout-row.columns-full .kiosk-card { grid-column:1 / -1; }
 .kiosk-info-row { grid-column:1 / -1; display:flex; align-items:flex-start; gap:16px; padding:18px 22px; border:1px solid #E2DACB; border-left:5px solid #FF5A36; border-radius:8px; background:#F6F1E7; color:#1C1A17; }
 .kiosk-info-row.is-dark { border-color:#51433B; border-left-color:#FF5A36; background:#2B2622; color:#F6F1E7; }
 .kiosk-info-row-mark { flex:none; display:grid; place-items:center; width:28px; height:28px; border:1px solid #FF5A36; border-radius:50%; color:#FF5A36; font:900 1rem "Space Grotesk",sans-serif; }
@@ -1147,12 +1150,16 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-design-savebar.is-saved span { color:#386B4B; }
 .kiosk-design-savebar.is-error { border-color:#B53B22; background:#FFF0ED; }
 .kiosk-design-savebar .admin-save-btn { min-width:240px; }
+.kiosk-designer-intro { margin:0; color:#6E675E; font-size:.78rem; line-height:1.55; }
 .kiosk-createbar { display:grid; grid-template-columns:1fr minmax(220px,320px) auto; gap:10px; align-items:end; margin:16px 0 12px; padding:14px; border:1px solid #3A3631; border-radius:10px; background:#211E1B; }
 .kiosk-createbar-copy strong { display:block; color:#F6F1E7; font:900 .86rem "Space Grotesk",sans-serif; text-transform:uppercase; }
 .kiosk-createbar-copy span { display:block; margin-top:4px; color:#AFA79C; font-size:.72rem; }
 .kiosk-createbar-actions { display:flex; gap:8px; flex-wrap:wrap; }
 .kiosk-card.is-just-saved { animation:kioskSaved 1.7s ease; }
 @keyframes kioskSaved { 0%,35% { outline:4px solid #FF5A36; outline-offset:4px; } 100% { outline-color:transparent; outline-offset:8px; } }
+#kioskProductEditor { display:none; position:fixed; z-index:10040; inset:5vh max(24px,calc((100vw - 1120px) / 2)); max-height:90vh; overflow:auto; margin:0; padding:24px; border:1px solid #D7CDBF; border-radius:10px; background:#F6F1E7; box-shadow:0 28px 90px rgba(0,0,0,.48); }
+#kioskProductEditor.show { display:block; }
+.kiosk-editor-close { position:sticky; z-index:2; top:0; float:right; display:grid; place-items:center; width:36px; height:36px; border:0; border-radius:50%; background:#1C1A17; color:#F6F1E7; font-size:1.35rem; cursor:pointer; }
 .kiosk-section-editor { display:grid; gap:8px; margin-top:16px; }
 .kiosk-section-editor-row { display:grid; grid-template-columns:28px minmax(160px,1fr) 170px 110px 42px; gap:8px; align-items:center; padding:9px; border:1px solid #E2DACB; border-radius:9px; background:#F8F4EC; }
 .kiosk-drag-handle { border:0; background:transparent; color:#746D63; cursor:grab; font-size:1.1rem; padding:3px; }
@@ -1161,9 +1168,30 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-admin-stage { background:#171513; border:1px solid #34302C; border-radius:14px; padding:16px; min-height:240px; }
 .kiosk-admin-stage .kiosk-shell { background:transparent; border:0; border-radius:0; padding:0; }
 .kiosk-admin-stage .kiosk-hero { margin-bottom:0; }
-.kiosk-admin-stage .kiosk-card,.kiosk-admin-stage .kiosk-info-row { cursor:pointer; }
+.kiosk-hero-inline-editor { min-width:0; display:flex; flex-direction:column; align-items:flex-start; }
+.kiosk-hero-inline-editor input { width:100%; min-width:0; border:0; border-radius:4px; padding:2px 4px; margin-left:-4px; background:transparent; color:inherit; outline:none; }
+.kiosk-hero-inline-editor input:hover { background:rgba(255,255,255,.05); }
+.kiosk-hero-inline-editor input:focus { background:rgba(255,255,255,.08); box-shadow:0 0 0 2px #FF5A36; }
+.kiosk-hero-inline-editor .kiosk-kicker { color:#FF5A36; }
+.kiosk-hero-inline-editor .kiosk-hero-title { margin:0; font:900 clamp(1.65rem,4vw,3.2rem)/.96 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:0; text-transform:uppercase; }
+.kiosk-hero-inline-editor .kiosk-hero-title.size-small { font-size:clamp(1.2rem,2.4vw,1.8rem); }
+.kiosk-hero-inline-editor .kiosk-hero-title.size-normal { font-size:clamp(1.45rem,3vw,2.45rem); }
+.kiosk-hero-inline-editor .kiosk-hero-subtitle { max-width:680px; margin-top:12px; color:#BDB5A9; font:400 .92rem/1.55 Manrope,sans-serif; }
+.kiosk-hero-inline-editor .kiosk-hero-subtitle.size-normal { font-size:1.12rem; }
+.kiosk-hero-inline-editor .kiosk-hero-subtitle.size-large { font-size:1.35rem; }
+.kiosk-row-toolbar { display:flex; align-items:center; justify-content:flex-end; gap:6px; margin:0 0 8px; color:#AFA79C; font:800 .66rem "Space Grotesk",sans-serif; text-transform:uppercase; }
+.kiosk-row-toolbar span { margin-right:auto; }
+.kiosk-row-toolbar select { height:32px; border:1px solid #4A433C; border-radius:6px; padding:0 28px 0 9px; background:#26221F; color:#F6F1E7; font:800 .65rem "Space Grotesk",sans-serif; }
+.kiosk-row-toolbar button,.kiosk-card-tools button { display:grid; place-items:center; width:32px; height:32px; border:1px solid #4A433C; border-radius:6px; background:#26221F; color:#F6F1E7; font-size:.9rem; cursor:pointer; }
+.kiosk-row-toolbar button:disabled { opacity:.28; cursor:default; }
+.kiosk-row-heading-input { min-width:0; flex:0 1 42ch; border:0; border-radius:4px; padding:2px 4px; background:transparent; color:#F6F1E7; font:900 1.23rem "Space Grotesk","Arial Narrow",sans-serif; letter-spacing:.14em; text-transform:uppercase; outline:none; }
+.kiosk-row-heading-input::placeholder { color:#777067; }
+.kiosk-row-heading-input:focus { background:rgba(255,255,255,.07); box-shadow:0 0 0 2px #FF5A36; }
+.kiosk-admin-stage .kiosk-card,.kiosk-admin-stage .kiosk-info-row { cursor:grab; }
+.kiosk-card-tools { position:absolute; z-index:5; top:8px; right:8px; }
+.kiosk-card-tools button { background:rgba(28,26,23,.9); }
 .kiosk-admin-stage .kiosk-card[draggable="true"],.kiosk-admin-stage .kiosk-info-row[draggable="true"],.kiosk-admin-stage .kiosk-section[draggable="true"] { position:relative; }
-.kiosk-admin-stage .kiosk-card[draggable="true"]:before,.kiosk-admin-stage .kiosk-info-row[draggable="true"]:before { content:"⋮⋮"; position:absolute; z-index:3; top:8px; right:8px; background:rgba(28,26,23,.78); color:#fff; border-radius:6px; padding:4px 6px; cursor:grab; }
+.kiosk-admin-stage .kiosk-card[draggable="true"]:before,.kiosk-admin-stage .kiosk-info-row[draggable="true"]:before { content:"⋮⋮"; position:absolute; z-index:3; top:8px; right:48px; background:rgba(28,26,23,.78); color:#fff; border-radius:6px; padding:6px 7px; cursor:grab; }
 .kiosk-admin-stage .kiosk-section.drag-over,.kiosk-admin-stage .kiosk-card.drag-over,.kiosk-admin-stage .kiosk-info-row.drag-over { outline:3px solid #FF5A36; outline-offset:3px; }
 .kiosk-tab-modal { position:fixed; inset:0; z-index:10020; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.68); backdrop-filter:blur(8px); }
 .kiosk-tab-modal.show { display:flex; }
@@ -1195,6 +1223,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 @media (max-width:900px){ .kiosk-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-admin-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .kiosk-section-editor-row { grid-template-columns:28px 1fr 150px; } }
 @media (max-width:900px){ .kiosk-sale-option { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width:620px){ #modeKiosk { margin:0 -14px; padding:0 14px; } #modeKiosk .kiosk-shell { margin:0 -14px; padding:14px; border-left:0; border-right:0; border-radius:0; } .kiosk-hero { grid-template-columns:1fr; } .kiosk-basket { width:100%; min-width:0; grid-template-columns:100px minmax(0,1fr) 32px; min-height:106px; padding:7px 9px 7px 4px; } .kiosk-basket-coaster { width:94px; } .kiosk-grid,.kiosk-admin-list { grid-template-columns:1fr; } .kiosk-card,.kiosk-card.is-landscape,.kiosk-card.is-square,.kiosk-card.is-portrait { grid-column:span 1; grid-template-columns:118px 1fr; grid-template-rows:minmax(168px,auto); min-height:168px; } .kiosk-card.is-free,.kiosk-card.is-free.is-landscape,.kiosk-card.is-free.is-portrait,.kiosk-card.is-free.text-left,.kiosk-card.is-free.text-right,.kiosk-card.is-free.text-bottom { grid-template-columns:1fr; grid-template-rows:220px auto; min-height:0; } .kiosk-card.is-free.text-right .kiosk-img { order:0; } .kiosk-card.is-landscape .kiosk-img,.kiosk-card.is-square .kiosk-img,.kiosk-card.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } .kiosk-card.is-free .kiosk-img { min-height:220px; padding:0; } .kiosk-card.fit-cover .kiosk-img { padding:0; } .kiosk-card.is-landscape .kiosk-body,.kiosk-card.is-square .kiosk-body,.kiosk-card.is-portrait .kiosk-body { min-height:168px; } .kiosk-card.is-free .kiosk-body { min-height:0; } .kiosk-admin-form,.kiosk-admin-image-row,.kiosk-createbar { grid-template-columns:1fr; } .kiosk-section-editor-row { grid-template-columns:28px 1fr 42px; } .kiosk-section-editor-row .kiosk-color-control,.kiosk-section-editor-row select { grid-column:2 / -1; } .kiosk-design-savebar { align-items:stretch; flex-direction:column; } .kiosk-design-savebar .admin-save-btn { width:100%; min-width:0; } .kiosk-tab-actions { grid-template-columns:1fr; } }
+@media (max-width:620px){ #kioskProductEditor { inset:12px; max-height:calc(100vh - 24px); padding:18px 14px; } .kiosk-row-toolbar { flex-wrap:wrap; } .kiosk-row-toolbar span { width:100%; } }
 @media (max-width:620px){ .kiosk-sale-option { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-price-fields.is-simple .kiosk-sale-option { grid-template-columns:1fr; } }
 @media (max-width:620px){ .kiosk-card.is-featured-equipment.is-portrait { grid-template-rows:minmax(168px,auto); } .kiosk-card.is-featured-equipment.is-portrait .kiosk-img { height:100%; min-height:168px; padding:10px 8px 0; } }
@@ -1208,6 +1237,23 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
   .kiosk-section.has-featured-equipment .kiosk-card.is-free.is-landscape.text-bottom { grid-template-rows:auto auto; min-height:0; }
   .kiosk-section.has-featured-equipment .kiosk-card.is-free.is-landscape.text-bottom .kiosk-img { height:auto; min-height:0; padding:0; }
   .kiosk-section.has-featured-equipment .kiosk-card.is-free.is-landscape.text-bottom .kiosk-img img { width:100%; height:auto; max-height:none; object-fit:contain; object-position:center; }
+}
+@media (min-width:901px){
+  .kiosk-layout-row.columns-four .kiosk-card.is-square,
+  .kiosk-layout-row.columns-four .kiosk-card.is-portrait,
+  .kiosk-layout-row.columns-four .kiosk-card.is-featured-equipment.is-portrait { grid-template-rows:220px minmax(146px,auto); }
+  .kiosk-layout-row.columns-four .kiosk-card.is-square .kiosk-img,
+  .kiosk-layout-row.columns-four .kiosk-card.is-portrait .kiosk-img,
+  .kiosk-layout-row.columns-four .kiosk-card.is-featured-equipment.is-portrait .kiosk-img { height:220px; min-height:0; padding:14px 16px 0; }
+  .kiosk-layout-row.columns-four .kiosk-card.is-square .kiosk-body,
+  .kiosk-layout-row.columns-four .kiosk-card.is-portrait .kiosk-body { min-height:146px; }
+  .kiosk-layout-row.columns-two .kiosk-card.is-square,
+  .kiosk-layout-row.columns-two .kiosk-card.is-portrait { grid-template-rows:280px minmax(154px,auto); }
+  .kiosk-layout-row.columns-two .kiosk-card.is-square .kiosk-img,
+  .kiosk-layout-row.columns-two .kiosk-card.is-portrait .kiosk-img { height:280px; }
+  .kiosk-layout-row.columns-full .kiosk-card.is-free.is-landscape { min-height:0; grid-template-columns:1fr; grid-template-rows:auto auto; }
+  .kiosk-layout-row.columns-full .kiosk-card.is-free.is-landscape .kiosk-img { width:100%; height:auto; min-height:0; aspect-ratio:auto; padding:0; }
+  .kiosk-layout-row.columns-full [data-kiosk-product="kiosk-1790058993632"] .kiosk-img img { width:100%; height:auto; object-fit:contain; object-position:center; }
 }
 .door-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .door-log-entry { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1E1E1E; border-radius: 8px; border: 1px solid var(--border); }
@@ -5372,34 +5418,15 @@ main {
       <div class="admin-section">
         <div class="admin-section-title">Shop-Designer</div>
         <div class="admin-card kiosk-designer-controls">
-          <div class="kiosk-admin-form">
-            <div>
-              <label class="eb-adm-lbl">Obere Zeile</label>
-              <input id="kioskSettingKicker" class="eb-adm-inp" type="text" oninput="previewKioskSettings()">
-              <select id="kioskSettingKickerSize" class="eb-adm-inp" aria-label="Größe der oberen Zeile" onchange="previewKioskSettings()" style="margin-top:8px;"><option value="small">Klein</option><option value="normal">Normal</option><option value="large">Groß</option></select>
-            </div>
-            <div>
-              <label class="eb-adm-lbl">Hauptüberschrift</label>
-              <input id="kioskSettingTitle" class="eb-adm-inp" type="text" oninput="previewKioskSettings()">
-              <select id="kioskSettingTitleSize" class="eb-adm-inp" aria-label="Größe der Hauptüberschrift" onchange="previewKioskSettings()" style="margin-top:8px;"><option value="small">Klein</option><option value="normal">Normal</option><option value="large">Groß</option></select>
-            </div>
-            <div>
-              <label class="eb-adm-lbl">Akzentfarbe</label>
-              <div class="kiosk-color-control"><input id="kioskSettingAccentPicker" type="color" oninput="syncKioskColor('accent','picker')"><input id="kioskSettingAccent" class="eb-adm-inp" type="text" maxlength="7" oninput="syncKioskColor('accent','hex')"></div>
-            </div>
-            <div style="grid-column:1 / -1;">
-              <label class="eb-adm-lbl">Untere Zeile</label>
-              <input id="kioskSettingText" class="eb-adm-inp" type="text" maxlength="180" oninput="previewKioskSettings()">
-              <select id="kioskSettingTextSize" class="eb-adm-inp" aria-label="Größe der unteren Zeile" onchange="previewKioskSettings()" style="margin-top:8px;"><option value="small">Klein</option><option value="normal">Normal</option><option value="large">Groß</option></select>
-            </div>
-          </div>
-          <div class="kiosk-designer-actions">
-            <button class="admin-save-btn gold" onclick="addKioskSection()">Bereich hinzufügen</button>
-          </div>
-          <div id="kioskSectionEditor" class="kiosk-section-editor"></div>
+          <p class="kiosk-designer-intro">Texte, Überschriften und Reihenfolge werden direkt in der Vorschau bearbeitet. Der große Kiosk-Kopf behält dabei immer seine feste Gestaltung.</p>
+          <input id="kioskSettingKicker" type="hidden"><input id="kioskSettingTitle" type="hidden"><input id="kioskSettingText" type="hidden">
+          <input id="kioskSettingAccent" type="hidden"><input id="kioskSettingAccentPicker" type="hidden">
+          <select id="kioskSettingKickerSize" hidden><option value="small">Klein</option><option value="normal">Normal</option><option value="large">Groß</option></select>
+          <select id="kioskSettingTitleSize" hidden><option value="small">Klein</option><option value="normal">Normal</option><option value="large">Groß</option></select>
+          <select id="kioskSettingTextSize" hidden><option value="small">Klein</option><option value="normal">Normal</option><option value="large">Groß</option></select>
           <div id="kioskDesignSavebar" class="kiosk-design-savebar is-saved">
             <span id="kioskDesignSaveStatus">Alle Änderungen gespeichert</span>
-            <button id="kioskDesignSaveButton" class="admin-save-btn" onclick="saveKioskSettingsFromAdmin()">Überschriften und Gestaltung speichern</button>
+            <button id="kioskDesignSaveButton" class="admin-save-btn" onclick="saveKioskSettingsFromAdmin()">Kiosk-Gestaltung speichern</button>
           </div>
         </div>
         <div class="kiosk-createbar">
@@ -5414,10 +5441,11 @@ main {
             <button class="admin-save-btn gold" onclick="startNewKioskInfoRow()">＋ Informationszeile</button>
           </div>
         </div>
-        <div class="kiosk-preview-label"><span>Live-Vorschau</span><span>Kacheln, Hinweise und Bereiche mit dem Griff verschieben</span></div>
+        <div class="kiosk-preview-label"><span>Live-Vorschau</span><span>Zeilen mit ↑ ↓ verschieben, Produkte am Griff ziehen</span></div>
         <div id="kioskAdminPreview" class="kiosk-admin-stage"></div>
       </div>
       <div class="admin-section" id="kioskProductEditor">
+        <button type="button" class="kiosk-editor-close" onclick="closeKioskProductEditor()" aria-label="Produkteditor schließen" title="Schließen">×</button>
         <div class="admin-section-title" id="kioskProductEditorTitle">Neues Produkt anlegen</div>
         <div class="admin-card">
           <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
@@ -14043,6 +14071,64 @@ function kioskValidHeroSizes(sizes) {
     ['small','normal','large'].includes(sizes?.[key]) ? sizes[key] : defaults[key]]));
 }
 
+function kioskDefaultLayoutRows(products = loadKioskProducts(), sections = KIOSK_DEFAULT_DESIGN.sections) {
+  const active = kioskSorted(products).filter(product => product.active !== false);
+  const rows = [];
+  const assigned = new Set();
+  const showcase = active.find(product => product.id === 'kiosk-1790058993632');
+  if (showcase) {
+    const section = sections.find(item => item.id === showcase.category);
+    rows.push({ id:'row-showcase', heading:String(section?.title || 'Großes Tennis!'), color:kioskValidColor(section?.color, '#F6F1E7'), columns:'full', productIds:[showcase.id] });
+    assigned.add(showcase.id);
+  }
+  sections.slice().sort((a, b) => (Number(a.sort) || 0) - (Number(b.sort) || 0)).forEach(section => {
+    const productsInSection = active.filter(product => product.category === section.id && !assigned.has(product.id));
+    for (let index = 0; index < productsInSection.length; index += 4) {
+      const chunk = productsInSection.slice(index, index + 4);
+      rows.push({
+        id:`row-${section.id}-${Math.floor(index / 4) + 1}`,
+        heading:index === 0 && !(showcase && section.id === showcase.category) ? String(section.title || '') : '',
+        color:kioskValidColor(section.color, '#F6F1E7'),
+        columns:'four',
+        productIds:chunk.map(product => product.id),
+      });
+      chunk.forEach(product => assigned.add(product.id));
+    }
+  });
+  active.filter(product => !assigned.has(product.id)).forEach(product => {
+    rows.push({ id:`row-${product.id}`, heading:'', color:'#F6F1E7', columns:'four', productIds:[product.id] });
+  });
+  return rows;
+}
+
+function kioskNormalizeLayoutRows(layoutRows, products = loadKioskProducts(), sections = KIOSK_DEFAULT_DESIGN.sections) {
+  if (!Array.isArray(layoutRows) || !layoutRows.length) return kioskDefaultLayoutRows(products, sections);
+  const knownProducts = new Set(products.map(product => String(product.id)));
+  const used = new Set();
+  const normalized = layoutRows.map((row, index) => {
+    const productIds = (Array.isArray(row?.productIds) ? row.productIds : [])
+      .map(String).filter(id => knownProducts.has(id) && !used.has(id));
+    productIds.forEach(id => used.add(id));
+    return {
+      id:String(row?.id || `row-${index + 1}`),
+      heading:String(row?.heading || ''),
+      color:kioskValidColor(row?.color, '#F6F1E7'),
+      columns:['four','two','full'].includes(row?.columns) ? row.columns : 'four',
+      productIds,
+    };
+  }).filter(row => row.productIds.length);
+  const missing = products.filter(product => product.active !== false && !used.has(String(product.id)));
+  missing.forEach(product => {
+    const compatible = normalized.slice().reverse().find(row => {
+      const firstProduct = products.find(item => item.id === row.productIds[0]);
+      return row.columns === 'four' && row.productIds.length < 4 && firstProduct?.category === product.category;
+    });
+    if (compatible) compatible.productIds.push(String(product.id));
+    else normalized.push({ id:`row-${product.id}`, heading:'', color:'#F6F1E7', columns:product.id === 'kiosk-1790058993632' ? 'full' : 'four', productIds:[String(product.id)] });
+  });
+  return normalized;
+}
+
 function loadKioskDesign() {
   if (kioskDesignCache) return JSON.parse(JSON.stringify(kioskDesignCache));
   try {
@@ -14060,10 +14146,12 @@ function loadKioskDesign() {
           sort: Number(s.sort) || (i + 1) * 10,
         })),
       };
+      kioskDesignCache.rows = kioskNormalizeLayoutRows(parsed.rows || parsed.sections[0]?.layoutRows, loadKioskProducts(), kioskDesignCache.sections);
       return JSON.parse(JSON.stringify(kioskDesignCache));
     }
   } catch(e) {}
   kioskDesignCache = JSON.parse(JSON.stringify(KIOSK_DEFAULT_DESIGN));
+  kioskDesignCache.rows = kioskDefaultLayoutRows(loadKioskProducts(), kioskDesignCache.sections);
   return JSON.parse(JSON.stringify(kioskDesignCache));
 }
 
@@ -14297,7 +14385,7 @@ function kioskProductToDb(product) {
 
 function kioskDesignFromDb(row) {
   const sections = Array.isArray(row?.sections) && row.sections.length ? row.sections : KIOSK_DEFAULT_DESIGN.sections;
-  return {
+  const design = {
     kicker:String(row?.kicker || KIOSK_DEFAULT_DESIGN.kicker),
     title:String(row?.title || KIOSK_DEFAULT_DESIGN.title),
     text:String(row?.intro || KIOSK_DEFAULT_DESIGN.text),
@@ -14310,6 +14398,8 @@ function kioskDesignFromDb(row) {
       sort:Number(section.sort) || (index + 1) * 10,
     })),
   };
+  design.rows = kioskNormalizeLayoutRows(sections[0]?.layoutRows, loadKioskProducts(), design.sections);
+  return design;
 }
 
 async function persistKioskDesign(design) {
@@ -14320,7 +14410,7 @@ async function persistKioskDesign(design) {
     intro:design.text,
     accent:kioskValidColor(design.accent),
     sections:design.sections.map((section, index) => index === 0
-      ? { ...section, heroSizes:kioskValidHeroSizes(design.heroSizes) }
+      ? { ...section, heroSizes:kioskValidHeroSizes(design.heroSizes), layoutRows:kioskNormalizeLayoutRows(design.rows, loadKioskProducts(), design.sections) }
       : section),
   }, { onConflict:'id' });
   if (error) throw error;
@@ -14409,6 +14499,39 @@ function kioskSectionMarkup(section, rows, admin = false) {
   </section>`;
 }
 
+function kioskLayoutRows(design = loadKioskDesign(), products = loadKioskProducts()) {
+  const rows = kioskNormalizeLayoutRows(design.rows, products, design.sections);
+  if (JSON.stringify(rows) !== JSON.stringify(design.rows || [])) {
+    design.rows = rows;
+    saveKioskDesign(design);
+  }
+  return rows;
+}
+
+function kioskLayoutRowMarkup(row, products, admin = false, index = 0, total = 1) {
+  const items = row.productIds.map(id => products.find(product => product.id === id)).filter(Boolean);
+  if (!items.length) return '';
+  const anchor = items[0]?.category || row.id;
+  const heading = admin
+    ? `<input class="kiosk-row-heading-input" type="text" value="${esc(row.heading)}" placeholder="Optionale Überschrift" aria-label="Überschrift dieser Zeile" oninput="updateKioskLayoutRow('${jsSingleQuoted(row.id)}','heading',this.value)">`
+    : row.heading ? `<h3 style="color:${esc(kioskValidColor(row.color, '#F6F1E7'))}">${esc(row.heading)}</h3>` : '';
+  const headingWrap = heading ? `<div class="kiosk-section-head">${heading}</div>` : '';
+  const controls = admin ? `<div class="kiosk-row-toolbar" aria-label="Zeile bearbeiten">
+    <span>Zeile ${index + 1}</span>
+    <select aria-label="Breite dieser Zeile" onchange="updateKioskLayoutRow('${jsSingleQuoted(row.id)}','columns',this.value)">
+      <option value="four"${row.columns === 'four' ? ' selected' : ''}>4 Produkte</option>
+      <option value="two"${row.columns === 'two' ? ' selected' : ''}>2 Produkte</option>
+      <option value="full"${row.columns === 'full' ? ' selected' : ''}>Volle Breite</option>
+    </select>
+    <button type="button" onclick="moveKioskLayoutRow('${jsSingleQuoted(row.id)}',-1)" title="Zeile nach oben" aria-label="Zeile nach oben"${index === 0 ? ' disabled' : ''}>↑</button>
+    <button type="button" onclick="moveKioskLayoutRow('${jsSingleQuoted(row.id)}',1)" title="Zeile nach unten" aria-label="Zeile nach unten"${index === total - 1 ? ' disabled' : ''}>↓</button>
+  </div>` : '';
+  return `<section class="kiosk-section kiosk-layout-row columns-${esc(row.columns)}" data-kiosk-row="${esc(row.id)}" data-kiosk-section="${esc(anchor)}">
+    ${controls}${headingWrap}
+    <div class="kiosk-grid"${admin ? ` ondragover="kioskDragOver(event)" ondrop="kioskDropInLayoutRow(event,'${jsSingleQuoted(row.id)}')"` : ''}>${items.map(product => kioskProductCard(product, admin, row.id)).join('')}</div>
+  </section>`;
+}
+
 function scrollKioskToSection(sectionId) {
   const section = document.querySelector(`#modeKiosk [data-kiosk-section="${CSS.escape(String(sectionId))}"]`);
   if (!section) return;
@@ -14419,13 +14542,14 @@ function scrollKioskToSection(sectionId) {
   window.setTimeout(() => section.classList.remove('is-jump-target'), 1400);
 }
 
-function kioskProductCard(p, admin = false) {
+function kioskProductCard(p, admin = false, layoutRowId = '') {
   const meta = kioskTileMeta(p);
   const adminAttrs = admin
-    ? ` draggable="true" onclick="editKioskProduct('${jsSingleQuoted(p.id)}')" ondragstart="kioskStartProductDrag(event,'${jsSingleQuoted(p.id)}')" ondragover="kioskDragOver(event)" ondrop="kioskDropProduct(event,'${jsSingleQuoted(p.id)}','${jsSingleQuoted(p.category)}')"`
+    ? ` draggable="true" ondragstart="kioskStartProductDrag(event,'${jsSingleQuoted(p.id)}')" ondragover="kioskDragOver(event)" ondrop="kioskDropProductInLayout(event,'${jsSingleQuoted(p.id)}','${jsSingleQuoted(layoutRowId)}')"`
     : '';
+  const adminTools = admin ? `<div class="kiosk-card-tools"><button type="button" onclick="event.stopPropagation();editKioskProduct('${jsSingleQuoted(p.id)}')" title="Element bearbeiten" aria-label="Element bearbeiten">✎</button></div>` : '';
   if (meta.tileRole === 'info') {
-    return `<aside class="kiosk-info-row${meta.infoTheme === 'dark' ? ' is-dark' : ''}${meta.infoPlacement === 'after' ? ' is-after-section' : ''} title-size-${meta.infoTitleSize} text-size-${meta.infoTextSize}" role="note" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
+    return `<aside class="kiosk-info-row${meta.infoTheme === 'dark' ? ' is-dark' : ''}${meta.infoPlacement === 'after' ? ' is-after-section' : ''} title-size-${meta.infoTitleSize} text-size-${meta.infoTextSize}" role="note" data-kiosk-product="${esc(p.id)}"${adminAttrs}>${adminTools}
       <span class="kiosk-info-row-mark" aria-hidden="true">i</span>
       <div class="kiosk-info-row-copy"><div class="kiosk-info-row-title">${esc(p.name)}</div>${p.desc ? `<p class="kiosk-info-row-text">${esc(p.desc)}</p>` : ''}</div>
     </aside>`;
@@ -14460,6 +14584,7 @@ function kioskProductCard(p, admin = false) {
   const freeClass = isFree ? ` is-free text-${meta.textPosition} align-${meta.textAlign} title-size-${meta.titleSize} subtitle-size-${meta.subtitleSize}` : '';
   const equipmentClass = !isFree && ['racket','balls'].includes(p.id) ? ' is-featured-equipment' : '';
   return `<article class="kiosk-card is-${layout} fit-${imageFit}${freeClass}${equipmentClass}" data-kiosk-product="${esc(p.id)}"${adminAttrs}>
+    ${adminTools}
     ${imageMarkup}
     <div class="kiosk-body">
       <div class="kiosk-copy">
@@ -14489,7 +14614,8 @@ function renderKiosk() {
   settleSuccessfulKioskTab();
   const design = loadKioskDesign();
   const rows = kioskSorted().filter(p => p.active !== false);
-  host.innerHTML = kioskDesignSections(design).map(s => kioskSectionMarkup(s, rows, false)).join('');
+  const layoutRows = kioskLayoutRows(design, rows);
+  host.innerHTML = layoutRows.map((row, index) => kioskLayoutRowMarkup(row, rows, false, index, layoutRows.length)).join('');
   applyKioskHero(document.getElementById('modeKiosk'), design);
   renderKioskTabSummary();
   syncKioskTabFromServer();
@@ -14501,7 +14627,6 @@ function renderKioskAdmin() {
   const sizes = kioskValidHeroSizes(design.heroSizes);
   const fields = { kioskSettingKicker:design.kicker, kioskSettingTitle:design.title, kioskSettingText:design.text, kioskSettingKickerSize:sizes.kicker, kioskSettingTitleSize:sizes.title, kioskSettingTextSize:sizes.text, kioskSettingAccent:design.accent, kioskSettingAccentPicker:design.accent };
   Object.entries(fields).forEach(([id, value]) => { const el = document.getElementById(id); if (el) el.value = value; });
-  renderKioskSectionEditor();
   renderKioskCategoryOptions();
   renderKioskAdminPreview();
   if (!kioskDesignDirty) setKioskDesignSaveState('saved', 'Alle Änderungen gespeichert');
@@ -14515,8 +14640,8 @@ function renderKioskAdminPreview(overrideDesign) {
   const tabItems = loadKioskTab();
   const tabTotal = tabItems.reduce((sum, item) => sum + Number(item.price || 0), 0);
   const tabCount = tabItems.length ? `${tabItems.length} Artikel offen` : 'Noch keine Artikel';
-  host.innerHTML = `<section class="kiosk-shell"><header class="kiosk-hero"><div><div class="kiosk-kicker"></div><h2></h2><p></p></div><button type="button" class="kiosk-basket" onclick="openKioskTab()" aria-label="Offenen Bierdeckel anzeigen"><span class="kiosk-basket-coaster" aria-hidden="true"><img src="assets/kiosk/zunft-koelsch-bierdeckel-historisch.webp" alt=""></span><span class="kiosk-basket-summary"><span class="kiosk-basket-status">Offen</span><strong>${esc(kioskMoney(tabTotal) || '0,00 €')}</strong><small>${esc(tabCount)}</small></span><span class="kiosk-basket-arrow" aria-hidden="true">→</span></button></header><div>${kioskDesignSections(design).map(s => kioskSectionMarkup(s, rows, true)).join('')}</div></section>`;
-  applyKioskHero(host, design);
+  const layoutRows = kioskLayoutRows(design, rows);
+  host.innerHTML = `<section class="kiosk-shell"><header class="kiosk-hero"><div class="kiosk-hero-inline-editor"><input class="kiosk-kicker size-${esc(kioskValidHeroSizes(design.heroSizes).kicker)}" value="${esc(design.kicker)}" aria-label="Obere Zeile" oninput="editKioskHeroText('kicker',this.value)"><input class="kiosk-hero-title size-${esc(kioskValidHeroSizes(design.heroSizes).title)}" value="${esc(design.title)}" aria-label="Hauptüberschrift" oninput="editKioskHeroText('title',this.value)"><input class="kiosk-hero-subtitle size-${esc(kioskValidHeroSizes(design.heroSizes).text)}" value="${esc(design.text)}" aria-label="Untere Zeile" oninput="editKioskHeroText('text',this.value)"></div><button type="button" class="kiosk-basket" onclick="openKioskTab()" aria-label="Offenen Bierdeckel anzeigen"><span class="kiosk-basket-coaster" aria-hidden="true"><img src="assets/kiosk/zunft-koelsch-bierdeckel-historisch.webp" alt=""></span><span class="kiosk-basket-summary"><span class="kiosk-basket-status">Offen</span><strong style="color:${esc(design.accent)}">${esc(kioskMoney(tabTotal) || '0,00 €')}</strong><small>${esc(tabCount)}</small></span><span class="kiosk-basket-arrow" aria-hidden="true">→</span></button></header><div>${layoutRows.map((row, index) => kioskLayoutRowMarkup(row, rows, true, index, layoutRows.length)).join('')}</div></section>`;
 }
 
 function renderKioskSectionEditor() {
@@ -14555,7 +14680,7 @@ function startNewKioskProduct() {
   if (categoryInput) categoryInput.value = category;
   const title = document.getElementById('kioskProductEditorTitle');
   if (title) title.textContent = 'Neues Produkt anlegen';
-  document.getElementById('kioskProductEditor')?.scrollIntoView({ behavior:'smooth', block:'start' });
+  document.getElementById('kioskProductEditor')?.classList.add('show');
   setTimeout(() => document.getElementById('kioskName')?.focus(), 350);
 }
 
@@ -14661,6 +14786,85 @@ function previewKioskSettings() {
   const design = kioskDesignFromAdminFields();
   saveKioskDesign(design);
   renderKioskAdminPreview(design);
+  markKioskDesignDirty();
+}
+
+function editKioskHeroText(field, value) {
+  if (!['kicker','title','text'].includes(field)) return;
+  const design = loadKioskDesign();
+  design[field] = String(value || '');
+  saveKioskDesign(design);
+  const fieldId = field === 'kicker' ? 'kioskSettingKicker' : field === 'title' ? 'kioskSettingTitle' : 'kioskSettingText';
+  const hiddenField = document.getElementById(fieldId);
+  if (hiddenField) hiddenField.value = design[field];
+  renderKiosk();
+  markKioskDesignDirty();
+}
+
+function updateKioskLayoutRow(id, field, value) {
+  const design = loadKioskDesign();
+  const row = kioskLayoutRows(design).find(item => item.id === id);
+  if (!row) return;
+  if (field === 'heading') row.heading = String(value || '');
+  if (field === 'columns' && ['four','two','full'].includes(value)) row.columns = value;
+  design.rows = kioskLayoutRows(design).map(item => item.id === id ? row : item);
+  saveKioskDesign(design);
+  renderKiosk();
+  markKioskDesignDirty();
+  if (field !== 'heading') renderKioskAdminPreview();
+}
+
+function moveKioskLayoutRow(id, direction) {
+  const design = loadKioskDesign();
+  const rows = kioskLayoutRows(design);
+  const from = rows.findIndex(row => row.id === id);
+  const to = Math.max(0, Math.min(rows.length - 1, from + Number(direction)));
+  if (from < 0 || from === to) return;
+  const [moving] = rows.splice(from, 1);
+  rows.splice(to, 0, moving);
+  design.rows = rows;
+  saveKioskDesign(design);
+  renderKioskAdminPreview();
+  renderKiosk();
+  markKioskDesignDirty();
+}
+
+function kioskDropProductInLayout(event, targetId, targetRowId) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (kioskDragState?.type !== 'product' || kioskDragState.id === targetId) return;
+  const design = loadKioskDesign();
+  const rows = kioskLayoutRows(design);
+  const movingId = kioskDragState.id;
+  rows.forEach(row => { row.productIds = row.productIds.filter(id => id !== movingId); });
+  const targetRow = rows.find(row => row.id === targetRowId);
+  if (!targetRow) return;
+  const targetIndex = Math.max(0, targetRow.productIds.indexOf(targetId));
+  targetRow.productIds.splice(targetIndex, 0, movingId);
+  design.rows = rows.filter(row => row.productIds.length);
+  kioskDragState = null;
+  saveKioskDesign(design);
+  renderKioskAdminPreview();
+  renderKiosk();
+  markKioskDesignDirty();
+}
+
+function kioskDropInLayoutRow(event, targetRowId) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (kioskDragState?.type !== 'product') return;
+  const design = loadKioskDesign();
+  const rows = kioskLayoutRows(design);
+  const movingId = kioskDragState.id;
+  rows.forEach(row => { row.productIds = row.productIds.filter(id => id !== movingId); });
+  const targetRow = rows.find(row => row.id === targetRowId);
+  if (!targetRow) return;
+  targetRow.productIds.push(movingId);
+  design.rows = rows.filter(row => row.productIds.length);
+  kioskDragState = null;
+  saveKioskDesign(design);
+  renderKioskAdminPreview();
+  renderKiosk();
   markKioskDesignDirty();
 }
 
@@ -14849,6 +15053,7 @@ function resetKioskForm() {
   const file = document.getElementById('kioskImageFile'); if (file) file.value = '';
   const imageMeta = document.getElementById('kioskImageMeta'); if (imageMeta) imageMeta.textContent = '';
   const title = document.getElementById('kioskProductEditorTitle'); if (title) title.textContent = 'Neues Produkt anlegen';
+  document.getElementById('kioskProductEditor')?.classList.remove('show');
   updateKioskEditorMode();
   previewKioskAdminImage();
 }
@@ -14887,9 +15092,14 @@ function editKioskProduct(id) {
   document.getElementById('kioskOnTab').checked = p.onTab !== false;
   const imageMeta = document.getElementById('kioskImageMeta'); if (imageMeta) imageMeta.textContent = '';
   const title = document.getElementById('kioskProductEditorTitle'); if (title) title.textContent = 'Produkt bearbeiten';
+  document.getElementById('kioskProductEditor')?.classList.add('show');
   updateKioskEditorMode();
   previewKioskAdminImage();
-  document.getElementById('kioskName').scrollIntoView({ behavior:'smooth', block:'center' });
+  setTimeout(() => document.getElementById('kioskName')?.focus(), 100);
+}
+
+function closeKioskProductEditor() {
+  resetKioskForm();
 }
 
 async function saveKioskProduct() {
