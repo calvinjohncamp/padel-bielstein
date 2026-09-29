@@ -6335,6 +6335,13 @@ main {
         </div>
       </div>
       <div class="admin-section">
+        <div class="admin-section-title">Akquise und Finanzierung</div>
+        <div style="font-size:0.78rem;color:#7A7368;line-height:1.5;margin-bottom:12px;">
+          Verträge ersetzen in der Summe eine frühere mündliche Zusage. Spenden werden einmalig addiert; Partnerbeiträge werden für ein, zwei und drei Jahre hochgerechnet.
+        </div>
+        <div id="fundraisingSummary"><div style="color:#7A7368;text-align:center;padding:18px;">Wird geladen …</div></div>
+      </div>
+      <div class="admin-section">
         <div class="admin-section-title">🤝 Sponsor anlegen / bearbeiten</div>
         <div style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5;">
           <strong>Premium</strong> erscheint bis zu zweimal oben auf der Partner-Seite; auf der Startseite bleibt der erste aktive Premium-Partner exklusiv.
@@ -6348,7 +6355,7 @@ main {
           <div style="display:grid;grid-template-columns:1fr 120px;gap:12px;margin-bottom:12px;">
             <div>
               <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Stufe</label>
-              <select id="spTier" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              <select id="spTier" onchange="syncSponsorAnnualAmount(true)" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
                 <option value="partner">Partner (1.000 €)</option>
                 <option value="regional">Regional (300 €)</option>
                 <option value="premium">Premium (5.000 € · bis zu 2 Plätze)</option>
@@ -6361,6 +6368,19 @@ main {
           <div style="margin-bottom:12px;">
             <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Marke</label>
             <input id="spName" type="text" placeholder="z. B. Sparkasse Gummersbach" oninput="syncSponsorCompanyFromBrand()" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+          </div>
+
+          <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
+            <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Akquisestatus</div>
+            <div style="font-size:0.76rem;color:#7A7368;line-height:1.5;margin-bottom:10px;">Der Betrag ist je Partner frei anpassbar. Ein vorliegender Vertrag wird in der Übersicht nicht zusätzlich als mündliche Zusage gezählt.</div>
+            <div style="display:grid;grid-template-columns:minmax(180px,1fr) 1fr 1fr;gap:12px;align-items:end;">
+              <div>
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Beitrag pro Jahr in Euro</label>
+                <input id="spAnnualAmount" type="text" inputmode="decimal" value="1000" placeholder="1000" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              </div>
+              <label style="display:flex;align-items:center;gap:8px;min-height:40px;font:700 13px 'Manrope',sans-serif;color:#1C1A17;cursor:pointer;"><input id="spVerbalCommitment" type="checkbox" style="width:18px;height:18px;accent-color:#FF5A36;"> Mündliche Zusage</label>
+              <label style="display:flex;align-items:center;gap:8px;min-height:40px;font:700 13px 'Manrope',sans-serif;color:#1C1A17;cursor:pointer;"><input id="spContractReceived" type="checkbox" style="width:18px;height:18px;accent-color:#1F8A5F;"> Vertrag liegt vor</label>
+            </div>
           </div>
 
           <div style="margin-bottom:12px;">
@@ -6498,6 +6518,26 @@ main {
       <div class="admin-section">
         <div class="admin-section-title">Aktuelle Sponsoren</div>
         <div id="sponsorsAdminList"><div style="color:#7A7368;text-align:center;padding:24px;">Wird geladen …</div></div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Spenden</div>
+        <div style="font-size:0.78rem;color:#7A7368;line-height:1.5;margin-bottom:12px;">Einmalige Spenden werden getrennt als zugesagt oder eingegangen geführt und in der Finanzierungsübersicht genau einmal berücksichtigt.</div>
+        <div style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:14px;margin-bottom:12px;">
+          <input type="hidden" id="fdEditId">
+          <div style="display:grid;grid-template-columns:minmax(180px,1.4fr) 130px 150px 150px;gap:10px;margin-bottom:10px;">
+            <div><label class="eb-adm-lbl">Spender / Organisation</label><input id="fdDonorName" class="eb-adm-inp" type="text" placeholder="Name"></div>
+            <div><label class="eb-adm-lbl">Betrag in Euro</label><input id="fdAmount" class="eb-adm-inp" type="text" inputmode="decimal" placeholder="500"></div>
+            <div><label class="eb-adm-lbl">Status</label><select id="fdStatus" class="eb-adm-inp"><option value="pledged">Zugesagt</option><option value="received">Eingegangen</option></select></div>
+            <div><label class="eb-adm-lbl">Datum</label><input id="fdDate" class="eb-adm-inp" type="date"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;">
+            <div><label class="eb-adm-lbl">Notiz</label><input id="fdNote" class="eb-adm-inp" type="text" placeholder="optional"></div>
+            <button id="fdSaveBtn" type="button" class="admin-save-btn" onclick="saveFundraisingDonation()">Spende speichern</button>
+            <button type="button" onclick="resetFundraisingDonationForm()" style="padding:11px 14px;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;color:#7A7368;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Neu / Abbrechen</button>
+          </div>
+        </div>
+        <div id="fundraisingDonationList" style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;overflow:hidden;"><div style="color:#7A7368;text-align:center;padding:18px;">Wird geladen …</div></div>
       </div>
 
       <div class="admin-section">
@@ -11598,11 +11638,65 @@ async function adminDecideWeather(reportId, approve) {
 //  geprüften SECURITY-DEFINER-Funktionen – nie direkt in die Tabelle.
 // ============================================================
 const SPONSOR_TIER_CONFIG = {
-  premium:  { label: 'Premium-Partner', limit: 2 },
-  partner:  { label: 'Partner (1.000 \u20ac)', limit: 12 },
-  regional: { label: 'Regionalpartner', limit: 24 }
+  premium:  { label: 'Premium-Partner', limit: 2, suggestedAnnualCents: 500000 },
+  partner:  { label: 'Partner (1.000 \u20ac)', limit: 12, suggestedAnnualCents: 100000 },
+  regional: { label: 'Regionalpartner', limit: 24, suggestedAnnualCents: 30000 }
 };
 const SPONSOR_TIER_ORDER = ['premium', 'partner', 'regional'];
+
+function adminFormatEuro(cents) {
+  return new Intl.NumberFormat('de-DE', { style:'currency', currency:'EUR', maximumFractionDigits:2 }).format((Number(cents) || 0) / 100);
+}
+
+function adminParseEuro(value) {
+  const compact = String(value || '').trim().replace(/\s/g, '');
+  if (!compact) return NaN;
+  if (compact.includes(',')) return Number(compact.replace(/\./g, '').replace(',', '.'));
+  if (/^\d+\.\d{1,2}$/.test(compact)) return Number(compact);
+  return Number(compact.replace(/\./g, ''));
+}
+
+function syncSponsorAnnualAmount(force = false) {
+  const tier = document.getElementById('spTier')?.value;
+  const input = document.getElementById('spAnnualAmount');
+  if (!input || !SPONSOR_TIER_CONFIG[tier]) return;
+  if (force || input.value === '') input.value = (SPONSOR_TIER_CONFIG[tier].suggestedAnnualCents / 100).toFixed(0);
+}
+
+function renderFundraisingSummary() {
+  const box = document.getElementById('fundraisingSummary');
+  if (!box) return;
+  const sponsors = window.__sponsorRows || [];
+  const donations = window.__fundraisingDonations || [];
+  const verbalOnly = sponsors.filter(s => s.verbal_commitment && !s.contract_received)
+    .reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
+  const contracted = sponsors.filter(s => s.contract_received)
+    .reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
+  const annualTotal = verbalOnly + contracted;
+  const pledged = donations.filter(d => d.status === 'pledged').reduce((sum, d) => sum + (Number(d.amount_cents) || 0), 0);
+  const received = donations.filter(d => d.status === 'received').reduce((sum, d) => sum + (Number(d.amount_cents) || 0), 0);
+  const donationTotal = pledged + received;
+  const metric = (label, value, note, accent = '#1C1A17') => `
+    <div style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:13px 14px;min-width:0;">
+      <div style="font:800 10px 'Space Grotesk',sans-serif;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">${label}</div>
+      <div style="font:800 20px 'Space Grotesk',sans-serif;color:${accent};">${adminFormatEuro(value)}</div>
+      <div style="font:600 11px 'Manrope',sans-serif;color:#7A7368;margin-top:4px;line-height:1.35;">${note}</div>
+    </div>`;
+  box.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:10px;">
+      ${metric('Mündlich, noch ohne Vertrag', verbalOnly, `2 Jahre ${adminFormatEuro(verbalOnly * 2)} · 3 Jahre ${adminFormatEuro(verbalOnly * 3)}`, '#B06A00')}
+      ${metric('Vertraglich gesichert', contracted, `2 Jahre ${adminFormatEuro(contracted * 2)} · 3 Jahre ${adminFormatEuro(contracted * 3)}`, '#1F8A5F')}
+      ${metric('Partner insgesamt', annualTotal, `2 Jahre ${adminFormatEuro(annualTotal * 2)} · 3 Jahre ${adminFormatEuro(annualTotal * 3)}`, '#FF5A36')}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:10px;">
+      ${metric('1 Jahr', annualTotal + donationTotal, `davon ${adminFormatEuro(donationTotal)} einmalige Spenden`)}
+      ${metric('2 Jahre', annualTotal * 2 + donationTotal, 'Partnerbeiträge hochgerechnet, Spenden einmalig')}
+      ${metric('3 Jahre', annualTotal * 3 + donationTotal, 'Partnerbeiträge hochgerechnet, Spenden einmalig')}
+    </div>
+    <div style="font:700 12px 'Manrope',sans-serif;color:#5C564C;line-height:1.5;">
+      Spenden: ${adminFormatEuro(received)} eingegangen · ${adminFormatEuro(pledged)} zugesagt · ${adminFormatEuro(donationTotal)} insgesamt
+    </div>`;
+}
 
 function addSponsorInTier(tier) {
   if (!SPONSOR_TIER_CONFIG[tier]) return;
@@ -11614,6 +11708,7 @@ function addSponsorInTier(tier) {
   }
   resetSponsorForm();
   document.getElementById('spTier').value = tier;
+  syncSponsorAnnualAmount(true);
   document.getElementById('adminSponsors').scrollIntoView({ behavior:'smooth', block:'start' });
   setTimeout(() => document.getElementById('spName')?.focus(), 350);
 }
@@ -11641,6 +11736,8 @@ async function loadAdminSponsors() {
     return;
   }
   window.__sponsorRows = rows;
+  renderFundraisingSummary();
+  loadFundraisingDonations();
   loadSponsorWeights();
   if(typeof refreshPartnerToggleBtn==='function') refreshPartnerToggleBtn(window.__partnerTabOn);
 
@@ -11687,6 +11784,8 @@ async function loadAdminSponsors() {
       const discountEmails = String(s.discount_emails || '').trim();
       const hasContact = s.contact_name || s.contact_email || s.contact_phone || discountEmails || discountEmailDomains;
       const hasAddress = s.contract_company || s.address_street || s.address_zip || s.address_city || s.address_country || s.contract_note;
+      const financeState = s.contract_received ? 'Vertrag liegt vor' : (s.verbal_commitment ? 'Mündlich zugesagt' : 'Noch keine Zusage');
+      const financeColor = s.contract_received ? '#1F8A5F' : (s.verbal_commitment ? '#B06A00' : '#7A7368');
       const num = getNum(s, idx, tier);
       const previousTier = SPONSOR_TIER_ORDER[tierIndex - 1];
       const nextTier = SPONSOR_TIER_ORDER[tierIndex + 1];
@@ -11708,6 +11807,7 @@ async function loadAdminSponsors() {
               <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
               <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;"><strong>${num}</strong> · ${tierLabel[s.tier] || s.tier} · ${active}${action}</div>
               ${s.tier === 'premium' ? `<div style="font-size:0.74rem;color:${s.court_partner_enabled === true ? '#FF5A36' : '#7A7368'};margin-top:3px;">${s.court_partner_enabled === true ? `Court-Anzeige: ${esc(s.court_label || courtLabel(idx + 1))}` : 'Court-Anzeige aus'}</div>` : ''}
+              <div style="font-size:0.74rem;color:${financeColor};font-weight:800;margin-top:3px;">${financeState} · ${adminFormatEuro(s.annual_amount_cents)} / Jahr</div>
               ${s.website_url ? `<div style="font-size:0.74rem;color:#5C564C;margin-top:3px;word-break:break-all;">🔗 ${esc(s.website_url)}</div>` : ''}
             </div>
 
@@ -11844,6 +11944,9 @@ function editSponsor(id) {
   document.getElementById('spName').value     = s.name;
   document.getElementById('spCourtLabel').value = s.court_label || '';
   document.getElementById('spCourtPartnerEnabled').checked = s.court_partner_enabled === true;
+  document.getElementById('spAnnualAmount').value = ((Number(s.annual_amount_cents) || 0) / 100).toFixed(2).replace('.', ',');
+  document.getElementById('spVerbalCommitment').checked = s.verbal_commitment === true;
+  document.getElementById('spContractReceived').checked = s.contract_received === true;
   document.getElementById('spWebsite').value  = s.website_url || '';
   document.getElementById('spSort').value     = s.sort_order;
   document.getElementById('spActive').checked = !!s.active;
@@ -11877,6 +11980,9 @@ function resetSponsorForm() {
   document.getElementById('spName').value     = '';
   document.getElementById('spCourtLabel').value = '';
   document.getElementById('spCourtPartnerEnabled').checked = false;
+  document.getElementById('spAnnualAmount').value = '1000';
+  document.getElementById('spVerbalCommitment').checked = false;
+  document.getElementById('spContractReceived').checked = false;
   document.getElementById('spWebsite').value  = '';
   document.getElementById('spSort').value     = '0';
   document.getElementById('spActive').checked = true;
@@ -12011,6 +12117,9 @@ async function saveSponsor() {
   const website      = document.getElementById('spWebsite').value.trim();
   const courtLabelValue = document.getElementById('spCourtLabel').value.trim();
   const courtPartnerEnabled = document.getElementById('spCourtPartnerEnabled').checked;
+  const annualAmountCents = Math.round(adminParseEuro(document.getElementById('spAnnualAmount').value) * 100);
+  const verbalCommitment = document.getElementById('spVerbalCommitment').checked;
+  const contractReceived = document.getElementById('spContractReceived').checked;
   const contractCompany = document.getElementById('spContractCompany').value.trim();
   const addressStreet = document.getElementById('spAddressStreet').value.trim();
   const addressZip = document.getElementById('spAddressZip').value.trim();
@@ -12021,6 +12130,7 @@ async function saveSponsor() {
   const hasAddressInput = !!(addressStreet || addressZip || addressCity || contractNote || (addressCountry && addressCountry !== 'Deutschland'));
 
   if (!name) { alert('Bitte eine Marke angeben.'); return; }
+  if (!Number.isFinite(annualAmountCents) || annualAmountCents < 0) { alert('Bitte einen gültigen Jahresbetrag angeben.'); return; }
   if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
   const discountEmailParts = [...new Set(discountEmails.split(/[\s,;]+/).map(v => v.trim().toLowerCase()).filter(Boolean))];
   if (discountEmailParts.some(value => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value))) {
@@ -12062,6 +12172,9 @@ async function saveSponsor() {
       p_website_url: website || null,
       p_court_label: courtLabelValue || null,
       p_court_partner_enabled: courtPartnerEnabled,
+      p_annual_amount_cents: annualAmountCents,
+      p_verbal_commitment: verbalCommitment,
+      p_contract_received: contractReceived,
       p_discount_email_domains: domainParts.join('\n') || null,
       p_action_logo_url: actionLogoUrl,
       p_has_action_logo: hasActionLogo,
@@ -12075,28 +12188,10 @@ async function saveSponsor() {
       payload.p_address_country = addressCountry || null;
       payload.p_contract_note = contractNote || null;
     }
-    const rpcPayload = { ...payload };
-    let { data: savedSponsorId, error } = await sb.rpc('admin_upsert_sponsor', rpcPayload);
-    const missingCourtOption = error && /function .*admin_upsert_sponsor|p_court_partner_enabled|schema cache|Could not find/i.test(error.message || '');
-    if (missingCourtOption && courtPartnerEnabled) {
-      throw new Error('Die Datenbankoption für Court-Partner ist noch nicht freigegeben. Die Anzeige bleibt ausgeschaltet.');
-    }
-    if (missingCourtOption) {
-      delete rpcPayload.p_court_partner_enabled;
-      ({ data: savedSponsorId, error } = await sb.rpc('admin_upsert_sponsor', rpcPayload));
-    }
-    const canRetryWithoutDomain = error && rpcPayload.p_discount_email_domains != null && /function .*admin_upsert_sponsor|p_discount_email_domains|schema cache|Could not find/i.test(error.message || '');
-    if (canRetryWithoutDomain) {
-      delete rpcPayload.p_discount_email_domains;
-      ({ data: savedSponsorId, error } = await sb.rpc('admin_upsert_sponsor', rpcPayload));
-    }
-    if (error && !hasContractCompanyDiff && !hasAddressInput && !actionLogoUrl && !hasActionLogo && actionLogoMode === 'off') {
-      const legacyPayload = {
-        p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort,
-        p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
-        p_website_url: website || null
-      };
-      ({ data: savedSponsorId, error } = await sb.rpc('admin_upsert_sponsor', legacyPayload));
+    const { data: savedSponsorId, error } = await sb.rpc('admin_upsert_sponsor', payload);
+    const missingFinanceOption = error && /function .*admin_upsert_sponsor|p_annual_amount_cents|p_verbal_commitment|p_contract_received|schema cache|Could not find/i.test(error.message || '');
+    if (missingFinanceOption) {
+      throw new Error('Die vorbereitete Datenbankerweiterung für Zusagen und Verträge ist noch nicht freigegeben. Es wurde nichts gespeichert.');
     }
     if (error) throw error;
     const sponsorId = id || savedSponsorId;
@@ -12137,6 +12232,92 @@ async function moveSponsor(id, direction) {
     loadAdminSponsors();
   } catch(e) {
     alert('Verschieben fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
+  }
+}
+
+async function loadFundraisingDonations() {
+  const box = document.getElementById('fundraisingDonationList');
+  if (!box) return;
+  if (!document.getElementById('fdDate')?.value) resetFundraisingDonationForm();
+  box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:18px;">Wird geladen …</div>';
+  try {
+    const { data, error } = await sb.rpc('admin_list_fundraising_donations');
+    if (error) throw error;
+    window.__fundraisingDonations = data || [];
+    renderFundraisingSummary();
+    box.innerHTML = window.__fundraisingDonations.length
+      ? window.__fundraisingDonations.map(d => `
+        <div style="display:grid;grid-template-columns:minmax(150px,1fr) 130px 130px minmax(160px,1fr) auto;gap:12px;align-items:center;padding:12px 13px;border-bottom:1px solid #EFE9DC;">
+          <div><div style="font:800 13px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(d.donor_name)}</div><div style="font:600 11px 'Manrope',sans-serif;color:#7A7368;margin-top:3px;">${esc(d.donation_date || '')}</div></div>
+          <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${adminFormatEuro(d.amount_cents)}</div>
+          <div style="font:800 11px 'Manrope',sans-serif;color:${d.status === 'received' ? '#1F8A5F' : '#B06A00'};">${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</div>
+          <div style="font:600 11px 'Manrope',sans-serif;color:#7A7368;">${esc(d.note || '')}</div>
+          <div style="display:flex;gap:6px;"><button type="button" onclick="editFundraisingDonation('${d.id}')" style="padding:7px 9px;border:1.5px solid #E2DACB;border-radius:6px;background:#fff;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Ändern</button><button type="button" onclick="deleteFundraisingDonation('${d.id}')" style="padding:7px 9px;border:1.5px solid #E2DACB;border-radius:6px;background:#fff;color:#B8402C;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Löschen</button></div>
+        </div>`).join('')
+      : '<div style="color:#7A7368;text-align:center;padding:18px;">Noch keine Spenden erfasst.</div>';
+  } catch (e) {
+    window.__fundraisingDonations = [];
+    renderFundraisingSummary();
+    box.innerHTML = `<div style="color:#B8402C;padding:18px;">Spenden konnten nicht geladen werden: ${esc(e?.message || 'Datenbankerweiterung noch nicht freigegeben')}</div>`;
+  }
+}
+
+function resetFundraisingDonationForm() {
+  document.getElementById('fdEditId').value = '';
+  document.getElementById('fdDonorName').value = '';
+  document.getElementById('fdAmount').value = '';
+  document.getElementById('fdStatus').value = 'pledged';
+  document.getElementById('fdDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('fdNote').value = '';
+  document.getElementById('fdSaveBtn').textContent = 'Spende speichern';
+}
+
+function editFundraisingDonation(id) {
+  const donation = (window.__fundraisingDonations || []).find(d => d.id === id);
+  if (!donation) return;
+  document.getElementById('fdEditId').value = donation.id;
+  document.getElementById('fdDonorName').value = donation.donor_name || '';
+  document.getElementById('fdAmount').value = ((Number(donation.amount_cents) || 0) / 100).toFixed(2).replace('.', ',');
+  document.getElementById('fdStatus').value = donation.status || 'pledged';
+  document.getElementById('fdDate').value = donation.donation_date || '';
+  document.getElementById('fdNote').value = donation.note || '';
+  document.getElementById('fdSaveBtn').textContent = 'Änderung speichern';
+  document.getElementById('fdDonorName').focus();
+}
+
+async function saveFundraisingDonation() {
+  const id = document.getElementById('fdEditId').value || null;
+  const donorName = document.getElementById('fdDonorName').value.trim();
+  const amountCents = Math.round(adminParseEuro(document.getElementById('fdAmount').value) * 100);
+  const status = document.getElementById('fdStatus').value;
+  const donationDate = document.getElementById('fdDate').value || null;
+  const note = document.getElementById('fdNote').value.trim();
+  if (!donorName) { alert('Bitte einen Namen für die Spende angeben.'); return; }
+  if (!Number.isFinite(amountCents) || amountCents <= 0) { alert('Bitte einen gültigen Spendenbetrag angeben.'); return; }
+  try {
+    const { error } = await sb.rpc('admin_upsert_fundraising_donation', {
+      p_id:id, p_donor_name:donorName, p_amount_cents:amountCents,
+      p_status:status, p_donation_date:donationDate, p_note:note || null
+    });
+    if (error) throw error;
+    showToast('Spende gespeichert.');
+    resetFundraisingDonationForm();
+    loadFundraisingDonations();
+  } catch (e) {
+    alert('Spende konnte nicht gespeichert werden: ' + (e?.message || 'Unbekannter Fehler'));
+  }
+}
+
+async function deleteFundraisingDonation(id) {
+  const donation = (window.__fundraisingDonations || []).find(d => d.id === id);
+  if (!confirm(`Spende von „${donation?.donor_name || ''}” wirklich löschen?`)) return;
+  try {
+    const { error } = await sb.rpc('admin_delete_fundraising_donation', { p_id:id });
+    if (error) throw error;
+    showToast('Spende gelöscht.');
+    loadFundraisingDonations();
+  } catch (e) {
+    alert('Spende konnte nicht gelöscht werden: ' + (e?.message || 'Unbekannter Fehler'));
   }
 }
 
