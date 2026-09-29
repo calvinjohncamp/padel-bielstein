@@ -7167,11 +7167,15 @@ body.bielstein-theme #tabPlay:not(.active) {
       <!-- Nutzerliste -->
       <div class="admin-section">
         <div class="admin-section-title">Registrierte Nutzer</div>
+        <div style="font-size:0.78rem;color:#7A7368;line-height:1.5;margin:0 0 12px;">
+          Konten werden vor jeder Änderung auf offene Buchungen, Abos, Kiosk-Posten und Guthaben geprüft.
+          Aufbewahrungspflichtige Vorgänge bleiben ausschließlich anonymisiert erhalten.
+        </div>
         <div style="overflow-x:auto;">
           <table class="admin-table">
-            <thead><tr><th>Name</th><th>E-Mail</th><th>Telefon</th><th>Typ</th><th>Registriert</th></tr></thead>
+            <thead><tr><th>Name</th><th>E-Mail</th><th>Telefon</th><th>Typ</th><th>Zugriff</th><th>Registriert</th><th></th></tr></thead>
             <tbody id="usersTbody">
-              <tr><td colspan="5" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
+              <tr><td colspan="7" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
             </tbody>
           </table>
         </div>
@@ -13302,10 +13306,19 @@ async function exportAdminArchive() {
 }
 
 // ============================================================
-//  ADMIN – Nutzerverwaltung (nur Übersicht, keine manuelle Anlage -
-//  jeder registriert sich selbst; TFB-Mitglieder werden ohnehin
-//  nicht hier, sondern separat vom Verein gepflegt)
+//  ADMIN – Nutzerverwaltung. Konten werden nicht manuell angelegt;
+//  Rollenentzug und Löschung laufen über eine serverseitig geschützte
+//  Vorprüfung mit eigenständiger Bestätigung.
 // ============================================================
+const ADMIN_ACCOUNT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/admin-delete-account`;
+let adminUserRows = [];
+
+function adminUserEsc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[char]));
+}
+
 async function loadAdminUsers() {
   const __authH = await authHeaders();
   try {
@@ -13316,9 +13329,10 @@ async function loadAdminUsers() {
     const data = res.ok ? await res.json() : [];
     const tbody = document.getElementById('usersTbody');
     if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Keine Nutzer gefunden</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="color:#555;text-align:center;padding:24px;">Keine Nutzer gefunden</td></tr>';
       return;
     }
+    adminUserRows = data;
     // Partner-Kontakte laden -> E-Mail/Domain => {phone, tier} (für Telefon + Partner-Kennung)
     const partnerBy = {};
     const partnerDomains = [];
@@ -13337,16 +13351,157 @@ async function loadAdminUsers() {
       const p = partnerBy[userEmail] || partnerDomains.find(d => userEmail.endsWith(d.domain));
       const phone = (u.phone && String(u.phone).trim()) ? u.phone : ((p && p.phone) ? p.phone : '—');
       const partnerChip = (p && p.active) ? ` <span class="admin-badge member" style="margin-left:4px;">★ ${tierLbl[p.tier] || 'Partner'}</span>` : '';
+      const role = String(u.role || 'customer').toLowerCase();
+      const ownAccount = !!(currentUser && u.auth_id === currentUser.id);
+      const roleLabel = role === 'owner' ? 'Eigentümer' : (role === 'admin' ? 'Admin' : 'Nutzer');
+      const roleClass = role === 'admin' || role === 'owner' ? 'member' : 'account';
+      const action = !u.auth_id
+        ? '<span style="color:#999;font-size:.72rem;white-space:nowrap;">Kein Login</span>'
+        : ownAccount
+        ? '<span style="color:#999;font-size:.72rem;white-space:nowrap;">Eigenes Konto</span>'
+        : role === 'owner'
+          ? '<span style="color:#999;font-size:.72rem;white-space:nowrap;">Geschützt</span>'
+          : `<button type="button" class="admin-save-btn${role === 'admin' ? ' danger' : ''}" style="height:30px;font-size:.68rem;padding:0 9px;white-space:nowrap;" onclick="openAdminAccountManagement('${u.auth_id}')">${role === 'admin' ? 'Rechte / Konto' : 'Konto prüfen'}</button>`;
       return `
       <tr>
-        <td style="color:#e0e0e0;">${u.full_name || '—'}${partnerChip}</td>
-        <td style="color:#888;">${u.email || '—'}</td>
-        <td style="color:#888;">${phone}</td>
-        <td><span class="admin-badge ${u.customer_type || 'account'}">${u.customer_type || 'account'}</span></td>
+        <td style="color:#e0e0e0;">${adminUserEsc(u.full_name || '—')}${partnerChip}</td>
+        <td style="color:#888;">${adminUserEsc(u.email || '—')}</td>
+        <td style="color:#888;">${adminUserEsc(phone)}</td>
+        <td><span class="admin-badge ${adminUserEsc(u.customer_type || 'account')}">${adminUserEsc(u.customer_type || 'account')}</span></td>
+        <td><span class="admin-badge ${roleClass}">${roleLabel}</span></td>
         <td style="color:#555;">${u.created_at ? formatDateDE(u.created_at.slice(0,10)) : '—'}</td>
+        <td>${action}</td>
       </tr>`;
     }).join('');
   } catch(e) { console.warn('Users Admin Fehler:', e); }
+}
+
+async function adminAccountRequest(payload) {
+  const headers = await authHeaders();
+  const response = await fetch(ADMIN_ACCOUNT_FUNCTION_URL, {
+    method: 'POST', headers, body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.error) {
+    const error = new Error(data.error || 'Die Kontoprüfung ist fehlgeschlagen.');
+    error.blockers = data.blockers || [];
+    throw error;
+  }
+  return data;
+}
+
+function closeAdminAccountManagement() {
+  document.getElementById('adminAccountOverlay')?.remove();
+}
+
+function adminAccountSummary(summary = {}) {
+  const money = (Number(summary.creditBalanceCents || 0) / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `<div style="display:grid;grid-template-columns:1fr auto;gap:7px 14px;margin:0 0 16px;font-size:12.5px;">
+    <span>Künftige Buchungen</span><strong>${Number(summary.futureBookings || 0)}</strong>
+    <span>Aktive Jahresabos</span><strong>${Number(summary.activeSubscriptions || 0)}</strong>
+    <span>Offene Kiosk-Posten</span><strong>${Number(summary.unsettledKioskItems || 0)}</strong>
+    <span>Guthabenstand</span><strong>${money} €</strong>
+    <span>Stundenkarten-Einheiten</span><strong>${Number(summary.remainingPunchCredits || 0)}</strong>
+    <span>Nicht eingelöste Geschenke</span><strong>${Number(summary.unclaimedGifts || 0)}</strong>
+  </div>`;
+}
+
+function renderAdminAccountManagement(targetAuthId, preview) {
+  closeAdminAccountManagement();
+  const target = preview.target || {};
+  const blockers = Array.isArray(preview.blockers) ? preview.blockers : [];
+  const adminBlocker = blockers.some(item => item.code === 'admin');
+  const otherBlockers = blockers.filter(item => item.code !== 'admin');
+  const blockerHtml = otherBlockers.length
+    ? `<div class="acct-delete-blockers"><strong>Vor der Löschung noch zu klären:</strong><ul>${otherBlockers.map(item => `<li>${adminUserEsc(item.label)}</li>`).join('')}</ul></div>`
+    : '';
+  const demoteHtml = adminBlocker
+    ? `<div class="acct-delete-warning"><strong>Dieses Konto hat Admin-Rechte.</strong><br>Der Rechteentzug ist ein eigener Schritt und löscht noch keine Kontodaten.</div>
+       <label class="form-label" for="adminDemotePhrase">Zur Bestätigung <strong>ADMINRECHTE ENTZIEHEN</strong> eingeben</label>
+       <input class="form-input" id="adminDemotePhrase" type="text" autocomplete="off" oninput="updateAdminAccountButtons()">
+       <button type="button" class="acct-delete-confirm" id="adminDemoteConfirm" style="width:100%;margin-top:12px;" onclick="confirmAdminDemotion('${targetAuthId}')" disabled>Admin-Rechte entziehen</button>`
+    : '';
+  const deleteHtml = !adminBlocker && otherBlockers.length === 0 && preview.canDelete !== false
+    ? `<div class="acct-delete-warning">Die Löschung entfernt Login und Profil endgültig. Gesetzlich aufzubewahrende Vorgänge bleiben anonymisiert erhalten.</div>
+       <label class="acct-delete-check"><input id="adminDeleteAccept" type="checkbox" onchange="updateAdminAccountButtons()"><span>Ich habe das richtige Konto und die Prüfergebnisse kontrolliert.</span></label>
+       <label class="form-label" for="adminDeletePhrase">Zur Bestätigung <strong>${adminUserEsc(target.email)} LÖSCHEN</strong> eingeben</label>
+       <input class="form-input" id="adminDeletePhrase" type="text" autocomplete="off" oninput="updateAdminAccountButtons()">
+       <div class="acct-delete-actions">
+         <button type="button" class="acct-delete-cancel" onclick="closeAdminAccountManagement()">Abbrechen</button>
+         <button type="button" class="acct-delete-confirm" id="adminDeleteConfirm" onclick="confirmAdminAccountDeletion('${targetAuthId}')" disabled>Endgültig löschen</button>
+       </div>`
+    : '';
+
+  document.body.insertAdjacentHTML('beforeend', `
+    <div class="acct-delete-overlay" id="adminAccountOverlay" onclick="if(event.target===this) closeAdminAccountManagement()">
+      <section class="acct-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="adminAccountTitle">
+        <button type="button" class="acct-delete-close" aria-label="Schließen" onclick="closeAdminAccountManagement()">×</button>
+        <div class="acct-delete-kicker">Nutzerverwaltung</div>
+        <h2 id="adminAccountTitle">${adminUserEsc(target.fullName || 'Konto prüfen')}</h2>
+        <p><strong>${adminUserEsc(target.email || '')}</strong><br>Die aktuellen Verknüpfungen wurden unmittelbar auf dem Server geprüft.</p>
+        ${adminAccountSummary(preview.summary)}
+        ${blockerHtml}${demoteHtml}${deleteHtml}
+        ${!demoteHtml && !deleteHtml ? '<button type="button" class="acct-delete-cancel" style="width:100%;" onclick="closeAdminAccountManagement()">Schließen</button>' : ''}
+        <div class="acct-delete-result" id="adminAccountResult"></div>
+      </section>
+    </div>`);
+}
+
+async function openAdminAccountManagement(targetAuthId) {
+  const row = adminUserRows.find(item => item.auth_id === targetAuthId);
+  if (!row || !targetAuthId) return;
+  try {
+    const preview = await adminAccountRequest({ action: 'preview', targetAuthId });
+    renderAdminAccountManagement(targetAuthId, preview);
+  } catch (error) {
+    alert(error.message || 'Die Kontoprüfung ist fehlgeschlagen.');
+  }
+}
+
+function updateAdminAccountButtons() {
+  const demote = document.getElementById('adminDemoteConfirm');
+  if (demote) demote.disabled = document.getElementById('adminDemotePhrase')?.value !== 'ADMINRECHTE ENTZIEHEN';
+  const deletion = document.getElementById('adminDeleteConfirm');
+  if (deletion) {
+    const email = document.querySelector('#adminAccountOverlay p strong')?.textContent || '';
+    deletion.disabled = !(document.getElementById('adminDeleteAccept')?.checked && document.getElementById('adminDeletePhrase')?.value === `${email} LÖSCHEN`);
+  }
+}
+
+async function confirmAdminDemotion(targetAuthId) {
+  const button = document.getElementById('adminDemoteConfirm');
+  if (!button || button.disabled) return;
+  button.disabled = true; button.textContent = 'Wird geändert …';
+  try {
+    await adminAccountRequest({ action: 'demote', targetAuthId, confirmation: 'ADMINRECHTE ENTZIEHEN' });
+    const preview = await adminAccountRequest({ action: 'preview', targetAuthId });
+    renderAdminAccountManagement(targetAuthId, preview);
+    adminTabLoaded.users = false;
+    await loadAdminUsers();
+    showToast('Admin-Rechte wurden entzogen. Das Konto besteht weiterhin.');
+  } catch (error) {
+    const result = document.getElementById('adminAccountResult');
+    if (result) result.textContent = error.message;
+    button.disabled = false; button.textContent = 'Admin-Rechte entziehen';
+  }
+}
+
+async function confirmAdminAccountDeletion(targetAuthId) {
+  const button = document.getElementById('adminDeleteConfirm');
+  const result = document.getElementById('adminAccountResult');
+  const confirmation = document.getElementById('adminDeletePhrase')?.value || '';
+  if (!button || button.disabled) return;
+  button.disabled = true; button.textContent = 'Wird gelöscht …';
+  try {
+    await adminAccountRequest({ action: 'delete', targetAuthId, confirmation });
+    closeAdminAccountManagement();
+    adminTabLoaded.users = false;
+    await loadAdminUsers();
+    showToast('Konto und persönliche Profildaten wurden gelöscht.');
+  } catch (error) {
+    if (result) result.textContent = error.message || 'Die Löschung ist fehlgeschlagen.';
+    button.disabled = false; button.textContent = 'Endgültig löschen';
+  }
 }
 
 // ============================================================
