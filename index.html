@@ -1930,16 +1930,20 @@ main {
   <iframe id="installGuideFrame" title="Installationsanleitung" data-src="padel-install-prototyp.html?embedded=1"></iframe>
 </div>
 
-<!-- Vorschau vor dem Aktualisieren der TFB-Mitgliederliste (Admin) -->
+<!-- Vorschau vor dem Aktualisieren einer Mitgliederliste (Admin) -->
 <div class="modal-overlay" id="memberSyncModal">
   <div class="modal payment-choice-modal">
     <div class="modal-title">Mitgliederliste aktualisieren?</div>
-    <div class="modal-sub" id="memberSyncSub">Bitte prüfe die Änderungen, bevor sie gespeichert werden. Es wird nichts gelöscht – Ausgetretene werden nur auf „inaktiv“ gesetzt.</div>
+    <div class="modal-sub" id="memberSyncSub">Bitte prüfe die Änderungen, bevor sie gespeichert werden. Ausgetretene verlieren nur den Mitgliedsrabatt; ihr Benutzerkonto bleibt vollständig bestehen.</div>
     <div class="cc-lines">
       <div class="cc-line"><span>In der Datei</span><span id="msTotal">—</span></div>
+      <div class="cc-line"><span>Gültige Personen</span><span id="msValid">—</span></div>
+      <div class="cc-line"><span>Bereits vorhanden</span><span id="msExisting">—</span></div>
       <div class="cc-line"><span>Neu anlegen</span><span id="msNeu">—</span></div>
       <div class="cc-line"><span>Reaktivieren</span><span id="msReakt">—</span></div>
-      <div class="cc-line"><span>Deaktivieren (ausgetreten)</span><span id="msDeakt">—</span></div>
+      <div class="cc-line"><span>Mitgliedschaft beenden</span><span id="msDeakt">—</span></div>
+      <div class="cc-line"><span>Geteilte Familien-E-Mails</span><span id="msSharedEmails">—</span></div>
+      <div class="cc-line"><span>Übersprungene/gleiche Zeilen</span><span id="msSkipped">—</span></div>
     </div>
     <div id="msDeaktNames" style="font-size:0.78rem;color:#B8402C;line-height:1.5;margin:2px 2px 6px;display:none;"></div>
     <button class="modal-btn cc-option cc-stripe" id="memberSyncOk">
@@ -6378,7 +6382,7 @@ main {
           <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
             <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Ansprechpartner (Partner-Vorteil)</div>
             <div style="font-size:0.76rem;color:#7A7368;line-height:1.5;margin-bottom:10px;">
-              Trägt hier eine <strong>E-Mail</strong> ein und meldet sich diese Person mit genau dieser Adresse an, wird sie automatisch wie ein Mitglied behandelt: <strong>10 % Rabatt</strong> auf alle Buchungen inkl. Abos (bis zu 2 Abos). Bei Premium-Partnern können zusätzlich Mitarbeiter-Mailendungen freigeschaltet werden.
+              Kontaktangaben und Buchungsberechtigung werden getrennt gepflegt. Rabatt gibt es nur über eine ausdrücklich hinterlegte Rabatt-/Buchungsadresse oder – bei Premium-Partnern – über eine freigegebene Mitarbeiter-Mailendung.
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
               <div>
@@ -6390,8 +6394,13 @@ main {
                 <input id="spContactPhone" type="tel" placeholder="0160 …" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
               </div>
               <div style="grid-column:1 / -1;">
-                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Kontakt-E-Mail (schaltet den Rabatt frei)</label>
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Kontakt-E-Mail</label>
                 <input id="spContactEmail" type="email" placeholder="kontakt@firma.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+              </div>
+              <div style="grid-column:1 / -1;">
+                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Rabatt-/Buchungs-E-Mail-Adressen</label>
+                <textarea id="spDiscountEmails" rows="2" placeholder="buchung@firma.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;resize:vertical;"></textarea>
+                <div style="font-size:0.72rem;color:#7A7368;line-height:1.5;margin-top:5px;">Eine oder mehrere vollständige Adressen. Nur bestätigte Konten mit diesen Adressen erhalten den Rabatt.</div>
               </div>
               <div style="grid-column:1 / -1;">
                 <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Premium-Partner-Rabatt für diese Mail-Adressen</label>
@@ -7149,18 +7158,31 @@ body.bielstein-theme #tabPlay:not(.active) {
             Aktuelle Liste als <strong>Excel (.xlsx)</strong> oder CSV hochladen. Für TFB und BSV reichen:
             <em>Vorname, Nachname/Name, E-Mail</em>. Die Mitgliedschaft wird über
             bestätigte E-Mail-Adresse und Namen geprüft:
-            Vorhandene werden aktualisiert, neue angelegt, Fehlende auf <em>inaktiv</em> gesetzt (nie gelöscht),
-            Wiedereingetretene reaktiviert. Du siehst vorher eine Vorschau und musst bestätigen.
+            Vorhandene werden aktualisiert, neue angelegt, Fehlende als <em>nicht mehr Mitglied</em> markiert und
+            Wiedereingetretene reaktiviert. Benutzerkonten, Buchungen und Kundendaten bleiben immer bestehen.
+            Du siehst vorher eine Vorschau und musst bestätigen.
           </div>
           <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Welche Liste?</label>
-          <select id="memberSyncSource" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;margin-bottom:12px;">
+          <select id="memberSyncSource" onchange="memberSyncSource=this.value;loadMemberGroups()" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;margin-bottom:12px;">
             <option value="tfb">Tennisfreunde Bielstein (Mitglieder)</option>
-            <option value="bsv">BSV Bielstein (Mitglieder)</option>
-            <option value="freibad">Freibad Bielstein (Dauerkarten)</option>
+            <option value="bsv">BSV Victoria Bielstein (Mitglieder)</option>
           </select>
+          <div id="memberGroupStatus" style="margin:-4px 0 12px;font-size:0.74rem;color:#7A7368;"></div>
           <input type="file" id="memberCsvInput" accept=".xlsx,.xlsm,.xls,.csv,text/csv" style="display:none" onchange="handleMemberFile(this)">
           <button class="book-btn visible" style="width:100%;position:static;" onclick="document.getElementById('memberCsvInput').click()">Excel- oder CSV-Datei auswählen …</button>
           <div id="memberSyncMsg" style="margin-top:10px;font-size:0.82rem;color:#7A7368;"></div>
+          <details style="margin-top:14px;border-top:1px solid #E2DACB;padding-top:12px;">
+            <summary style="cursor:pointer;font:800 11px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;">Weitere Mitgliedergruppe ergänzen</summary>
+            <div style="display:grid;grid-template-columns:1fr 180px;gap:10px;margin-top:10px;">
+              <input id="memberGroupName" type="text" placeholder="Name der Gruppe" class="admin-input">
+              <input id="memberGroupCode" type="text" placeholder="Kürzel, z. B. tvb" class="admin-input">
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:0.78rem;color:#5C564C;">
+              <input id="memberGroupDiscount" type="checkbox" checked> Mitglieder dieser Gruppe erhalten den Mitglieder-/Partnerrabatt
+            </label>
+            <button type="button" class="admin-save-btn" onclick="saveMemberGroup()">Gruppe hinzufügen</button>
+            <div id="memberGroupMsg" style="margin-top:8px;font-size:0.78rem;"></div>
+          </details>
         </div>
       </div>
 
@@ -7786,7 +7808,7 @@ function actionIsEligibleForCurrentUser(eb) {
   eb = eb || window.__earlybird || {};
   if (eb.audience === 'all') return true;
   const srcs = Array.isArray(myMemberSources) ? myMemberSources : [];
-  return !!myPartner || srcs.includes('tfb') || (member && member.discount > 0);
+  return !!myPartner || srcs.length > 0 || (member && member.discount > 0);
 }
 function bookingDiscountInfo() {
   const basePct = (member && member.discount > 0) ? Math.round(member.discount * 100) : 0;
@@ -8788,9 +8810,7 @@ async function loadMemberDiscount() {
       .eq('active', true);
     if (rErr) throw rErr;
 
-    const wanted = myMemberSources
-      .filter(s => s === 'tfb' || s === 'bsv')
-      .map(() => 'member_tfb');
+    const wanted = myMemberSources.length ? ['member_tfb'] : [];
     const validRules = (rules || [])
       .filter(r => wanted.includes(r.rule_type))
       .filter(r => (!r.valid_from || r.valid_from <= today) && (!r.valid_until || r.valid_until >= today))
@@ -8979,6 +8999,9 @@ function welcomeBackMessage() {
   }
   if (srcs.includes('bsv')) {
     return 'Willkommen zurück! Wir haben dich als Mitglied des BSV Bielstein erkannt – dein 10 %-Vorteil ist aktiv. 🎾';
+  }
+  if (srcs.length) {
+    return 'Willkommen zurück! Deine hinterlegte Mitgliedschaft wurde erkannt – dein 10 %-Vorteil ist aktiv. 🎾';
   }
   return 'Willkommen zurück! 🎾';
 }
@@ -11604,6 +11627,15 @@ async function loadAdminSponsors() {
     const { data, error } = await sb.rpc('admin_list_sponsors');
     if (error) throw error;
     rows = (data || []).slice().sort(pbCompareSponsors);
+    const { data: discountRows, error: discountError } = await sb.rpc('admin_list_sponsor_discount_emails');
+    if (discountError) throw discountError;
+    const discountBySponsor = new Map();
+    (discountRows || []).forEach(item => {
+      const emails = discountBySponsor.get(item.sponsor_id) || [];
+      emails.push(item.email);
+      discountBySponsor.set(item.sponsor_id, emails);
+    });
+    rows.forEach(sponsor => { sponsor.discount_emails = (discountBySponsor.get(sponsor.id) || []).join('\n'); });
   } catch(e) {
     box.innerHTML = `<div style="color:#B8402C;padding:18px;">Sponsoren konnten nicht geladen werden: ${esc(e?.message || 'Unbekannter Fehler')}</div>`;
     return;
@@ -11652,7 +11684,8 @@ async function loadAdminSponsors() {
         ? `<span style="color:#FF5A36;font-weight:800;"> · ${actionLabel}</span>`
         : '';
       const discountEmailDomains = String(s.discount_email_domains || '').trim();
-      const hasContact = s.contact_name || s.contact_email || s.contact_phone || discountEmailDomains;
+      const discountEmails = String(s.discount_emails || '').trim();
+      const hasContact = s.contact_name || s.contact_email || s.contact_phone || discountEmails || discountEmailDomains;
       const hasAddress = s.contract_company || s.address_street || s.address_zip || s.address_city || s.address_country || s.contract_note;
       const num = getNum(s, idx, tier);
       const previousTier = SPONSOR_TIER_ORDER[tierIndex - 1];
@@ -11684,7 +11717,8 @@ async function loadAdminSponsors() {
                 ${s.contact_name ? `<div style="font:600 13.2px 'Manrope',sans-serif;color:#1C1A17;line-height:1.3;">${esc(s.contact_name)}</div>` : ''}
                 ${s.contact_email ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;word-break:break-all;">${esc(s.contact_email)}</div>` : ''}
                 ${s.contact_phone ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;">${esc(s.contact_phone)}</div>` : ''}
-                ${discountEmailDomains ? `<div style="font:700 11.5px 'Manrope',sans-serif;color:#1F8A5F;line-height:1.35;margin-top:4px;word-break:break-all;">Rabatt: ${esc(discountEmailDomains)}</div>` : ''}
+                ${discountEmails ? `<div style="font:700 11.5px 'Manrope',sans-serif;color:#1F8A5F;line-height:1.35;margin-top:4px;word-break:break-all;">Rabattadressen: ${esc(discountEmails).replace(/\n/g, '<br>')}</div>` : ''}
+                ${discountEmailDomains ? `<div style="font:700 11.5px 'Manrope',sans-serif;color:#1F8A5F;line-height:1.35;margin-top:4px;word-break:break-all;">Rabatt-Endungen: ${esc(discountEmailDomains)}</div>` : ''}
               ` : ''}
             </div>
 
@@ -11816,6 +11850,7 @@ function editSponsor(id) {
   document.getElementById('spContactName').value  = s.contact_name  || '';
   document.getElementById('spContactEmail').value = s.contact_email || '';
   document.getElementById('spContactPhone').value = s.contact_phone || '';
+  document.getElementById('spDiscountEmails').value = s.discount_emails || '';
   document.getElementById('spDiscountEmailDomains').value = s.discount_email_domains || '';
   const contractCompany = s.contract_company || s.name || '';
   document.getElementById('spContractCompany').value = contractCompany;
@@ -11848,6 +11883,7 @@ function resetSponsorForm() {
   document.getElementById('spContactName').value  = '';
   document.getElementById('spContactEmail').value = '';
   document.getElementById('spContactPhone').value = '';
+  document.getElementById('spDiscountEmails').value = '';
   document.getElementById('spDiscountEmailDomains').value = '';
   document.getElementById('spContractCompany').value = '';
   setSponsorCompanyAuto(true);
@@ -11970,6 +12006,7 @@ async function saveSponsor() {
   const contactName  = document.getElementById('spContactName').value.trim();
   const contactEmail = document.getElementById('spContactEmail').value.trim();
   const contactPhone = document.getElementById('spContactPhone').value.trim();
+  const discountEmails = document.getElementById('spDiscountEmails').value.trim();
   const discountEmailDomains = document.getElementById('spDiscountEmailDomains').value.trim();
   const website      = document.getElementById('spWebsite').value.trim();
   const courtLabelValue = document.getElementById('spCourtLabel').value.trim();
@@ -11985,6 +12022,10 @@ async function saveSponsor() {
 
   if (!name) { alert('Bitte eine Marke angeben.'); return; }
   if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
+  const discountEmailParts = [...new Set(discountEmails.split(/[\s,;]+/).map(v => v.trim().toLowerCase()).filter(Boolean))];
+  if (discountEmailParts.some(value => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value))) {
+    alert('Bitte nur vollständige, gültige Rabatt-/Buchungs-E-Mail-Adressen eintragen.'); return;
+  }
   const domainParts = discountEmailDomains
     ? discountEmailDomains.split(/[\s,;]+/).map(v => v.trim()).filter(Boolean)
     : [];
@@ -12035,19 +12076,19 @@ async function saveSponsor() {
       payload.p_contract_note = contractNote || null;
     }
     const rpcPayload = { ...payload };
-    let { error } = await sb.rpc('admin_upsert_sponsor', rpcPayload);
+    let { data: savedSponsorId, error } = await sb.rpc('admin_upsert_sponsor', rpcPayload);
     const missingCourtOption = error && /function .*admin_upsert_sponsor|p_court_partner_enabled|schema cache|Could not find/i.test(error.message || '');
     if (missingCourtOption && courtPartnerEnabled) {
       throw new Error('Die Datenbankoption für Court-Partner ist noch nicht freigegeben. Die Anzeige bleibt ausgeschaltet.');
     }
     if (missingCourtOption) {
       delete rpcPayload.p_court_partner_enabled;
-      ({ error } = await sb.rpc('admin_upsert_sponsor', rpcPayload));
+      ({ data: savedSponsorId, error } = await sb.rpc('admin_upsert_sponsor', rpcPayload));
     }
     const canRetryWithoutDomain = error && rpcPayload.p_discount_email_domains != null && /function .*admin_upsert_sponsor|p_discount_email_domains|schema cache|Could not find/i.test(error.message || '');
     if (canRetryWithoutDomain) {
       delete rpcPayload.p_discount_email_domains;
-      ({ error } = await sb.rpc('admin_upsert_sponsor', rpcPayload));
+      ({ data: savedSponsorId, error } = await sb.rpc('admin_upsert_sponsor', rpcPayload));
     }
     if (error && !hasContractCompanyDiff && !hasAddressInput && !actionLogoUrl && !hasActionLogo && actionLogoMode === 'off') {
       const legacyPayload = {
@@ -12055,9 +12096,16 @@ async function saveSponsor() {
         p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
         p_website_url: website || null
       };
-      ({ error } = await sb.rpc('admin_upsert_sponsor', legacyPayload));
+      ({ data: savedSponsorId, error } = await sb.rpc('admin_upsert_sponsor', legacyPayload));
     }
     if (error) throw error;
+    const sponsorId = id || savedSponsorId;
+    if (!sponsorId) throw new Error('Die gespeicherte Partner-ID fehlt.');
+    const { error: discountError } = await sb.rpc('admin_set_sponsor_discount_emails', {
+      p_sponsor_id: sponsorId,
+      p_emails: discountEmailParts.join('\n'),
+    });
+    if (discountError) throw discountError;
     showToast('Sponsor gespeichert.');
     resetSponsorForm();
     loadAdminSponsors();
@@ -12654,15 +12702,15 @@ document.getElementById('adminUsers').style.display     = 'none';
 document.getElementById('adminInfoMails').style.display = 'none';
 
 // ============================================================
-//  ADMIN – TFB-Mitgliederliste aus CSV aktualisieren (Monats-Import)
-//  Backend: admin_sync_club_members_preview / _apply (Skript 46).
-//  Der Browser liest die CSV, normalisiert genau wie beim Erstimport
-//  (Skript 45; erste gültige E-Mail, "-alt"-Zeile für Zweitadresse) und
-//  schickt nur saubere Zeilen. Geschrieben wird ausschließlich
-//  serverseitig – und erst nach Bestätigung der Vorschau.
+//  ADMIN – Mitgliederlisten wiederholbar aktualisieren.
+//  Name + E-Mail bilden gemeinsam die Identität. Dadurch bleiben Kinder mit
+//  derselben Elternadresse getrennte Personen. Geschrieben wird erst nach der
+//  serverseitigen Vorschau und ausdrücklicher Bestätigung.
 // ============================================================
-let memberSyncRows = null;     // gemerkte, normalisierte Zeilen für den Apply-Schritt
-let memberSyncSource = 'tfb';  // gewählte Liste: 'tfb', 'bsv' oder 'freibad'
+let memberSyncRows = null;
+let memberSyncSource = 'tfb';
+let memberSyncFile = null;
+let memberGroups = [];
 
 // Excel-Leser (SheetJS) NUR bei Bedarf nachladen – gleiches Muster wie Chart.js
 // im MIS-Tab. Fällt das CDN aus, bleibt der CSV-Weg als Alternative.
@@ -12709,9 +12757,7 @@ function buildMemberRows(matrix) {
   const head = matrix[0].map(h => (h || '').trim().toLowerCase());
   const iName  = head.findIndex(h => h === 'name' || /nachname/.test(h));
   const iVor   = head.findIndex(h => /vorname/.test(h));
-  const iPhone = head.findIndex(h => /handy|telefon|mobil/.test(h));
   const mailCols = head.map((h, idx) => /mail/.test(h) ? idx : -1).filter(idx => idx >= 0);
-  const source = String(document.getElementById('memberSyncSource')?.value || memberSyncSource || 'tfb').toLowerCase();
   if (iName < 0 || mailCols.length === 0)
     throw new Error('Spalten nicht erkannt. Erwartet werden: Vorname, Nachname/Name und E-Mail.');
 
@@ -12728,18 +12774,70 @@ function buildMemberRows(matrix) {
   for (let r = 1; r < matrix.length; r++) {
     const cells = matrix[r];
     const name  = ((iVor >= 0 ? (cells[iVor] || '').trim() : '') + ' ' + (cells[iName] || '').trim()).trim();
-    const phone = (source === 'freibad' && iPhone >= 0) ? ((cells[iPhone] || '').trim() || null) : null;
-    const primary = firstMail(cells[mailCols[0]]);
-    if (!name || !primary) continue;
-    rows.push({ member_number: primary, full_name: name, email: primary, phone });
-    if (mailCols.length > 1) {
-      const second = firstMail(cells[mailCols[1]]);
-      if (second && second !== primary)
-        rows.push({ member_number: second, full_name: name, email: second, phone });
-    }
+    const emails = [...new Set(mailCols.map(idx => firstMail(cells[idx])).filter(Boolean))];
+    if (!emails.length) rows.push({ full_name: name || null, email: null });
+    else emails.forEach(email => rows.push({ full_name: name || null, email }));
   }
-  if (!rows.length) throw new Error('Keine Mitglieder mit vollständigem Namen und gültiger E-Mail gefunden.');
+  if (!rows.some(row => row.full_name && row.email))
+    throw new Error('Keine Mitglieder mit vollständigem Namen und gültiger E-Mail gefunden.');
   return rows;
+}
+
+async function memberFileSha256(file) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map(value => value.toString(16).padStart(2, '0')).join('');
+}
+
+async function loadMemberGroups() {
+  const select = document.getElementById('memberSyncSource');
+  if (!select) return;
+  try {
+    const { data, error } = await sb.rpc('admin_list_member_groups');
+    if (error) throw error;
+    memberGroups = (data || []).filter(group => group.active && group.import_enabled);
+    const previous = select.value || memberSyncSource;
+    select.innerHTML = memberGroups.map(group =>
+      `<option value="${adminUserEsc(group.source)}">${adminUserEsc(group.name)}</option>`
+    ).join('');
+    if (memberGroups.some(group => group.source === previous)) select.value = previous;
+    memberSyncSource = select.value || 'tfb';
+    const group = memberGroups.find(item => item.source === memberSyncSource);
+    const status = document.getElementById('memberGroupStatus');
+    if (status && group) status.textContent = `${Number(group.active_members || 0)} aktive Einträge · letzter Import: ${group.last_import_at ? new Date(group.last_import_at).toLocaleDateString('de-DE') : 'noch nicht protokolliert'}`;
+  } catch (error) {
+    console.warn('Mitgliedergruppen konnten nicht geladen werden', error);
+  }
+}
+
+async function saveMemberGroup() {
+  const name = document.getElementById('memberGroupName')?.value.trim() || '';
+  const source = document.getElementById('memberGroupCode')?.value.trim().toLowerCase() || '';
+  const msg = document.getElementById('memberGroupMsg');
+  if (!name || !/^[a-z0-9][a-z0-9_-]{1,31}$/.test(source)) {
+    msg.textContent = 'Bitte Name und ein Kürzel aus Kleinbuchstaben/Zahlen eingeben.';
+    msg.style.color = '#B8402C';
+    return;
+  }
+  try {
+    const { error } = await sb.rpc('admin_upsert_member_group', {
+      p_source: source,
+      p_name: name,
+      p_grants_discount: document.getElementById('memberGroupDiscount')?.checked !== false,
+      p_import_enabled: true,
+    });
+    if (error) throw error;
+    msg.textContent = 'Gruppe wurde ergänzt.';
+    msg.style.color = '#1F8A5F';
+    document.getElementById('memberGroupName').value = '';
+    document.getElementById('memberGroupCode').value = '';
+    await loadMemberGroups();
+    document.getElementById('memberSyncSource').value = source;
+    memberSyncSource = source;
+  } catch (error) {
+    msg.textContent = 'Fehler: ' + (error.message || error);
+    msg.style.color = '#B8402C';
+  }
 }
 
 async function handleMemberFile(input) {
@@ -12764,14 +12862,17 @@ async function handleMemberFile(input) {
       matrix = parseCsv(await file.text());
     }
     const rows = buildMemberRows(matrix);
+    const fileSha256 = await memberFileSha256(file);
     memberSyncRows = rows;
+    memberSyncFile = { name: file.name, sha256: fileSha256 };
     const { data, error } = await sb.rpc('admin_sync_club_members_preview',
-      { p_source: memberSyncSource, p_rows: rows });
+      { p_source: memberSyncSource, p_rows: rows, p_file_name: file.name, p_file_sha256: fileSha256 });
     if (error) throw error;
     msg.textContent = '';
     openMemberSyncModal(data);
   } catch (e) {
     memberSyncRows = null;
+    memberSyncFile = null;
     msg.style.color = '#B8402C';
     msg.textContent = 'Fehler: ' + (e.message || e);
   }
@@ -12780,17 +12881,17 @@ async function handleMemberFile(input) {
 function openMemberSyncModal(p) {
   const overlay = document.getElementById('memberSyncModal');
   const g = (id) => document.getElementById(id);
-  const label = memberSyncSource === 'freibad'
-    ? 'Freibad Bielstein (Dauerkarten)'
-    : memberSyncSource === 'bsv'
-      ? 'BSV Bielstein (Mitglieder)'
-      : 'Tennisfreunde Bielstein (Mitglieder)';
+  const label = memberGroups.find(group => group.source === memberSyncSource)?.name || memberSyncSource.toUpperCase();
   const sub = g('memberSyncSub');
-  if (sub) sub.textContent = 'Liste: ' + label + '. Bitte prüfe die Änderungen – es wird nichts gelöscht, Ausgetretene werden nur auf „inaktiv“ gesetzt.';
+  if (sub) sub.textContent = 'Liste: ' + label + '. Ausgetretene verlieren nur den Mitgliedsrabatt. Benutzerkonto, Buchungen und Kundendaten bleiben vollständig bestehen.';
   g('msTotal').textContent = String(p.hochgeladen ?? 0) + (p.ohne_email ? '  (' + p.ohne_email + ' ohne E-Mail)' : '');
+  g('msValid').textContent = String(p.gueltig ?? 0);
+  g('msExisting').textContent = String(p.vorhanden ?? 0);
   g('msNeu').textContent   = String(p.neu ?? 0);
   g('msReakt').textContent = String(p.reaktivieren ?? 0);
   g('msDeakt').textContent = String(p.deaktivieren ?? 0);
+  g('msSharedEmails').textContent = String(p.geteilte_emails ?? 0);
+  g('msSkipped').textContent = String(Number(p.ungueltig || 0) + Number(p.duplikate || 0));
   const names = Array.isArray(p.deaktivieren_namen) ? p.deaktivieren_namen : [];
   const nEl = g('msDeaktNames');
   if (names.length) {
@@ -12807,7 +12908,7 @@ function openMemberSyncModal(p) {
     overlay.removeEventListener('click', onBackdrop);
   };
   const onOk = async () => { ok.disabled = true; await applyMemberSync(); ok.disabled = false; close(); };
-  const onCancel = () => { memberSyncRows = null; close(); };
+  const onCancel = () => { memberSyncRows = null; memberSyncFile = null; close(); };
   const onBackdrop = (e) => { if (e.target === overlay) onCancel(); };
   ok.addEventListener('click', onOk);
   cancel.addEventListener('click', onCancel);
@@ -12819,18 +12920,25 @@ async function applyMemberSync() {
   const msg = document.getElementById('memberSyncMsg');
   if (!memberSyncRows) return;
   try {
-    const { data, error } = await sb.rpc('admin_sync_club_members_apply', { p_source: memberSyncSource || 'tfb', p_rows: memberSyncRows });
+    const { data, error } = await sb.rpc('admin_sync_club_members_apply', {
+      p_source: memberSyncSource || 'tfb',
+      p_rows: memberSyncRows,
+      p_file_name: memberSyncFile?.name || null,
+      p_file_sha256: memberSyncFile?.sha256 || null,
+    });
     if (error) throw error;
     showToast('🎾 Mitgliederliste aktualisiert: ' + (data.neu || 0) + ' neu · ' + (data.aktualisiert || 0) +
       ' aktualisiert · ' + (data.reaktiviert || 0) + ' reaktiviert · ' + (data.deaktiviert || 0) + ' deaktiviert.');
     msg.style.color = '#1F8A5F';
     msg.textContent = 'Fertig – ' + (data.aktiv_gesamt || 0) + ' aktive Mitglieder.';
+    await loadMemberGroups();
     if (typeof loadAdminUsers === 'function') { try { adminTabLoaded.users = false; loadAdminUsers(); } catch (_e) {} }
   } catch (e) {
     msg.style.color = '#B8402C';
     msg.textContent = 'Fehler beim Speichern: ' + (e.message || e);
   } finally {
     memberSyncRows = null;
+    memberSyncFile = null;
   }
 }
 
@@ -13321,6 +13429,7 @@ function adminUserEsc(value) {
 
 async function loadAdminUsers() {
   const __authH = await authHeaders();
+  await loadMemberGroups();
   try {
     const res  = await fetch(
       `${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc&limit=500`,
@@ -16458,9 +16567,10 @@ function profileCardHTML() {
        </div>
        <div class="acct-hint">Als Partner wirst du automatisch wie ein Mitglied behandelt – erkannt über deine bestätigte E-Mail-Adresse.</div>`
     : `${memberRow(srcs.includes('tfb'), 'Mitgliedschaft Tennisfreunde Bielstein', 'https://tfbielstein.de', { alwaysLink: true })}
-       ${memberRow(srcs.includes('bsv'), 'Mitgliedschaft BSV Bielstein', '')}
+       ${memberRow(srcs.includes('bsv'), 'Mitgliedschaft BSV Victoria Bielstein', '')}
+       ${srcs.filter(source => source !== 'tfb' && source !== 'bsv').map(() => memberRow(true, 'Weitere freigegebene Mitgliedschaft', '')).join('')}
        <div class="acct-hint">
-         Wird automatisch über deinen Namen und deine bestätigte E-Mail-Adresse erkannt – gilt für Tennisfreunde Bielstein und BSV Bielstein. Du musst nichts eintragen.
+         Wird automatisch über deinen Namen und deine bestätigte E-Mail-Adresse erkannt. Du musst nichts eintragen.
          ${srcs.length ? '' : '<br><button type="button" class="acct-report-btn" onclick="reportMissingMembership()">Ich bin Mitglied, werde aber nicht erkannt →</button>'}
        </div>`;
   return `<div class="loyalty-card acct-card${isPartner ? ' acct-card-partner' : ''}">
