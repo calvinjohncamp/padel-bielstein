@@ -1349,6 +1349,20 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .admin-tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
 .admin-tab { padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--card); color: #666; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
 .admin-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.archive-filter-grid { display:grid; grid-template-columns:repeat(3,minmax(150px,1fr)); gap:14px; align-items:end; }
+.archive-filter-grid > div { min-width:0; }
+.archive-filter-grid .admin-label { display:block; min-width:0; margin-bottom:6px; }
+.archive-filter-grid .admin-input { width:100%; }
+.archive-search { grid-column:span 2; }
+.archive-filter-actions { display:flex; gap:8px; justify-content:flex-end; }
+.archive-note { margin:0 0 12px; color:#777; font-size:.78rem; line-height:1.5; }
+.archive-status { min-height:20px; margin-bottom:8px; color:#999; font-size:.78rem; }
+.archive-table-wrap { overflow:auto; max-height:620px; border:1px solid var(--border); border-radius:10px; }
+.archive-table-wrap .admin-table thead { position:sticky; top:0; z-index:1; background:var(--card); }
+.archive-reference { max-width:220px; overflow-wrap:anywhere; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.72rem; }
+.archive-amount { white-space:nowrap; text-align:right; }
+.archive-state { display:inline-block; padding:3px 7px; border-radius:5px; background:#163421; color:#75D69B; font-size:.68rem; }
+.archive-state.anonymous { background:#292929; color:#AAA; }
 .admin-ok  { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.35); border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; color: #4ade80; margin-top: 10px; display: none; }
 .admin-ok.show { display: block; }
 .admin-err { background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.35); border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; color: #fca5a5; margin-top: 10px; display: none; }
@@ -1359,6 +1373,10 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
   .admin-row { flex-direction: column; align-items: flex-start; }
   .admin-input { width: 100%; }
   .admin-label { min-width: unset; }
+  .archive-filter-grid { grid-template-columns:1fr; }
+  .archive-search { grid-column:auto; }
+  .archive-filter-actions { justify-content:stretch; }
+  .archive-filter-actions button { flex:1; }
 }
 
 /* ■■ FOOTER ■■ */
@@ -1523,7 +1541,6 @@ body.bielstein-theme #tabVerabredungen .tab-icon{border:none!important;width:23p
 body.bielstein-theme #tabVerabredungen.active .tab-icon{background-image:url("assets/icons/Megafon Icon klein transparent beige.png")!important}
 
 body.bielstein-theme #bookBtn.visible{display:flex!important}
-
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -2162,9 +2179,9 @@ main {
         <li><strong>GitHub Pages</strong> – Auslieferung der Website</li>
       </ul>
       <h3>Speicherdauer</h3>
-      <p>Dein Konto bleibt gespeichert, bis du es löschen lässt. Buchungs- und Zahlungsdaten bewahren wir so lange auf, wie gesetzliche Aufbewahrungspflichten bestehen (bis zu zehn Jahre, § 147 AO / § 257 HGB). Danach werden sie gelöscht.</p>
+      <p>In deinem bestehenden Konto ist jeweils die Buchungshistorie der letzten 24 Monate abrufbar; ältere Buchungen verschwinden automatisch aus dieser Ansicht. Dein Konto bleibt gespeichert, bis du es in der App selbst löschst oder uns mit der Löschung beauftragst. Persönliche Profildaten und die Anmeldung werden dabei entfernt. Eine spätere Neuregistrierung wird nicht mit der alten Historie verbunden. Buchungs- und Zahlungsbelege bewahren wir ohne App-Kontoverknüpfung nur so lange auf, wie gesetzliche Aufbewahrungspflichten bestehen (je nach Unterlagenart regelmäßig sechs, acht oder zehn Jahre; Buchungsbelege grundsätzlich acht Jahre nach § 147 AO). Danach werden sie gelöscht.</p>
       <h3>Deine Rechte</h3>
-      <p>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch (Art. 15–21 DSGVO). Schreib dazu einfach an info@tfbielstein.de. Du kannst dich außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren – zuständig ist die Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (www.ldi.nrw.de).</p>
+      <p>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch (Art. 15–21 DSGVO). Dein Konto kannst du unter „Mein Account“ selbst löschen; für weitere Anliegen schreib einfach an info@tfbielstein.de. Du kannst dich außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren – zuständig ist die Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (www.ldi.nrw.de).</p>
     </section>
     </div><!-- /courtRulesViewPrivacy -->
 
@@ -2519,7 +2536,7 @@ main {
           <div id="weatherReportContent"></div>
         </div>
 
-        <div class="play-card-title play-history-title" id="playHistoryTitle">■ Historie</div>
+        <div class="play-card-title play-history-title" id="playHistoryTitle">■ Historie der letzten 24 Monate</div>
 
         <!-- Ältere, vollständig abgearbeitete Einzelbuchungen. -->
         <div class="play-card history-archive-card" id="myHistoryCard" style="display:none;">
@@ -5359,6 +5376,7 @@ main {
       <div class="admin-tab"        id="atab-prices"    onclick="setAdminTab('prices')">💰 Preise</div>
       <div class="admin-tab"        id="atab-internal"  onclick="setAdminTab('internal')">📋 Interne Buchungen</div>
       <div class="admin-tab"        id="atab-bookings"  onclick="setAdminTab('bookings')">📅 Buchungsübersicht</div>
+      <div class="admin-tab"        id="atab-archive"   onclick="setAdminTab('archive')">🗄 Belegarchiv</div>
       <div class="admin-tab"        id="atab-kiosk"     onclick="setAdminTab('kiosk')">🥤 Kiosk</div>
       <div class="admin-tab"        id="atab-aktionen"  onclick="setAdminTab('aktionen')">🎯 Aktionen</div>
       <div class="admin-tab"        id="atab-sponsors"  onclick="setAdminTab('sponsors')">🤝 Sponsoren</div>
@@ -6029,6 +6047,34 @@ main {
         </div>
       </div>
     </div><!-- /adminBookings -->
+
+    <!-- ── BELEGARCHIV ── -->
+    <div id="adminArchive" style="display:none;">
+      <div class="admin-section">
+        <div class="admin-section-title">Belegarchiv · eingeschränkter Zugriff</div>
+        <div class="admin-card archive-filter-grid">
+          <div><label class="admin-label" for="archiveFrom">Von</label><input class="admin-input" type="date" id="archiveFrom"></div>
+          <div><label class="admin-label" for="archiveTo">Bis</label><input class="admin-input" type="date" id="archiveTo"></div>
+          <div><label class="admin-label" for="archiveKind">Vorgangsart</label><select class="admin-input" id="archiveKind">
+            <option value="all">Alle Vorgänge</option><option value="booking">Buchungen</option><option value="subscription">Abos</option>
+            <option value="payment">Zahlungen</option><option value="card">Wertkarten</option><option value="credit">Guthaben</option><option value="punch_card">Stundenkarten</option><option value="kiosk">Kiosk</option>
+          </select></div>
+          <div class="archive-search"><label class="admin-label" for="archiveSearch">Beleg- oder Stripe-Kennung</label><input class="admin-input" type="search" id="archiveSearch" placeholder="Kennung eingeben"></div>
+          <div class="archive-filter-actions">
+            <button class="admin-save-btn" type="button" onclick="loadAdminArchive('view')">Anzeigen</button>
+            <button class="admin-save-btn gold" type="button" id="archiveExportBtn" onclick="exportAdminArchive()" disabled>CSV exportieren</button>
+          </div>
+        </div>
+        <div class="archive-note">Das Archiv zeigt nur abrechnungsrelevante Angaben. Gelöschte Konten bleiben „anonymisiert“ und werden bei einer Neuregistrierung nicht wieder verbunden. Abrufe und Exporte werden protokolliert.</div>
+        <div id="archiveStatus" class="archive-status"></div>
+        <div class="archive-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Datum</th><th>Art</th><th>Status</th><th>Beschreibung</th><th>Referenz</th><th>Konto</th><th>Betrag</th></tr></thead>
+            <tbody id="archiveTbody"><tr><td colspan="7" style="text-align:center;padding:24px;">Zeitraum wählen und Archiv laden.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /adminArchive -->
 
     <!-- ── WETTERAUSFÄLLE (Schritt C) ──
          Meldungen aus weather_reports über admin_list_weather_reports().
@@ -10027,6 +10073,13 @@ async function submitWeatherReport() {
 const HISTORY_PAGE = 10;
 let historyOffset = 0;
 
+function personalHistoryStartDate() {
+  const start = new Date();
+  start.setHours(12, 0, 0, 0);
+  start.setMonth(start.getMonth() - 24);
+  return localISODate(start);
+}
+
 async function renderMyHistory(reset) {
   const card = document.getElementById('myHistoryCard');
   const list = document.getElementById('myHistoryList');
@@ -10047,6 +10100,7 @@ async function renderMyHistory(reset) {
       .from('bookings')
       .select('id,court,date,hour_start,duration,price_paid_cents,status')
       .eq('user_id', userId)
+      .gte('date', personalHistoryStartDate())
       .lte('date', todayStr())
       .in('status', ['paid', 'active'])
       .order('date', { ascending: false })
@@ -11286,7 +11340,7 @@ function hideToast() {
 // ============================================================
 //  ADMIN – Initialisierung & Tab-Steuerung
 // ============================================================
-let adminTabLoaded = { freibad: false, prices: false, internal: false, bookings: false, mis: false, users: false, infomails: false };
+let adminTabLoaded = { freibad: false, prices: false, internal: false, bookings: false, archive: false, mis: false, users: false, infomails: false };
 
 // ============================================================
 //  PLATTE PUTZEN (nur Testphase)
@@ -12397,6 +12451,7 @@ function setAdminTab(tab) {
   document.getElementById('adminPrices').style.display    = tab==='prices'   ? 'block' : 'none';
   document.getElementById('adminInternal').style.display  = tab==='internal' ? 'block' : 'none';
   document.getElementById('adminBookings').style.display  = tab==='bookings' ? 'block' : 'none';
+  document.getElementById('adminArchive').style.display   = tab==='archive'  ? 'block' : 'none';
   document.getElementById('adminKiosk').style.display     = tab==='kiosk'    ? 'block' : 'none';
   document.getElementById('adminAktionen').style.display  = tab==='aktionen' ? 'block' : 'none';
   document.getElementById('adminWeather').style.display   = tab==='weather'  ? 'block' : 'none';
@@ -12406,7 +12461,7 @@ function setAdminTab(tab) {
   document.getElementById('adminInfoMails').style.display = tab==='infomails'? 'block' : 'none';
   document.getElementById('adminInfos').style.display     = tab==='infos'    ? 'block' : 'none';
   document.getElementById('adminWipe').style.display      = tab==='wipe'     ? 'block' : 'none';
-  ['freibad','fbtickets','prices','internal','bookings','kiosk','aktionen','weather','sponsors','mis','users','infomails','infos','wipe'].forEach(t =>
+  ['freibad','fbtickets','prices','internal','bookings','archive','kiosk','aktionen','weather','sponsors','mis','users','infomails','infos','wipe'].forEach(t =>
     document.getElementById('atab-'+t).classList.toggle('active', t===tab)
   );
   // Freibad-Tickets: bei jedem Öffnen frisch (Live-Daten); Auto-Refresh nur solange offen.
@@ -12427,6 +12482,7 @@ function setAdminTab(tab) {
   if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
   if (tab==='internal' && !adminTabLoaded.internal) { loadInternalBookings(); adminTabLoaded.internal=true; }
   if (tab==='bookings' && !adminTabLoaded.bookings) { loadAdminBookings(); loadAdminAbos(); loadAdminStats(); adminTabLoaded.bookings=true; }
+  if (tab==='archive'  && !adminTabLoaded.archive)  { initAdminArchive(); adminTabLoaded.archive=true; }
   if (tab==='mis'      && !adminTabLoaded.mis)      {
     adminTabLoaded.mis=true;
     function doMisInit() {
@@ -13157,6 +13213,92 @@ async function loadAdminAbos() {
         <td>${a.ends_on ? formatDateDE(a.ends_on) : '—'}</td>
       </tr>`).join('');
   } catch(e) { console.warn('Abos Admin Fehler:', e); }
+}
+
+// ============================================================
+//  ADMIN – Belegarchiv
+//  Der Browser erhaelt nur die vom serverseitigen RPC freigegebenen Felder.
+//  Rollenpruefung und Zugriffsprotokoll liegen in der Datenbank.
+// ============================================================
+let adminArchiveRows = [];
+
+function initAdminArchive() {
+  const to = new Date();
+  const from = new Date(to.getFullYear(), 0, 1, 12);
+  document.getElementById('archiveFrom').value = localISODate(from);
+  document.getElementById('archiveTo').value = localISODate(to);
+  loadAdminArchive('view');
+}
+
+function archiveKindLabel(kind) {
+  return ({ booking:'Buchung', subscription:'Abo', payment:'Zahlung', card:'Wertkarte', credit:'Guthaben', punch_card:'Stundenkarte', kiosk:'Kiosk' })[kind] || kind;
+}
+
+async function loadAdminArchive(action) {
+  const tbody = document.getElementById('archiveTbody');
+  const status = document.getElementById('archiveStatus');
+  const exportBtn = document.getElementById('archiveExportBtn');
+  const from = document.getElementById('archiveFrom').value;
+  const to = document.getElementById('archiveTo').value;
+  const kind = document.getElementById('archiveKind').value;
+  const search = document.getElementById('archiveSearch').value.trim();
+  if (!from || !to || from > to) { status.textContent = 'Bitte einen gültigen Zeitraum wählen.'; return []; }
+
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;">Archiv wird geladen …</td></tr>';
+  status.textContent = '';
+  exportBtn.disabled = true;
+  try {
+    const { data, error } = await sb.rpc('admin_retention_archive', {
+      p_from: from, p_to: to, p_kind: kind, p_search: search,
+      p_limit: 1000, p_offset: 0, p_action: action || 'view',
+    });
+    if (error) throw error;
+    adminArchiveRows = data || [];
+    const total = Number(adminArchiveRows[0]?.total_count || 0);
+    status.textContent = `${total.toLocaleString('de-DE')} Vorgänge gefunden${total > adminArchiveRows.length ? ` · die ersten ${adminArchiveRows.length.toLocaleString('de-DE')} werden angezeigt` : ''}.`;
+    if (!adminArchiveRows.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;">Keine Vorgänge im gewählten Zeitraum.</td></tr>';
+      return [];
+    }
+    tbody.innerHTML = adminArchiveRows.map(row => `
+      <tr>
+        <td>${formatDateDE(row.service_date)}</td>
+        <td>${esc(archiveKindLabel(row.record_kind))}</td>
+        <td>${esc(row.status || '—')}</td>
+        <td>${esc(row.description || '—')}</td>
+        <td class="archive-reference">${esc(row.reference || row.record_id || '—')}</td>
+        <td><span class="archive-state ${row.account_state === 'anonymisiert' ? 'anonymous' : ''}">${esc(row.account_state || '—')}</span></td>
+        <td class="archive-amount">${(Number(row.amount_cents || 0) / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
+      </tr>`).join('');
+    exportBtn.disabled = false;
+    return adminArchiveRows;
+  } catch (error) {
+    adminArchiveRows = [];
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#B8402C;">Archiv konnte nicht geladen werden.</td></tr>';
+    status.textContent = error.message || 'Archivzugriff fehlgeschlagen.';
+    return [];
+  }
+}
+
+function archiveCsvCell(value) {
+  const text = String(value ?? '').replace(/"/g, '""');
+  return `"${text}"`;
+}
+
+async function exportAdminArchive() {
+  const rows = await loadAdminArchive('export');
+  if (!rows.length) return;
+  const header = ['Datum','Art','Status','Beschreibung','Referenz','Kontostatus','Betrag EUR'];
+  const lines = [header, ...rows.map(row => [
+    row.service_date, archiveKindLabel(row.record_kind), row.status, row.description,
+    row.reference || row.record_id, row.account_state, (Number(row.amount_cents || 0) / 100).toFixed(2).replace('.', ','),
+  ])].map(row => row.map(archiveCsvCell).join(';'));
+  const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `padel-bielstein-belegarchiv-${document.getElementById('archiveFrom').value}-${document.getElementById('archiveTo').value}.csv`;
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 }
 
 // ============================================================
@@ -16214,6 +16356,12 @@ function profileCardHTML() {
     <div class="rw-divider" style="margin-top:20px;"></div>
     ${memberSection}
     <div class="profile-save-ok" id="membershipReportMsg"></div>
+    <div class="acct-delete-zone">
+      <strong>Konto und persönliche Daten</strong>
+      <p>Du kannst dein Konto dauerhaft löschen. Bezahlte Vorgänge bleiben nur ohne Kontoverknüpfung erhalten, soweit gesetzlich erforderlich.</p>
+      <button type="button" class="acct-delete-btn" id="acctDeleteBtn" onclick="openAccountDeletion()">Konto löschen</button>
+      <div class="profile-save-ok" id="accountDeleteMsg"></div>
+    </div>
   </div>`;
 }
 
@@ -17409,6 +17557,115 @@ async function saveProfile() {
     msg.style.color = '#d64545'; msg.textContent = 'Fehler beim Speichern: ' + e.message;
   } finally {
     btn.disabled = false; btn.textContent = 'Änderungen speichern';
+  }
+}
+
+async function accountDeletionRequest(payload) {
+  const { data: { session } } = await sb.auth.getSession();
+  const accessToken = session?.access_token;
+  if (!accessToken) throw new Error('Bitte melde dich erneut an.');
+
+  const response = await fetch(
+    'https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/delete-account',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'apikey': SUPABASE_ANON,
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.error || 'Die Kontoprüfung ist fehlgeschlagen.');
+    error.blockers = data.blockers || [];
+    throw error;
+  }
+  return data;
+}
+
+function closeAccountDeletion() {
+  document.getElementById('accountDeleteOverlay')?.remove();
+}
+
+function accountDeletionModal(data) {
+  closeAccountDeletion();
+  const blockers = Array.isArray(data.blockers) ? data.blockers : [];
+  const blocked = blockers.length > 0 || data.canDelete === false;
+  const blockerList = blockers.map(item => `<li>${esc(item.label || '')}</li>`).join('');
+  const action = blocked
+    ? `<div class="acct-delete-blockers"><strong>Vorher noch zu erledigen:</strong><ul>${blockerList}</ul></div>
+       <button type="button" class="acct-delete-cancel" onclick="closeAccountDeletion()">Schließen</button>`
+    : `<div class="acct-delete-warning">Diese Löschung ist endgültig. Danach kannst du dich mit derselben E-Mail-Adresse neu registrieren; das neue Konto beginnt jedoch ohne das bisherige Profil und ohne persönliche Historie.</div>
+       <label class="acct-delete-check"><input id="acctDeleteAccept" type="checkbox" onchange="updateAccountDeleteButton()"><span>Ich verstehe, dass mein Konto und meine persönlichen Profildaten dauerhaft gelöscht werden.</span></label>
+       <label class="form-label" for="acctDeletePhrase">Zur Bestätigung <strong>KONTO LÖSCHEN</strong> eingeben</label>
+       <input class="form-input" id="acctDeletePhrase" type="text" autocomplete="off" oninput="updateAccountDeleteButton()">
+       <div class="acct-delete-actions">
+         <button type="button" class="acct-delete-cancel" onclick="closeAccountDeletion()">Abbrechen</button>
+         <button type="button" class="acct-delete-confirm" id="acctDeleteConfirm" onclick="confirmAccountDeletion()" disabled>Endgültig löschen</button>
+       </div>
+       <div class="acct-delete-result" id="acctDeleteResult"></div>`;
+
+  document.body.insertAdjacentHTML('beforeend', `
+    <div class="acct-delete-overlay" id="accountDeleteOverlay" onclick="if(event.target===this) closeAccountDeletion()">
+      <section class="acct-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="acctDeleteTitle">
+        <button type="button" class="acct-delete-close" aria-label="Schließen" onclick="closeAccountDeletion()">×</button>
+        <div class="acct-delete-kicker">Mein Account</div>
+        <h2 id="acctDeleteTitle">Konto dauerhaft löschen</h2>
+        <p>Wir prüfen zuerst, ob noch Buchungen, Zahlungen, Guthaben oder besondere Rollen mit deinem Konto verbunden sind.</p>
+        ${action}
+      </section>
+    </div>`);
+  if (!blocked) setTimeout(() => document.getElementById('acctDeletePhrase')?.focus(), 50);
+}
+
+async function openAccountDeletion() {
+  const button = document.getElementById('acctDeleteBtn');
+  const message = document.getElementById('accountDeleteMsg');
+  if (button) button.disabled = true;
+  if (message) { message.style.color = ''; message.textContent = 'Offene Vorgänge werden geprüft …'; }
+  try {
+    const preview = await accountDeletionRequest({ action: 'preview' });
+    if (message) message.textContent = '';
+    accountDeletionModal(preview);
+  } catch (error) {
+    if (message) {
+      message.style.color = '#B8402C';
+      message.textContent = error.message || 'Die Kontoprüfung ist fehlgeschlagen.';
+    }
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+function updateAccountDeleteButton() {
+  const accepted = document.getElementById('acctDeleteAccept')?.checked === true;
+  const phrase = document.getElementById('acctDeletePhrase')?.value || '';
+  const button = document.getElementById('acctDeleteConfirm');
+  if (button) button.disabled = !(accepted && phrase === 'KONTO LÖSCHEN');
+}
+
+async function confirmAccountDeletion() {
+  const button = document.getElementById('acctDeleteConfirm');
+  const result = document.getElementById('acctDeleteResult');
+  const phrase = document.getElementById('acctDeletePhrase')?.value || '';
+  if (!button || button.disabled) return;
+
+  button.disabled = true;
+  button.textContent = 'Wird gelöscht …';
+  if (result) result.textContent = '';
+  try {
+    await accountDeletionRequest({ action: 'delete', confirmation: phrase });
+    try { await sb.auth.signOut({ scope: 'local' }); } catch (e) {}
+    closeAccountDeletion();
+    alert('Dein Konto wurde gelöscht. Du kannst dich jederzeit wieder neu registrieren.');
+    location.href = '/';
+  } catch (error) {
+    if (result) result.textContent = error.message || 'Die Löschung ist fehlgeschlagen.';
+    button.disabled = false;
+    button.textContent = 'Endgültig löschen';
   }
 }
 
@@ -19371,6 +19628,63 @@ body.bielstein-theme .acct-report-btn {
   font-weight: 700; color: #FF5A36; text-align: left;
 }
 body.bielstein-theme .acct-report-btn:hover { text-decoration: underline; }
+
+body.bielstein-theme .acct-delete-zone {
+  margin-top: 22px; padding-top: 18px; border-top: 1px solid #E2DACB; text-align: left;
+}
+body.bielstein-theme .acct-delete-zone > strong {
+  display: block; color: #1C1A17; font: 700 14px "Space Grotesk","Arial Narrow",sans-serif;
+}
+body.bielstein-theme .acct-delete-zone p {
+  margin: 5px 0 12px; color: #7A7368; font-size: 12.5px; line-height: 1.5;
+}
+body.bielstein-theme .acct-delete-btn {
+  border: 1.5px solid #B8402C; border-radius: 10px; background: transparent; color: #B8402C;
+  padding: 10px 13px; cursor: pointer; font: 700 12.5px "Space Grotesk","Arial Narrow",sans-serif;
+}
+body.bielstein-theme .acct-delete-btn:disabled { opacity: .5; cursor: wait; }
+body.bielstein-theme .acct-delete-overlay {
+  position: fixed; inset: 0; z-index: 12000; display: flex; align-items: center; justify-content: center;
+  padding: 18px; background: rgba(28,26,23,.72); backdrop-filter: blur(7px);
+}
+body.bielstein-theme .acct-delete-dialog {
+  position: relative; width: min(100%, 500px); max-height: min(88vh, 720px); overflow: auto;
+  border: 1px solid #E2DACB; border-radius: 16px; background: #F6F1E7; color: #1C1A17;
+  padding: 24px; box-shadow: 0 28px 80px rgba(0,0,0,.34); text-align: left;
+}
+body.bielstein-theme .acct-delete-dialog h2 {
+  margin: 4px 42px 8px 0; font: 800 24px/1.1 "Space Grotesk","Arial Narrow",sans-serif;
+}
+body.bielstein-theme .acct-delete-dialog > p { margin: 0 0 17px; color: #7A7368; font-size: 13.5px; line-height: 1.55; }
+body.bielstein-theme .acct-delete-kicker {
+  color: #B8402C; font: 800 11px "Space Grotesk","Arial Narrow",sans-serif; text-transform: uppercase;
+}
+body.bielstein-theme .acct-delete-close {
+  position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border: 0; border-radius: 50%;
+  background: #FFFFFF; color: #1C1A17; cursor: pointer; font-size: 22px; line-height: 1;
+}
+body.bielstein-theme .acct-delete-warning,
+body.bielstein-theme .acct-delete-blockers {
+  margin: 0 0 16px; padding: 13px 14px; border: 1px solid #D7B2AA; border-radius: 10px;
+  background: #FFF7F5; color: #6F2D20; font-size: 13px; line-height: 1.5;
+}
+body.bielstein-theme .acct-delete-blockers ul { margin: 7px 0 0; padding-left: 20px; }
+body.bielstein-theme .acct-delete-check {
+  display: flex; align-items: flex-start; gap: 10px; margin: 0 0 16px; color: #1C1A17; font-size: 13px; line-height: 1.45; cursor: pointer;
+}
+body.bielstein-theme .acct-delete-check input { width: 17px; height: 17px; margin-top: 2px; accent-color: #B8402C; flex: 0 0 auto; }
+body.bielstein-theme .acct-delete-dialog .form-label { display: block; margin-bottom: 7px; }
+body.bielstein-theme .acct-delete-dialog .form-input { width: 100%; background: #FFFFFF; color: #1C1A17; border: 1.5px solid #D9CFBF; border-radius: 10px; padding: 12px; }
+body.bielstein-theme .acct-delete-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+body.bielstein-theme .acct-delete-cancel,
+body.bielstein-theme .acct-delete-confirm { border: 0; border-radius: 10px; padding: 12px; cursor: pointer; font: 700 13px "Space Grotesk","Arial Narrow",sans-serif; }
+body.bielstein-theme .acct-delete-cancel { background: #FFFFFF; color: #1C1A17; }
+body.bielstein-theme .acct-delete-confirm { background: #B8402C; color: #FFFFFF; }
+body.bielstein-theme .acct-delete-confirm:disabled { opacity: .45; cursor: not-allowed; }
+body.bielstein-theme .acct-delete-result { min-height: 18px; margin-top: 10px; color: #B8402C; font-size: 12.5px; }
+@media (max-width: 480px) {
+  body.bielstein-theme .acct-delete-actions { grid-template-columns: 1fr; }
+}
 
 /* Pager: dezente Punkte + zurückhaltende Pfeile – die Karte steht im Mittelpunkt,
    nicht die Steuerung. (Ersetzt die früheren großen Coral-Kreise.) */
