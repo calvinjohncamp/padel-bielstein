@@ -6315,8 +6315,12 @@ main {
 
           <div style="margin-bottom:12px;">
             <label style="display:block;font:700 11px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:6px;">Court-Bezeichnung (nur Premium)</label>
-            <input id="spCourtLabel" type="text" placeholder="z. B. Court #1 - Sparkasse" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
-            <div style="font-size:0.72rem;color:#7A7368;line-height:1.5;margin-top:5px;">Optional. Leerlassen nutzt automatisch „Court #1/#2 - Marke" für die beiden aktiven Premium-Partner in ihrer Reihenfolge.</div>
+            <input id="spCourtLabel" type="text" placeholder="z. B. Court #1 - Partnername" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
+            <label style="display:flex;align-items:flex-start;gap:9px;margin-top:9px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;cursor:pointer;">
+              <input id="spCourtPartnerEnabled" type="checkbox" style="margin-top:2px;accent-color:#FF5A36;">
+              <span>Premium-Partner am Court anzeigen</span>
+            </label>
+            <div style="font-size:0.72rem;color:#7A7368;line-height:1.5;margin-top:5px;">Standardmäßig ausgeschaltet. Nur aktivieren, wenn die Court-Zuordnung ausdrücklich vereinbart ist. Ohne Aktivierung bleibt es bei „Court #1“ und „Court #2“.</div>
           </div>
 
           <div style="margin-bottom:12px;">
@@ -7396,8 +7400,10 @@ function applyCourtPartnerLabels(rows) {
     .slice(0, 2);
   [1, 2].forEach(court => {
     const s = premium[court - 1];
-    const defaultPartner = s?.name ? `Court #${court} - ${s.name}` : '';
-    window.__pbCourtLabels[court] = normalizeCourtLabel(s?.court_label, defaultPartner || `Court #${court}`);
+    const enabled = s?.court_partner_enabled === true;
+    window.__pbCourtLabels[court] = enabled
+      ? normalizeCourtLabel(s?.court_label, `Court #${court}`)
+      : `Court #${court}`;
   });
   updateCourtLabelDom();
 }
@@ -7405,8 +7411,8 @@ function applyCourtPartnerLabels(rows) {
 async function loadCourtPartnerLabels() {
   try {
     if (typeof sb === 'undefined' || !sb) return;
-    let res = await sb.from('sponsors_public').select('tier,name,sort_order,court_label');
-    if (res.error) res = await sb.from('sponsors_public').select('tier,name,sort_order');
+    let res = await sb.from('sponsors_public').select('tier,name,sort_order,court_label,court_partner_enabled');
+    if (res.error) res = await sb.from('sponsors_public').select('tier,name,sort_order,court_label');
     if (res.error) return;
     applyCourtPartnerLabels(res.data || []);
   } catch(e) {}
@@ -11610,7 +11616,7 @@ async function loadAdminSponsors() {
             <div style="text-align:left;">
               <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(s.name)}</div>
               <div style="font-size:0.78rem;color:#7A7368;margin-top:3px;"><strong>${num}</strong> · ${tierLabel[s.tier] || s.tier} · ${active}${action}</div>
-              ${s.tier === 'premium' ? `<div style="font-size:0.74rem;color:#FF5A36;margin-top:3px;">🎾 ${esc(s.court_label || courtLabel(idx + 1))}</div>` : ''}
+              ${s.tier === 'premium' ? `<div style="font-size:0.74rem;color:${s.court_partner_enabled === true ? '#FF5A36' : '#7A7368'};margin-top:3px;">${s.court_partner_enabled === true ? `Court-Anzeige: ${esc(s.court_label || courtLabel(idx + 1))}` : 'Court-Anzeige aus'}</div>` : ''}
               ${s.website_url ? `<div style="font-size:0.74rem;color:#5C564C;margin-top:3px;word-break:break-all;">🔗 ${esc(s.website_url)}</div>` : ''}
             </div>
 
@@ -11745,6 +11751,7 @@ function editSponsor(id) {
   document.getElementById('spTier').value     = s.tier;
   document.getElementById('spName').value     = s.name;
   document.getElementById('spCourtLabel').value = s.court_label || '';
+  document.getElementById('spCourtPartnerEnabled').checked = s.court_partner_enabled === true;
   document.getElementById('spWebsite').value  = s.website_url || '';
   document.getElementById('spSort').value     = s.sort_order;
   document.getElementById('spActive').checked = !!s.active;
@@ -11776,6 +11783,7 @@ function resetSponsorForm() {
   document.getElementById('spTier').value     = 'partner';
   document.getElementById('spName').value     = '';
   document.getElementById('spCourtLabel').value = '';
+  document.getElementById('spCourtPartnerEnabled').checked = false;
   document.getElementById('spWebsite').value  = '';
   document.getElementById('spSort').value     = '0';
   document.getElementById('spActive').checked = true;
@@ -11907,6 +11915,7 @@ async function saveSponsor() {
   const discountEmailDomains = document.getElementById('spDiscountEmailDomains').value.trim();
   const website      = document.getElementById('spWebsite').value.trim();
   const courtLabelValue = document.getElementById('spCourtLabel').value.trim();
+  const courtPartnerEnabled = document.getElementById('spCourtPartnerEnabled').checked;
   const contractCompany = document.getElementById('spContractCompany').value.trim();
   const addressStreet = document.getElementById('spAddressStreet').value.trim();
   const addressZip = document.getElementById('spAddressZip').value.trim();
@@ -11924,6 +11933,8 @@ async function saveSponsor() {
   const invalidDomains = domainParts.filter(v => !/^@[a-z0-9.-]+\.[a-z]{2,}$/i.test(v));
   if (invalidDomains.length) { alert('Bitte Rabatt-Mailendungen mit @ eintragen, z. B. @sparkasse-gm.de.'); return; }
   if (discountEmailDomains && tier !== 'premium') { alert('Mailendungen für den Partner-Rabatt sind nur bei Premium-Partnern vorgesehen.'); return; }
+  if (courtPartnerEnabled && tier !== 'premium') { alert('Die Court-Anzeige ist nur bei Premium-Partnern vorgesehen.'); return; }
+  if (courtPartnerEnabled && !courtLabelValue) { alert('Bitte zuerst eine ausdrückliche Court-Bezeichnung eintragen.'); return; }
   const tierConfig = SPONSOR_TIER_CONFIG[tier];
   const occupiedInTier = (window.__sponsorRows || []).filter(s => s.tier === tier && s.id !== id).length;
   if (tierConfig && occupiedInTier >= tierConfig.limit) {
@@ -11951,6 +11962,7 @@ async function saveSponsor() {
       p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
       p_website_url: website || null,
       p_court_label: courtLabelValue || null,
+      p_court_partner_enabled: courtPartnerEnabled,
       p_discount_email_domains: domainParts.join('\n') || null,
       p_action_logo_url: actionLogoUrl,
       p_has_action_logo: hasActionLogo,
@@ -11964,12 +11976,20 @@ async function saveSponsor() {
       payload.p_address_country = addressCountry || null;
       payload.p_contract_note = contractNote || null;
     }
-    let { error } = await sb.rpc('admin_upsert_sponsor', payload);
-    const canRetryWithoutDomain = error && payload.p_discount_email_domains != null && /function .*admin_upsert_sponsor|p_discount_email_domains|schema cache|Could not find/i.test(error.message || '');
+    const rpcPayload = { ...payload };
+    let { error } = await sb.rpc('admin_upsert_sponsor', rpcPayload);
+    const missingCourtOption = error && /function .*admin_upsert_sponsor|p_court_partner_enabled|schema cache|Could not find/i.test(error.message || '');
+    if (missingCourtOption && courtPartnerEnabled) {
+      throw new Error('Die Datenbankoption für Court-Partner ist noch nicht freigegeben. Die Anzeige bleibt ausgeschaltet.');
+    }
+    if (missingCourtOption) {
+      delete rpcPayload.p_court_partner_enabled;
+      ({ error } = await sb.rpc('admin_upsert_sponsor', rpcPayload));
+    }
+    const canRetryWithoutDomain = error && rpcPayload.p_discount_email_domains != null && /function .*admin_upsert_sponsor|p_discount_email_domains|schema cache|Could not find/i.test(error.message || '');
     if (canRetryWithoutDomain) {
-      const retryPayload = { ...payload };
-      delete retryPayload.p_discount_email_domains;
-      ({ error } = await sb.rpc('admin_upsert_sponsor', retryPayload));
+      delete rpcPayload.p_discount_email_domains;
+      ({ error } = await sb.rpc('admin_upsert_sponsor', rpcPayload));
     }
     if (error && !hasContractCompanyDiff && !hasAddressInput && !actionLogoUrl && !hasActionLogo && actionLogoMode === 'off') {
       const legacyPayload = {
@@ -21755,7 +21775,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'[]');
         if(Array.isArray(cached) && cached.length) renderSplashPremiumFromRows(cached);
       }catch(e){}
-      var res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order,website_url,court_label');
+      var res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order,website_url,court_label,court_partner_enabled');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order,website_url');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order');
