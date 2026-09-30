@@ -6051,6 +6051,23 @@ main {
     <!-- ── BELEGARCHIV ── -->
     <div id="adminArchive" style="display:none;">
       <div class="admin-section">
+        <div class="admin-section-title">Löschfristen · Probelauf</div>
+        <div class="archive-note">Diese Prüfung zählt ausschließlich Datensätze, deren vorgesehene Frist abgelaufen wäre. Sie löscht, verändert und anonymisiert nichts. Finanzielle Nachweise bleiben bis zur gesonderten steuerlichen Freigabe gesperrt.</div>
+        <div class="admin-card archive-filter-grid">
+          <div><label class="admin-label" for="retentionAsOf">Stichtag</label><input class="admin-input" type="date" id="retentionAsOf"></div>
+          <div class="archive-filter-actions">
+            <button class="admin-save-btn" type="button" id="retentionDryRunBtn" onclick="loadRetentionDryRun()">Probelauf starten</button>
+          </div>
+        </div>
+        <div id="retentionDryRunStatus" class="archive-status">Noch kein Probelauf ausgeführt.</div>
+        <div class="archive-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Datenklasse</th><th>Frist</th><th>Stichtag</th><th>Betroffen</th><th>Ältester Eintrag</th><th>Vorgesehener Schritt</th></tr></thead>
+            <tbody id="retentionDryRunTbody"><tr><td colspan="6" style="text-align:center;padding:24px;">Der Probelauf wartet auf deine ausdrückliche Ausführung.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="admin-section">
         <div class="admin-section-title">Belegarchiv · eingeschränkter Zugriff</div>
         <div class="admin-card archive-filter-grid">
           <div><label class="admin-label" for="archiveFrom">Von</label><input class="admin-input" type="date" id="archiveFrom"></div>
@@ -13622,9 +13639,48 @@ let adminArchiveRows = [];
 function initAdminArchive() {
   const to = new Date();
   const from = new Date(to.getFullYear(), 0, 1, 12);
+  document.getElementById('retentionAsOf').value = localISODate(to);
   document.getElementById('archiveFrom').value = localISODate(from);
   document.getElementById('archiveTo').value = localISODate(to);
   loadAdminArchive('view');
+}
+
+function retentionActionLabel(action) {
+  return ({ delete:'Löschen', anonymize:'Verknüpfung trennen', review:'Vorher fachlich prüfen' })[action] || action;
+}
+
+async function loadRetentionDryRun() {
+  const tbody = document.getElementById('retentionDryRunTbody');
+  const status = document.getElementById('retentionDryRunStatus');
+  const button = document.getElementById('retentionDryRunBtn');
+  const asOf = document.getElementById('retentionAsOf').value;
+  if (!asOf) { status.textContent = 'Bitte einen Stichtag wählen.'; return; }
+
+  button.disabled = true;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;">Fristen werden nur lesend geprüft …</td></tr>';
+  status.textContent = '';
+  try {
+    const { data, error } = await sb.rpc('admin_retention_dry_run', { p_as_of: asOf });
+    if (error) throw error;
+    const rows = data || [];
+    const total = rows.reduce((sum, row) => sum + Number(row.candidate_count || 0), 0);
+    const review = rows.reduce((sum, row) => sum + (row.planned_action === 'review' ? Number(row.candidate_count || 0) : 0), 0);
+    status.textContent = `${total.toLocaleString('de-DE')} mögliche Fristfälle gefunden. Es wurden keine Daten verändert.${review ? ` ${review.toLocaleString('de-DE')} davon bleiben bis zur fachlichen Freigabe gesperrt.` : ''}`;
+    tbody.innerHTML = rows.map(row => `
+      <tr>
+        <td><strong>${esc(row.label)}</strong><div class="archive-note">Grundlage: ${esc(row.legal_basis)}<br>${esc(row.notes)}</div></td>
+        <td>${Number(row.retention_months)} Monate</td>
+        <td>${formatDateDE(row.cutoff_date)}</td>
+        <td><strong>${Number(row.candidate_count || 0).toLocaleString('de-DE')}</strong></td>
+        <td>${row.oldest_candidate_at ? formatDateDE(String(row.oldest_candidate_at).slice(0, 10)) : '—'}</td>
+        <td>${esc(retentionActionLabel(row.planned_action))}</td>
+      </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:24px;">Keine Aufbewahrungsregeln gefunden.</td></tr>';
+  } catch (error) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#B8402C;">Der Probelauf konnte nicht geladen werden.</td></tr>';
+    status.textContent = error.message || 'Aufbewahrungsprüfung fehlgeschlagen.';
+  } finally {
+    button.disabled = false;
+  }
 }
 
 function archiveKindLabel(kind) {
