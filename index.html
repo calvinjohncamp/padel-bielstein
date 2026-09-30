@@ -5751,6 +5751,18 @@ main {
             </div>
           </div>
         </div>
+        <div class="admin-card" style="margin-top:12px;">
+          <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
+            Aussehen der teilbaren Buchungs-Grafik für „Spieler informieren“ (WhatsApp, AirDrop und weitere Wege).
+          </div>
+          <div class="admin-row" style="align-items:center;gap:16px;">
+            <span class="admin-label">Bildkarte</span>
+            <div class="seg-toggle">
+              <button id="cardThemeLight" type="button" class="seg-btn seg-active" onclick="setShareCardTheme(false)">Hell</button>
+              <button id="cardThemeDark" type="button" class="seg-btn" onclick="setShareCardTheme(true)">Dunkel</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Saison -->
@@ -6282,7 +6294,7 @@ main {
 
     <div id="adminSponsors" style="display:none;">
       <div class="admin-section">
-        <div class="admin-section-title">Partner-Seite (7. Tab)</div>
+        <div class="admin-section-title">Partner-Seite im Hauptmenü (7. Tab)</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
           <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
             Blendet den öffentlichen Tab <strong>„Partner"</strong> (Premium / Partner / Regional) im Hauptmenü ein oder aus. Standardmäßig aus – ist der Schalter „An“, sehen ihn alle Besucher.
@@ -6292,26 +6304,14 @@ main {
         </div>
       </div>
       <div class="admin-section">
-        <div class="admin-section-title">📣 Werbung / Partner-Anzeige (global)</div>
+        <div class="admin-section-title">Partnerwerbung auf den übrigen Seiten</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
           <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
-            Master-Schalter für <strong>alle</strong> Partner-/Sponsoren-Anzeigen in der ganzen App (Startseite, Buchen, Abo, Jetzt spielen, Verabreden, Guthaben, Kiosk und Partner-Tab). Auf <strong>„Aus"</strong> läuft das Buchungssystem komplett werbefrei – die Abstände passen sich automatisch an.
+            Steuert die Partner-/Sponsorenflächen auf Startseite, Buchen, Abo, Jetzt spielen, Verabreden, Guthaben und Kiosk. Auf <strong>„Aus"</strong> läuft das Buchungssystem werbefrei. Der Schalter darüber bestimmt zusätzlich, ob die eigene Partner-Seite im Hauptmenü angeboten wird.
           </div>
           <div class="seg-toggle" style="flex:0 0 auto;">
             <button type="button" id="adsOff" class="seg-btn" onclick="setSponsorsEnabled(false)">Aus</button>
             <button type="button" id="adsOn" class="seg-btn seg-active" onclick="setSponsorsEnabled(true)">Ein</button>
-          </div>
-        </div>
-      </div>
-      <div class="admin-section">
-        <div class="admin-section-title">Bildkarte „Spieler informieren"</div>
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-          <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
-            Aussehen der teilbaren Buchungs-Grafik (WhatsApp, AirDrop …). <strong>Hell</strong> (im Look der Bestätigungsmail) ist Standard; für Abwechslung jederzeit auf <strong>Dunkel</strong> umstellbar.
-          </div>
-          <div class="seg-toggle" style="flex:0 0 auto;">
-            <button id="cardThemeLight" type="button" class="seg-btn seg-active" onclick="setShareCardTheme(false)">☀︎ Hell</button>
-            <button id="cardThemeDark" type="button" class="seg-btn" onclick="setShareCardTheme(true)">☾ Dunkel</button>
           </div>
         </div>
       </div>
@@ -11668,33 +11668,79 @@ function renderFundraisingSummary() {
   if (!box) return;
   const sponsors = window.__sponsorRows || [];
   const donations = window.__fundraisingDonations || [];
-  const verbalOnly = sponsors.filter(s => s.verbal_commitment && !s.contract_received)
-    .reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
-  const contracted = sponsors.filter(s => s.contract_received)
-    .reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
-  const annualTotal = verbalOnly + contracted;
-  const pledged = donations.filter(d => d.status === 'pledged').reduce((sum, d) => sum + (Number(d.amount_cents) || 0), 0);
-  const received = donations.filter(d => d.status === 'received').reduce((sum, d) => sum + (Number(d.amount_cents) || 0), 0);
-  const donationTotal = pledged + received;
+  const committedSponsors = sponsors.filter(s => s.verbal_commitment || s.contract_received);
+  const partnerAnnualTotal = committedSponsors.reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
+  const partnerThreeYearTotal = partnerAnnualTotal * 3;
+  const donationTotal = donations.reduce((sum, d) => sum + (Number(d.amount_cents) || 0), 0);
+  const committedTotal = partnerThreeYearTotal + donationTotal;
   const metric = (label, value, note, accent = '#1C1A17') => `
     <div style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:13px 14px;min-width:0;">
       <div style="font:800 10px 'Space Grotesk',sans-serif;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">${label}</div>
       <div style="font:800 20px 'Space Grotesk',sans-serif;color:${accent};">${adminFormatEuro(value)}</div>
       <div style="font:600 11px 'Manrope',sans-serif;color:#7A7368;margin-top:4px;line-height:1.35;">${note}</div>
     </div>`;
+  const statusBadge = sponsor => sponsor.contract_received
+    ? '<span style="display:inline-block;margin-left:7px;color:#1F8A5F;font:800 10px Manrope,sans-serif;">Vertrag</span>'
+    : '<span style="display:inline-block;margin-left:7px;color:#B06A00;font:800 10px Manrope,sans-serif;">Mündlich</span>';
+  const moneyCell = value => `<td style="padding:10px 12px;text-align:right;white-space:nowrap;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${adminFormatEuro(value)}</td>`;
+  const partnerTable = tier => {
+    const config = SPONSOR_TIER_CONFIG[tier];
+    const rows = committedSponsors.filter(s => s.tier === tier);
+    const annual = rows.reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
+    const body = rows.length ? rows.map(s => {
+      const amount = Number(s.annual_amount_cents) || 0;
+      return `<tr style="border-top:1px solid #EFE9DC;">
+        <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${esc(s.name)}${statusBadge(s)}</td>
+        ${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount * 3)}
+      </tr>`;
+    }).join('') : `<tr style="border-top:1px solid #EFE9DC;"><td colspan="5" style="padding:10px 12px;color:#8A8379;font:600 12px 'Manrope',sans-serif;">Noch keine Zusage erfasst.</td></tr>`;
+    return `<div style="margin-top:14px;overflow-x:auto;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;">
+      <table style="width:100%;min-width:650px;border-collapse:collapse;">
+        <thead><tr style="background:#F6F2E9;">
+          <th style="padding:10px 12px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">${config.label}</th>
+          <th style="padding:10px 12px;text-align:right;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Jahr 1</th>
+          <th style="padding:10px 12px;text-align:right;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Jahr 2</th>
+          <th style="padding:10px 12px;text-align:right;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Jahr 3</th>
+          <th style="padding:10px 12px;text-align:right;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Summe</th>
+        </tr></thead>
+        <tbody>${body}</tbody>
+        <tfoot><tr style="border-top:2px solid #D8CDBB;background:#FCFAF5;">
+          <td style="padding:10px 12px;font:800 12px 'Space Grotesk',sans-serif;color:#1C1A17;">Summe ${config.label}</td>
+          ${moneyCell(annual)}${moneyCell(annual)}${moneyCell(annual)}${moneyCell(annual * 3)}
+        </tr></tfoot>
+      </table>
+    </div>`;
+  };
+  const donationRows = donations.length ? donations.map(d => `<tr style="border-top:1px solid #EFE9DC;">
+    <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${esc(d.donor_name)}</td>
+    <td style="padding:10px 12px;font:800 10px 'Manrope',sans-serif;color:${d.status === 'received' ? '#1F8A5F' : '#B06A00'};">${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</td>
+    ${moneyCell(d.amount_cents)}
+  </tr>`).join('') : '<tr style="border-top:1px solid #EFE9DC;"><td colspan="3" style="padding:10px 12px;color:#8A8379;font:600 12px Manrope,sans-serif;">Noch keine Spende erfasst.</td></tr>';
   box.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:10px;">
-      ${metric('Mündlich, noch ohne Vertrag', verbalOnly, `2 Jahre ${adminFormatEuro(verbalOnly * 2)} · 3 Jahre ${adminFormatEuro(verbalOnly * 3)}`, '#B06A00')}
-      ${metric('Vertraglich gesichert', contracted, `2 Jahre ${adminFormatEuro(contracted * 2)} · 3 Jahre ${adminFormatEuro(contracted * 3)}`, '#1F8A5F')}
-      ${metric('Partner insgesamt', annualTotal, `2 Jahre ${adminFormatEuro(annualTotal * 2)} · 3 Jahre ${adminFormatEuro(annualTotal * 3)}`, '#FF5A36')}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:14px;">
+      ${metric('Gesamt zugesagt', committedTotal, 'Partner für 3 Jahre plus einmalige Spenden', '#FF5A36')}
+      ${metric('Partner', partnerThreeYearTotal, 'Alle mündlichen und vertraglichen Zusagen für 3 Jahre', '#1C1A17')}
+      ${metric('Spenden', donationTotal, 'Einmalige zugesagte und eingegangene Spenden', '#1F8A5F')}
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:10px;">
-      ${metric('1 Jahr', annualTotal + donationTotal, `davon ${adminFormatEuro(donationTotal)} einmalige Spenden`)}
-      ${metric('2 Jahre', annualTotal * 2 + donationTotal, 'Partnerbeiträge hochgerechnet, Spenden einmalig')}
-      ${metric('3 Jahre', annualTotal * 3 + donationTotal, 'Partnerbeiträge hochgerechnet, Spenden einmalig')}
+    ${SPONSOR_TIER_ORDER.map(partnerTable).join('')}
+    <div style="margin-top:14px;overflow-x:auto;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;">
+      <table style="width:100%;min-width:520px;border-collapse:collapse;">
+        <thead><tr style="background:#F6F2E9;">
+          <th style="padding:10px 12px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Spender</th>
+          <th style="padding:10px 12px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Stand</th>
+          <th style="padding:10px 12px;text-align:right;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Einmalig</th>
+        </tr></thead>
+        <tbody>${donationRows}</tbody>
+        <tfoot><tr style="border-top:2px solid #D8CDBB;background:#FCFAF5;">
+          <td colspan="2" style="padding:10px 12px;font:800 12px 'Space Grotesk',sans-serif;color:#1C1A17;">Summe Spenden</td>
+          ${moneyCell(donationTotal)}
+        </tr></tfoot>
+      </table>
     </div>
-    <div style="font:700 12px 'Manrope',sans-serif;color:#5C564C;line-height:1.5;">
-      Spenden: ${adminFormatEuro(received)} eingegangen · ${adminFormatEuro(pledged)} zugesagt · ${adminFormatEuro(donationTotal)} insgesamt
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:14px;padding-top:14px;border-top:2px solid #D8CDBB;">
+      ${metric('Partner · 3 Jahre', partnerThreeYearTotal, 'Summe aus Premium, Partner und Regional')}
+      ${metric('Spenden · einmalig', donationTotal, 'Alle erfassten Spenden')}
+      ${metric('Gesamtsumme', committedTotal, 'Entspricht der Kennzahl oben', '#FF5A36')}
     </div>`;
 }
 
