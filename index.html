@@ -5422,7 +5422,7 @@ main {
 
     <div class="admin-tabs" id="adminTabs">
       <button class="admin-tab active" type="button" id="atab-freibad" data-admin-tab="freibad" onclick="setAdminTab('freibad')"><span aria-hidden="true">🏊</span><span class="admin-tab-label">Freibad &amp; Padel-Anlage</span></button>
-      <button class="admin-tab" type="button" id="atab-fbtickets" data-admin-tab="fbtickets" onclick="setAdminTab('fbtickets')"><span aria-hidden="true">🎫</span><span class="admin-tab-label">Freibad-Tickets</span></button>
+      <button class="admin-tab" type="button" id="atab-meetups" data-admin-tab="meetups" onclick="setAdminTab('meetups')"><span aria-hidden="true">👥</span><span class="admin-tab-label">Verabreden</span></button>
       <button class="admin-tab" type="button" id="atab-prices" data-admin-tab="prices" onclick="setAdminTab('prices')"><span aria-hidden="true">💰</span><span class="admin-tab-label">Preise</span></button>
       <button class="admin-tab" type="button" id="atab-internal" data-admin-tab="internal" onclick="setAdminTab('internal')"><span aria-hidden="true">📋</span><span class="admin-tab-label">Interne Buchungen</span></button>
       <button class="admin-tab" type="button" id="atab-bookings" data-admin-tab="bookings" onclick="setAdminTab('bookings')"><span aria-hidden="true">📅</span><span class="admin-tab-label">Buchungsübersicht</span></button>
@@ -5438,73 +5438,37 @@ main {
       <button class="admin-tab" type="button" id="atab-wipe" data-admin-tab="wipe" onclick="setAdminTab('wipe')" style="display:none;"><span aria-hidden="true">🧹</span><span class="admin-tab-label">Platte putzen</span></button>
     </div>
 
-    <!-- ── FREIBAD-TICKETS (Live-Ansicht) ── -->
-    <div id="adminFbTickets" style="display:none;">
-      <style>
-        #adminFbTickets .fbt-intro{font-size:.82rem;color:#9A948A;margin-bottom:16px;line-height:1.6}
-        #adminFbTickets .fbt-seg{display:flex;background:#1E1E1E;border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:5px;margin-bottom:14px;max-width:360px}
-        #adminFbTickets .fbt-seg button{flex:1;border:none;background:transparent;padding:11px;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-weight:600;color:#9A948A;cursor:pointer;font-size:.95rem}
-        #adminFbTickets .fbt-seg button.on{background:#FF5A36;color:#fff}
-        #adminFbTickets .fbt-date{color:#9A948A;font-size:.9rem;margin:0 0 14px}
-        #adminFbTickets .fbt-entry{background:#1E1E1E;border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:14px 14px 8px;margin-bottom:12px;max-width:520px}
-        #adminFbTickets .fbt-head{display:flex;align-items:center;gap:9px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1.02rem;margin-bottom:10px;color:#F6F1E7}
-        #adminFbTickets .fbt-head .ct{color:#FF5A36}
-        #adminFbTickets .fbt-badge{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#FF5A36;border:1px solid #FF5A36;border-radius:20px;padding:2px 8px}
-        #adminFbTickets .fbt-tk{display:flex;align-items:center;gap:11px;padding:7px 0;border-top:1px solid rgba(255,255,255,.10)}
-        #adminFbTickets .fbt-tk:first-of-type{border-top:none}
-        #adminFbTickets .fbt-no{width:16px;text-align:center;color:#9A948A;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.85rem}
-        #adminFbTickets .fbt-code{flex:1;background:#fff;border-radius:9px;padding:9px 8px;color:#1C1A17;font-family:'Space Grotesk',sans-serif;font-weight:600;letter-spacing:.18em;font-size:1rem;text-align:center}
-        #adminFbTickets .fbt-code.done{background:#3a3a37;color:#8f8a80;text-decoration:line-through}
-        #adminFbTickets .fbt-chk{width:40px;height:40px;flex:none;border:2px solid rgba(255,255,255,.16);border-radius:11px;background:transparent;cursor:pointer;color:transparent;display:flex;align-items:center;justify-content:center;padding:0}
-        #adminFbTickets .fbt-chk svg{width:26px;height:26px;display:block}
-        #adminFbTickets .fbt-chk svg path{stroke:currentColor}
-        #adminFbTickets .fbt-chk.done{border-color:transparent;color:#FF5A36}
-        #adminFbTickets .fbt-empty{color:#9A948A;padding:20px 0;font-size:.92rem}
-        #adminFbTickets .fbt-refresh{font-size:.75rem;color:#6b665e;margin:4px 0 0}
-        #adminFbTickets .fbt-staff{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.10);flex-wrap:wrap}
-        #adminFbTickets .fbt-staff .nm{font-weight:800;color:#1C1A17;font-size:1.02rem}
-        #adminFbTickets .fbt-staff .adm{font-size:.64rem;font-weight:700;text-transform:uppercase;color:#FF5A36}
-        #adminFbTickets .fbt-staff .al{display:flex;align-items:center;gap:5px;font-size:.74rem;color:#9A948A;margin-left:auto}
-        #adminFbTickets .fbt-staff .pin{max-width:120px}
-        #adminFbTickets .fbt-staff .save,#adminFbTickets .fbt-staff .del{padding:6px 10px;font-size:.72rem}
-        #adminFbTickets .fbt-staff .del{background:#3a3a37}
-      </style>
-
+    <!-- ── VERABREDEN ── -->
+    <div id="adminMeetups" style="display:none;">
       <div class="admin-section">
-        <div class="admin-section-title">🎫 Freibad-Tickets · Live-Ansicht</div>
+        <div class="admin-section-title">Offene Einladungen</div>
         <div class="admin-card">
-          <div class="fbt-intro">
-            Genau das sieht das Freibad am Eingang. Du kannst mitschauen und im Notfall selbst
-            abhaken oder einen Haken zurücknehmen. Nur <b>heute &amp; morgen</b> — ältere Tage
-            verschwinden automatisch.
+          <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
+            Master-Schalter für offene Einladungen an „Alle". Direkte Einladungen an Mitspieler
+            und Einladungen an „Meine Gruppe" bleiben davon unberührt.
           </div>
-          <div class="fbt-seg">
-            <button id="fbtToday" class="on" onclick="fbtSet('today')">Heute</button>
-            <button id="fbtTomorrow" onclick="fbtSet('tomorrow')">Morgen</button>
+          <div class="admin-row" style="align-items:center;gap:16px;">
+            <span class="admin-label">Einladungen an Alle</span>
+            <div class="seg-toggle">
+              <button type="button" id="openInvitesOff" class="seg-btn" onclick="setOpenInvitesEnabled(false)">Aus</button>
+              <button type="button" id="openInvitesOn" class="seg-btn seg-active" onclick="setOpenInvitesEnabled(true)">An</button>
+            </div>
           </div>
-          <p class="fbt-date" id="fbtDate">—</p>
-          <div id="fbtEntries"></div>
-          <p class="fbt-refresh" id="fbtRefresh"></p>
         </div>
       </div>
-
       <div class="admin-section">
-        <div class="admin-section-title">Freibad-Zugänge (Mitarbeiter)</div>
+        <div class="admin-section-title">Spieler informieren</div>
         <div class="admin-card">
-          <div class="fbt-intro">
-            Logins der Freibad-Mitarbeiter — dieselbe Verwaltung wie im Freibad-Admin.
-            „Admin" darf selbst Mitarbeiter verwalten. Neue PIN eintippen &amp; Speichern ändert das Kennwort.
+          <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
+            Aussehen der teilbaren Buchungs-Grafik für „Spieler informieren“ (WhatsApp, AirDrop und weitere Wege).
           </div>
-          <div id="fbtStaffList"></div>
-          <div class="admin-section-title" style="font-size:.92rem;margin-top:18px;">Neuen Zugang anlegen</div>
-          <div class="admin-row" style="flex-wrap:wrap;gap:10px;">
-            <input class="admin-input" id="fbtNewName" type="text" placeholder="Name" style="max-width:180px;">
-            <input class="admin-input" id="fbtNewPin" type="tel" inputmode="numeric" maxlength="6" placeholder="6-stellige PIN" style="max-width:150px;">
-            <label style="display:flex;align-items:center;gap:6px;font-size:.8rem;color:#9A948A;cursor:pointer;"><input type="checkbox" id="fbtNewAdmin"> Admin</label>
-            <button class="admin-save-btn" onclick="fbtCreateStaff()">Anlegen</button>
+          <div class="admin-row" style="align-items:center;gap:16px;">
+            <span class="admin-label">Bildkarte</span>
+            <div class="seg-toggle">
+              <button id="cardThemeLight" type="button" class="seg-btn seg-active" onclick="setShareCardTheme(false)">Hell</button>
+              <button id="cardThemeDark" type="button" class="seg-btn" onclick="setShareCardTheme(true)">Dunkel</button>
+            </div>
           </div>
-          <div class="admin-ok"  id="fbtStaffOk"></div>
-          <div class="admin-err" id="fbtStaffErr"></div>
         </div>
       </div>
     </div>
@@ -5747,12 +5711,12 @@ main {
         <div class="admin-section-title">Preis-Aufschlag (Freibad-Beteiligung)</div>
         <div class="admin-card">
           <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
-            Solange das Freibad geöffnet ist (Saison + Öffnungszeiten unten, inkl. Schließtagen),
-            kommt pro Court-Stunde ein Aufschlag auf den Basispreis: bei Einzelbuchungen der volle
-            Betrag, beim Abo der halbe (Jahresmittel). Der Basispreis unter „Preise" bleibt euer
-            Wettbewerbspreis – ist ein Mitbewerber günstiger, senkt ihr dort die Basispreise, der
-            Freibad-Aufschlag bleibt davon unberührt. Die 6-%-Umsatzbeteiligung ans Freibad läuft
-            separat über die Buchhaltung.
+            Bei Einzelbuchungen kommt der volle Aufschlag nur dann pro Court-Stunde hinzu, wenn das
+            Freibad an diesem Datum und zu dieser Uhrzeit tatsächlich geöffnet ist. Beim Abo wird der
+            kleinere Aufschlag als Mischkalkulation pauschal auf jede gebuchte Court-Stunde gerechnet –
+            unabhängig davon, ob das Freibad an einzelnen Terminen geöffnet ist. Der Basispreis unter
+            „Preise" bleibt unverändert. Die 6-%-Umsatzbeteiligung ans Freibad läuft separat über die
+            Buchhaltung.
           </div>
           <label class="admin-row" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;">
             <input type="checkbox" id="fbEnabled">
@@ -5769,45 +5733,14 @@ main {
             </div>
           </div>
           <div style="font-size:0.72rem;color:#888;margin-top:12px;line-height:1.5;">
-            Das „Wann" (Saison, Öffnungszeiten, Schließtage, Ausnahmetage) steuert ihr in den
-            Abschnitten darunter – es gilt automatisch auch für diesen Aufschlag. An einem
-            Schließtag entfällt der Aufschlag von selbst (dann kein Freibad-Eintritt).
+            Saison, Öffnungszeiten, Schließtage und Ausnahmetage steuern ausschließlich den Aufschlag
+            bei Einzelbuchungen. Der Abo-Aufschlag ist davon bewusst unabhängig.
           </div>
           <div class="admin-row" style="margin-top:16px;">
             <button class="admin-save-btn gold" onclick="saveFreibadPricing()">Aufschlag speichern</button>
           </div>
           <div class="admin-ok"  id="fbOk"></div>
           <div class="admin-err" id="fbErr"></div>
-        </div>
-      </div>
-
-      <!-- Verabreden -->
-      <div class="admin-section">
-        <div class="admin-section-title">Verabreden</div>
-        <div class="admin-card">
-          <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
-            Master-Schalter für offene Einladungen an „Alle". Direkte Einladungen an Mitspieler
-            und Einladungen an „Meine Gruppe" bleiben davon unberührt.
-          </div>
-          <div class="admin-row" style="align-items:center;gap:16px;">
-            <span class="admin-label">Einladungen an Alle</span>
-            <div class="seg-toggle">
-              <button type="button" id="openInvitesOff" class="seg-btn" onclick="setOpenInvitesEnabled(false)">Aus</button>
-              <button type="button" id="openInvitesOn" class="seg-btn seg-active" onclick="setOpenInvitesEnabled(true)">An</button>
-            </div>
-          </div>
-        </div>
-        <div class="admin-card" style="margin-top:12px;">
-          <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
-            Aussehen der teilbaren Buchungs-Grafik für „Spieler informieren“ (WhatsApp, AirDrop und weitere Wege).
-          </div>
-          <div class="admin-row" style="align-items:center;gap:16px;">
-            <span class="admin-label">Bildkarte</span>
-            <div class="seg-toggle">
-              <button id="cardThemeLight" type="button" class="seg-btn seg-active" onclick="setShareCardTheme(false)">Hell</button>
-              <button id="cardThemeDark" type="button" class="seg-btn" onclick="setShareCardTheme(true)">Dunkel</button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -7821,8 +7754,9 @@ function prices(d) { return isWE(d) ? PE : PW; }
 
 // ============================================================
 //  Freibad-Beteiligung (nur ANZEIGE) – 1:1 gespiegelt aus dem Backend.
-//  Basispreis in PW/PE = "übrige Zeiten". Während das Freibad offen ist, kommt
-//  obendrauf: Einzelbuchung +surchargeEur, Abo +aboSurchargeEur (Jahresmittel).
+//  Basispreis in PW/PE = Preis aus der Matrix. Bei Einzelbuchungen kommt der
+//  Aufschlag nur während der tatsächlichen Freibadöffnung hinzu. Beim Abo gilt
+//  der kleinere Aufschlag als pauschale Mischkalkulation für jede Court-Stunde.
 //  WANN das Freibad offen ist, liefert das bestehende isFreibadOpen()/freibadConfig
 //  (Admin-Tab „Freibad & Padel-Anlage"). Hier stehen NUR die Beträge + der Schalter.
 //  Maßgeblich rechnet der Server (create-checkout); dies dient nur der Anzeige.
@@ -7847,17 +7781,14 @@ async function loadFreibadPricing() {
   } catch(e) { /* Aufschlag bleibt aus – es wird der Basispreis angezeigt */ }
 }
 
-// Aufschlag pro Stunde in Euro. Nutzt das bestehende Freibad-System für das „wann".
+// Aufschlag pro Stunde in Euro.
 //  · Einzelbuchung (date gesetzt): genau wann das Freibad an dem Tag offen ist.
-//  · Abo (date = null): Jahresmittel → Standard-Öffnungsstunden bei aktiver Saison
-//    (bewusst ohne Datum/Schließtag/Ausnahme, da das Abo ganzjährig läuft).
+//  · Abo: pauschale Saison-Mischkalkulation für jede gebuchte Court-Stunde;
+//    bewusst unabhängig von Datum, Uhrzeit, Schließtag und Saisonstatus.
 function freibadSurchargeEur(hour, dateOrNull, isAbo) {
   const f = FREIBAD_PRICE;
   if (!f.enabled) return 0;
-  if (isAbo) {
-    if (typeof freibadConfig === 'undefined' || !freibadConfig.season_active) return 0;
-    return (hour >= freibadConfig.open_hour && hour < freibadConfig.close_hour) ? f.aboSurchargeEur : 0;
-  }
+  if (isAbo) return f.aboSurchargeEur;
   if (!dateOrNull) return 0;
   return (typeof isFreibadOpen === 'function' && isFreibadOpen(dateOrNull, hour)) ? f.surchargeEur : 0;
 }
@@ -11270,9 +11201,7 @@ function updateAboSummary() {
   const pricePerWeek = sumHourlyFb(priceMap, h, aboDur, null, true);
   const singleHourPrice = (hh) => {
     const base = priceMap[hh] || 0;
-    const f = (typeof FREIBAD_PRICE !== 'undefined') ? FREIBAD_PRICE : null;
-    if (!f || !f.enabled || typeof freibadConfig === 'undefined' || !freibadConfig.season_active) return base;
-    return (hh >= freibadConfig.open_hour && hh < freibadConfig.close_hour) ? base + f.surchargeEur : base;
+    return base + freibadSurchargeEur(hh, null, true);
   };
   const normalWeek = (() => { let sum = 0; for (let i = 0; i < aboDur; i++) sum += singleHourPrice(h + i); return sum; })();
   const totalReg = normalWeek * 52, totalAbo = pricePerWeek * 30;
@@ -11359,7 +11288,8 @@ function updateAboSummary() {
     }
   }
 
-  // Freibad-Bonus: nur zeigen, wenn der Abo-Termin in die Freibad-Öffnungsstunden fällt.
+  // Der Abo-Aufschlag ist eine Mischkalkulation. Ist er aktiv, gilt der
+  // Freibad-Eintritt bei jedem Abo-Termin, der tatsächlich in eine Öffnung fällt.
   const asBonus = document.getElementById('as-bonus');
   if (asBonus) {
     let bonus = false;
@@ -12813,7 +12743,7 @@ async function sendInfoMail(testOnly) {
 
 function setAdminTab(tab) {
   document.getElementById('adminFreibad').style.display   = tab==='freibad'  ? 'block' : 'none';
-  document.getElementById('adminFbTickets').style.display = tab==='fbtickets'? 'block' : 'none';
+  document.getElementById('adminMeetups').style.display   = tab==='meetups'  ? 'block' : 'none';
   document.getElementById('adminPrices').style.display    = tab==='prices'   ? 'block' : 'none';
   document.getElementById('adminInternal').style.display  = tab==='internal' ? 'block' : 'none';
   document.getElementById('adminBookings').style.display  = tab==='bookings' ? 'block' : 'none';
@@ -12827,12 +12757,13 @@ function setAdminTab(tab) {
   document.getElementById('adminInfoMails').style.display = tab==='infomails'? 'block' : 'none';
   document.getElementById('adminInfos').style.display     = tab==='infos'    ? 'block' : 'none';
   document.getElementById('adminWipe').style.display      = tab==='wipe'     ? 'block' : 'none';
-  ['freibad','fbtickets','prices','internal','bookings','archive','kiosk','aktionen','weather','sponsors','mis','users','infomails','infos','wipe'].forEach(t =>
+  ['freibad','meetups','prices','internal','bookings','archive','kiosk','aktionen','weather','sponsors','mis','users','infomails','infos','wipe'].forEach(t =>
     document.getElementById('atab-'+t).classList.toggle('active', t===tab)
   );
-  // Freibad-Tickets: bei jedem Öffnen frisch (Live-Daten); Auto-Refresh nur solange offen.
-  if (tab==='fbtickets') { loadAdminFbTickets(); }
-  if (tab!=='fbtickets' && typeof fbtTimer!=='undefined' && fbtTimer) { clearInterval(fbtTimer); fbtTimer=null; }
+  if (tab==='meetups') {
+    if (typeof loadOpenInvitesEnabled === 'function') loadOpenInvitesEnabled();
+    if (typeof loadShareCardTheme === 'function') loadShareCardTheme();
+  }
   // Aktionen: Frühbucher-Konfig + Splash-Texte frisch in die Formulare laden.
   if (tab==='aktionen') {
     if (typeof loadEarlybird==='function') loadEarlybird();
@@ -12866,7 +12797,7 @@ function setAdminTab(tab) {
 //  ADMIN – Reihenfolge und Bezeichnungen des Admin-Menüs
 // ============================================================
 const ADMIN_MENU_DEFAULTS = Object.freeze({
-  freibad: 'Freibad & Padel-Anlage', fbtickets: 'Freibad-Tickets', prices: 'Preise',
+  freibad: 'Freibad & Padel-Anlage', meetups: 'Verabreden', prices: 'Preise',
   internal: 'Interne Buchungen', bookings: 'Buchungsübersicht', archive: 'Belegarchiv',
   kiosk: 'Kiosk', aktionen: 'Aktionen', sponsors: 'Sponsoren', mis: 'MIS', users: 'Nutzer',
   infomails: 'Info E-Mails', infos: 'Infotexte', weather: 'Wetterausfälle'
@@ -13019,136 +12950,6 @@ async function saveAdminMenuConfig() {
   }
 }
 
-// ============================================================
-//  ADMIN – Freibad-Tickets (Live-Ansicht + Eingriff + Zugänge)
-//  Nutzt admin_freibad_view / admin_freibad_toggle / admin_freibad_staff_*
-//  (Skript 49). Auth über die normale Admin-Anmeldung (users.role).
-// ============================================================
-let fbtWhich = 'today';
-let fbtTimer = null;
-
-async function fbtRpc(fn, body) {
-  const headers = await authHeaders();
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-    method: 'POST', headers, body: JSON.stringify(body || {}),
-  });
-  const text = await res.text();
-  let data = null; try { data = text ? JSON.parse(text) : null; } catch (_) { data = text; }
-  if (!res.ok) throw new Error((data && (data.message || data.error)) || 'Fehler');
-  return data;
-}
-function fbtEsc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function fbtDateLabel(off){
-  const d = new Date(Date.now() + (off||0)*86400000);
-  return d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric',timeZone:'Europe/Berlin'});
-}
-
-function loadAdminFbTickets(){
-  fbtWhich = 'today';
-  document.getElementById('fbtToday').classList.add('on');
-  document.getElementById('fbtTomorrow').classList.remove('on');
-  fbtLoadView();
-  fbtLoadStaff();
-  if (fbtTimer) clearInterval(fbtTimer);
-  fbtTimer = setInterval(() => fbtLoadView(true), 30000);
-}
-function fbtSet(w){
-  fbtWhich = w;
-  document.getElementById('fbtToday').classList.toggle('on', w==='today');
-  document.getElementById('fbtTomorrow').classList.toggle('on', w==='tomorrow');
-  fbtLoadView();
-}
-async function fbtLoadView(silent){
-  const box = document.getElementById('fbtEntries');
-  if (!box) return;
-  if (!silent) box.innerHTML = '<div class="fbt-empty">Wird geladen …</div>';
-  try {
-    const r = await fbtRpc('admin_freibad_view', { p_which: fbtWhich });
-    document.getElementById('fbtDate').textContent =
-      (fbtWhich==='today'?'Heute':'Morgen') + ' · ' + fbtDateLabel(fbtWhich==='today'?0:1);
-    fbtRender(r.entries || []);
-    document.getElementById('fbtRefresh').textContent =
-      'Aktualisiert ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-  } catch(e){ box.innerHTML = '<div class="fbt-empty">Fehler: '+fbtEsc(e.message)+'</div>'; }
-}
-function fbtRender(entries){
-  const box = document.getElementById('fbtEntries');
-  if (!entries.length){ box.innerHTML = '<div class="fbt-empty">Keine Freibad-Buchungen für diesen Tag.</div>'; return; }
-  box.innerHTML = entries.map(en => {
-    const tk = (en.tickets||[]).map(t => {
-      const done = t.redeemed;
-      return `<div class="fbt-tk"><span class="fbt-no">${t.ticket_no}</span>`
-        + `<span class="fbt-code${done?' done':''}">${fbtEsc(t.code)}</span>`
-        + `<button class="fbt-chk${done?' done':''}" data-code="${fbtEsc(t.code)}"><svg viewBox="0 0 32 32" fill="none"><path d="M5 17.5 L13 25 L27 7" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>`;
-    }).join('');
-    const badge = en.source_type==='abo' ? '<span class="fbt-badge">Abo</span>' : '';
-    return `<div class="fbt-entry"><div class="fbt-head"><span class="ct">${fbtEsc(courtLabelShort(en.court))}</span> · ${fbtEsc(en.time_label)} ${badge}</div>${tk}</div>`;
-  }).join('');
-  box.querySelectorAll('.fbt-chk').forEach(b => b.onclick = () => fbtToggle(b));
-}
-async function fbtToggle(btn){
-  if (btn.dataset.busy) return; btn.dataset.busy = '1';
-  try {
-    const r = await fbtRpc('admin_freibad_toggle', { p_code: btn.dataset.code });
-    btn.classList.toggle('done', r.redeemed);
-    const code = btn.previousElementSibling; if (code) code.classList.toggle('done', r.redeemed);
-  } catch(e){ alert(e.message); } finally { delete btn.dataset.busy; }
-}
-
-function fbtStaffMsg(ok, err){
-  document.getElementById('fbtStaffOk').textContent  = ok  || '';
-  document.getElementById('fbtStaffErr').textContent = err || '';
-}
-async function fbtLoadStaff(){
-  const box = document.getElementById('fbtStaffList');
-  if (!box) return;
-  try {
-    const list = await fbtRpc('admin_freibad_staff_list', {});
-    box.innerHTML = (list||[]).map(s => `
-      <div class="fbt-staff" data-name="${fbtEsc(s.name)}">
-        <span class="nm">${fbtEsc(s.name)}</span>
-        ${s.is_admin?'<span class="adm">Admin</span>':''}
-        <input class="admin-input pin" type="tel" inputmode="numeric" maxlength="6" placeholder="neue PIN">
-        <label class="al"><input type="checkbox" class="adm2" ${s.is_admin?'checked':''}> Admin</label>
-        <button class="admin-save-btn save">Speichern</button>
-        <button class="admin-save-btn del">Entf.</button>
-      </div>`).join('') || '<div class="fbt-empty">Noch keine Zugänge.</div>';
-    box.querySelectorAll('.fbt-staff').forEach(row => {
-      const name = row.dataset.name;
-      row.querySelector('.save').onclick = async () => {
-        const pin = row.querySelector('.pin').value.trim();
-        const adm = row.querySelector('.adm2').checked;
-        fbtStaffMsg('','');
-        if (pin && !/^\d{4,6}$/.test(pin)){ fbtStaffMsg('','Kennwort: 4–6 Ziffern (oder leer lassen).'); return; }
-        try { await fbtRpc('admin_freibad_staff_save', { p_name:name, p_pin:pin||null, p_is_admin:adm }); fbtStaffMsg('✓ Gespeichert',''); fbtLoadStaff(); }
-        catch(e){ fbtStaffMsg('', e.message); }
-      };
-      row.querySelector('.del').onclick = async () => {
-        if (!confirm('Zugang „'+name+'" wirklich entfernen?')) return;
-        fbtStaffMsg('','');
-        try { await fbtRpc('admin_freibad_staff_remove', { p_name:name }); fbtLoadStaff(); }
-        catch(e){ fbtStaffMsg('', e.message); }
-      };
-    });
-  } catch(e){ box.innerHTML = '<div class="fbt-empty">'+fbtEsc(e.message)+'</div>'; }
-}
-async function fbtCreateStaff(){
-  const name = document.getElementById('fbtNewName').value.trim();
-  const pin  = document.getElementById('fbtNewPin').value.trim();
-  const adm  = document.getElementById('fbtNewAdmin').checked;
-  fbtStaffMsg('','');
-  if (!name){ fbtStaffMsg('','Bitte einen Namen eingeben.'); return; }
-  if (!/^\d{4,6}$/.test(pin)){ fbtStaffMsg('','Bitte eine 4–6-stellige PIN eingeben.'); return; }
-  try {
-    await fbtRpc('admin_freibad_staff_save', { p_name:name, p_pin:pin, p_is_admin:adm });
-    document.getElementById('fbtNewName').value='';
-    document.getElementById('fbtNewPin').value='';
-    document.getElementById('fbtNewAdmin').checked=false;
-    fbtStaffMsg('✓ Angelegt','');
-    fbtLoadStaff();
-  } catch(e){ fbtStaffMsg('', e.message); }
-}
-
 // Reiter beim Öffnen des Admin-Bereichs freischalten, sofern Testphase läuft.
 if (typeof window !== 'undefined') {
   const _origSetMode = window.setMode;
@@ -13164,6 +12965,7 @@ if (typeof window !== 'undefined') {
 
 // Korrekte Anzeige beim ersten Öffnen
 document.getElementById('adminFreibad').style.display   = 'block';
+document.getElementById('adminMeetups').style.display   = 'none';
 document.getElementById('adminPrices').style.display    = 'none';
 document.getElementById('adminInternal').style.display  = 'none';
 document.getElementById('adminBookings').style.display  = 'none';
