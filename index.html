@@ -2482,7 +2482,7 @@ main {
       <div class="abo-benefits">
         <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-52">52 Wochen exklusiv für dich reserviert – du zahlst davon nur 30 Wochen.</span></div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz – keine Konkurrenz um freie Slots.</div>
-        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-hours">Deine Buchung setzt sich aus deinem Einzelstundenpreis zusammen.</span></div>
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-hours">Deine Buchung beruht auf deinem Einzelstundenpreis.</span></div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-rabatt">Dein Rabatt bei dieser Buchung beträgt 10 %.</span></div>
         <div class="abo-benefit" id="as-bonus" style="display:none;"><div class="abo-benefit-dot"></div><span><strong>Bonus:</strong> Während der Freibad-Öffnungszeiten ist jeder Abo-Termin gleichzeitig Eintrittskarte für das Freibad (4 Spieler).</span></div>
         <div class="abo-benefit" id="as-eb-note" style="display:none;"><div class="abo-benefit-dot"></div><span></span></div>
@@ -5720,7 +5720,7 @@ main {
             Freibad an diesem Datum und zu dieser Uhrzeit tatsächlich geöffnet ist. Beim Abo wird der
             kleinere Aufschlag als Mischkalkulation pauschal auf jede gebuchte Court-Stunde gerechnet –
             unabhängig davon, ob das Freibad an einzelnen Terminen geöffnet ist. Der Basispreis unter
-            „Preise" bleibt unverändert. Die 6-%-Umsatzbeteiligung ans Freibad läuft separat über die
+            „Preise" bleibt unverändert. Die 5-%-Umsatzbeteiligung ans Freibad läuft separat über die
             Buchhaltung.
           </div>
           <label class="admin-row" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;">
@@ -11310,12 +11310,19 @@ function updateAboSummary() {
   if (hoursEl) {
     const hourPrices = [];
     for (let i = 0; i < aboDur; i++) hourPrices.push(singleHourPrice(h + i));
+    const aboSurcharge = freibadSurchargeEur(h, null, true);
+    const surchargeNote = aboSurcharge > 0
+      ? ` – inklusive ${fmt(aboSurcharge)} Freibadpauschale.`
+      : '.';
     if (hourPrices.length === 1) {
-      hoursEl.textContent = `Deine Buchung setzt sich zusammen aus einem Einzelstundenpreis in Höhe von ${fmt(hourPrices[0])}.`;
+      hoursEl.textContent = `Deine Buchung beruht auf einem Einzelstundenpreis in Höhe von ${fmt(hourPrices[0])}${surchargeNote}`;
     } else {
       const list = hourPrices.map(p => fmt(p)).join(' und ');
       const zahl = hourPrices.length === 2 ? 'den beiden ' : 'den ';
-      hoursEl.textContent = `Deine Buchung setzt sich zusammen aus ${zahl}Einzelstundenpreisen in Höhe von ${list}.`;
+      const multiSurchargeNote = aboSurcharge > 0
+        ? ` – jeweils inklusive ${fmt(aboSurcharge)} Freibadpauschale.`
+        : '.';
+      hoursEl.textContent = `Deine Buchung setzt sich zusammen aus ${zahl}Einzelstundenpreisen in Höhe von ${list}${multiSurchargeNote}`;
     }
   }
 
