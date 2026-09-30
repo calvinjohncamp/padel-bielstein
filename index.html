@@ -882,7 +882,7 @@ body.bielstein-theme #modeAdmin .admin-tabs .admin-tab {
   font-family:"Space Grotesk","Arial Narrow",sans-serif !important; font-weight:700 !important;
   font-size:14px !important; letter-spacing:0 !important; text-transform:none !important;
   padding:15px 12px !important; min-height:56px; line-height:1.2; white-space:normal;
-  display:flex; align-items:center; justify-content:center; text-align:center;
+  display:flex; align-items:center; justify-content:center; gap:6px; text-align:center;
   transition:background .15s, color .15s;
 }
 body.bielstein-theme #modeAdmin .admin-tabs .admin-tab:hover {
@@ -1349,6 +1349,31 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .admin-tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
 .admin-tab { padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--card); color: #666; font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
 .admin-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.admin-menu-tools { display:flex; justify-content:flex-end; margin:0 0 10px; }
+.admin-menu-edit-btn { display:inline-flex; align-items:center; gap:7px; min-height:38px; padding:8px 11px; border:1px solid var(--border); border-radius:7px; background:transparent; color:#6D665C; cursor:pointer; font:700 12px "Space Grotesk","Arial Narrow",sans-serif; }
+.admin-menu-edit-btn:hover, .admin-menu-edit-btn[aria-expanded="true"] { border-color:#FF5A36; color:#1C1A17; }
+.admin-menu-editor { margin:0 0 18px; padding:16px; border:1px solid #D9D0C0; border-radius:8px; background:#F6F1E7; color:#1C1A17; }
+.admin-menu-editor[hidden] { display:none !important; }
+.admin-menu-editor-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:14px; }
+.admin-menu-editor-head strong { display:block; font:800 16px "Space Grotesk","Arial Narrow",sans-serif; }
+.admin-menu-editor-head span { display:block; margin-top:3px; color:#71695E; font-size:12px; line-height:1.4; }
+.admin-menu-editor-list { display:grid; gap:7px; }
+.admin-menu-editor-row { display:grid; grid-template-columns:32px minmax(160px,1fr) 38px 38px; gap:7px; align-items:center; }
+.admin-menu-editor-icon { font-size:18px; text-align:center; }
+.admin-menu-editor-input { width:100%; min-width:0; height:38px; padding:7px 10px; border:1px solid #CFC5B4; border-radius:6px; background:#fff; color:#1C1A17; font:700 13px "Space Grotesk","Arial Narrow",sans-serif; }
+.admin-menu-editor-input:focus { border-color:#FF5A36; outline:2px solid rgba(255,90,54,.16); }
+.admin-menu-icon-btn { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; padding:0; border:1px solid #CFC5B4; border-radius:6px; background:#fff; color:#1C1A17; cursor:pointer; font-size:18px; line-height:1; }
+.admin-menu-icon-btn:hover:not(:disabled) { border-color:#FF5A36; color:#FF5A36; }
+.admin-menu-icon-btn:disabled { opacity:.3; cursor:default; }
+.admin-menu-editor-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
+.admin-menu-editor-status { min-height:18px; margin-top:8px; color:#71695E; font-size:12px; text-align:right; }
+@media (max-width:560px) {
+  .admin-menu-editor { padding:12px; }
+  .admin-menu-editor-row { grid-template-columns:28px minmax(0,1fr) 36px 36px; gap:5px; }
+  .admin-menu-icon-btn { width:36px; height:36px; }
+  .admin-menu-editor-actions { flex-direction:column-reverse; }
+  .admin-menu-editor-actions .admin-btn { width:100%; }
+}
 .archive-filter-grid { display:grid; grid-template-columns:repeat(3,minmax(150px,1fr)); gap:14px; align-items:end; }
 .archive-filter-grid > div { min-width:0; }
 .archive-filter-grid .admin-label { display:block; min-width:0; margin-bottom:6px; }
@@ -5374,22 +5399,43 @@ main {
   <!-- ADMIN MODE -->
   <div id="modeAdmin" style="display:none;">
 
-    <div class="admin-tabs">
-      <div class="admin-tab active" id="atab-freibad"   onclick="setAdminTab('freibad')">🏊 Freibad & Padel-Anlage</div>
-      <div class="admin-tab"        id="atab-fbtickets" onclick="setAdminTab('fbtickets')">🎫 Freibad-Tickets</div>
-      <div class="admin-tab"        id="atab-prices"    onclick="setAdminTab('prices')">💰 Preise</div>
-      <div class="admin-tab"        id="atab-internal"  onclick="setAdminTab('internal')">📋 Interne Buchungen</div>
-      <div class="admin-tab"        id="atab-bookings"  onclick="setAdminTab('bookings')">📅 Buchungsübersicht</div>
-      <div class="admin-tab"        id="atab-archive"   onclick="setAdminTab('archive')">🗄 Belegarchiv</div>
-      <div class="admin-tab"        id="atab-kiosk"     onclick="setAdminTab('kiosk')">🥤 Kiosk</div>
-      <div class="admin-tab"        id="atab-aktionen"  onclick="setAdminTab('aktionen')">🎯 Aktionen</div>
-      <div class="admin-tab"        id="atab-sponsors"  onclick="setAdminTab('sponsors')">🤝 Sponsoren</div>
-      <div class="admin-tab"        id="atab-mis"       onclick="setAdminTab('mis')">📊 MIS</div>
-      <div class="admin-tab"        id="atab-users"     onclick="setAdminTab('users')">👤 Nutzer</div>
-      <div class="admin-tab"        id="atab-infomails" onclick="setAdminTab('infomails')">✉ Info E-Mails</div>
-      <div class="admin-tab"        id="atab-infos"     onclick="setAdminTab('infos')">📝 Infotexte</div>
-      <div class="admin-tab"        id="atab-weather"   onclick="setAdminTab('weather')">🌧 Wetterausfälle</div>
-      <div class="admin-tab"        id="atab-wipe"      onclick="setAdminTab('wipe')" style="display:none;">🧹 Platte putzen</div>
+    <div class="admin-menu-tools">
+      <button class="admin-menu-edit-btn" id="adminMenuEditBtn" type="button" onclick="toggleAdminMenuEditor()" aria-expanded="false" aria-controls="adminMenuEditor" title="Admin-Menü anpassen">
+        <span aria-hidden="true">✎</span><span>Menü bearbeiten</span>
+      </button>
+    </div>
+    <div class="admin-menu-editor" id="adminMenuEditor" hidden>
+      <div class="admin-menu-editor-head">
+        <div>
+          <strong>Admin-Menü anpassen</strong>
+          <span>Bezeichnungen ändern oder Menüpunkte mit den Pfeilen verschieben.</span>
+        </div>
+        <button class="admin-menu-icon-btn" type="button" onclick="closeAdminMenuEditor()" aria-label="Bearbeitung schließen" title="Schließen">×</button>
+      </div>
+      <div class="admin-menu-editor-list" id="adminMenuEditorList"></div>
+      <div class="admin-menu-editor-actions">
+        <button class="admin-btn secondary" type="button" onclick="resetAdminMenuDraft()">Standard wiederherstellen</button>
+        <button class="admin-btn" type="button" onclick="saveAdminMenuConfig()">Speichern</button>
+      </div>
+      <div class="admin-menu-editor-status" id="adminMenuEditorStatus" role="status" aria-live="polite"></div>
+    </div>
+
+    <div class="admin-tabs" id="adminTabs">
+      <button class="admin-tab active" type="button" id="atab-freibad" data-admin-tab="freibad" onclick="setAdminTab('freibad')"><span aria-hidden="true">🏊</span><span class="admin-tab-label">Freibad &amp; Padel-Anlage</span></button>
+      <button class="admin-tab" type="button" id="atab-fbtickets" data-admin-tab="fbtickets" onclick="setAdminTab('fbtickets')"><span aria-hidden="true">🎫</span><span class="admin-tab-label">Freibad-Tickets</span></button>
+      <button class="admin-tab" type="button" id="atab-prices" data-admin-tab="prices" onclick="setAdminTab('prices')"><span aria-hidden="true">💰</span><span class="admin-tab-label">Preise</span></button>
+      <button class="admin-tab" type="button" id="atab-internal" data-admin-tab="internal" onclick="setAdminTab('internal')"><span aria-hidden="true">📋</span><span class="admin-tab-label">Interne Buchungen</span></button>
+      <button class="admin-tab" type="button" id="atab-bookings" data-admin-tab="bookings" onclick="setAdminTab('bookings')"><span aria-hidden="true">📅</span><span class="admin-tab-label">Buchungsübersicht</span></button>
+      <button class="admin-tab" type="button" id="atab-archive" data-admin-tab="archive" onclick="setAdminTab('archive')"><span aria-hidden="true">🗄</span><span class="admin-tab-label">Belegarchiv</span></button>
+      <button class="admin-tab" type="button" id="atab-kiosk" data-admin-tab="kiosk" onclick="setAdminTab('kiosk')"><span aria-hidden="true">🥤</span><span class="admin-tab-label">Kiosk</span></button>
+      <button class="admin-tab" type="button" id="atab-aktionen" data-admin-tab="aktionen" onclick="setAdminTab('aktionen')"><span aria-hidden="true">🎯</span><span class="admin-tab-label">Aktionen</span></button>
+      <button class="admin-tab" type="button" id="atab-sponsors" data-admin-tab="sponsors" onclick="setAdminTab('sponsors')"><span aria-hidden="true">🤝</span><span class="admin-tab-label">Sponsoren</span></button>
+      <button class="admin-tab" type="button" id="atab-mis" data-admin-tab="mis" onclick="setAdminTab('mis')"><span aria-hidden="true">📊</span><span class="admin-tab-label">MIS</span></button>
+      <button class="admin-tab" type="button" id="atab-users" data-admin-tab="users" onclick="setAdminTab('users')"><span aria-hidden="true">👤</span><span class="admin-tab-label">Nutzer</span></button>
+      <button class="admin-tab" type="button" id="atab-infomails" data-admin-tab="infomails" onclick="setAdminTab('infomails')"><span aria-hidden="true">✉</span><span class="admin-tab-label">Info E-Mails</span></button>
+      <button class="admin-tab" type="button" id="atab-infos" data-admin-tab="infos" onclick="setAdminTab('infos')"><span aria-hidden="true">📝</span><span class="admin-tab-label">Infotexte</span></button>
+      <button class="admin-tab" type="button" id="atab-weather" data-admin-tab="weather" onclick="setAdminTab('weather')"><span aria-hidden="true">🌧</span><span class="admin-tab-label">Wetterausfälle</span></button>
+      <button class="admin-tab" type="button" id="atab-wipe" data-admin-tab="wipe" onclick="setAdminTab('wipe')" style="display:none;"><span aria-hidden="true">🧹</span><span class="admin-tab-label">Platte putzen</span></button>
     </div>
 
     <!-- ── FREIBAD-TICKETS (Live-Ansicht) ── -->
@@ -12817,6 +12863,163 @@ function setAdminTab(tab) {
 }
 
 // ============================================================
+//  ADMIN – Reihenfolge und Bezeichnungen des Admin-Menüs
+// ============================================================
+const ADMIN_MENU_DEFAULTS = Object.freeze({
+  freibad: 'Freibad & Padel-Anlage', fbtickets: 'Freibad-Tickets', prices: 'Preise',
+  internal: 'Interne Buchungen', bookings: 'Buchungsübersicht', archive: 'Belegarchiv',
+  kiosk: 'Kiosk', aktionen: 'Aktionen', sponsors: 'Sponsoren', mis: 'MIS', users: 'Nutzer',
+  infomails: 'Info E-Mails', infos: 'Infotexte', weather: 'Wetterausfälle'
+});
+const ADMIN_MENU_DEFAULT_ORDER = Object.freeze(Object.keys(ADMIN_MENU_DEFAULTS));
+let adminMenuSavedConfig = null;
+let adminMenuDraft = null;
+let adminMenuConfigLoaded = false;
+
+function normalizeAdminMenuConfig(config) {
+  const receivedOrder = Array.isArray(config?.order) ? config.order : [];
+  const validOrder = receivedOrder.length === ADMIN_MENU_DEFAULT_ORDER.length
+    && new Set(receivedOrder).size === ADMIN_MENU_DEFAULT_ORDER.length
+    && receivedOrder.every(key => Object.prototype.hasOwnProperty.call(ADMIN_MENU_DEFAULTS, key));
+  const order = validOrder ? [...receivedOrder] : [...ADMIN_MENU_DEFAULT_ORDER];
+  const labels = {};
+  order.forEach(key => {
+    const candidate = typeof config?.labels?.[key] === 'string' ? config.labels[key].trim() : '';
+    labels[key] = candidate && candidate.length <= 40 ? candidate : ADMIN_MENU_DEFAULTS[key];
+  });
+  return { order, labels };
+}
+
+function applyAdminMenuConfig(config) {
+  const normalized = normalizeAdminMenuConfig(config);
+  const tabs = document.getElementById('adminTabs');
+  if (!tabs) return;
+  normalized.order.forEach(key => {
+    const tab = document.getElementById('atab-' + key);
+    const label = tab?.querySelector('.admin-tab-label');
+    if (label) label.textContent = normalized.labels[key];
+    if (tab) tabs.appendChild(tab);
+  });
+  const wipe = document.getElementById('atab-wipe');
+  if (wipe) tabs.appendChild(wipe);
+}
+
+async function loadAdminMenuConfig(force) {
+  if (adminMenuConfigLoaded && !force) return;
+  try {
+    const { data, error } = await sb.rpc('admin_get_admin_menu_config');
+    if (error) throw error;
+    adminMenuSavedConfig = normalizeAdminMenuConfig(data);
+  } catch (e) {
+    console.warn('Admin-Menü-Konfiguration konnte nicht geladen werden:', e?.message || e);
+    adminMenuSavedConfig = normalizeAdminMenuConfig(null);
+  }
+  adminMenuConfigLoaded = true;
+  applyAdminMenuConfig(adminMenuSavedConfig);
+}
+
+function setAdminMenuEditorStatus(message, isError) {
+  const status = document.getElementById('adminMenuEditorStatus');
+  if (!status) return;
+  status.textContent = message || '';
+  status.style.color = isError ? '#B8402C' : '#71695E';
+}
+
+function renderAdminMenuEditor() {
+  const list = document.getElementById('adminMenuEditorList');
+  if (!list || !adminMenuDraft) return;
+  list.replaceChildren();
+  adminMenuDraft.order.forEach((key, index) => {
+    const tab = document.getElementById('atab-' + key);
+    const row = document.createElement('div');
+    row.className = 'admin-menu-editor-row';
+
+    const icon = document.createElement('span');
+    icon.className = 'admin-menu-editor-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = tab?.firstElementChild?.textContent || '';
+
+    const input = document.createElement('input');
+    input.className = 'admin-menu-editor-input';
+    input.type = 'text';
+    input.maxLength = 40;
+    input.value = adminMenuDraft.labels[key];
+    input.setAttribute('aria-label', 'Bezeichnung für ' + ADMIN_MENU_DEFAULTS[key]);
+    input.addEventListener('input', () => { adminMenuDraft.labels[key] = input.value; });
+
+    const up = document.createElement('button');
+    up.className = 'admin-menu-icon-btn'; up.type = 'button'; up.textContent = '↑';
+    up.title = 'Nach oben'; up.setAttribute('aria-label', ADMIN_MENU_DEFAULTS[key] + ' nach oben verschieben');
+    up.disabled = index === 0; up.addEventListener('click', () => moveAdminMenuItem(key, -1));
+
+    const down = document.createElement('button');
+    down.className = 'admin-menu-icon-btn'; down.type = 'button'; down.textContent = '↓';
+    down.title = 'Nach unten'; down.setAttribute('aria-label', ADMIN_MENU_DEFAULTS[key] + ' nach unten verschieben');
+    down.disabled = index === adminMenuDraft.order.length - 1;
+    down.addEventListener('click', () => moveAdminMenuItem(key, 1));
+
+    row.append(icon, input, up, down);
+    list.appendChild(row);
+  });
+}
+
+function moveAdminMenuItem(key, direction) {
+  if (!adminMenuDraft) return;
+  const index = adminMenuDraft.order.indexOf(key);
+  const target = index + direction;
+  if (index < 0 || target < 0 || target >= adminMenuDraft.order.length) return;
+  [adminMenuDraft.order[index], adminMenuDraft.order[target]] = [adminMenuDraft.order[target], adminMenuDraft.order[index]];
+  renderAdminMenuEditor();
+}
+
+async function toggleAdminMenuEditor() {
+  const editor = document.getElementById('adminMenuEditor');
+  if (!editor) return;
+  if (!editor.hidden) { closeAdminMenuEditor(); return; }
+  await loadAdminMenuConfig();
+  adminMenuDraft = normalizeAdminMenuConfig(adminMenuSavedConfig);
+  renderAdminMenuEditor();
+  setAdminMenuEditorStatus('');
+  editor.hidden = false;
+  document.getElementById('adminMenuEditBtn')?.setAttribute('aria-expanded', 'true');
+}
+
+function closeAdminMenuEditor() {
+  const editor = document.getElementById('adminMenuEditor');
+  if (editor) editor.hidden = true;
+  document.getElementById('adminMenuEditBtn')?.setAttribute('aria-expanded', 'false');
+  adminMenuDraft = null;
+}
+
+function resetAdminMenuDraft() {
+  adminMenuDraft = normalizeAdminMenuConfig(null);
+  renderAdminMenuEditor();
+  setAdminMenuEditorStatus('Standard vorbereitet. Zum Übernehmen bitte speichern.');
+}
+
+async function saveAdminMenuConfig() {
+  if (!adminMenuDraft) return;
+  const emptyLabel = adminMenuDraft.order.find(key => !String(adminMenuDraft.labels[key] || '').trim());
+  if (emptyLabel) {
+    setAdminMenuEditorStatus('Bitte für jeden Menüpunkt eine Bezeichnung eintragen.', true);
+    return;
+  }
+  const config = normalizeAdminMenuConfig(adminMenuDraft);
+  setAdminMenuEditorStatus('Wird gespeichert …');
+  try {
+    const { data, error } = await sb.rpc('admin_set_admin_menu_config', { p_config: config });
+    if (error) throw error;
+    adminMenuSavedConfig = normalizeAdminMenuConfig(data);
+    applyAdminMenuConfig(adminMenuSavedConfig);
+    adminMenuDraft = normalizeAdminMenuConfig(adminMenuSavedConfig);
+    renderAdminMenuEditor();
+    setAdminMenuEditorStatus('Gespeichert. Das Menü gilt jetzt für alle Administratoren.');
+  } catch (e) {
+    setAdminMenuEditorStatus(e?.message || 'Das Menü konnte nicht gespeichert werden.', true);
+  }
+}
+
+// ============================================================
 //  ADMIN – Freibad-Tickets (Live-Ansicht + Eingriff + Zugänge)
 //  Nutzt admin_freibad_view / admin_freibad_toggle / admin_freibad_staff_*
 //  (Skript 49). Auth über die normale Admin-Anmeldung (users.role).
@@ -13211,6 +13414,7 @@ async function applyMemberSync() {
 }
 
 async function initAdmin() {
+  await loadAdminMenuConfig();
   if (!adminTabLoaded.freibad) { loadAdminFreibad(); adminTabLoaded.freibad = true; }
 }
 
