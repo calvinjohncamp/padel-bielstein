@@ -8520,7 +8520,7 @@ function updateSummary() {
   const sbHours = document.getElementById('sb-hours');
   if (sbHours) {
     if (selDur === 1) {
-      sbHours.textContent = `Deine Buchung setzt sich zusammen aus einem Einzelstundenpreis in Höhe von ${fmt(rp)}.`;
+      sbHours.textContent = `Deine Buchung beruht auf einem Einzelstundenpreis in Höhe von ${fmt(rp)}.`;
     } else {
       const list = [];
       for (let i = 0; i < selDur; i++) list.push(fmt(hourP(pmap, h + i, selDate, false)));
