@@ -21,6 +21,10 @@
    spaeter auf ("/"), danach ist die Information unwiederbringlich weg -
    und die Startseite erschiene faelschlich direkt nach einer Zahlung. */
 window.__pbFromStripe = /[?&]booking=(success|cancelled)/.test(location.search);
+window.__pbPasswordRecovery =
+  /[?&]password_recovery=1(?:&|$)/.test(location.search) ||
+  /(?:^|[&#])type=recovery(?:&|$)/.test(location.hash) ||
+  /[?&]type=recovery(?:&|$)/.test(location.search);
 window.__pbReleaseBoot = function(){
   document.documentElement.classList.remove('pb-boot');
 };
@@ -8678,7 +8682,7 @@ async function openBookingFromMeet(source) {
 let currentUser = null;      // Supabase Auth User
 let currentProfile = null;   // users-Tabelle Eintrag
 let pendingAction = null;    // 'book' | 'abo' — was nach Login passieren soll
-let passwordRecoveryActive = location.hash.includes('type=recovery') || location.search.includes('type=recovery');
+let passwordRecoveryActive = !!window.__pbPasswordRecovery;
 
 // Auth-State beim Laden prüfen — init() läuft unabhängig davon.
 //
@@ -9157,13 +9161,20 @@ async function doReset() {
   if (!email) { showAuthErr('Bitte E-Mail eingeben.'); return; }
   clearAuthMessages();
   const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://padel-bielstein.de'
+    redirectTo: 'https://padel-bielstein.de/?password_recovery=1'
   });
   if (error) { showAuthErr(translateAuthError(error.message)); return; }
   showAuthOk('Link gesendet! Bitte prüfe dein Postfach.');
 }
 
 function openPasswordRecovery() {
+  // Der Recovery-Link ist ein eigener Ablauf. Die normale Startanzeige darf
+  // weder die Passwortmaske verdecken noch eine Anmeldung vortaeuschen.
+  const splash = document.getElementById('pbSplash');
+  if (splash) splash.setAttribute('hidden', '');
+  document.documentElement.style.removeProperty('overflow');
+  document.body.style.removeProperty('overflow');
+  if (window.__pbReleaseBoot) window.__pbReleaseBoot();
   switchAuthTab('recovery');
   document.getElementById('modalTitle').textContent = 'Neues Passwort';
   document.getElementById('modalSub').textContent = 'Passwort sicher zurücksetzen';
@@ -9185,8 +9196,9 @@ async function completePasswordRecovery() {
     const { error } = await sb.auth.updateUser({ password: pw });
     if (error) { showAuthErr(translateAuthError(error.message)); return; }
     passwordRecoveryActive = false;
+    window.__pbPasswordRecovery = false;
     // Zugangsdaten aus dem Recovery-Link aus der Adresszeile entfernen.
-    history.replaceState(null, document.title, location.pathname + location.search);
+    history.replaceState(null, document.title, location.pathname);
     showAuthOk('Passwort geändert. Du bist jetzt angemeldet.');
     setTimeout(() => {
       closeModal();
@@ -22414,6 +22426,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   var MAIL_KEY = 'pb_last_email';
   // Gesetzt vom Skript ganz oben im <head> - siehe Begruendung dort.
   var FROM_STRIPE = !!window.__pbFromStripe;
+  var FROM_PASSWORD_RECOVERY = !!window.__pbPasswordRecovery;
   async function leave(splash){
     splash.setAttribute('hidden','');
     document.documentElement.style.removeProperty('overflow');
@@ -22431,7 +22444,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(!splash){ if(window.__pbReleaseBoot) window.__pbReleaseBoot(); return; }
     // Rueckkehr von Stripe: Wer gerade bezahlt hat, will das Ergebnis sehen
     // und nicht wieder auf der Startseite anfangen.
-    if(FROM_STRIPE){ if(window.__pbReleaseBoot) window.__pbReleaseBoot(); return; }
+    if(FROM_STRIPE || FROM_PASSWORD_RECOVERY){ if(window.__pbReleaseBoot) window.__pbReleaseBoot(); return; }
     splash.removeAttribute('hidden');
     try { splash.scrollTop = 0; window.scrollTo(0, 0); } catch(e) {}
     var touchLike = false;
