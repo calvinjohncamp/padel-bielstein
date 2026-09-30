@@ -6372,12 +6372,13 @@ main {
 
           <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
             <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Akquisestatus</div>
-            <div style="font-size:0.76rem;color:#7A7368;line-height:1.5;margin-bottom:10px;">Der Betrag ist je Partner frei anpassbar. Ein vorliegender Vertrag wird in der Übersicht nicht zusätzlich als mündliche Zusage gezählt.</div>
-            <div style="display:grid;grid-template-columns:minmax(180px,1fr) 1fr 1fr;gap:12px;align-items:end;">
+            <div style="font-size:0.76rem;color:#7A7368;line-height:1.5;margin-bottom:10px;">Der Betrag ist je Partner frei anpassbar. Bei einer Partnerschaft gegen Sach- oder Werbeleistung wird der Finanzwert bewusst auf 0 € gesetzt. Ein vorliegender Vertrag wird in der Übersicht nicht zusätzlich als mündliche Zusage gezählt.</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end;">
               <div>
                 <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Beitrag pro Jahr in Euro</label>
                 <input id="spAnnualAmount" type="text" inputmode="decimal" value="1000" placeholder="1000" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
               </div>
+              <label style="display:flex;align-items:center;gap:8px;min-height:40px;font:700 13px 'Manrope',sans-serif;color:#1C1A17;cursor:pointer;"><input id="spInKindPartnership" type="checkbox" onchange="setSponsorInKindMode(this.checked)" style="width:18px;height:18px;accent-color:#5C564C;"> Gegenleistung statt Zahlung (0 €)</label>
               <label style="display:flex;align-items:center;gap:8px;min-height:40px;font:700 13px 'Manrope',sans-serif;color:#1C1A17;cursor:pointer;"><input id="spVerbalCommitment" type="checkbox" style="width:18px;height:18px;accent-color:#FF5A36;"> Mündliche Zusage</label>
               <label style="display:flex;align-items:center;gap:8px;min-height:40px;font:700 13px 'Manrope',sans-serif;color:#1C1A17;cursor:pointer;"><input id="spContractReceived" type="checkbox" style="width:18px;height:18px;accent-color:#1F8A5F;"> Vertrag liegt vor</label>
             </div>
@@ -11660,7 +11661,36 @@ function syncSponsorAnnualAmount(force = false) {
   const tier = document.getElementById('spTier')?.value;
   const input = document.getElementById('spAnnualAmount');
   if (!input || !SPONSOR_TIER_CONFIG[tier]) return;
-  if (force || input.value === '') input.value = (SPONSOR_TIER_CONFIG[tier].suggestedAnnualCents / 100).toFixed(0);
+  const suggested = (SPONSOR_TIER_CONFIG[tier].suggestedAnnualCents / 100).toFixed(0);
+  if (document.getElementById('spInKindPartnership')?.checked) {
+    input.dataset.cashValue = suggested;
+    input.value = '0';
+    return;
+  }
+  if (force || input.value === '') input.value = suggested;
+}
+
+function setSponsorInKindMode(enabled, restoreAmount = true) {
+  const checkbox = document.getElementById('spInKindPartnership');
+  const input = document.getElementById('spAnnualAmount');
+  if (!checkbox || !input) return;
+  checkbox.checked = !!enabled;
+  if (enabled) {
+    const current = adminParseEuro(input.value);
+    if (Number.isFinite(current) && current > 0) input.dataset.cashValue = input.value;
+    input.value = '0';
+    input.disabled = true;
+    input.style.background = '#EFE9DC';
+    input.title = 'Diese Partnerschaft beruht auf einer Gegenleistung und zählt finanziell mit 0 Euro.';
+  } else {
+    input.disabled = false;
+    input.style.background = '#fff';
+    input.title = '';
+    if (restoreAmount && adminParseEuro(input.value) === 0) {
+      const tier = document.getElementById('spTier')?.value;
+      input.value = input.dataset.cashValue || ((SPONSOR_TIER_CONFIG[tier]?.suggestedAnnualCents || 0) / 100).toFixed(0);
+    }
+  }
 }
 
 function renderFundraisingSummary() {
@@ -11679,9 +11709,15 @@ function renderFundraisingSummary() {
       <div style="font:800 20px 'Space Grotesk',sans-serif;color:${accent};">${adminFormatEuro(value)}</div>
       <div style="font:600 11px 'Manrope',sans-serif;color:#7A7368;margin-top:4px;line-height:1.35;">${note}</div>
     </div>`;
-  const statusBadge = sponsor => sponsor.contract_received
-    ? '<span style="display:inline-block;margin-left:7px;color:#1F8A5F;font:800 10px Manrope,sans-serif;">Vertrag</span>'
-    : '<span style="display:inline-block;margin-left:7px;color:#B06A00;font:800 10px Manrope,sans-serif;">Mündlich</span>';
+  const statusBadge = sponsor => {
+    const commitment = sponsor.contract_received
+      ? '<span style="display:inline-block;margin-left:7px;color:#1F8A5F;font:800 10px Manrope,sans-serif;">Vertrag</span>'
+      : '<span style="display:inline-block;margin-left:7px;color:#B06A00;font:800 10px Manrope,sans-serif;">Mündlich</span>';
+    const inKind = Number(sponsor.annual_amount_cents) === 0
+      ? '<span style="display:inline-block;margin-left:7px;color:#5C564C;font:800 10px Manrope,sans-serif;">Gegenleistung</span>'
+      : '';
+    return commitment + inKind;
+  };
   const moneyCell = value => `<td style="padding:10px 12px;text-align:right;white-space:nowrap;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${adminFormatEuro(value)}</td>`;
   const partnerTable = tier => {
     const config = SPONSOR_TIER_CONFIG[tier];
@@ -11991,6 +12027,8 @@ function editSponsor(id) {
   document.getElementById('spCourtLabel').value = s.court_label || '';
   document.getElementById('spCourtPartnerEnabled').checked = s.court_partner_enabled === true;
   document.getElementById('spAnnualAmount').value = ((Number(s.annual_amount_cents) || 0) / 100).toFixed(2).replace('.', ',');
+  document.getElementById('spAnnualAmount').dataset.cashValue = (SPONSOR_TIER_CONFIG[s.tier]?.suggestedAnnualCents / 100).toFixed(0);
+  setSponsorInKindMode(Number(s.annual_amount_cents) === 0, false);
   document.getElementById('spVerbalCommitment').checked = s.verbal_commitment === true;
   document.getElementById('spContractReceived').checked = s.contract_received === true;
   document.getElementById('spWebsite').value  = s.website_url || '';
@@ -12027,6 +12065,8 @@ function resetSponsorForm() {
   document.getElementById('spCourtLabel').value = '';
   document.getElementById('spCourtPartnerEnabled').checked = false;
   document.getElementById('spAnnualAmount').value = '1000';
+  document.getElementById('spAnnualAmount').dataset.cashValue = '1000';
+  setSponsorInKindMode(false, false);
   document.getElementById('spVerbalCommitment').checked = false;
   document.getElementById('spContractReceived').checked = false;
   document.getElementById('spWebsite').value  = '';
@@ -12163,7 +12203,8 @@ async function saveSponsor() {
   const website      = document.getElementById('spWebsite').value.trim();
   const courtLabelValue = document.getElementById('spCourtLabel').value.trim();
   const courtPartnerEnabled = document.getElementById('spCourtPartnerEnabled').checked;
-  const annualAmountCents = Math.round(adminParseEuro(document.getElementById('spAnnualAmount').value) * 100);
+  const inKindPartnership = document.getElementById('spInKindPartnership').checked;
+  const annualAmountCents = inKindPartnership ? 0 : Math.round(adminParseEuro(document.getElementById('spAnnualAmount').value) * 100);
   const verbalCommitment = document.getElementById('spVerbalCommitment').checked;
   const contractReceived = document.getElementById('spContractReceived').checked;
   const contractCompany = document.getElementById('spContractCompany').value.trim();
