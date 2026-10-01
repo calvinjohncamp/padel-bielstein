@@ -634,6 +634,34 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 .value-card-grid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; width: 100%; max-width: 360px; margin: 22px auto 0; }
 .value-dot-row { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; }
 .value-dot { aspect-ratio: 1; border-radius: 50%; background: #1C1A17; box-shadow: inset 0 0 0 1px rgba(18,20,17,.06); }
+
+/* Persönlicher Kontoauszug */
+.statement-entry-card { min-height:520px; display:flex; flex-direction:column; justify-content:center; }
+.statement-badge { font-family:"Space Grotesk",sans-serif; font-size:1.4rem; }
+.statement-number { font-size:3.2rem; }
+.statement-entry-copy { margin:4px auto 22px; max-width:300px; color:#5F5A52; font-size:.86rem; line-height:1.55; }
+.statement-open-btn { width:100%; min-height:50px; border:0; border-radius:8px; background:#FF5A36; color:#1C1A17; font:900 .8rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; }
+.account-statement-overlay { z-index:760; }
+.account-statement-modal { max-width:760px; max-height:min(86vh,860px); overflow:auto; padding:30px; background:#F6F1E7; border-color:#FF5A36; color:#1C1A17; }
+.statement-kicker { color:#FF5A36; font:800 .7rem "Space Grotesk",sans-serif; text-transform:uppercase; letter-spacing:.14em; }
+.statement-title { margin:6px 42px 18px 0; font:900 1.65rem "Space Grotesk",sans-serif; letter-spacing:0; }
+.statement-tabs { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+.statement-tab { min-height:44px; border:1px solid #D8CFC1; border-radius:8px; background:#FFFDF9; color:#655F56; font:800 .75rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; }
+.statement-tab.active { border-color:#1C1A17; background:#1C1A17; color:#F6F1E7; }
+.statement-period { margin:0 0 16px; color:#756E64; font-size:.76rem; }
+.statement-list { display:grid; gap:10px; }
+.statement-item { padding:15px; border:1px solid #DDD3C4; border-radius:8px; background:#FFFDF9; }
+.statement-item.is-cancelled { opacity:.72; }
+.statement-item-head,.statement-lines>div { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.statement-item-head strong { font-size:.88rem; }
+.statement-item-head b { color:#FF5A36; white-space:nowrap; }
+.statement-item-main { margin-top:5px; color:#514B43; font-size:.78rem; }
+.statement-item-meta { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:9px; color:#817A70; font-size:.67rem; }
+.statement-lines { margin-top:10px; padding-top:8px; border-top:1px solid #E8E0D4; }
+.statement-lines>div { padding:4px 0; font-size:.72rem; }
+.statement-lines b { white-space:nowrap; }
+.statement-empty { padding:42px 16px; text-align:center; color:#756E64; border:1px dashed #D8CFC1; border-radius:8px; }
+@media (max-width:620px) { .account-statement-modal { max-height:92vh; padding:24px 14px; } .statement-tabs { grid-template-columns:1fr; } .statement-item-head { gap:10px; } }
 .value-card .value-dot { width: 44px; }
 .value-dot.available { background: #1C1A17; }
 .value-dot.spent { background: #FF5A36; }
@@ -1920,6 +1948,21 @@ main {
       </div>
       <button type="button" class="pager-action" id="cardPagerAction" style="display:none;"></button>
     </div>
+  </div>
+</div>
+
+<!-- Persönlicher Kontoauszug: Buchungen 24 Monate, Kiosk 2 Monate -->
+<div class="modal-overlay account-statement-overlay" id="accountStatementModal">
+  <div class="modal account-statement-modal">
+    <button class="modal-close" onclick="closeAccountStatement()" aria-label="Abrechnungsübersicht schließen">✕</button>
+    <div class="statement-kicker">Mein Kontoauszug</div>
+    <h2 class="statement-title">Meine Abrechnungen</h2>
+    <div class="statement-tabs" role="tablist" aria-label="Abrechnungsart">
+      <button type="button" id="statementBookingsTab" class="statement-tab active" onclick="showAccountStatementTab('bookings')">Buchungen</button>
+      <button type="button" id="statementKioskTab" class="statement-tab" onclick="showAccountStatementTab('kiosk')">Kiosk-Einkäufe</button>
+    </div>
+    <div id="statementPeriod" class="statement-period"></div>
+    <div id="statementList" class="statement-list"></div>
   </div>
 </div>
 
@@ -8304,6 +8347,7 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('booking') === 'success') {
     const finalizedAbo = await finalizePendingAboCheckout();
+    try { localStorage.removeItem(PENDING_LOYALTY_RESERVATION_KEY); } catch(e) {}
     window.history.replaceState({}, '', '/');
 
     // Wertkarten-Kauf: zurueck auf die Wertkarten-Seite, damit das neue
@@ -8366,6 +8410,13 @@ async function init() {
     setMode('kiosk');
   } else if (params.get('booking') === 'cancelled') {
     clearPendingAboCheckout();
+    try {
+      const reservationId = localStorage.getItem(PENDING_LOYALTY_RESERVATION_KEY);
+      if (reservationId) {
+        const { error } = await sb.rpc('release_my_loyalty_reward', { p_reservation_id:reservationId });
+        if (!error) localStorage.removeItem(PENDING_LOYALTY_RESERVATION_KEY);
+      }
+    } catch(e) { console.warn('Treuevorteil nach Zahlungsabbruch freigeben', e); }
     window.history.replaceState({}, '', '/');
     showToast('Buchung abgebrochen.');
     loadBookings(selDate).then(() => renderSlots());
@@ -8647,13 +8698,85 @@ function pickSlot(ct, h) {
 // ============================================================
 //  SUMMARY
 // ============================================================
+let loyaltyPreviewCache = Object.create(null);
+let loyaltyPreviewPending = Object.create(null);
+
+function loyaltyPreviewKey(duration) {
+  return currentUser?.id ? `${currentUser.id}:${duration}` : '';
+}
+
+function clearLoyaltyPreviewCache() {
+  loyaltyPreviewCache = Object.create(null);
+  loyaltyPreviewPending = Object.create(null);
+}
+
+async function loadLoyaltyPreview(duration, force) {
+  const key = loyaltyPreviewKey(duration);
+  if (!key) return { kind:'none', hours:0 };
+  if (!force && loyaltyPreviewCache[key]) return loyaltyPreviewCache[key];
+  if (!force && loyaltyPreviewPending[key]) return loyaltyPreviewPending[key];
+  const request = (async () => {
+    try {
+      const { data, error } = await sb.rpc('my_loyalty_offer', { p_duration:duration });
+      if (error) throw error;
+      loyaltyPreviewCache[key] = data || { kind:'none', hours:0 };
+    } catch (error) {
+      console.warn('Treuevorteil konnte nicht geladen werden', error);
+      loyaltyPreviewCache[key] = { kind:'none', hours:0 };
+    } finally {
+      delete loyaltyPreviewPending[key];
+    }
+    return loyaltyPreviewCache[key];
+  })();
+  loyaltyPreviewPending[key] = request;
+  return request;
+}
+
+function bookingPriceWithLoyalty(hour, date, duration, offer) {
+  const discountInfo = bookingDiscountInfo();
+  const grossHourCents = [];
+  const baseHourCents = [];
+  const pmap = prices(date);
+  for (let i = 0; i < duration; i++) {
+    const gross = Math.round(hourP(pmap, hour + i, date, false) * 100);
+    grossHourCents.push(gross);
+    baseHourCents.push(Math.round(gross * (1 - discountInfo.pct / 100)));
+  }
+  const grossCents = grossHourCents.reduce((sum, value) => sum + value, 0);
+  const baseCents = baseHourCents.reduce((sum, value) => sum + value, 0);
+  let loyaltyDiscountCents = 0;
+  if (offer?.kind === 'percent') {
+    loyaltyDiscountCents = Math.round(baseCents * (Number(offer.pct) || 0) / 100);
+  } else if (offer?.kind === 'free_hour') {
+    const offset = Math.max(1, Number(offer.free_hour_offset) || 1);
+    loyaltyDiscountCents = baseHourCents[offset - 1] || 0;
+  }
+  return {
+    grossCents,
+    baseCents,
+    totalCents: Math.max(0, baseCents - loyaltyDiscountCents),
+    baseDiscountCents: Math.max(0, grossCents - baseCents),
+    loyaltyDiscountCents,
+    discountInfo,
+    offer: offer || { kind:'none' },
+  };
+}
+
 function updateSummary() {
   const card = document.getElementById("sumCard");
   const btn  = document.getElementById("bookBtn");
   if (!selSlot) { card.classList.remove("visible"); btn.classList.remove("visible"); restoreBookingButtonVisibility(); return; }
   const {court:ct, hour:h} = selSlot, end = h + selDur;
-  const rp = rawP(h, selDate), p = mP(rp), disc = rp - p;
-  const discountInfo = bookingDiscountInfo();
+  const loyaltyKey = loyaltyPreviewKey(selDur);
+  const loyaltyOffer = loyaltyKey ? loyaltyPreviewCache[loyaltyKey] : null;
+  if (loyaltyKey && !loyaltyOffer && !loyaltyPreviewPending[loyaltyKey]) {
+    loadLoyaltyPreview(selDur, false).then(() => updateSummary());
+  }
+  const priced = bookingPriceWithLoyalty(h, selDate, selDur, loyaltyOffer);
+  const rp = priced.grossCents / 100;
+  const p = priced.totalCents / 100;
+  const disc = (priced.grossCents - priced.totalCents) / 100;
+  const discountInfo = priced.discountInfo;
   const ds = new Date(selDate+'T12:00:00').toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
   document.getElementById("sDate").textContent  = ds;
   document.getElementById("sCourt").textContent = courtLabel(ct);
@@ -8664,7 +8787,7 @@ function updateSummary() {
   document.getElementById("sPer").textContent   = fmt(p / 4);
   const sReg = document.getElementById("sReg");
   const sSave = document.getElementById("sSave");
-  if (discountInfo.pct > 0 && disc > 0) {
+  if (disc > 0) {
     if (sReg)  sReg.textContent = `statt ${fmt(rp)} regulär`;
     if (sSave) { sSave.textContent = `Du sparst ${fmt(disc)}`; sSave.style.display = ''; }
   } else {
@@ -8688,8 +8811,14 @@ function updateSummary() {
   }
   const sbRab = document.getElementById('sb-rabatt');
   if (sbRab) {
-    if (discountInfo.pct > 0) {
-      sbRab.textContent = `Dein Rabatt bei dieser Buchung beträgt ${discountInfo.pct} %.`;
+    const loyaltyText = priced.offer.kind === 'free_hour'
+      ? 'Deine 100. Stunde ist bei dieser Buchung kostenlos.'
+      : priced.offer.kind === 'percent'
+        ? `Dein Treuebonus bei dieser Buchung beträgt ${Number(priced.offer.pct) || 0} %.`
+        : '';
+    if (discountInfo.pct > 0 || loyaltyText) {
+      const baseText = discountInfo.pct > 0 ? `Dein ${discountInfo.label.toLowerCase()} beträgt ${discountInfo.pct} %.` : '';
+      sbRab.textContent = [baseText, loyaltyText].filter(Boolean).join(' ');
     } else {
       sbRab.innerHTML = 'Als Mitglied oder Partner sparst du 10 % – <a href="https://www.tfbielstein.de/anmeldformular/" target="_blank" rel="noopener" style="color:#FF5A36;text-decoration:underline;font-weight:600;">jetzt Mitglied werden</a>.';
     }
@@ -8709,12 +8838,16 @@ function updateSummary() {
       + `<td>${fmt(betrag)}</td><td>${fmt(betrag / 4)}</td><td class="desc">${desc || ''}</td></tr>`;
     let body = crow('Normalpreis', `${fmt(perHour)} / Stunde`, rp, 'Preis deiner Buchung ohne Rabatt');
     let note = '';
-    if (discountInfo.pct > 0 && disc > 0) {
-      body += crow(discountInfo.label, `${discountInfo.pct} %`, disc, 'Rabatt')
-            + crow('Dein Buchungspreis', '', p, '','tot');
-    } else {
-      body += crow('Dein Buchungspreis', '', p, '','tot');
+    if (priced.baseDiscountCents > 0) {
+      body += crow(discountInfo.label, `${discountInfo.pct} %`, priced.baseDiscountCents / 100, 'Rabatt');
     }
+    if (priced.loyaltyDiscountCents > 0) {
+      const loyaltyLabel = priced.offer.kind === 'free_hour'
+        ? 'Treuebonus · 100. Stunde'
+        : `Treuebonus · ${Number(priced.offer.pct) || 0} %`;
+      body += crow(loyaltyLabel, priced.offer.kind === 'free_hour' ? 'kostenlos' : `${Number(priced.offer.pct) || 0} %`, priced.loyaltyDiscountCents / 100, 'Treuevorteil');
+    }
+    body += crow('Dein Buchungspreis', '', p, '','tot');
     sbCalc.innerHTML =
       '<div class="abo-calc-h">Transparenz – So setzt sich dein Buchungspreis zusammen</div>'
       + '<div class="abo-calc-wrap"><table><thead><tr><th></th><th>Preis · Rabatt</th><th>Buchung</th><th>pro Spieler</th><th></th></tr></thead><tbody>'
@@ -10841,6 +10974,7 @@ function askPaymentChoice(priceCents, balanceCents) {
 
 const BOOKING_SUCCESS_SUB =
   'Die Buchungsbestätigung sowie Informationen zum Platzzugang erhältst du per E-Mail. Weitere Details findest du unter „Jetzt spielen“ in der App.';
+const PENDING_LOYALTY_RESERVATION_KEY = 'pb_pending_loyalty_reservation';
 const INSTALL_PROMPT_SNOOZE_KEY = 'padelInstallPromptSnoozedAtV2';
 const INSTALL_PROMPT_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -11089,9 +11223,8 @@ async function confirmBooking(skipAuthCheck) {
   const headersPromise = checkoutHeaders();
   await profileReady;
   const {court, hour} = selSlot;
-  const priceRaw = rawP(hour, selDate);
-  const price = mP(priceRaw);
-  const price_cents = Math.round(price * 100);
+  const loyaltyOffer = await loadLoyaltyPreview(selDur, true);
+  const price_cents = bookingPriceWithLoyalty(hour, selDate, selDur, loyaltyOffer).totalCents;
 
   const email    = currentProfile?.email || currentUser?.email;
   const fullName = currentProfile?.full_name || '';
@@ -11121,7 +11254,9 @@ async function confirmBooking(skipAuthCheck) {
   }
 
   const fullyByCredit = useCredit && balanceCents >= price_cents;
-  showToast(fullyByCredit ? 'Buchung wird abgeschlossen …' : 'Weiter zu Stripe …');
+  showToast(price_cents === 0
+    ? 'Deine kostenlose Treuestunde wird gebucht …'
+    : (fullyByCredit ? 'Buchung wird abgeschlossen …' : 'Weiter zu Stripe …'));
 
   try {
     const res = await fetch(
@@ -11149,6 +11284,13 @@ async function confirmBooking(skipAuthCheck) {
     );
     const data = await res.json();
     if (data.url) {
+      try {
+        if (data.loyalty_reservation_id) {
+          localStorage.setItem(PENDING_LOYALTY_RESERVATION_KEY, data.loyalty_reservation_id);
+        } else {
+          localStorage.removeItem(PENDING_LOYALTY_RESERVATION_KEY);
+        }
+      } catch(e) {}
       redirectToExternalCheckout(data.url);
     } else if (data.paid_with_credit) {
       // Vollstaendig vom Guthaben bezahlt - es gibt bewusst keine Stripe-Seite.
@@ -11159,9 +11301,12 @@ async function confirmBooking(skipAuthCheck) {
       await showBookingSuccessDialog({
         title: 'Buchung bestätigt',
         sub: BOOKING_SUCCESS_SUB,
-        status: `Mit Guthaben bezahlt · Restguthaben ${restTxt} €`,
+        status: data.paid_with_loyalty
+          ? 'Deine 100. Treuestunde ist kostenlos'
+          : `Mit Guthaben bezahlt · Restguthaben ${restTxt} €`,
       });
       selSlot = null;
+      clearLoyaltyPreviewCache();
       await loadBookings(selDate);
       renderSlots();
       try {
@@ -17475,19 +17620,25 @@ function roundAvatarHTML(className, initials = profileInitials(), url = profileA
 const REWARD_TIER_LABELS = { 5: '5%', 10: '10%', 25: '25%', 50: '50%', 100: '★' };
 
 // Vorlage: "Noch X Std. bis zu 25% Rabatt" / "… zur kostenlosen Stunde"
-function nextRewardTeaser(hoursPlayed) {
-  const next = [5, 10, 25, 50, 100].find(t => t > hoursPlayed);
-  if (!next) return 'Alle Stufen erreicht!';
+function loyaltyCycleHours(hoursPlayed) {
+  return Math.max(0, Number(hoursPlayed) || 0) % 100;
+}
+function nextRewardTeaser(hoursPlayed, offer) {
+  if (offer?.kind === 'free_hour') return 'Deine 100. Stunde ist jetzt kostenlos.';
+  if (offer?.kind === 'percent') return `${Number(offer.pct) || 0} % Treuebonus für deine nächste Einzelbuchung.`;
+  const cycleHours = loyaltyCycleHours(hoursPlayed);
+  const next = [5, 10, 25, 50, 100].find(t => t > cycleHours);
   const lbl = REWARD_TIER_LABELS[next];
-  return 'Noch ' + (next - hoursPlayed) + ' Std. bis ' +
+  return 'Noch ' + (next - cycleHours) + ' Std. bis ' +
          (lbl === '★' ? 'zur kostenlosen Stunde' : 'zu ' + lbl + ' Rabatt');
 }
 
 function loyaltyDotsHTML(hoursPlayed) {
+  const cycleHours = loyaltyCycleHours(hoursPlayed);
   let h = '';
   for (let i = 1; i <= 100; i++) {
     const lbl = REWARD_TIER_LABELS[i] || '';
-    const filled = i <= hoursPlayed;
+    const filled = i <= cycleHours;
     h += `<div class="loyalty-dot${lbl ? ' milestone' : ''}${filled ? ' filled' : ''}">${lbl}</div>`;
   }
   return h;
@@ -17522,19 +17673,19 @@ function punchCanvasHTML(size, used, scale) {
 }
 
 // --- Karten im Kalender-Look als HTML (Zahl oben markant, dann Name/E-Mail, Punkte, Wert) ---
-function rewardsCardHTML(hoursPlayed) {
+function rewardsCardHTML(hoursPlayed, offer) {
   return `<div class="loyalty-card rewards">
     <div class="rw-badge">★</div>
     <div class="rw-tagline">Treue wird belohnt</div>
     <div class="rw-number">${hoursPlayed}</div>
-    <div class="rw-headline">Stunden gebucht</div>
-    <div class="rw-subtitle">bzw. verschenkt</div>
-    <div class="rw-teaser">${nextRewardTeaser(hoursPlayed)}</div>
+    <div class="rw-headline">bezahlte Einzelstunden</div>
+    <div class="rw-subtitle">Doppelstunden zählen als zwei</div>
+    <div class="rw-teaser">${nextRewardTeaser(hoursPlayed, offer)}</div>
     <div class="rw-divider"></div>
     <div class="rw-name">${esc(currentProfile?.full_name) || '—'}</div>
     <div class="rw-email">${esc(currentProfile?.email || currentUser?.email) || '—'}</div>
     <div class="loyalty-grid">${loyaltyDotsHTML(hoursPlayed)}</div>
-    <div class="rw-legend">Graue Felder markieren deine nächsten Rabattstufen — <strong>5%,&nbsp;10%,&nbsp;25%,&nbsp;50%</strong> auf die jeweils nächste Buchung. Die <strong>100. Stunde</strong> ist komplett kostenlos (★).</div>
+    <div class="rw-legend">Abos zählen nicht mit. Nach <strong>5, 10, 25 und 50</strong> bezahlten Einzelstunden erhältst du den jeweiligen Rabatt auf die nächste Einzelbuchung. Die <strong>100. Stunde</strong> selbst ist kostenlos (★); danach beginnt der nächste Treuezyklus.</div>
   </div>`;
 }
 // Karten-Inhaber/Empfänger für Name/E-Mail-Zeile
@@ -17645,6 +17796,130 @@ function balanceCardHTML(card) {
 // Wählt je nach Kartentyp die passende Darstellung
 function anyCardHTML(card) {
   return card.balance_remaining_eur != null ? balanceCardHTML(card) : punchCardHTML(card);
+}
+function statementCardHTML() {
+  return `<div class="loyalty-card statement-entry-card">
+    <div class="value-badge statement-badge">≡</div>
+    <div class="rw-tagline">Meine Abrechnungen</div>
+    <div class="rw-number statement-number">24 / 2</div>
+    <div class="rw-headline">Monate im Blick</div>
+    <div class="rw-subtitle">Buchungen / Kiosk-Einkäufe</div>
+    <div class="rw-divider"></div>
+    <p class="statement-entry-copy">Vergleiche deine Buchungen und abgeschlossenen Bierdeckel mit deiner Kartenabrechnung.</p>
+    <button type="button" class="statement-open-btn" onclick="openAccountStatement()">Abrechnungsübersicht öffnen</button>
+    <div class="rw-legend">Buchungen bleiben hier 24 Monate sichtbar, Kiosk-Abrechnungen zwei Monate.</div>
+  </div>`;
+}
+
+let accountStatementTab = 'bookings';
+
+function statementMoney(cents) {
+  return (Number(cents || 0) / 100).toLocaleString('de-DE', { minimumFractionDigits:2, maximumFractionDigits:2 }) + ' €';
+}
+function statementDate(value, withTime) {
+  const d = new Date(value && String(value).length === 10 ? value + 'T12:00:00' : value);
+  if (!Number.isFinite(d.getTime())) return 'Datum unbekannt';
+  return d.toLocaleDateString('de-DE', withTime
+    ? { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }
+    : { weekday:'short', day:'2-digit', month:'2-digit', year:'numeric' });
+}
+function statementReference(value) {
+  const ref = String(value || '').trim();
+  if (!ref) return 'Spielguthaben';
+  return ref.length > 12 ? '…' + ref.slice(-10) : ref;
+}
+function statementEmpty(text) {
+  return `<div class="statement-empty">${esc(text)}</div>`;
+}
+
+async function openAccountStatement() {
+  const modal = document.getElementById('accountStatementModal');
+  if (!modal || !currentUser) return;
+  modal.classList.add('open');
+  await showAccountStatementTab(accountStatementTab);
+}
+function closeAccountStatement() {
+  document.getElementById('accountStatementModal')?.classList.remove('open');
+}
+document.getElementById('accountStatementModal')?.addEventListener('click', function(event) {
+  if (event.target === this) closeAccountStatement();
+});
+
+async function showAccountStatementTab(tab) {
+  accountStatementTab = tab === 'kiosk' ? 'kiosk' : 'bookings';
+  document.getElementById('statementBookingsTab')?.classList.toggle('active', accountStatementTab === 'bookings');
+  document.getElementById('statementKioskTab')?.classList.toggle('active', accountStatementTab === 'kiosk');
+  const list = document.getElementById('statementList');
+  const period = document.getElementById('statementPeriod');
+  if (!list || !period || !currentUser) return;
+  list.innerHTML = statementEmpty('Wird geladen …');
+  try {
+    if (accountStatementTab === 'bookings') {
+      period.textContent = 'Deine Einzelbuchungen der letzten 24 Monate';
+      const userId = await dataUserId();
+      const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 24);
+      const data = [];
+      for (let offset = 0, more = true; more; offset += 500) {
+        const page = await sb.from('bookings')
+          .select('id,court,date,hour_start,duration,price_gross_cents,price_paid_cents,discount_pct,loyalty_discount_cents,loyalty_reward_threshold,status,stripe_session_id,cancelled_at')
+          .eq('user_id', userId)
+          .gte('date', localISODate(cutoff))
+          .in('status', ['paid','active','cancelled'])
+          .order('date', { ascending:false })
+          .order('hour_start', { ascending:false })
+          .range(offset, offset + 499);
+        if (page.error) throw page.error;
+        data.push(...(page.data || []));
+        more = (page.data || []).length === 500;
+      }
+      list.innerHTML = data?.length ? data.map(row => {
+        const end = Number(row.hour_start) + Number(row.duration);
+        const cancelled = row.status === 'cancelled';
+        const loyalty = Number(row.loyalty_discount_cents || 0) > 0
+          ? `<span>Treuebonus: ${row.loyalty_reward_threshold % 100 === 0 ? '100. Stunde kostenlos' : statementMoney(row.loyalty_discount_cents)}</span>` : '';
+        return `<article class="statement-item${cancelled ? ' is-cancelled' : ''}">
+          <div class="statement-item-head"><strong>${statementDate(row.date, false)}</strong><b>${statementMoney(row.price_paid_cents)}</b></div>
+          <div class="statement-item-main">${esc(courtLabel(row.court))} · ${String(row.hour_start).padStart(2,'0')}:00–${String(end).padStart(2,'0')}:00 Uhr · ${row.duration} Std.</div>
+          <div class="statement-item-meta"><span>${cancelled ? 'Storniert · als Spielguthaben gutgeschrieben' : 'Bezahlt'}</span>${loyalty}<span>Beleg ${esc(statementReference(row.stripe_session_id))}</span></div>
+        </article>`;
+      }).join('') : statementEmpty('Noch keine Buchungen in diesem Zeitraum.');
+    } else {
+      period.textContent = 'Deine Kiosk-Abrechnungen der letzten zwei Monate';
+      const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 2);
+      const data = [];
+      for (let offset = 0, more = true; more; offset += 500) {
+        const page = await sb.from('kiosk_tab_items')
+          .select('id,product_name,variant_label,price_cents,status,stripe_payment_intent_id,settlement_key,created_at,settled_at')
+          .eq('auth_user_id', currentUser.id)
+          .gte('settled_at', cutoff.toISOString())
+          .in('status', ['paid','failed','cancelled'])
+          .order('settled_at', { ascending:false })
+          .range(offset, offset + 499);
+        if (page.error) throw page.error;
+        data.push(...(page.data || []));
+        more = (page.data || []).length === 500;
+      }
+      const groups = new Map();
+      (data || []).forEach(row => {
+        const key = row.settlement_key || row.stripe_payment_intent_id || row.id;
+        if (!groups.has(key)) groups.set(key, { key, at:row.settled_at || row.created_at, status:row.status, payment:row.stripe_payment_intent_id, rows:[] });
+        groups.get(key).rows.push(row);
+      });
+      list.innerHTML = groups.size ? Array.from(groups.values()).map(group => {
+        const total = group.rows.reduce((sum, row) => sum + Number(row.price_cents || 0), 0);
+        const direct = String(group.key).startsWith('direct:');
+        return `<article class="statement-item">
+          <div class="statement-item-head"><strong>${statementDate(group.at, true)}</strong><b>${statementMoney(total)}</b></div>
+          <div class="statement-item-main">${direct ? 'Direkt bezahlt' : `Bierdeckel · ${group.rows.length} Artikel`}</div>
+          <div class="statement-lines">${group.rows.map(row => `<div><span>${esc(row.product_name)}${row.variant_label ? ' · ' + esc(row.variant_label) : ''}</span><b>${statementMoney(row.price_cents)}</b></div>`).join('')}</div>
+          <div class="statement-item-meta"><span>${group.status === 'paid' ? 'Bezahlt' : 'Nicht abgeschlossen'}</span><span>Beleg ${esc(statementReference(group.payment || group.key))}</span></div>
+        </article>`;
+      }).join('') : statementEmpty('Noch keine abgeschlossenen Kiosk-Abrechnungen in diesem Zeitraum.');
+    }
+  } catch (error) {
+    console.error('Abrechnungsübersicht konnte nicht geladen werden', error);
+    list.innerHTML = statementEmpty('Die Abrechnungsübersicht konnte gerade nicht geladen werden.');
+  }
 }
 function profileCardHTML() {
   const name = esc(currentProfile?.full_name);
@@ -18729,13 +19004,12 @@ document.getElementById('loyaltyModal').addEventListener('click', function(e) {
 
 async function buildAccountPages() {
   let hoursPlayed = 0;
+  let loyaltyOffer = { kind:'none' };
   try {
-    const { data, error } = await sb
-      .from('loyalty_progress')
-      .select('hours_played')
-      .eq('auth_id', currentUser.id)
-      .maybeSingle();
-    if (!error && data) hoursPlayed = data.hours_played;
+    const { data, error } = await sb.rpc('my_loyalty_offer', { p_duration:1 });
+    if (error) throw error;
+    loyaltyOffer = data || loyaltyOffer;
+    hoursPlayed = Number(data?.hours) || 0;
   } catch(e) { console.warn('Rewards laden fehlgeschlagen', e); }
 
   await fetchMyCards();
@@ -18750,7 +19024,7 @@ async function buildAccountPages() {
   const nextMatch = computeNextMatch(upcoming, activeAbos, new Date());
 
   // Titelseite zuerst, danach Rewards, danach die Abo-Wertkarte(n).
-  accountPages = [{ type: 'cover', nextMatch }, { type: 'rewards', hours: hoursPlayed }];
+  accountPages = [{ type: 'cover', nextMatch }, { type: 'rewards', hours: hoursPlayed, offer:loyaltyOffer }];
   (activeAbos || []).forEach(a => accountPages.push({ type: 'abo', abo: a }));
   // Gleiche Reihenfolge wie in der Seitenansicht: die Karte, von der gerade
   // abgebucht wird (die aelteste mit Restwert), kommt zuerst - danach die noch
@@ -18760,6 +19034,7 @@ async function buildAccountPages() {
     .filter(e => (Number(e.card.balance_remaining_eur) || 0) > 0)
     .sort((a, b) => String(a.card.created_at || '').localeCompare(String(b.card.created_at || '')))
     .forEach(e => accountPages.push({ type: 'card', card: e.card, cardIndex: e.cardIndex }));
+  accountPages.push({ type: 'statement' });
   accountPages.push({ type: 'profile' });
 }
 
@@ -18770,9 +19045,10 @@ function renderAccountPage(direction = 0) {
 
   let label = '';
   if (p.type === 'cover')        { host.innerHTML = coverCardHTML(p.nextMatch); label = 'Start'; }
-  else if (p.type === 'rewards') { host.innerHTML = rewardsCardHTML(p.hours); label = 'Rewards'; }
+  else if (p.type === 'rewards') { host.innerHTML = rewardsCardHTML(p.hours, p.offer); label = 'Rewards'; }
   else if (p.type === 'abo')     { host.innerHTML = aboAccountCardHTML(p.abo); label = 'Jahresabo'; }
   else if (p.type === 'card')    { host.innerHTML = anyCardHTML(p.card);     label = p.card.card_size ? cardLabel(p.card.card_size) : 'Wertkarte'; }
+  else if (p.type === 'statement'){ host.innerHTML = statementCardHTML(); label = 'Abrechnungen'; }
   else if (p.type === 'profile') { host.innerHTML = profileCardHTML(); wireProfileLevelPicker(); wireProfileGenderPicker(); label = 'Meine Daten'; }
 
   // Beim Blättern beginnt jede Karte wieder oben; der Pager bleibt fest sichtbar.
