@@ -20,7 +20,9 @@
    gerade von Stripe zurueckkommt. Die Initialisierung raeumt die Adresszeile
    spaeter auf ("/"), danach ist die Information unwiederbringlich weg -
    und die Startseite erschiene faelschlich direkt nach einer Zahlung. */
-window.__pbFromStripe = /[?&]booking=(success|cancelled)/.test(location.search);
+window.__pbFromStripe =
+  /[?&]booking=(success|cancelled)(?:&|$)/.test(location.search) ||
+  /[?&]kiosk_setup=(success|cancelled)(?:&|$)/.test(location.search);
 window.__pbPasswordRecovery =
   /[?&]password_recovery=1(?:&|$)/.test(location.search) ||
   /(?:^|[&#])type=recovery(?:&|$)/.test(location.hash) ||
