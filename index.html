@@ -9781,6 +9781,38 @@ function meetBookedButtonHtml(court, dateISO, hourStart, duration, kind, sourceI
     </button>`;
 }
 
+function bookingStartTime(item) {
+  return new Date(`${item.date}T${String(item.hour_start).padStart(2, '0')}:00:00`);
+}
+
+function canCancelSingleBooking(item) {
+  return item.kind === 'single' && item.status === 'paid' &&
+    bookingStartTime(item).getTime() > Date.now() + 24 * 60 * 60 * 1000;
+}
+
+async function cancelSingleBooking(bookingId, bookingLabel, priceCents) {
+  if (!bookingId || !currentUser) return;
+  const amount = weatherFmtEUR(Number(priceCents || 0));
+  const confirmed = confirm(
+    `${bookingLabel} wirklich stornieren?\n\n` +
+    `Der Platz wird wieder freigegeben. ${amount} werden deinem Spielguthaben gutgeschrieben.`
+  );
+  if (!confirmed) return;
+  const button = document.querySelector(`[data-cancel-booking="${bookingId}"]`);
+  if (button) button.disabled = true;
+  try {
+    const { data, error } = await sb.rpc('cancel_own_booking', { p_booking_id: bookingId });
+    if (error) throw error;
+    const credited = weatherFmtEUR(Number(data?.credit_cents || 0));
+    showToast(`Buchung storniert. ${credited} Spielguthaben gutgeschrieben.`);
+    await renderMyBookingsLists();
+    if (typeof renderCreditOverview === 'function') renderCreditOverview();
+  } catch (e) {
+    if (button) button.disabled = false;
+    alert(e?.message || 'Die Buchung konnte nicht storniert werden. Bitte erneut versuchen.');
+  }
+}
+
 // Füllt „Demnächst" als EINE gemeinsame chronologische Liste. Einzelbuchungen
 // und der jeweils nächste Abo-Termin haben dieselbe visuelle Wichtigkeit.
 async function renderMyBookingsLists() {
@@ -9829,6 +9861,13 @@ async function renderMyBookingsLists() {
     const isAbo = item.kind === 'abo';
     const price = !isAbo && item.price_paid_cents ? weatherFmtEUR(item.price_paid_cents) : '';
     const pending = item.status === 'pending';
+    const label = `${dateStr} um ${String(item.hour_start).padStart(2,'0')}:00 Uhr, ${courtLabel(item.court)}`;
+    const cancelAction = canCancelSingleBooking(item)
+      ? `<button type="button" class="booking-cancel-btn" data-cancel-booking="${item.id}"
+          onclick="cancelSingleBooking('${item.id}', '${label.replace(/'/g, "\\'")}', ${Number(item.price_paid_cents || 0)})">Stornieren</button>`
+      : (!isAbo && item.status === 'paid'
+          ? '<span class="booking-cancel-deadline">Stornofrist abgelaufen</span>'
+          : '');
     return `<div class="upcoming-item">
       <div class="upcoming-item-head">
         <div class="upcoming-item-main">
@@ -9837,6 +9876,7 @@ async function renderMyBookingsLists() {
         </div>
         <span class="upcoming-kind">${isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>
       </div>
+      ${cancelAction ? `<div class="booking-cancel-row">${cancelAction}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -20760,6 +20800,28 @@ body.bielstein-theme #todayBookingsCard .play-booking-item {
 body.bielstein-theme #upcomingBookingsCard {
   background: #EFE9DC !important;
   box-shadow: none !important;
+}
+.booking-cancel-row {
+  display: flex; justify-content: flex-end; align-items: center;
+  min-height: 34px; margin-top: 11px; padding-top: 11px;
+  border-top: 1px solid #D9CFBF;
+}
+.booking-cancel-btn {
+  min-height: 34px; padding: 8px 13px;
+  border: 1.5px solid #1C1A17; border-radius: 6px;
+  background: #FFFFFF; color: #1C1A17;
+  font: 700 12px/1 "Space Grotesk","Arial Narrow",sans-serif;
+  letter-spacing: 0; cursor: pointer;
+}
+.booking-cancel-btn:hover { background: #1C1A17; color: #FFFFFF; }
+.booking-cancel-btn:disabled { opacity: .55; cursor: wait; }
+.booking-cancel-deadline {
+  color: #7A7368; font: 600 11px/1.3 "Manrope",sans-serif;
+  letter-spacing: 0;
+}
+@media (max-width: 620px) {
+  .booking-cancel-row { justify-content: stretch; }
+  .booking-cancel-btn { width: 100%; }
 }
 .upcoming-item {
   display: flex; flex-direction: column; align-items: stretch;
