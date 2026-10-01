@@ -17798,7 +17798,6 @@ async function fetchMyCards() {
         .select('*')
         .eq('recipient_email', email)
         .eq('status', 'paid')
-        .not('balance_remaining_cents', 'is', null)
         .order('created_at', { ascending: false });
       if (receivedCards.error) throw receivedCards.error;
     }
@@ -17814,7 +17813,10 @@ async function fetchMyCards() {
         c.balance_original_eur  = Math.round((c.balance_original_cents ?? c.balance_remaining_cents)) / 100;
       }
       return c;
-    }).filter(c => c.balance_remaining_eur != null || c.balance_original_eur != null);
+    }).filter(c =>
+      c.balance_remaining_cents != null || c.balance_original_cents != null ||
+      c.balance_remaining_eur != null || c.balance_original_eur != null
+    );
 
     await applyLedgerToCards();
   } catch(e) { console.warn('Karten laden fehlgeschlagen', e); myCardsData = []; }
@@ -17862,9 +17864,9 @@ async function claimReceivedValueCards() {
   }
 }
 
-// Zeigt die bereits gekauften Karten des eingeloggten Nutzers (als Käufer,
-// auch wenn die Karte verschenkt wurde). Für Beschenkte, die die Karte
-// eingelöst bekommen sollen, folgt das Einlösen als eigener Bauabschnitt.
+// Ordnet bezahlte Geschenkkarten der bestaetigten Empfaengeradresse zu und
+// schreibt ihren Wert genau einmal ins Kontobuch. Danach zeigt die Abfrage
+// eigene Käufe und empfangene Karten des eingeloggten Nutzers.
 // Meine Karten im Gutscheine-Tab: als große Karte(n) im Hochformat rechts.
 // Bei mehreren Karten werden sie untereinander gestapelt.
 async function loadMyCards() {
