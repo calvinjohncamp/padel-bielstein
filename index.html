@@ -1330,6 +1330,57 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .seg-btn { padding: 9px 16px; border: none; background: transparent; color: #7A7368; font: 800 12.5px "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .04em; cursor: pointer; transition: all .15s; white-space: nowrap; }
 .seg-btn + .seg-btn { border-left: 1.5px solid #E2DACB; }
 .seg-btn.seg-active { background: #FF5A36; color: #fff; }
+.admin-action-card { margin:0 0 28px; border:1.5px solid #D8CEBD; border-radius:8px; background:#F6F1E7; overflow:hidden; }
+.admin-action-library-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin:0 0 12px; }
+.admin-action-library-head .admin-section-title { margin-bottom:4px; }
+.admin-action-list { display:flex; flex-direction:column; gap:7px; margin:0 0 14px; }
+.admin-action-list-item { display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:center; gap:12px; min-height:58px; padding:10px 12px; border:1.5px solid #E2DACB; border-radius:8px; background:#FFFFFF; }
+.admin-action-list-item.is-selected { border-color:#FF5A36; box-shadow:inset 3px 0 0 #FF5A36; }
+.admin-action-list-name { min-width:0; }
+.admin-action-list-name strong { display:block; overflow:hidden; text-overflow:ellipsis; color:#1C1A17; font:850 13px/1.3 "Space Grotesk",sans-serif; white-space:nowrap; }
+.admin-action-list-name small { display:block; margin-top:3px; color:#7A7368; font:500 11px/1.3 "Manrope",sans-serif; }
+.admin-action-list-statuses { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+.admin-action-edit-btn { width:36px; height:36px; border:1.5px solid #D8CEBD; border-radius:7px; background:#F6F1E7; color:#1C1A17; font-size:17px; cursor:pointer; }
+.admin-action-edit-btn:hover { border-color:#FF5A36; color:#C83B1D; }
+.admin-action-empty { padding:16px; border:1px dashed #D8CEBD; border-radius:8px; color:#7A7368; font-size:.8rem; text-align:center; }
+.admin-action-summary { min-height:74px; display:flex; align-items:center; gap:12px; padding:14px 18px; background:#FFFFFF; cursor:pointer; list-style:none; }
+.admin-action-summary::-webkit-details-marker { display:none; }
+.admin-action-summary:hover { background:#FFFCF7; }
+.admin-action-chevron { flex:0 0 auto; color:#FF5A36; font:700 28px/1 "Space Grotesk",sans-serif; transform:rotate(0deg); transition:transform .18s ease; }
+.admin-action-card[open] .admin-action-chevron { transform:rotate(90deg); }
+.admin-action-heading { min-width:0; flex:1 1 auto; }
+.admin-action-heading strong { display:block; color:#1C1A17; font:900 15px/1.25 "Space Grotesk",sans-serif; letter-spacing:0; }
+.admin-action-heading small { display:block; margin-top:4px; color:#7A7368; font:500 12px/1.35 "Manrope",sans-serif; }
+.admin-action-statuses { flex:0 0 auto; display:flex; gap:7px; flex-wrap:wrap; justify-content:flex-end; }
+.admin-action-status { padding:5px 8px; border:1px solid #D8CEBD; border-radius:5px; background:#F6F1E7; color:#7A7368; font:800 10px/1 "Space Grotesk",sans-serif; text-transform:uppercase; }
+.admin-action-status.is-on { border-color:#FF5A36; background:#FFF0EB; color:#C83B1D; }
+.admin-action-content { padding:18px; border-top:1px solid #E2DACB; }
+.admin-action-intro,.admin-action-description { color:#7A7368; font-size:.8rem; line-height:1.5; }
+.admin-action-intro { margin-bottom:20px; }
+.admin-action-description { margin:0 0 10px; }
+.admin-action-subsection + .admin-action-subsection { margin-top:24px; padding-top:22px; border-top:1px solid #D8CEBD; }
+.admin-action-subtitle { margin:0 0 10px; color:#1C1A17; font:900 12px/1.2 "Space Grotesk",sans-serif; letter-spacing:.08em; text-transform:uppercase; }
+.admin-action-panel { padding:16px 18px; border:1.5px solid #E2DACB; border-radius:8px; background:#FFFFFF; }
+.admin-action-panel-stack { display:flex; flex-direction:column; gap:16px; }
+.admin-action-switchbar { display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-top:14px; }
+.admin-action-switchbar-top { align-items:center; margin:0 0 2px; padding:0 0 14px; border-bottom:1px solid #EFE9DC; }
+.admin-action-switchhint { flex:1 1 260px; color:#7A7368; font-size:.76rem; line-height:1.45; }
+.admin-action-namebar { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:14px; margin:0 0 20px; }
+.admin-action-delete { min-height:42px; padding:0 14px; border:1.5px solid #C0392B; border-radius:7px; background:#FFFFFF; color:#A52A20; font:800 11px/1 "Space Grotesk",sans-serif; cursor:pointer; }
+.admin-action-delete:hover { background:#FFF0ED; }
+.admin-action-delete:disabled { border-color:#D8CEBD; color:#A59D92; background:#F6F1E7; cursor:not-allowed; }
+@media (max-width:680px) {
+  .admin-action-library-head { align-items:stretch; flex-direction:column; }
+  .admin-action-list-item { grid-template-columns:minmax(0,1fr) auto; }
+  .admin-action-list-statuses { grid-column:1 / -1; grid-row:2; justify-content:flex-start; }
+  .admin-action-summary { align-items:flex-start; padding:13px 12px; }
+  .admin-action-statuses { width:100%; justify-content:flex-start; }
+  .admin-action-summary { flex-wrap:wrap; }
+  .admin-action-heading { flex-basis:calc(100% - 44px); }
+  .admin-action-content { padding:12px; }
+  .admin-action-panel { padding:14px 12px; }
+  .admin-action-namebar { grid-template-columns:1fr; }
+}
 .closure-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
 .closure-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #111; border: 1px solid var(--border); border-radius: 8px; font-size: 0.82rem; }
 .closure-item-date { color: #c0c0c0; }
@@ -6150,7 +6201,7 @@ main {
       <div class="admin-section">
         <div class="admin-section-title">🖼 Splash-Startseite</div>
         <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
-          Einstieg der App mit Logo, Claim, Startbutton und Premium-Partnern. Der Aktions-Hinweis wird in „Aktion 1" gepflegt.
+          Einstieg der App mit Logo, Claim, Startbutton und Premium-Partnern. Aktions-Hinweise werden in der Aktionsbibliothek gepflegt.
         </div>
         <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:16px;">
           <div>
@@ -6168,17 +6219,47 @@ main {
             </div>
           </div>
           <div style="display:flex;justify-content:flex-end;">
-            <button type="button" class="admin-save-btn" onclick="saveSplash()">Splash speichern</button>
+            <button type="button" class="admin-save-btn" onclick="saveGeneralSplash()">Splash speichern</button>
           </div>
         </div>
       </div>
 
-      <div class="admin-section">
-        <div class="admin-section-title">Aktion 1 – Einstellungen</div>
-        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
-          Wiederverwendbarer Aktionsplatz für die Splash-Seite und die dazugehörige Aktion. Aktuell nutzt ihn die Frühbucher-/2-Jahres-Abo-Aktion; später kann hier auch eine andere Aktion stehen.
+      <div class="admin-action-library-head">
+        <div>
+          <div class="admin-section-title">Aktionsbibliothek</div>
+          <div class="admin-action-description">Gespeicherte Aktionen bleiben erhalten und können später erneut bearbeitet und aktiviert werden.</div>
         </div>
-        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
+        <button type="button" class="admin-save-btn" id="addMarketingActionBtn" onclick="createMarketingAction()">+ Neue Aktion hinzufügen</button>
+      </div>
+      <div class="admin-action-list" id="marketingActionList" aria-live="polite">
+        <div class="admin-action-empty">Aktionen werden geladen …</div>
+      </div>
+
+      <details class="admin-action-card" id="marketingActionEditor" open hidden>
+        <summary class="admin-action-summary">
+          <span class="admin-action-chevron" aria-hidden="true">›</span>
+          <span class="admin-action-heading">
+            <strong id="marketingActionEditorTitle">Aktion bearbeiten</strong>
+            <small>Zeitraum, Rabatt, Splash-PNG und Jahresabo-Darstellung</small>
+          </span>
+          <span class="admin-action-statuses">
+            <span class="admin-action-status" id="actionStateBadge">Aktion aus</span>
+            <span class="admin-action-status" id="actionSplashBadge">PNG aus</span>
+          </span>
+        </summary>
+        <div class="admin-action-content">
+          <div class="admin-action-intro">
+            Alle Bestandteile dieser wiederverwendbaren Aktion liegen zusammen. Aktion und Splash-PNG lassen sich unabhängig voneinander ein- und ausschalten.
+          </div>
+
+          <div class="admin-action-namebar">
+            <div><label class="eb-adm-lbl">Name der Aktion</label><input type="text" id="marketingActionName" maxlength="120" class="eb-adm-inp" placeholder="z. B. Halloween 2027"></div>
+            <button type="button" class="admin-action-delete" id="deleteMarketingActionBtn" onclick="deleteMarketingAction()">Aktion löschen</button>
+          </div>
+
+          <section class="admin-action-subsection">
+            <div class="admin-action-subtitle">Einstellungen und Wirkung</div>
+            <div class="admin-action-panel">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div><label class="eb-adm-lbl">Start der Aktion</label><input type="datetime-local" id="ebAdmStart" class="eb-adm-inp"></div>
             <div><label class="eb-adm-lbl">Ende der Aktion</label><input type="datetime-local" id="ebAdmEnd" class="eb-adm-inp"></div>
@@ -6208,33 +6289,41 @@ main {
             </label>
             <textarea id="ebAdmExtraNoteText" rows="3" class="eb-adm-inp" style="resize:vertical;line-height:1.5;margin-top:8px;" placeholder="Text des zusätzlichen Bulletpoints"></textarea>
           </div>
-          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:14px;">
+          <div class="admin-action-switchbar">
             <div style="flex:0 0 auto;"><label class="eb-adm-lbl">Aktion (sofort gespeichert)</label>
               <div class="seg-toggle">
                 <button type="button" id="ebAdmOff" class="seg-btn seg-active" onclick="setEarlybirdEnabled(false)">Aus</button>
                 <button type="button" id="ebAdmOn" class="seg-btn" onclick="setEarlybirdEnabled(true)">An</button>
               </div>
             </div>
-            <button type="button" class="admin-save-btn" onclick="saveEarlybird()" style="margin-left:auto;">Einstellungen speichern</button>
+            <button type="button" class="admin-save-btn" onclick="saveMarketingAction()" style="margin-left:auto;">Aktion speichern</button>
           </div>
           <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #EFE9DC;">
             <div style="flex:1 1 220px;font-size:0.78rem;color:#7A7368;line-height:1.45;">
-              <strong>Vorschau:</strong> zeigt Aktion 1 <em>sofort</em> an – unabhängig vom Zeitraum, ohne Kauf-Funktion. Der Splash-Hinweis erscheint bereits, wenn Aktion 1 auf „An" steht. Wirkt ohne „Speichern". Danach wieder ausschalten.
+              <strong>Vorschau:</strong> zeigt die gespeicherte Aktionskachel nur in diesem Browser – unabhängig vom Zeitraum und ohne Kauf-Funktion. Der Splash-PNG-Schalter bleibt davon unberührt.
             </div>
             <div class="seg-toggle">
               <button type="button" id="ebPrevOff" class="seg-btn seg-active" onclick="setEarlybirdPreview(false)">Aus</button>
               <button type="button" id="ebPrevOn"  class="seg-btn" onclick="setEarlybirdPreview(true)">Aktion zeigen</button>
             </div>
           </div>
-        </div>
-      </div>
+            </div>
+          </section>
 
-      <div class="admin-section">
-        <div class="admin-section-title">Aktion 1 – Aktionshinweis auf der Splash-Seite</div>
-        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
-          PNG-Hinweis auf der Splash-Seite und Inhalt des Fensters nach dem Klick. Diese Aktion kann später inhaltlich neu belegt werden.
-        </div>
-        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:16px;">
+          <section class="admin-action-subsection">
+            <div class="admin-action-subtitle">Splash-PNG und Aktionsfenster</div>
+            <div class="admin-action-description">PNG-Hinweis auf der Splash-Seite und Inhalt des Fensters nach dem Klick. Die Sichtbarkeit des PNG wird unabhängig von der Rabattaktion gespeichert.</div>
+            <div class="admin-action-panel admin-action-panel-stack">
+          <div class="admin-action-switchbar admin-action-switchbar-top">
+            <div>
+              <label class="eb-adm-lbl">Splash-PNG (sofort gespeichert)</label>
+              <div class="seg-toggle">
+                <button type="button" id="spActionEnabledOff" class="seg-btn seg-active" onclick="setSplashActionEnabled(false)">Aus</button>
+                <button type="button" id="spActionEnabledOn" class="seg-btn" onclick="setSplashActionEnabled(true)">An</button>
+              </div>
+            </div>
+            <span class="admin-action-switchhint">Die gespeicherte PNG-Datei und ihre Gestaltung bleiben beim Ausschalten erhalten.</span>
+          </div>
           <div>
             <label class="eb-adm-lbl" style="margin-bottom:10px;">Fenster nach Klick auf das Aktions-PNG</label>
             <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
@@ -6280,16 +6369,15 @@ main {
             </div>
           </div>
           <div style="display:flex;justify-content:flex-end;">
-            <button type="button" class="admin-save-btn" onclick="saveSplash()">Aktionstexte und PNG speichern</button>
+            <button type="button" class="admin-save-btn" onclick="saveMarketingAction()">Aktion speichern</button>
           </div>
-        </div>
-      </div>
-      <div class="admin-section">
-        <div class="admin-section-title">Aktion 1 – Aktionshinweis auf der Jahresabo-Seite</div>
-        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
-          Inhalt der Aktion auf der Seite „Jahresabo sichern". Alle Texte einzeln editierbar, Farben aus der Marken-Palette. Die <strong>Datumswerte</strong> kommen aus Aktion 1: Start der Aktion, Ende der Aktion und Saisonstart.
-        </div>
-        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:16px;">
+            </div>
+          </section>
+
+          <section class="admin-action-subsection">
+            <div class="admin-action-subtitle">Darstellung auf der Jahresabo-Seite</div>
+            <div class="admin-action-description">Alle Texte sind einzeln editierbar. Die Datumswerte kommen aus den Einstellungen derselben Aktion.</div>
+            <div class="admin-action-panel admin-action-panel-stack">
           <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
             <div><label class="eb-adm-lbl">Erste Überschrift</label><input type="text" id="abKicker" class="eb-adm-inp"></div>
             <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe</label><select id="abKickerColor" class="eb-adm-inp"></select></div>
@@ -6319,10 +6407,12 @@ main {
             <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Datumswerte</label><select id="abValueColor" class="eb-adm-inp"></select></div>
           </div>
           <div style="display:flex;justify-content:flex-end;">
-            <button type="button" class="admin-save-btn" onclick="saveAboBanner()">Jahresabo-Seite speichern</button>
+            <button type="button" class="admin-save-btn" onclick="saveMarketingAction()">Aktion speichern</button>
           </div>
+            </div>
+          </section>
         </div>
-      </div>
+      </details>
     </div><!-- /adminAktionen -->
 
     <div id="adminSponsors" style="display:none;">
@@ -12956,11 +13046,15 @@ function setAdminTab(tab) {
     if (typeof loadOpenInvitesEnabled === 'function') loadOpenInvitesEnabled();
     if (typeof loadShareCardTheme === 'function') loadShareCardTheme();
   }
-  // Aktionen: Frühbucher-Konfig + Splash-Texte frisch in die Formulare laden.
+  // Aktionen: globale Splash-Texte und die wiederverwendbare Bibliothek laden.
   if (tab==='aktionen') {
-    if (typeof loadEarlybird==='function') loadEarlybird();
-    if (typeof loadSplash==='function')    loadSplash();
-    if (typeof loadAboBanner==='function') loadAboBanner();
+    Promise.all([
+      typeof loadEarlybird==='function' ? loadEarlybird() : null,
+      typeof loadSplash==='function' ? loadSplash() : null,
+      typeof loadAboBanner==='function' ? loadAboBanner() : null,
+    ]).then(() => {
+      if (typeof loadMarketingActions==='function') return loadMarketingActions();
+    }).catch(e => console.warn('Aktionsbibliothek:', e));
   }
   // Wetterausfälle laden bei JEDEM Öffnen neu - hier ändern sich Zustände
   // durch Entscheidungen, ein veralteter Stand wäre irreführend.
@@ -21981,6 +22075,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
      Abo-Seite schalten. Defensiv: fehlt Skript 41 (Spalten), passiert nichts. */
   window.__earlybirdExtraNoteDefault = 'Sollten zu Saisonbeginn günstigere Preise für Einzelstunden gelten, setzt sich dein Abo-Preis nachträglich aus eben diesen Preisen zusammen und du erhältst die Differenz zu deinem ursprünglichen Rechnungsbetrag als Spielguthaben gutgeschrieben.';
   window.__earlybird = { active:false, discount:25, termMonths:24, audience:'members_partners', appliesTo:'abo', extraNoteVisible:true, extraNoteText:window.__earlybirdExtraNoteDefault };
+  window.__publicEarlybird = window.__earlybird;
   window.pbActionAppliesToAbo = function(eb){
     eb = eb || window.__earlybird || {};
     return !eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both';
@@ -22004,6 +22099,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         extraNoteVisible: d.earlybird_extra_note_visible !== false,
         extraNoteText: (d.earlybird_extra_note_text || window.__earlybirdExtraNoteDefault || '').trim()
       };
+      window.__publicEarlybird = Object.assign({},window.__earlybird);
       var b=document.getElementById('earlybirdBanner');
       if(b){
         // Jahresabo-Kachel nur im Zeitraum oder in der manuellen Vorschau zeigen.
@@ -22043,7 +22139,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     return s;
   };
   window.__splash = {};
+  window.__publicSplash = {};
   window.__splashCacheKey = 'pbSplashConfigCache';
+  window.__pbSplashActionEnabled = true;
   window.pbSplashActionHexColor = function(value, fallback){
     var s=String(value||'').trim();
     if(/^#[0-9a-fA-F]{6}$/.test(s)) return s;
@@ -22083,7 +22181,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   window.pbRefreshSplashActionVisibility = function(){
     var sp=document.getElementById('pbSplashAction');
     var art=document.getElementById('pbSplashActionArt');
-    var show=!!window.__pbSplashActionImageUrl;
+    var show=window.__pbSplashActionEnabled!==false && !!window.__pbSplashActionImageUrl;
     if(sp) sp.classList.toggle('show', show);
     if(art) art.hidden = !show;
   };
@@ -22101,6 +22199,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   window.pbApplySplashData = function(d){
     if(!d) return;
     window.__splash = d;
+    window.__publicSplash = Object.assign({}, d);
+    if(Object.prototype.hasOwnProperty.call(d, 'splash_action_enabled')){
+      window.__pbSplashActionEnabled = d.splash_action_enabled !== false;
+    }
     var claim = document.querySelector('.pb-splash-claim');
     if(claim && d.splash_claim!=null){ claim.innerHTML = pbEsc(d.splash_claim).replace(/\n/g,'<br>'); }
     var foot = document.querySelector('.pb-splash-foot');
@@ -22142,6 +22244,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         r = await sb.from('app_flags').select('splash_claim,splash_subline,splash_subline_visible,splash_eb_kicker,splash_eb_kicker_color,splash_eb_text,splash_eb_text_color,splash_eb_hi_color,earlybird_end').maybeSingle();
       }
       if(r.error || !r.data) return;
+      try{
+        var visibility=await sb.rpc('get_splash_action_enabled');
+        if(!visibility.error) r.data.splash_action_enabled=visibility.data!==false;
+      }catch(e){}
       try{ sessionStorage.setItem(window.__splashCacheKey, JSON.stringify(r.data)); }catch(e){}
       window.pbApplySplashData(r.data);
     }catch(e){}
@@ -22185,6 +22291,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     setv('spActionRotation', d.splash_action_rotation_deg || 0);
     setv('spActionX', d.splash_action_x_pct || 50);
     setv('spActionY', d.splash_action_y_pct || 22);
+    window.__pbSplashActionEnabled = d.splash_action_enabled !== false;
+    if(typeof window.refreshSplashActionToggle==='function') window.refreshSplashActionToggle(window.__pbSplashActionEnabled);
     if(typeof window.previewSplashActionImage==='function') window.previewSplashActionImage();
     window.setSublineVisible(d.splash_subline_visible!==false);
   };
@@ -22506,16 +22614,38 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     }
   };
 
+  window.saveGeneralSplash = async function(){
+    try{
+      var g=function(id){ var el=document.getElementById(id); return el?el.value:''; };
+      var d=window.__publicSplash||{};
+      var r=await sb.rpc('admin_set_splash', {
+        p_claim:g('spClaim'), p_subline:g('spSubline'), p_subline_visible:!!window.__spSubVisible,
+        p_eb_kicker:d.splash_eb_kicker||'', p_eb_kicker_color:d.splash_eb_kicker_color||'coral',
+        p_eb_text:d.splash_eb_text||'', p_eb_text_color:d.splash_eb_text_color||'beige', p_eb_hi_color:d.splash_eb_hi_color||'coral',
+        p_action_cta_label:d.splash_action_cta_label||'Mehr anzeigen', p_action_image_url:d.splash_action_image_url||null,
+        p_action_tint_enabled:!!d.splash_action_tint_enabled, p_action_tint_color:window.pbSplashActionHexColor(d.splash_action_tint_color,'#FF5A36'),
+        p_action_scale_pct:window.pbClampActionNumber(d.splash_action_scale_pct,100,50,220),
+        p_action_rotation_deg:window.pbClampActionNumber(d.splash_action_rotation_deg,0,-180,180),
+        p_action_x_pct:window.pbClampActionNumber(d.splash_action_x_pct,50,8,92),
+        p_action_y_pct:window.pbClampActionNumber(d.splash_action_y_pct,22,8,60)
+      });
+      if(r.error) throw r.error;
+      if(typeof showToast==='function') showToast('Splash-Startseite gespeichert.');
+      if(typeof loadSplash==='function') await loadSplash();
+    }catch(e){ alert('Speichern fehlgeschlagen: '+(e&&e.message?e.message:'Unbekannter Fehler')); }
+  };
+
   /* Editierbare Texte der großen „Jahresabo sichern"-Kachel (#earlybirdBanner)
      aus app_flags lesen und einsetzen. Datumswerte bleiben dynamisch (loadEarlybird).
      Defensiv: fehlt Skript 43, bleibt der fest verdrahtete Text stehen. */
   window.__abobanner = {};
+  window.__publicAboBanner = {};
   window.loadAboBanner = async function(){
     try{
       if(typeof sb==='undefined' || !sb) return;
       var r = await sb.from('app_flags').select('ab_kicker,ab_kicker_color,ab_title,ab_title_color,ab_body,ab_body_color,ab_hi_color,ab_box1_label,ab_box2_label,ab_note,ab_label_color,ab_value_color').maybeSingle();
       if(r.error || !r.data) return;
-      var d = r.data; window.__abobanner = d;
+      var d = r.data; window.__abobanner = d; window.__publicAboBanner=Object.assign({},d);
       var col = window.pbPaletteColor;
       var q = function(sel){ return document.querySelector(sel); };
       var k = q('#earlybirdBanner .eb-kicker');
@@ -22592,13 +22722,180 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     }catch(e){ alert('Speichern fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
   };
 
-  // ── Admin-Konfiguration der Frühbucherphase ──
+  // ── Wiederverwendbare Aktionsbibliothek ──
+  window.__marketingActions=[];
+  window.__selectedMarketingActionId=null;
+  window.marketingActionById=function(id){ return (window.__marketingActions||[]).find(function(a){ return String(a.id)===String(id); })||null; };
+  window.renderMarketingActionList=function(){
+    var host=document.getElementById('marketingActionList'); if(!host) return;
+    var actions=window.__marketingActions||[];
+    if(!actions.length){ host.innerHTML='<div class="admin-action-empty">Noch keine Aktion gespeichert.</div>'; return; }
+    host.innerHTML=actions.map(function(a){
+      var selected=String(a.id)===String(window.__selectedMarketingActionId);
+      var updated=a.updated_at ? new Date(a.updated_at).toLocaleDateString('de-DE') : '';
+      return '<div class="admin-action-list-item'+(selected?' is-selected':'')+'">'
+        +'<div class="admin-action-list-name"><strong>'+pbEsc(a.name||'Unbenannte Aktion')+'</strong><small>'+(updated?'Zuletzt geändert: '+pbEsc(updated):'Gespeicherte Aktion')+'</small></div>'
+        +'<div class="admin-action-list-statuses"><span class="admin-action-status'+(a.action_enabled?' is-on':'')+'">Aktion '+(a.action_enabled?'an':'aus')+'</span><span class="admin-action-status'+(a.splash_enabled?' is-on':'')+'">PNG '+(a.splash_enabled?'an':'aus')+'</span></div>'
+        +'<button type="button" class="admin-action-edit-btn" title="Aktion bearbeiten" aria-label="'+pbEsc(a.name||'Aktion')+' bearbeiten" onclick="selectMarketingAction(\''+String(a.id).replace(/'/g,'')+'\')">✎</button></div>';
+    }).join('');
+  };
+  window.loadMarketingActions=async function(preferredId){
+    try{
+      var r=await sb.rpc('admin_list_marketing_actions'); if(r.error) throw r.error;
+      window.__marketingActions=Array.isArray(r.data)?r.data:[];
+      var wanted=preferredId||window.__selectedMarketingActionId;
+      if(wanted&&!window.marketingActionById(wanted)) wanted=null;
+      if(!wanted&&window.__marketingActions.length) wanted=window.__marketingActions[0].id;
+      window.__selectedMarketingActionId=wanted||null;
+      window.renderMarketingActionList();
+      if(wanted) window.selectMarketingAction(wanted,false);
+      else { var editor=document.getElementById('marketingActionEditor'); if(editor) editor.hidden=true; }
+    }catch(e){
+      var host=document.getElementById('marketingActionList');
+      if(host) host.innerHTML='<div class="admin-action-empty">Aktionsbibliothek konnte nicht geladen werden.</div>';
+      throw e;
+    }
+  };
+  window.selectMarketingAction=function(id,focusEditor){
+    var a=window.marketingActionById(id); if(!a) return;
+    window.__selectedMarketingActionId=a.id;
+    window.renderMarketingActionList();
+    var editor=document.getElementById('marketingActionEditor'); if(editor){ editor.hidden=false; editor.open=true; }
+    var name=document.getElementById('marketingActionName'); if(name) name.value=a.name||'';
+    var title=document.getElementById('marketingActionEditorTitle'); if(title) title.textContent=a.name||'Aktion bearbeiten';
+    var del=document.getElementById('deleteMarketingActionBtn');
+    if(del){ del.disabled=!!(a.action_enabled||a.splash_enabled); del.title=del.disabled?'Aktive Aktion zuerst vollständig ausschalten.':'Aktion dauerhaft löschen'; }
+    var c=a.config||{};
+    var publicEarlybird=window.__publicEarlybird||window.__earlybird;
+    var publicSplash=window.__publicSplash||window.__splash;
+    var publicAbo=window.__publicAboBanner||window.__abobanner;
+    var publicSplashEnabled=window.__pbSplashActionEnabled;
+    window.__earlybird={active:false,enabled:!!a.action_enabled,preview:false,start:c.earlybird_start,end:c.earlybird_end,aboStart:c.earlybird_abo_start,discount:Number(c.earlybird_discount_pct)||25,termMonths:Number(c.earlybird_term_months)||24,audience:c.earlybird_audience||'members_partners',appliesTo:c.earlybird_applies_to||'abo',extraNoteVisible:c.earlybird_extra_note_visible!==false,extraNoteText:c.earlybird_extra_note_text||window.__earlybirdExtraNoteDefault};
+    window.__splash=Object.assign({},publicSplash,c,{splash_action_enabled:!!a.splash_enabled});
+    window.__abobanner=c;
+    window.__pbSplashActionEnabled=!!a.splash_enabled;
+    window.fillEarlybirdAdmin(); window.fillSplashAdmin(); window.fillAboBannerAdmin();
+    window.__earlybird=publicEarlybird; window.__splash=publicSplash; window.__abobanner=publicAbo; window.__pbSplashActionEnabled=publicSplashEnabled;
+    if(focusEditor!==false&&editor) editor.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  window.createMarketingAction=async function(){
+    var btn=document.getElementById('addMarketingActionBtn');
+    try{
+      if(btn) btn.disabled=true;
+      var r=await sb.rpc('admin_create_marketing_action',{p_name:'Neue Aktion'}); if(r.error) throw r.error;
+      await window.loadMarketingActions(r.data);
+      var name=document.getElementById('marketingActionName'); if(name){ name.focus(); name.select(); }
+      if(typeof showToast==='function') showToast('Neue Aktion angelegt.');
+    }catch(e){ alert('Aktion konnte nicht angelegt werden: '+(e&&e.message?e.message:'Unbekannter Fehler')); }
+    finally{ if(btn) btn.disabled=false; }
+  };
+  window.collectMarketingActionConfig=function(){
+    var g=function(id){ var el=document.getElementById(id); return el?el.value:''; };
+    var sv=g('ebAdmStart'),ev=g('ebAdmEnd');
+    return {
+      earlybird_start:sv?new Date(sv).toISOString():null,earlybird_end:ev?new Date(ev).toISOString():null,
+      earlybird_discount_pct:Number(g('ebAdmDiscount')),earlybird_abo_start:g('ebAdmAboStart')||null,earlybird_term_months:Number(g('ebAdmTerm')),
+      earlybird_audience:g('ebAdmAudience')||'members_partners',earlybird_applies_to:g('ebAdmAppliesTo')||'abo',
+      earlybird_extra_note_visible:!!document.getElementById('ebAdmExtraNoteVisible')?.checked,earlybird_extra_note_text:g('ebAdmExtraNoteText'),
+      splash_eb_kicker:g('spEbKicker'),splash_eb_kicker_color:g('spEbKickerColor'),splash_eb_text:g('spEbText'),splash_eb_text_color:g('spEbTextColor'),splash_eb_hi_color:g('spEbHiColor'),
+      splash_action_cta_label:g('spActionCtaLabel')||'Mehr anzeigen',splash_action_image_url:g('spActionImageUrl'),splash_action_tint_enabled:!!document.getElementById('spActionTintEnabled')?.checked,
+      splash_action_tint_color:window.pbSplashActionHexColor(g('spActionTintHex'),'#FF5A36'),splash_action_scale_pct:window.pbClampActionNumber(g('spActionScale'),100,50,220),
+      splash_action_rotation_deg:window.pbClampActionNumber(g('spActionRotation'),0,-180,180),splash_action_x_pct:window.pbClampActionNumber(g('spActionX'),50,8,92),splash_action_y_pct:window.pbClampActionNumber(g('spActionY'),22,8,60),
+      ab_kicker:g('abKicker'),ab_kicker_color:g('abKickerColor'),ab_title:g('abTitle'),ab_title_color:g('abTitleColor'),ab_body:g('abBody'),ab_body_color:g('abBodyColor'),ab_hi_color:g('abHiColor'),
+      ab_box1_label:g('abBox1'),ab_box2_label:g('abBox2'),ab_note:g('abNote'),ab_label_color:g('abLabelColor'),ab_value_color:g('abValueColor')
+    };
+  };
+  window.saveMarketingAction=async function(options){
+    options=options||{}; var id=window.__selectedMarketingActionId; if(!id){ alert('Bitte zuerst eine Aktion auswählen.'); return false; }
+    try{
+      var fileEl=document.getElementById('spActionImageFile'),file=fileEl&&fileEl.files&&fileEl.files[0];
+      if(file){
+        if(!(file.type==='image/png'||/\.png$/i.test(file.name||''))) throw new Error('Bitte eine PNG-Datei auswählen.');
+        if(file.size>5*1024*1024) throw new Error('Die PNG-Datei ist zu groß. Bitte maximal 5 MB verwenden.');
+        var url=await uploadSponsorLogo(file,'splash-action'); var urlEl=document.getElementById('spActionImageUrl'); if(urlEl) urlEl.value=url;
+      }
+      var name=(document.getElementById('marketingActionName')?.value||'').trim();
+      var config=window.collectMarketingActionConfig();
+      var r=await sb.rpc('admin_save_marketing_action',{p_id:id,p_name:name,p_config:config}); if(r.error) throw r.error;
+      if(fileEl) fileEl.value='';
+      await window.loadMarketingActions(id);
+      if(typeof loadEarlybird==='function') await loadEarlybird();
+      if(typeof loadSplash==='function') await loadSplash();
+      if(typeof loadAboBanner==='function') await loadAboBanner();
+      window.selectMarketingAction(id,false);
+      if(!options.quiet&&typeof showToast==='function') showToast('Aktion gespeichert.');
+      return true;
+    }catch(e){ alert('Speichern fehlgeschlagen: '+(e&&e.message?e.message:'Unbekannter Fehler')); return false; }
+  };
+  window.deleteMarketingAction=async function(){
+    var a=window.marketingActionById(window.__selectedMarketingActionId); if(!a) return;
+    if(a.action_enabled||a.splash_enabled){ alert('Bitte zuerst Aktion und Splash-PNG ausschalten.'); return; }
+    if(!confirm('Aktion „'+(a.name||'Unbenannt')+'“ dauerhaft löschen?')) return;
+    try{ var r=await sb.rpc('admin_delete_marketing_action',{p_id:a.id}); if(r.error) throw r.error; window.__selectedMarketingActionId=null; await window.loadMarketingActions(); if(typeof showToast==='function') showToast('Aktion gelöscht.'); }
+    catch(e){ alert('Löschen fehlgeschlagen: '+(e&&e.message?e.message:'Unbekannter Fehler')); }
+  };
+
+  // ── Admin-Konfiguration der gewaehlten Aktion ──
   window.__ebAdmEnabled = false;
   window.__ebToggleSaving = false;
+  window.__splashActionToggleSaving = false;
+  window.refreshActionAdminSummary = function(){
+    var action=document.getElementById('actionStateBadge');
+    var png=document.getElementById('actionSplashBadge');
+    if(action){
+      action.textContent=window.__ebAdmEnabled ? 'Aktion an' : 'Aktion aus';
+      action.classList.toggle('is-on', !!window.__ebAdmEnabled);
+    }
+    if(png){
+      png.textContent=window.__pbSplashActionEnabled!==false ? 'PNG an' : 'PNG aus';
+      png.classList.toggle('is-on', window.__pbSplashActionEnabled!==false);
+    }
+  };
   window.refreshEbToggle = function(on){
     var off=document.getElementById('ebAdmOff'), onb=document.getElementById('ebAdmOn');
     if(!off||!onb) return;
     off.classList.toggle('seg-active', !on); onb.classList.toggle('seg-active', !!on);
+    window.refreshActionAdminSummary();
+  };
+  window.refreshSplashActionToggle = function(on){
+    var off=document.getElementById('spActionEnabledOff'), onb=document.getElementById('spActionEnabledOn');
+    if(off&&onb){
+      off.classList.toggle('seg-active', !on);
+      onb.classList.toggle('seg-active', !!on);
+    }
+    window.refreshActionAdminSummary();
+  };
+  window.setSplashActionEnabled = async function(on){
+    on=!!on;
+    if(window.__splashActionToggleSaving || on===(window.__pbSplashActionEnabled!==false)) return;
+    var previous=window.__pbSplashActionEnabled!==false;
+    var off=document.getElementById('spActionEnabledOff'), onb=document.getElementById('spActionEnabledOn');
+    window.__pbSplashActionEnabled=on;
+    window.refreshSplashActionToggle(on);
+    window.pbRefreshSplashActionVisibility();
+    window.__splashActionToggleSaving=true;
+    if(off) off.disabled=true;
+    if(onb) onb.disabled=true;
+    try{
+      if(on&&!(await window.saveMarketingAction({quiet:true}))) throw new Error('Die Aktion konnte vor dem Einschalten nicht gespeichert werden.');
+      var id=window.__selectedMarketingActionId; if(!id) throw new Error('Bitte zuerst eine Aktion auswählen.');
+      var r=await sb.rpc('admin_set_marketing_action_state', { p_id:id,p_action_enabled:null,p_splash_enabled:on });
+      if(r.error) throw r.error;
+      await window.loadMarketingActions(id);
+      window.__pbSplashActionEnabled=!!window.marketingActionById(id)?.splash_enabled;
+      window.refreshSplashActionToggle(window.__pbSplashActionEnabled);
+      window.pbRefreshSplashActionVisibility();
+      if(typeof showToast==='function') showToast(on ? 'Splash-PNG ist jetzt an.' : 'Splash-PNG ist jetzt aus.');
+    }catch(e){
+      window.__pbSplashActionEnabled=previous;
+      window.refreshSplashActionToggle(previous);
+      window.pbRefreshSplashActionVisibility();
+      alert('Splash-PNG konnte nicht geschaltet werden: ' + (e&&e.message ? e.message : 'Unbekannter Fehler'));
+    }finally{
+      window.__splashActionToggleSaving=false;
+      if(off) off.disabled=false;
+      if(onb) onb.disabled=false;
+    }
   };
   window.setEarlybirdEnabled = async function(on){
     on=!!on;
@@ -22611,18 +22908,15 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(off) off.disabled=true;
     if(onb) onb.disabled=true;
     try{
-      var r=await sb.rpc('admin_set_earlybird', {
-        p_enabled:on,
-        p_start:null,
-        p_end:null,
-        p_discount_pct:null,
-        p_abo_start:null,
-        p_term_months:null
-      });
+      if(on&&!(await window.saveMarketingAction({quiet:true}))) throw new Error('Die Aktion konnte vor dem Einschalten nicht gespeichert werden.');
+      var id=window.__selectedMarketingActionId; if(!id) throw new Error('Bitte zuerst eine Aktion auswählen.');
+      var r=await sb.rpc('admin_set_marketing_action_state',{p_id:id,p_action_enabled:on,p_splash_enabled:null});
       if(r.error) throw r.error;
+      await window.loadMarketingActions(id);
       if(typeof loadEarlybird==='function') await loadEarlybird();
-      if(!!window.__earlybird?.enabled!==on) throw new Error('Der gespeicherte Schalterzustand konnte nicht bestätigt werden.');
-      if(typeof showToast==='function') showToast(on ? 'Aktion 1 ist jetzt an.' : 'Aktion 1 ist jetzt aus.');
+      window.selectMarketingAction(id,false);
+      if(!!window.marketingActionById(id)?.action_enabled!==on) throw new Error('Der gespeicherte Schalterzustand konnte nicht bestätigt werden.');
+      if(typeof showToast==='function') showToast(on ? 'Aktion ist jetzt an.' : 'Aktion ist jetzt aus.');
     }catch(e){
       window.__ebAdmEnabled=previous;
       window.refreshEbToggle(previous);
@@ -22651,49 +22945,38 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     window.__ebAdmEnabled=!!eb.enabled; window.refreshEbToggle(!!eb.enabled);
     if(typeof window.refreshEbPreviewToggle==='function') window.refreshEbPreviewToggle(!!eb.preview);
   };
-  window.saveEarlybird = async function(){
-    try{
-      var g=function(id){ var el=document.getElementById(id); return el?el.value:''; };
-      var sv=g('ebAdmStart'), ev=g('ebAdmEnd');
-      var payload = {
-        p_enabled: !!window.__ebAdmEnabled,
-        p_start: sv? new Date(sv).toISOString() : null,
-        p_end:   ev? new Date(ev).toISOString() : null,
-        p_discount_pct: Number(g('ebAdmDiscount'))||null,
-        p_abo_start: g('ebAdmAboStart')||null,
-        p_term_months: Number(g('ebAdmTerm'))||null,
-        p_audience: g('ebAdmAudience') || 'members_partners',
-        p_applies_to: g('ebAdmAppliesTo') || 'abo',
-        p_extra_note_visible: !!document.getElementById('ebAdmExtraNoteVisible')?.checked,
-        p_extra_note_text: g('ebAdmExtraNoteText') || null
-      };
-      var r=await sb.rpc('admin_set_earlybird', payload);
-      if(r.error && /schema cache|Could not find the function|p_extra_note|p_audience|p_applies_to/i.test(r.error.message || '')){
-        delete payload.p_audience;
-        delete payload.p_applies_to;
-        delete payload.p_extra_note_visible;
-        delete payload.p_extra_note_text;
-        r=await sb.rpc('admin_set_earlybird', payload);
-      }
-      if(r.error) throw r.error;
-      if(typeof showToast==='function') showToast('Aktion 1 gespeichert.');
-      if(typeof loadEarlybird==='function') await loadEarlybird();
-    }catch(e){ alert('Speichern fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
-  };
+  window.saveEarlybird = window.saveMarketingAction;
   window.refreshEbPreviewToggle = function(on){
     var off=document.getElementById('ebPrevOff'), onb=document.getElementById('ebPrevOn');
     if(!off||!onb) return;
     off.classList.toggle('seg-active', !on); onb.classList.toggle('seg-active', !!on);
   };
-  // Ein-Klick: Kachel sofort zeigen/ausblenden (ohne Speichern), für Präsentation.
+  // Lokale Vorschau: veraendert weder den oeffentlichen Schalter noch Checkoutpreise.
   window.setEarlybirdPreview = async function(on){
     on=!!on; window.refreshEbPreviewToggle(on);
-    try{
-      var r=await sb.rpc('admin_set_earlybird_preview', { p_on: on });
-      if(r.error) throw r.error;
-      if(typeof showToast==='function') showToast(on ? 'Vorschau an – die Kachel wird jetzt gezeigt.' : 'Vorschau aus.');
+    var banner=document.getElementById('earlybirdBanner');
+    if(on){
+      var a=window.marketingActionById(window.__selectedMarketingActionId),c=a&&a.config||{};
+      if(!a){ window.refreshEbPreviewToggle(false); return; }
+      if(banner) banner.classList.toggle('show',!c.earlybird_applies_to||c.earlybird_applies_to==='abo'||c.earlybird_applies_to==='both');
+      var set=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+      set('ebActionStart',window.ebFmtDate(c.earlybird_start)); set('ebActionEnd',window.ebFmtDate(c.earlybird_end)); set('ebStart',window.ebFmtDate(c.earlybird_abo_start));
+      var col=window.pbPaletteColor,q=function(sel){ return document.querySelector(sel); };
+      var kicker=q('#earlybirdBanner .eb-kicker'),title=q('#earlybirdBanner .eb-title'),body=q('#earlybirdBanner .eb-body:not(.eb-body-2)');
+      if(kicker){ kicker.textContent=c.ab_kicker||''; kicker.style.color=col(c.ab_kicker_color,'coral'); }
+      if(title){ title.textContent=c.ab_title||''; title.style.color=col(c.ab_title_color,'cream'); }
+      if(body){ body.innerHTML=window.pbRenderMarked(c.ab_body||'',col(c.ab_hi_color,'coral'),'').replace(/\n/g,'<br>'); body.style.color=col(c.ab_body_color,'stone'); }
+      var labels=document.querySelectorAll('#earlybirdBanner .eb-meta-item .eb-meta-lbl');
+      if(labels[0]) labels[0].textContent=c.ab_box1_label||'Start der Aktion';
+      if(labels[1]) labels[1].textContent=c.ab_box2_label||'Ende der Aktion';
+      if(labels[2]) labels[2].textContent='Saisonstart';
+      var note=q('#earlybirdBanner .eb-meta-note'); if(note) note.textContent=c.ab_note||'';
+      if(typeof showToast==='function') showToast('Lokale Vorschau ist an.');
+    }else{
       if(typeof loadEarlybird==='function') await loadEarlybird();
-    }catch(e){ window.refreshEbPreviewToggle(!on); alert('Vorschau schalten fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
+      if(typeof loadAboBanner==='function') await loadAboBanner();
+      if(typeof showToast==='function') showToast('Lokale Vorschau ist aus.');
+    }
   };
 
   function initials(name){
