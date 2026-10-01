@@ -1901,6 +1901,30 @@ main {
   </div>
 </div>
 
+<!-- Stripe-Sandbox-Hinweis. Erscheint nur vor Sitzungen mit cs_test_-Kennung
+     und verschwindet beim spaeteren Wechsel auf produktive Stripe-Schluessel
+     automatisch. -->
+<div class="modal-overlay" id="stripeTestModeModal" aria-hidden="true">
+  <div class="modal payment-choice-modal stripe-test-mode-modal" role="dialog" aria-modal="true" aria-labelledby="stripeTestModeTitle">
+    <div class="stripe-test-badge">Testbetrieb</div>
+    <div class="modal-title" id="stripeTestModeTitle">Zahlung sicher testen</div>
+    <div class="modal-sub">Es wird nichts abgebucht. Stripe akzeptiert auf der folgenden Seite ausschließlich Testdaten.</div>
+    <div class="cc-lines stripe-test-data">
+      <div class="cc-line stripe-test-card-line">
+        <span>Testkarte</span>
+        <span class="stripe-test-card-value"><code>4242 4242 4242 4242</code><button type="button" id="stripeTestCardCopy" class="stripe-test-copy" aria-label="Testkartennummer kopieren" title="Testkartennummer kopieren"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></span>
+      </div>
+      <div class="cc-line"><span>Gültig bis</span><span>12/34</span></div>
+      <div class="cc-line"><span>Prüfnummer</span><span>123</span></div>
+    </div>
+    <button class="modal-btn cc-option cc-stripe" id="stripeTestContinue" type="button">
+      <span class="cc-option-copy"><strong>Weiter zu Stripe</strong><small>Testkarte oder Apple Pay verwenden</small></span>
+      <span class="cc-option-mark" aria-hidden="true">→</span>
+    </button>
+    <button class="modal-btn cc-cancel" id="stripeTestCancel" type="button">Abbrechen</button>
+  </div>
+</div>
+
 <!-- Hinweis, wenn das Jahresabo wegen bestehender Einzelbuchungen erst spaeter
      startet. Wird nur vor der Zahlung gezeigt, wenn abo_delayed = true. -->
 <div class="modal-overlay" id="aboStartModal">
@@ -10698,14 +10722,84 @@ const BOOKING_SUCCESS_SUB =
 const INSTALL_PROMPT_SNOOZE_KEY = 'padelInstallPromptSnoozedAtV2';
 const INSTALL_PROMPT_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
 
-function redirectToExternalCheckout(url) {
-  if (!url) return;
-  const target = String(url);
+const STRIPE_TEST_CARD_NUMBER = '4242424242424242';
+
+function isStripeTestCheckoutUrl(url) {
+  try {
+    const parsed = new URL(String(url), window.location.href);
+    return /(?:^|\/)cs_test_/i.test(parsed.pathname);
+  } catch (err) {
+    return /(?:^|\/)cs_test_/i.test(String(url || ''));
+  }
+}
+
+function performExternalCheckoutRedirect(target) {
   showToast('Weiter zu Stripe …');
   window.location.assign(target);
   setTimeout(() => {
     if (!document.hidden) window.location.href = target;
   }, 800);
+}
+
+async function copyStripeTestCardNumber() {
+  try {
+    await navigator.clipboard.writeText(STRIPE_TEST_CARD_NUMBER);
+    showToast('Testkartennummer kopiert.');
+    return;
+  } catch (err) {}
+
+  const field = document.createElement('textarea');
+  field.value = STRIPE_TEST_CARD_NUMBER;
+  field.setAttribute('readonly', '');
+  field.style.position = 'fixed';
+  field.style.opacity = '0';
+  document.body.appendChild(field);
+  field.select();
+  let copied = false;
+  try { copied = document.execCommand('copy'); } catch (err) {}
+  field.remove();
+  showToast(copied ? 'Testkartennummer kopiert.' : 'Kopieren nicht möglich. Bitte Nummer ablesen.');
+}
+
+function showStripeTestModeNotice(target) {
+  const modal = document.getElementById('stripeTestModeModal');
+  const continueBtn = document.getElementById('stripeTestContinue');
+  const cancelBtn = document.getElementById('stripeTestCancel');
+  const copyBtn = document.getElementById('stripeTestCardCopy');
+  if (!modal || !continueBtn || !cancelBtn || !copyBtn) {
+    performExternalCheckoutRedirect(target);
+    return;
+  }
+
+  const close = () => {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    continueBtn.onclick = null;
+    cancelBtn.onclick = null;
+    copyBtn.onclick = null;
+  };
+  continueBtn.onclick = () => {
+    close();
+    performExternalCheckoutRedirect(target);
+  };
+  cancelBtn.onclick = () => {
+    close();
+    showToast('Zahlung abgebrochen.');
+  };
+  copyBtn.onclick = copyStripeTestCardNumber;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  continueBtn.focus();
+}
+
+function redirectToExternalCheckout(url) {
+  if (!url) return;
+  const target = String(url);
+  if (isStripeTestCheckoutUrl(target)) {
+    showStripeTestModeNotice(target);
+    return;
+  }
+  performExternalCheckoutRedirect(target);
 }
 
 function isRunningAsInstalledApp() {
@@ -19727,58 +19821,96 @@ body.bielstein-theme #adminWipe .wipe-result.warn { color: #B8402C; font-weight:
 body.bielstein-theme [hidden] {
   display: none !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-lines {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-lines {
   margin: 20px 0 22px; padding: 4px 14px;
   border: 1px solid #E2DACB; border-radius: 12px; background: #FFFFFF;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-line {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-line {
   display: flex; justify-content: space-between; align-items: baseline;
   padding: 11px 0; border-bottom: 1px solid #E2DACB;
   font-size: 14px; color: #7A7368;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-line:last-child { border-bottom: 0; }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-line span:last-child {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-line:last-child { border-bottom: 0; }
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-line span:last-child {
   font-family: "Space Grotesk","Arial Narrow",sans-serif;
   font-weight: 700; color: #1C1A17;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-cancel {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-cancel {
   width: auto !important; display: block; margin: 13px auto 0 !important; padding: 6px 12px !important;
   background: transparent !important; color: #7A7368 !important;
   border: 0 !important; box-shadow: none !important; font-size: 12.5px !important;
   text-transform: none !important; letter-spacing: .02em !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-cancel:hover { color: #1C1A17 !important; text-decoration: underline; }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-choice-label {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-cancel:hover { color: #1C1A17 !important; text-decoration: underline; }
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-choice-label {
   margin-bottom: 8px; color: #7A7368;
   font: 700 10.5px/1 "Space Grotesk",sans-serif; letter-spacing: .12em; text-transform: uppercase;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option {
   min-height: 68px; margin: 0 0 9px !important; padding: 13px 16px !important;
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
   border-radius: 13px !important; box-shadow: none !important; text-align: left;
   text-transform: none !important; letter-spacing: 0 !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-credit {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-credit {
   background: #FCE9E2 !important; color: #1C1A17 !important; border: 1.5px solid #F1C8B9 !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-stripe {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-stripe {
   background: #FFFFFF !important; color: #1C1A17 !important; border: 1.5px solid #D9CFBF !important;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-credit:hover,
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-credit:focus-visible,
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-stripe:hover,
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-stripe:focus-visible {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-credit:hover,
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-credit:focus-visible,
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-stripe:hover,
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-stripe:focus-visible {
   background: #FCE9E2 !important; border-color: #FF5A36 !important; outline: none;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-copy strong {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-copy strong {
   color: inherit; font: 700 15px/1.2 "Space Grotesk",sans-serif;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-copy small {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-copy small {
   color: inherit; opacity: .72; font: 600 11.5px/1.35 "Manrope",sans-serif;
 }
-body.bielstein-theme :is(#creditConfirmModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-mark {
+body.bielstein-theme :is(#creditConfirmModal, #stripeTestModeModal, #aboStartModal, #bookingSuccessModal, #mobileInstallPromptModal, #memberSyncModal) .cc-option-mark {
   flex: 0 0 auto; color: inherit; font: 600 20px/1 "Space Grotesk",sans-serif;
+}
+body.bielstein-theme #stripeTestModeModal .stripe-test-mode-modal {
+  max-width: 480px;
+}
+body.bielstein-theme #stripeTestModeModal .stripe-test-badge {
+  display: inline-flex; align-items: center; min-height: 26px; margin: 0 0 14px;
+  padding: 4px 9px; border-radius: 4px; background: #1C1A17; color: #FFFFFF;
+  font: 800 10px/1 "Space Grotesk",sans-serif; letter-spacing: 0; text-transform: uppercase;
+}
+body.bielstein-theme #stripeTestModeModal .stripe-test-data {
+  margin-bottom: 14px;
+}
+body.bielstein-theme #stripeTestModeModal .stripe-test-card-value {
+  display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0;
+}
+body.bielstein-theme #stripeTestModeModal .stripe-test-card-value code {
+  color: #1C1A17; font: 700 13px/1.2 "Space Grotesk",monospace; letter-spacing: 0; white-space: nowrap;
+}
+body.bielstein-theme #stripeTestModeModal .stripe-test-copy {
+  width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center;
+  margin: 0; padding: 0; border: 1px solid #D9CFBF; border-radius: 4px;
+  background: #FFFFFF; color: #1C1A17; box-shadow: none;
+}
+body.bielstein-theme #stripeTestModeModal .stripe-test-copy:hover,
+body.bielstein-theme #stripeTestModeModal .stripe-test-copy:focus-visible {
+  border-color: #FF5A36; color: #FF5A36; outline: none;
+}
+body.bielstein-theme #stripeTestModeModal .stripe-test-copy svg {
+  width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+@media (max-width: 480px) {
+  body.bielstein-theme #stripeTestModeModal .stripe-test-card-line {
+    align-items: flex-start; flex-direction: column; gap: 7px;
+  }
+  body.bielstein-theme #stripeTestModeModal .stripe-test-card-value {
+    width: 100%; justify-content: space-between;
+  }
 }
 body.bielstein-theme #bookingSuccessModal .booking-success-check {
   width: 48px; height: 48px; margin: 0 0 16px; display: grid; place-items: center;
