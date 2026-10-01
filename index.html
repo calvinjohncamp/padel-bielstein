@@ -18666,6 +18666,8 @@ init();
 <script>
 (function(){
   const WX_LAT = 50.9499, WX_LON = 7.5518;
+  const WX_FORECAST_CACHE_KEY = 'pbWeatherForecastCache';
+  const WX_FORECAST_FALLBACK_MS = 12 * 60 * 60 * 1000;
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
   const rnd = v => (v==null||isNaN(v)) ? '—' : Math.round(v);
@@ -18774,6 +18776,30 @@ init();
     // Reihe konsistent ist; glatte 0 bleibt "0".
     return amount > 0 ? Number(amount).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1}) : '0';
   }
+  function readForecastCache(){
+    try{
+      const cached = JSON.parse(localStorage.getItem(WX_FORECAST_CACHE_KEY) || 'null');
+      if(!cached || !cached.savedAt || !cached.data) return null;
+      return Date.now() - Number(cached.savedAt) <= WX_FORECAST_FALLBACK_MS ? cached.data : null;
+    }catch(e){ return null; }
+  }
+  function writeForecastCache(data){
+    try{ localStorage.setItem(WX_FORECAST_CACHE_KEY, JSON.stringify({savedAt:Date.now(),data})); }catch(e){}
+  }
+  function showWeatherUnavailable(section){
+    if(!section) return;
+    section.style.display = '';
+    const today = document.getElementById('pbwxToday');
+    const tomorrow = document.getElementById('pbwxTomorrow');
+    const todayHourly = document.getElementById('pbwxTodayHourly');
+    const tomorrowHourly = document.getElementById('pbwxTomorrowHourly');
+    const days = document.getElementById('pbwxDays');
+    if(today) today.innerHTML = '<div class="pbwx-note">Die Wetterdaten sind gerade nicht abrufbar. Die Anzeige versucht es beim nächsten Seitenaufruf erneut.</div>';
+    if(tomorrow) tomorrow.innerHTML = '';
+    if(todayHourly) todayHourly.style.display = 'none';
+    if(tomorrowHourly) tomorrowHourly.style.display = 'none';
+    if(days) days.innerHTML = '';
+  }
   async function wxFetchBrightSkyDay(dateKey){
     const json = await window.pbFetchWeather('history', {date:dateKey});
     return Array.isArray(json.weather) ? json.weather : [];
@@ -18836,9 +18862,20 @@ init();
 
   // ===================== Buchungsseite: gestern / heute / 6-Tage =====================
   async function loadWeather(){
-    if(!document.getElementById('pbwxWeather')) return;
+    const weatherSection = document.getElementById('pbwxWeather');
+    if(!weatherSection) return;
+    weatherSection.style.display = '';
+    const loadingTarget = document.getElementById('pbwxToday');
+    if(loadingTarget && !loadingTarget.innerHTML) loadingTarget.innerHTML = '<div class="pbwx-note">Wetterdaten werden geladen …</div>';
     try{
-      const d = await window.pbFetchWeather('forecast');
+      let d = null;
+      try{
+        d = await window.pbFetchWeather('forecast');
+        writeForecastCache(d);
+      }catch(fetchError){
+        d = readForecastCache();
+        if(!d) throw fetchError;
+      }
       const dl = d.daily || {};
       const dayIndex = dateStr => (dl.time||[]).findIndex(x => x === dateStr);
       const todayKey = wxDateKeyLocal(new Date());
@@ -18966,8 +19003,11 @@ init();
         daysEl.innerHTML = html;
       }
 
-      document.getElementById('pbwxWeather').style.display = '';
-    }catch(e){ /* Wetter optional — Sektion bleibt ausgeblendet */ }
+      weatherSection.style.display = '';
+    }catch(e){
+      console.warn('Wetteranzeige konnte nicht geladen werden', e);
+      showWeatherUnavailable(weatherSection);
+    }
   }
 
   // ============ „Jetzt spielen"-Beleg: EINE große Folio-Gestern-Karte zum Spieltag.
@@ -23095,12 +23135,23 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   function nextAppPair(){
     var pair=[], used={}, N=appPlaylist.length;
     var assignedCount=Object.keys(appAssignments).length;
-    for(var step=0;step<N && pair.length<2;step++){
-      var s=appPlaylist[(rotationIndex*2+assignedCount*2+step)%N], key=sponsorKey(s);
-      if(key && !seenKeys[key] && !used[key] && displayLogoUrl(s) && !(s.tier==='premium' && pair.some(function(item){ return item.tier==='premium'; }))){
-        used[key]=true;
-        pair.push(s);
+    function collect(skipSeen){
+      for(var step=0;step<N && pair.length<2;step++){
+        var s=appPlaylist[(rotationIndex*2+assignedCount*2+step)%N], key=sponsorKey(s);
+        if(key && (!skipSeen || !seenKeys[key]) && !used[key] && displayLogoUrl(s) && !(s.tier==='premium' && pair.some(function(item){ return item.tier==='premium'; }))){
+          used[key]=true;
+          pair.push(s);
+        }
       }
+    }
+    collect(true);
+    if(pair.length<2 && N){
+      // Ein Besuch laeuft nicht leer: Nach dem letzten ungesehenen Partner
+      // beginnt sofort ein neuer Umlauf. Bereits fuer dieses Paar gewaehlte
+      // Partner bleiben dabei ausgeschlossen.
+      seenKeys={};
+      pair.forEach(function(s){ seenKeys[sponsorKey(s)]=true; });
+      collect(false);
     }
     pair.forEach(function(s){ seenKeys[sponsorKey(s)]=true; });
     try{ sessionStorage.setItem(SEEN_KEY,JSON.stringify(seenKeys)); }catch(e){}
@@ -23117,19 +23168,24 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   async function loadSponsorsDisplay(){
     try{
       if(typeof sb==='undefined' || !sb) return;
+      var cached=[];
       try{
-        var cached=JSON.parse(sessionStorage.getItem(CACHE_KEY)||'[]');
+        cached=JSON.parse(sessionStorage.getItem(CACHE_KEY)||'[]');
         if(Array.isArray(cached) && cached.length) renderSplashPremiumFromRows(cached);
-      }catch(e){}
+        else cached=[];
+      }catch(e){ cached=[]; }
       var res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order,website_url,court_label,court_partner_enabled');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order,website_url');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order');
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,sort_order');
-      if(res.error) throw res.error;
-      var rows = res.data || [];
+      if(res.error && !cached.length) throw res.error;
+      var rows = res.error ? cached : (res.data || []);
+      if(!rows.length && cached.length) rows=cached;
       applyCourtPartnerLabels(rows);
-      try{ sessionStorage.setItem(CACHE_KEY, JSON.stringify(rows.slice(0,80))); }catch(e){}
+      if(!res.error){
+        try{ sessionStorage.setItem(CACHE_KEY, JSON.stringify(rows.slice(0,80))); }catch(e){}
+      }
       var pick = function(t){ return rows.filter(function(r){return r.tier===t;})
                                   .sort(function(a,b){
                                     return (a.sort_order||0)-(b.sort_order||0) || String(a.name||'').localeCompare(String(b.name||''),'de');
