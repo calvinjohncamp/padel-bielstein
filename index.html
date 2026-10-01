@@ -8033,8 +8033,7 @@ function aboDiscountInfo() {
   let label = basePct > 0 ? 'Mitglieder-/Partnerrabatt' : '';
   let kind = basePct > 0 ? 'member' : 'none';
   const eb = window.__earlybird || {};
-  const actionVisible = !!(eb.active || eb.preview);
-  const actionForAbo = actionVisible && (!eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both') && actionIsEligibleForCurrentUser(eb);
+  const actionForAbo = !!eb.active && (!eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both') && actionIsEligibleForCurrentUser(eb);
   const actionPct = actionForAbo ? Math.round(Number(eb.discount) || 0) : 0;
   if (actionPct > bestPct) {
     bestPct = actionPct;
