@@ -1359,6 +1359,10 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .admin-action-visibility { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:0 0 22px; padding:16px; border:1.5px solid #E2DACB; border-radius:8px; background:#F8F5EF; }
 .admin-action-visibility-item { display:flex; align-items:center; justify-content:space-between; gap:14px; }
 .admin-action-visibility-item .eb-adm-lbl { margin:0; }
+.admin-action-check { display:flex; align-items:center; gap:9px; color:#1C1A17; font:800 12px/1.35 "Space Grotesk",sans-serif; cursor:pointer; }
+.admin-action-check input { width:17px; height:17px; accent-color:#FF5A36; }
+#spActionModalFields { transition:opacity .15s ease; }
+#spActionModalFields.is-disabled { opacity:.42; }
 .admin-action-namebar { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:14px; margin:0 0 20px; }
 .admin-action-back { min-height:38px; padding:0 12px; border:1.5px solid #D8CEBD; border-radius:7px; background:#F6F1E7; color:#1C1A17; font:800 11px/1 "Space Grotesk",sans-serif; cursor:pointer; }
 .admin-action-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:26px; padding-top:20px; border-top:1px solid #D8CEBD; }
@@ -2046,7 +2050,25 @@ main {
       <div class="cc-line"><span>Übersprungene/gleiche Zeilen</span><span id="msSkipped">—</span></div>
     </div>
     <div id="msDeaktNames" style="font-size:0.78rem;color:#B8402C;line-height:1.5;margin:2px 2px 6px;display:none;"></div>
-    <button class="modal-btn cc-option cc-stripe" id="memberSyncOk">
+    <div id="msPrivacyTargets" style="font-size:0.78rem;color:#5C564C;line-height:1.5;margin:8px 2px;padding:10px;border:1px solid #E2DACB;background:#F8F5EF;"></div>
+    <button class="modal-btn cc-option cc-credit" id="memberSyncPrivacyConfirm">
+      <span class="cc-option-copy"><strong>Versandlauf vorbereiten</strong><small>Legt nur die Empfängerliste an und verschickt noch nichts</small></span>
+      <span class="cc-option-mark" aria-hidden="true">+</span>
+    </button>
+    <button class="modal-btn cc-option cc-credit" id="memberNoticeSend" style="display:none;">
+      <span class="cc-option-copy"><strong>Informationsmails senden</strong><small>Versendet kontrolliert in Blöcken von höchstens 100 Adressen</small></span>
+      <span class="cc-option-mark" aria-hidden="true">→</span>
+    </button>
+    <button class="modal-btn cc-option cc-credit" id="memberNoticeRefresh" style="display:none;">
+      <span class="cc-option-copy"><strong>Zustellstatus aktualisieren</strong><small>Zeigt zugestellte und nachzuarbeitende Adressen</small></span>
+      <span class="cc-option-mark" aria-hidden="true">↻</span>
+    </button>
+    <div id="memberNoticeStatus" style="display:none;font-size:0.78rem;color:#5C564C;line-height:1.5;margin:8px 2px;padding:10px;border:1px solid #E2DACB;background:#fff;"></div>
+    <button class="modal-btn cc-option cc-credit" id="memberNoticeRelease" style="display:none;">
+      <span class="cc-option-copy"><strong>Datei für Import freigeben</strong><small>Erst möglich, wenn jede Adresse zugestellt oder manuell geklärt ist</small></span>
+      <span class="cc-option-mark" aria-hidden="true">✓</span>
+    </button>
+    <button class="modal-btn cc-option cc-stripe" id="memberSyncOk" disabled>
       <span class="cc-option-copy"><strong>Jetzt speichern</strong><small>Änderungen übernehmen</small></span>
       <span class="cc-option-mark" aria-hidden="true">→</span>
     </button>
@@ -2278,11 +2300,11 @@ main {
         <li><strong>Zutritt und Sicherheit:</strong> Soweit digitale Zutrittsfunktionen verwendet werden, verarbeiten wir Buchungsbezug, zeitliche Berechtigung und technische Ereignisse zur Vertragserfüllung und zum Schutz der Anlage (Art. 6 Abs. 1 lit. b und f DSGVO).</li>
       </ul>
       <h3>Verabredungen und Einladungen</h3>
-      <p>Für Verabredungen verarbeiten wir Termin, Spielstärke, Gruppe, Sichtbarkeit, Zusagen und die erforderlichen Kontaktdaten. Bei direkten Einladungen können Nutzer E-Mail-Adressen von Personen angeben, die noch kein Konto besitzen. Diese Daten stammen dann vom einladenden Nutzer und werden ausschließlich zur Übermittlung und Verwaltung der Einladung verwendet (Art. 6 Abs. 1 lit. f DSGVO). Diese Erklärung ist jederzeit über die verlinkte App erreichbar; ein zusätzlicher direkter Datenschutzhinweis in der ersten Einladungsnachricht wird vor dem Produktivstart ergänzt.</p>
+      <p>Für Verabredungen verarbeiten wir Termin, Spielstärke, Gruppe, Sichtbarkeit, Zusagen und die erforderlichen Kontaktdaten. Bei direkten Einladungen können Nutzer E-Mail-Adressen von Personen angeben, die noch kein Konto besitzen. Diese Daten stammen dann vom einladenden Nutzer und werden ausschließlich zur Übermittlung und Verwaltung der Einladung verwendet (Art. 6 Abs. 1 lit. f DSGVO). Externe Empfänger erhalten den kurzen Hinweis auf Herkunft, Zweck und diese Datenschutzerklärung beim ersten Kontakt und nur einmal je Textversion; spätere Einladungen und Erinnerungen enthalten lediglich den normalen Datenschutzlink. Hinweistexversion und Versandzeitpunkt werden erst nach erfolgreichem Versand gespeichert.</p>
       <h3>Mitgliederabgleich</h3>
-      <p>Zur Prüfung eines Mitgliederrabatts erhalten wir von den Tennisfreunden Bielstein e.V., dem BSV Viktoria Bielstein und gegebenenfalls weiteren klar bezeichneten Kooperationsgruppen Mitgliederangaben. Verarbeitet werden nur die für Zuordnung, Gruppenstatus und Aktualisierung erforderlichen Daten, insbesondere Name, E-Mail-Adresse und eine vorhandene Mitgliedskennung. Gemeinsame Familien-E-Mail-Adressen werden nicht automatisch als dieselbe Person behandelt. Ein Ausscheiden aus einer Gruppe beendet nur die Rabattberechtigung; ein selbst angelegtes App-Konto bleibt bestehen. Rechtsgrundlage ist die Durchführung des jeweiligen Mitglieds- beziehungsweise Nutzungsverhältnisses oder das berechtigte Interesse an der korrekten Rabattgewährung (Art. 6 Abs. 1 lit. b oder f DSGVO). Die Herkunft wird im Import protokolliert.</p>
+      <p>Zur Prüfung eines Mitgliederrabatts erhalten wir von den Tennisfreunden Bielstein e.V., dem BSV Viktoria Bielstein und gegebenenfalls weiteren klar bezeichneten Kooperationsgruppen Mitgliederangaben. Verarbeitet werden nur die für Zuordnung, Gruppenstatus und Aktualisierung erforderlichen Daten, insbesondere Name, E-Mail-Adresse und eine vorhandene Mitgliedskennung. Gemeinsame Familien-E-Mail-Adressen werden nicht automatisch als dieselbe Person behandelt. Ein Ausscheiden aus einer Gruppe beendet nur die Rabattberechtigung; ein selbst angelegtes App-Konto bleibt bestehen. Rechtsgrundlage ist die Durchführung des jeweiligen Mitglieds- beziehungsweise Nutzungsverhältnisses oder das berechtigte Interesse an der korrekten Rabattgewährung (Art. 6 Abs. 1 lit. b oder f DSGVO). Herkunft und Listenabgleich werden im Import protokolliert. Nach der einmaligen Startinformation werden bei späteren Listen ausschließlich neu hinzugekommene Mitglieder informiert; bestehende und ausgeschiedene Mitglieder erhalten keine wiederholte Nachricht. Erst danach kann genau die geprüfte Datei angewendet werden.</p>
       <h3>Partner, Sponsoren und Spenden</h3>
-      <p>Partnerlogos, Namen und Links werden entsprechend der vereinbarten Werbeleistung ohne Nutzerprofilbildung angezeigt. Für Vertragsverwaltung und Kommunikation verarbeiten wir Ansprechpartner, geschäftliche Kontaktdaten, Anschrift, Vertragsstatus, Notizen, vereinbarte Kanäle, Rabattadressen und Zahlungs- oder Gegenleistungsstatus (Art. 6 Abs. 1 lit. b und f DSGVO). Partner erhalten keinen Zugriff auf Daten von Nutzern, Mitgliedern oder Buchungen. Spendendaten werden für Abwicklung und gesetzliche Nachweise verarbeitet (Art. 6 Abs. 1 lit. b und c DSGVO).</p>
+      <p>Partnerlogos, Namen und Links werden entsprechend der vereinbarten Werbeleistung ohne Nutzerprofilbildung angezeigt. Für Vertragsverwaltung und Kommunikation verarbeiten wir Ansprechpartner, geschäftliche Kontaktdaten, Anschrift, Vertragsstatus, Notizen, vereinbarte Kanäle, Rabattadressen und Zahlungs- oder Gegenleistungsstatus (Art. 6 Abs. 1 lit. b und f DSGVO). Partner-Ansprechpartner erhalten den Hinweis im normalen ersten Geschäftskontakt; die App verschickt dafür keine zusätzliche Datenschutzmail. Informationsdatum, Weg und Textversion werden intern dokumentiert. Partner erhalten keinen Zugriff auf Daten von Nutzern, Mitgliedern oder Buchungen. Spendendaten werden für Abwicklung und gesetzliche Nachweise verarbeitet (Art. 6 Abs. 1 lit. b und c DSGVO).</p>
       <h3>Nachrichten, Administration und Ereignisprotokolle</h3>
       <p>Resend übermittelt Bestätigungen, Einladungen und notwendige Systeminformationen. Wir speichern die für Versand, Zustellung, Fehlerbehandlung und Mengenbegrenzung erforderlichen technischen Angaben. Administrative Änderungen, Sicherheitsereignisse sowie Stripe- und Resend-Ereignisse werden datensparsam protokolliert, um Missbrauch zu verhindern, Fehler zu untersuchen und Abrechnungen nachzuvollziehen (Art. 6 Abs. 1 lit. c und f DSGVO). Zugriffe sind rollenbeschränkt.</p>
       <h3>Wetterdaten</h3>
@@ -2292,7 +2314,7 @@ main {
       <h3>Speicherdauer</h3>
       <p>Dein Konto bleibt bis zur Selbstlöschung oder einem berechtigten Löschverlangen gespeichert. Bei der Kontolöschung werden Anmeldung und persönliche Profildaten entfernt; eine spätere Registrierung wird nicht mit der alten Historie verbunden. In deinem Konto ist die Buchungshistorie der letzten 24 Monate abrufbar; ältere Vorgänge werden dort nicht angezeigt. Für operative Buchungs-, Einladungs-, Import-, Mail- und Sicherheitsdaten werden feste Löschfristen technisch umgesetzt und regelmäßig kontrolliert. Bis zur Aktivierung dieses Fristenlaufs werden Bestände administrativ geprüft und nur zweckgebunden verwendet. Gesetzlich erforderliche Buchungs- und Zahlungsbelege werden getrennt, zugriffsbeschränkt und ohne erneute Kontoverknüpfung aufbewahrt; Buchungsbelege grundsätzlich acht Jahre, andere Unterlagen je nach gesetzlicher Kategorie sechs oder zehn Jahre. Danach werden sie gelöscht.</p>
       <h3>Daten aus anderen Quellen</h3>
-      <p>Wenn Daten nicht direkt bei dir erhoben wurden, stammen sie aus einer benannten Vereins- oder Kooperationsmitgliederliste, von einem einladenden Nutzer oder im geschäftlichen Kontext von deinem Unternehmen beziehungsweise Vertragspartner. Verarbeitet werden jeweils nur die oben beschriebenen Datenkategorien und Zwecke. Diese Erklärung enthält die allgemeinen Informationen; die nachweisbare direkte Information beim Import beziehungsweise Erstkontakt wird vor dem Produktivstart als eigenes Umsetzungspaket ergänzt.</p>
+      <p>Wenn Daten nicht direkt bei dir erhoben wurden, stammen sie aus einer benannten Vereins- oder Kooperationsmitgliederliste, von einem einladenden Nutzer oder im geschäftlichen Kontext von deinem Unternehmen beziehungsweise Vertragspartner. Verarbeitet werden jeweils nur die oben beschriebenen Datenkategorien und Zwecke. Die direkte Information erfolgt über den dokumentierten Informationsweg der jeweiligen Mitgliedergruppe, in der ersten Einladungsnachricht oder beim Erstkontakt mit einem Partner-Ansprechpartner. Die Nachweise enthalten nur die für Rechenschaft und Prüfung erforderlichen Angaben.</p>
       <h3>Deine Rechte</h3>
       <p>Du hast nach Maßgabe der gesetzlichen Voraussetzungen das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch sowie auf Widerruf einer Einwilligung mit Wirkung für die Zukunft (Art. 7 und 15–21 DSGVO). Dein Konto kannst du unter „Mein Account“ selbst löschen. Für weitere Anliegen erreichst du uns unter info@tfbielstein.de. Du kannst dich außerdem bei einer Datenschutzaufsichtsbehörde beschweren; zuständig ist insbesondere die Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen, www.ldi.nrw.de.</p>
     </section>
@@ -2401,6 +2423,22 @@ main {
   </div>
   <!-- Admin Tab entfernt – Admin-Zugang über Fußzeile -->
 
+  <!-- Gemeinsamer Aktionskopf fuer Jetzt buchen und Jahresabo sichern. -->
+  <div class="eb-banner" id="earlybirdBanner">
+    <span class="eb-kicker">Exklusiv · Frühbucherphase</span>
+    <div class="eb-title">Sichere dir für 2 Jahre deinen festen Platz</div>
+    <div class="eb-body">Nur für <strong>TFB-Mitglieder &amp; Partner</strong>: jetzt vorab die begehrtesten Spielzeiten reservieren — mit dem einmaligen <span class="eb-hi">25&nbsp;% Start-Rabatt</span> anstatt der regulären 10&nbsp;%.</div>
+    <div class="eb-body eb-body-2"><strong>Dieser Court gehört für 2 Jahre</strong> an den von dir gebuchten Tagen und zu den von dir gebuchten Stunden <strong>allein dir.</strong></div>
+    <div class="eb-meta">
+      <div class="eb-meta-boxes">
+        <div class="eb-meta-item"><span class="eb-meta-lbl">Start der Aktion</span><span class="eb-meta-val" id="ebActionStart">—</span></div>
+        <div class="eb-meta-item"><span class="eb-meta-lbl">Ende der Aktion</span><span class="eb-meta-val" id="ebActionEnd">—</span></div>
+        <div class="eb-meta-item"><span class="eb-meta-lbl">Saisonstart</span><span class="eb-meta-val" id="ebStart">—</span></div>
+      </div>
+      <div class="eb-meta-note">Dein Abo startet automatisch am Eröffnungstag unserer neuen Anlage.</div>
+    </div>
+  </div>
+
   <!-- BOOK MODE -->
   <div id="modeBook">
     <div class="step-row"><div class="step-num">1</div><div class="step-lbl">Datum wählen</div></div>
@@ -2492,21 +2530,6 @@ main {
 
   <!-- ABO MODE -->
   <div id="modeAbo" style="display:none;">
-    <!-- Exklusiv-Frühbucherphase: nur sichtbar, wenn im Admin aktiv + im Zeitfenster -->
-    <div class="eb-banner" id="earlybirdBanner">
-      <span class="eb-kicker">Exklusiv · Frühbucherphase</span>
-      <div class="eb-title">Sichere dir für 2 Jahre deinen festen Platz</div>
-      <div class="eb-body">Nur für <strong>TFB-Mitglieder &amp; Partner</strong>: jetzt vorab die begehrtesten Spielzeiten reservieren — mit dem einmaligen <span class="eb-hi">25&nbsp;% Start-Rabatt</span> anstatt der regulären 10&nbsp;%.</div>
-      <div class="eb-body eb-body-2"><strong>Dieser Court gehört für 2 Jahre</strong> an den von dir gebuchten Tagen und zu den von dir gebuchten Stunden <strong>allein dir.</strong></div>
-      <div class="eb-meta">
-        <div class="eb-meta-boxes">
-          <div class="eb-meta-item"><span class="eb-meta-lbl">Start der Aktion</span><span class="eb-meta-val" id="ebActionStart">—</span></div>
-          <div class="eb-meta-item"><span class="eb-meta-lbl">Ende der Aktion</span><span class="eb-meta-val" id="ebActionEnd">—</span></div>
-          <div class="eb-meta-item"><span class="eb-meta-lbl">Saisonstart</span><span class="eb-meta-val" id="ebStart">—</span></div>
-        </div>
-        <div class="eb-meta-note">Dein Abo startet automatisch am Eröffnungstag unserer neuen Anlage.</div>
-      </div>
-    </div>
     <div class="step-row"><div class="step-num">1</div><div class="step-lbl">Wochentag wählen</div></div>
     <div class="weekday-row gap">
       <button class="wd-btn" onclick="setWd(1)" id="wd1">Mo</button>
@@ -6277,11 +6300,11 @@ main {
               </select>
             </div>
             <div>
-              <label class="eb-adm-lbl">Gilt für</label>
+              <label class="eb-adm-lbl">Aktionskopf anzeigen auf</label>
               <select id="ebAdmAppliesTo" class="eb-adm-inp">
-                <option value="abo">Abos</option>
-                <option value="single">Einzelbuchungen</option>
-                <option value="both">Abos und Einzelbuchungen</option>
+                <option value="single">Jetzt buchen</option>
+                <option value="abo">Jahresabo sichern</option>
+                <option value="both">Beiden Seiten</option>
               </select>
             </div>
           </div>
@@ -6297,25 +6320,30 @@ main {
 
           <section class="admin-action-subsection">
             <div class="admin-action-subtitle">Splash-PNG und Aktionsfenster</div>
-            <div class="admin-action-description">PNG-Hinweis auf der Splash-Seite und Inhalt des Fensters nach dem Klick. Die Sichtbarkeit des PNG wird unabhängig von der Rabattaktion gespeichert.</div>
+            <div class="admin-action-description">Das PNG führt zur oben gewählten Buchungsseite. Optional kann davor ein frei beschriftbares Infofenster erscheinen.</div>
             <div class="admin-action-panel admin-action-panel-stack">
           <div>
-            <label class="eb-adm-lbl" style="margin-bottom:10px;">Fenster nach Klick auf das Aktions-PNG</label>
-            <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
-              <div><label class="eb-adm-lbl" style="font-size:10px;">Überschrift</label><input type="text" id="spEbKicker" class="eb-adm-inp"></div>
-              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Überschrift</label><select id="spEbKickerColor" class="eb-adm-inp"></select></div>
-            </div>
-            <div style="margin-top:10px;">
-              <label class="eb-adm-lbl" style="font-size:10px;">Text &nbsp;·&nbsp; Hervorhebung mit *Sternchen*, <code>{bis}</code> = Ende der Aktion</label>
-              <textarea id="spEbText" rows="3" class="eb-adm-inp" style="resize:vertical;line-height:1.5;"></textarea>
-            </div>
-            <div style="margin-top:10px;">
-              <label class="eb-adm-lbl" style="font-size:10px;">Button-Text in der Aktionskachel</label>
-              <input type="text" id="spActionCtaLabel" class="eb-adm-inp" placeholder="Mehr anzeigen">
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
-              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Text</label><select id="spEbTextColor" class="eb-adm-inp"></select></div>
-              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Hervorhebung</label><select id="spEbHiColor" class="eb-adm-inp"></select></div>
+            <label class="admin-action-check">
+              <input type="checkbox" id="spActionModalEnabled" onchange="refreshSplashActionModalFields()">
+              <span>Infofenster nach Klick auf das Splash-PNG anzeigen</span>
+            </label>
+            <div id="spActionModalFields">
+              <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;margin-top:12px;">
+                <div><label class="eb-adm-lbl" style="font-size:10px;">Überschrift</label><input type="text" id="spEbKicker" class="eb-adm-inp"></div>
+                <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Überschrift</label><select id="spEbKickerColor" class="eb-adm-inp"></select></div>
+              </div>
+              <div style="margin-top:10px;">
+                <label class="eb-adm-lbl" style="font-size:10px;">Text &nbsp;·&nbsp; Hervorhebung mit *Sternchen*, <code>{bis}</code> = Ende der Aktion</label>
+                <textarea id="spEbText" rows="3" class="eb-adm-inp" style="resize:vertical;line-height:1.5;"></textarea>
+              </div>
+              <div style="margin-top:10px;">
+                <label class="eb-adm-lbl" style="font-size:10px;">Button-Text im Infofenster</label>
+                <input type="text" id="spActionCtaLabel" class="eb-adm-inp" placeholder="Mehr anzeigen">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+                <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Text</label><select id="spEbTextColor" class="eb-adm-inp"></select></div>
+                <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Hervorhebung</label><select id="spEbHiColor" class="eb-adm-inp"></select></div>
+              </div>
             </div>
             <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:center;margin-top:12px;">
               <div id="spActionImagePreview" style="height:86px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;overflow:hidden;">
@@ -6347,8 +6375,8 @@ main {
           </section>
 
           <section class="admin-action-subsection">
-            <div class="admin-action-subtitle">Darstellung auf der Jahresabo-Seite</div>
-            <div class="admin-action-description">Alle Texte sind einzeln editierbar. Die Datumswerte kommen aus den Einstellungen derselben Aktion.</div>
+            <div class="admin-action-subtitle">Aktionskopf auf der gewählten Buchungsseite</div>
+            <div class="admin-action-description">Dieser Kopf erscheint oberhalb von „Datum wählen“ beziehungsweise „Wochentag wählen“. Alle Texte sind einzeln editierbar.</div>
             <div class="admin-action-panel admin-action-panel-stack">
           <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
             <div><label class="eb-adm-lbl">Erste Überschrift</label><input type="text" id="abKicker" class="eb-adm-inp"></div>
@@ -6524,6 +6552,22 @@ main {
                 <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Premium-Partner-Rabatt für diese Mail-Adressen</label>
                 <textarea id="spDiscountEmailDomains" rows="2" placeholder="@sparkasse-gm.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;resize:vertical;"></textarea>
                 <div style="font-size:0.72rem;color:#7A7368;line-height:1.5;margin-top:5px;">Nur für aktive Premium-Partner. Eine Endung pro Zeile oder mit Komma getrennt, jeweils mit @ beginnen.</div>
+              </div>
+              <div style="grid-column:1 / -1;border-top:1px solid #E2DACB;padding-top:12px;">
+                <div style="font:800 11.5px 'Space Grotesk',sans-serif;color:#1C1A17;margin-bottom:5px;">Datenschutzinformation des Ansprechpartners</div>
+                <div style="font-size:0.72rem;color:#7A7368;line-height:1.5;margin-bottom:9px;">Ein kurzer Link in der normalen Partnerkommunikation genügt. Die App verschickt keine zusätzliche Datenschutzmail; hier wird nur der bereits erfolgte Hinweis intern dokumentiert.</div>
+                <label style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:#5C564C;margin-bottom:9px;"><input id="spPrivacyInformed" type="checkbox"> Ansprechpartner wurde informiert</label>
+                <div style="display:grid;grid-template-columns:150px 1fr;gap:9px;">
+                  <input id="spPrivacyInformedAt" type="date" class="admin-input" aria-label="Informationsdatum Ansprechpartner">
+                  <select id="spPrivacyMethod" class="admin-input" aria-label="Informationsweg Ansprechpartner">
+                    <option value="">Informationsweg wählen</option>
+                    <option value="E-Mail mit Datenschutzhinweis">E-Mail mit Datenschutzhinweis</option>
+                    <option value="Vertragsanschreiben">Vertragsanschreiben</option>
+                    <option value="Persönlich mit anschließendem Link">Persönlich mit anschließendem Link</option>
+                    <option value="Sonstiger nachweisbarer Weg">Sonstiger nachweisbarer Weg</option>
+                  </select>
+                </div>
+                <input id="spPrivacyNote" type="text" class="admin-input" style="width:100%;margin-top:9px;" placeholder="Interner Nachweis oder Ablageort">
               </div>
             </div>
           </div>
@@ -7301,11 +7345,24 @@ body.bielstein-theme #tabPlay:not(.active) {
             Du siehst vorher eine Vorschau und musst bestätigen.
           </div>
           <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Welche Liste?</label>
-          <select id="memberSyncSource" onchange="memberSyncSource=this.value;loadMemberGroups()" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;margin-bottom:12px;">
+          <select id="memberSyncSource" onchange="memberSyncSource=this.value;renderMemberPrivacyNotice()" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;margin-bottom:12px;">
             <option value="tfb">Tennisfreunde Bielstein (Mitglieder)</option>
             <option value="bsv">BSV Victoria Bielstein (Mitglieder)</option>
           </select>
           <div id="memberGroupStatus" style="margin:-4px 0 12px;font-size:0.74rem;color:#7A7368;"></div>
+          <div style="border:1px solid #E2DACB;background:#F8F5EF;padding:14px;margin:0 0 14px;">
+            <div style="font:800 12px 'Space Grotesk',sans-serif;color:#1C1A17;margin-bottom:5px;">Mitgliederinformation vorbereiten</div>
+            <div style="font-size:0.75rem;color:#7A7368;line-height:1.5;margin-bottom:10px;"><strong>Noch kein Versand:</strong> Hier werden nur Textversion und Verantwortlicher festgelegt. Beim später freigegebenen Erstimport informiert die App jede eindeutige E-Mail-Adresse einmal. Folgeimporte berücksichtigen ausschließlich neue Mitglieder. Zustellung und Fehler werden je Adresse nachgewiesen.</div>
+            <div style="display:grid;grid-template-columns:1fr 170px;gap:9px;">
+              <input id="memberPrivacyResponsible" type="text" class="admin-input" placeholder="Verantwortliche Person">
+              <input id="memberPrivacyVersion" type="text" class="admin-input" value="2026-09-30" placeholder="Textversion">
+            </div>
+            <input id="memberPrivacyNote" type="text" class="admin-input" style="width:100%;margin-top:9px;" placeholder="Interne Notiz zur Textfreigabe">
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+              <button type="button" class="admin-save-btn" onclick="saveMemberPrivacyNotice()">Versandvorbereitung speichern</button>
+              <span id="memberPrivacyStatus" style="font-size:0.75rem;color:#7A7368;"></span>
+            </div>
+          </div>
           <input type="file" id="memberCsvInput" accept=".xlsx,.xlsm,.xls,.csv,text/csv" style="display:none" onchange="handleMemberFile(this)">
           <button class="book-btn visible" style="width:100%;position:static;" onclick="document.getElementById('memberCsvInput').click()">Excel- oder CSV-Datei auswählen …</button>
           <div id="memberSyncMsg" style="margin-top:10px;font-size:0.82rem;color:#7A7368;"></div>
@@ -8379,6 +8436,7 @@ function setMode(m) {
     var gc=document.getElementById('giftCard'); if(gc) gc.style.display = currentUser ? 'block' : 'none'; }
   if (m==='kiosk') { renderKiosk(); refreshKioskCatalog(); }
   if (typeof window.showSponsorForMode === 'function') window.showSponsorForMode(m);
+  if (typeof window.refreshMarketingActionBanner === 'function') window.refreshMarketingActionBanner(m);
   if (m==='partner' && typeof renderPartnerBoard==='function') { renderPartnerBoard(); }
   if (m==='verabredungen') { setTimeout(requestMeetFrameHeight, 80); setTimeout(requestMeetFrameHeight, 500); }
   if (m==='admin') {
@@ -9886,6 +9944,7 @@ async function cancelSingleBooking(bookingId, bookingLabel, priceCents) {
     `Der Platz wird wieder freigegeben. ${amount} werden deinem Spielguthaben gutgeschrieben.`
   );
   if (!confirmed) return;
+
   const button = document.querySelector(`[data-cancel-booking="${bookingId}"]`);
   if (button) button.disabled = true;
   try {
@@ -12038,13 +12097,19 @@ async function loadAdminSponsors() {
     rows = (data || []).slice().sort(pbCompareSponsors);
     const { data: discountRows, error: discountError } = await sb.rpc('admin_list_sponsor_discount_emails');
     if (discountError) throw discountError;
+    const { data: privacyRows, error: privacyError } = await sb.rpc('admin_list_sponsor_privacy_notices');
+    if (privacyError) throw privacyError;
     const discountBySponsor = new Map();
     (discountRows || []).forEach(item => {
       const emails = discountBySponsor.get(item.sponsor_id) || [];
       emails.push(item.email);
       discountBySponsor.set(item.sponsor_id, emails);
     });
-    rows.forEach(sponsor => { sponsor.discount_emails = (discountBySponsor.get(sponsor.id) || []).join('\n'); });
+    const privacyBySponsor = new Map((privacyRows || []).map(item => [item.sponsor_id, item]));
+    rows.forEach(sponsor => {
+      sponsor.discount_emails = (discountBySponsor.get(sponsor.id) || []).join('\n');
+      Object.assign(sponsor, privacyBySponsor.get(sponsor.id) || {});
+    });
   } catch(e) {
     box.innerHTML = `<div style="color:#B8402C;padding:18px;">Sponsoren konnten nicht geladen werden: ${esc(e?.message || 'Unbekannter Fehler')}</div>`;
     return;
@@ -12131,6 +12196,7 @@ async function loadAdminSponsors() {
                 ${s.contact_name ? `<div style="font:600 13.2px 'Manrope',sans-serif;color:#1C1A17;line-height:1.3;">${esc(s.contact_name)}</div>` : ''}
                 ${s.contact_email ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;word-break:break-all;">${esc(s.contact_email)}</div>` : ''}
                 ${s.contact_phone ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;">${esc(s.contact_phone)}</div>` : ''}
+                ${s.privacy_notice_informed_at ? `<div style="font:800 11.5px 'Manrope',sans-serif;color:#1F8A5F;line-height:1.35;margin-top:4px;">Datenschutzinfo: ${new Date(s.privacy_notice_informed_at).toLocaleDateString('de-DE')}</div>` : `<div style="font:800 11.5px 'Manrope',sans-serif;color:#B8402C;line-height:1.35;margin-top:4px;">Datenschutzinfo offen</div>`}
                 ${discountEmails ? `<div style="font:700 11.5px 'Manrope',sans-serif;color:#1F8A5F;line-height:1.35;margin-top:4px;word-break:break-all;">Rabattadressen: ${esc(discountEmails).replace(/\n/g, '<br>')}</div>` : ''}
                 ${discountEmailDomains ? `<div style="font:700 11.5px 'Manrope',sans-serif;color:#1F8A5F;line-height:1.35;margin-top:4px;word-break:break-all;">Rabatt-Endungen: ${esc(discountEmailDomains)}</div>` : ''}
               ` : ''}
@@ -12271,6 +12337,10 @@ function editSponsor(id) {
   document.getElementById('spContactPhone').value = s.contact_phone || '';
   document.getElementById('spDiscountEmails').value = s.discount_emails || '';
   document.getElementById('spDiscountEmailDomains').value = s.discount_email_domains || '';
+  document.getElementById('spPrivacyInformed').checked = !!s.privacy_notice_informed_at;
+  document.getElementById('spPrivacyInformedAt').value = s.privacy_notice_informed_at ? String(s.privacy_notice_informed_at).slice(0, 10) : '';
+  document.getElementById('spPrivacyMethod').value = s.privacy_notice_method || '';
+  document.getElementById('spPrivacyNote').value = s.privacy_notice_note || '';
   const contractCompany = s.contract_company || s.name || '';
   document.getElementById('spContractCompany').value = contractCompany;
   setSponsorCompanyAuto(contractCompany === (s.name || ''));
@@ -12309,6 +12379,10 @@ function resetSponsorForm() {
   document.getElementById('spContactPhone').value = '';
   document.getElementById('spDiscountEmails').value = '';
   document.getElementById('spDiscountEmailDomains').value = '';
+  document.getElementById('spPrivacyInformed').checked = false;
+  document.getElementById('spPrivacyInformedAt').value = '';
+  document.getElementById('spPrivacyMethod').value = '';
+  document.getElementById('spPrivacyNote').value = '';
   document.getElementById('spContractCompany').value = '';
   setSponsorCompanyAuto(true);
   document.getElementById('spAddressStreet').value = '';
@@ -12432,6 +12506,10 @@ async function saveSponsor() {
   const contactPhone = document.getElementById('spContactPhone').value.trim();
   const discountEmails = document.getElementById('spDiscountEmails').value.trim();
   const discountEmailDomains = document.getElementById('spDiscountEmailDomains').value.trim();
+  const privacyInformed = document.getElementById('spPrivacyInformed').checked;
+  const privacyInformedAt = document.getElementById('spPrivacyInformedAt').value;
+  const privacyMethod = document.getElementById('spPrivacyMethod').value.trim();
+  const privacyNote = document.getElementById('spPrivacyNote').value.trim();
   const website      = document.getElementById('spWebsite').value.trim();
   const courtLabelValue = document.getElementById('spCourtLabel').value.trim();
   const courtPartnerEnabled = document.getElementById('spCourtPartnerEnabled').checked;
@@ -12451,6 +12529,8 @@ async function saveSponsor() {
   if (!name) { alert('Bitte eine Marke angeben.'); return; }
   if (!Number.isFinite(annualAmountCents) || annualAmountCents < 0) { alert('Bitte einen gültigen Jahresbetrag angeben.'); return; }
   if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
+  if (privacyInformed && (!privacyInformedAt || !privacyMethod)) { alert('Bitte Informationsdatum und Informationsweg für den Ansprechpartner ergänzen.'); return; }
+  if (existingSponsor?.privacy_notice_informed_at && !privacyInformed) { alert('Ein protokollierter Datenschutznachweis kann nicht stillschweigend entfernt werden. Bitte eine Korrektur als neuen Nachweis speichern.'); return; }
   const discountEmailParts = [...new Set(discountEmails.split(/[\s,;]+/).map(v => v.trim().toLowerCase()).filter(Boolean))];
   if (discountEmailParts.some(value => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value))) {
     alert('Bitte nur vollständige, gültige Rabatt-/Buchungs-E-Mail-Adressen eintragen.'); return;
@@ -12520,6 +12600,22 @@ async function saveSponsor() {
       p_emails: discountEmailParts.join('\n'),
     });
     if (discountError) throw discountError;
+    const privacyChanged = privacyInformed && (
+      !existingSponsor?.privacy_notice_informed_at
+      || String(existingSponsor.privacy_notice_informed_at).slice(0, 10) !== privacyInformedAt
+      || String(existingSponsor.privacy_notice_method || '') !== privacyMethod
+      || String(existingSponsor.privacy_notice_note || '') !== privacyNote
+    );
+    if (privacyChanged) {
+      const { error: privacyError } = await sb.rpc('admin_set_sponsor_privacy_notice', {
+        p_sponsor_id: sponsorId,
+        p_notice_version: '2026-09-30',
+        p_informed_at: `${privacyInformedAt}T12:00:00+02:00`,
+        p_method: privacyMethod,
+        p_note: privacyNote,
+      });
+      if (privacyError) throw privacyError;
+    }
     showToast('Sponsor gespeichert.');
     resetSponsorForm();
     loadAdminSponsors();
@@ -13243,7 +13339,13 @@ document.getElementById('adminInfoMails').style.display = 'none';
 let memberSyncRows = null;
 let memberSyncSource = 'tfb';
 let memberSyncFile = null;
+let memberSyncPreview = null;
+let memberSyncNoticeTargets = null;
+let memberNoticeBatch = null;
+let memberNoticeRecipients = new Map();
 let memberGroups = [];
+let memberPrivacyNotices = new Map();
+const MEMBER_NOTICE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/send-member-notices`;
 
 // Excel-Leser (SheetJS) nur bei Bedarf aus den lokalen App-Dateien nachladen.
 function ensureXlsxLib() {
@@ -13327,6 +13429,9 @@ async function loadMemberGroups() {
   try {
     const { data, error } = await sb.rpc('admin_list_member_groups');
     if (error) throw error;
+    const { data: privacyRows, error: privacyError } = await sb.rpc('admin_list_member_privacy_notices');
+    if (privacyError) throw privacyError;
+    memberPrivacyNotices = new Map((privacyRows || []).map(item => [item.source, item]));
     memberGroups = (data || []).filter(group => group.active && group.import_enabled);
     const previous = select.value || memberSyncSource;
     select.innerHTML = memberGroups.map(group =>
@@ -13337,9 +13442,211 @@ async function loadMemberGroups() {
     const group = memberGroups.find(item => item.source === memberSyncSource);
     const status = document.getElementById('memberGroupStatus');
     if (status && group) status.textContent = `${Number(group.active_members || 0)} aktive Einträge · letzter Import: ${group.last_import_at ? new Date(group.last_import_at).toLocaleDateString('de-DE') : 'noch nicht protokolliert'}`;
+    renderMemberPrivacyNotice();
   } catch (error) {
     console.warn('Mitgliedergruppen konnten nicht geladen werden', error);
   }
+}
+
+function renderMemberPrivacyNotice() {
+  const notice = memberPrivacyNotices.get(memberSyncSource) || {};
+  const responsible = document.getElementById('memberPrivacyResponsible');
+  const version = document.getElementById('memberPrivacyVersion');
+  const note = document.getElementById('memberPrivacyNote');
+  const status = document.getElementById('memberPrivacyStatus');
+  if (!responsible || !version || !note || !status) return;
+  responsible.value = notice.privacy_notice_responsible || '';
+  version.value = notice.privacy_notice_version || '2026-09-30';
+  note.value = notice.privacy_notice_note || '';
+  const complete = !!(responsible.value && version.value);
+  status.textContent = complete
+    ? 'Versand vorbereitet · noch keine Mail verschickt'
+    : 'Textversion und Verantwortlichen festlegen · noch keine Mail verschickt';
+  status.style.color = complete ? '#1F8A5F' : '#B8402C';
+}
+
+async function saveMemberPrivacyNotice() {
+  const status = document.getElementById('memberPrivacyStatus');
+  const payload = {
+    p_source: memberSyncSource,
+    p_notice_version: document.getElementById('memberPrivacyVersion')?.value.trim() || '',
+    p_responsible: document.getElementById('memberPrivacyResponsible')?.value.trim() || '',
+    p_note: document.getElementById('memberPrivacyNote')?.value.trim() || '',
+  };
+  if (!payload.p_notice_version || !payload.p_responsible) {
+    status.textContent = 'Bitte Textversion und verantwortliche Person eintragen.';
+    status.style.color = '#B8402C';
+    return;
+  }
+  try {
+    const { error } = await sb.rpc('admin_configure_member_notice', payload);
+    if (error) throw error;
+    status.textContent = 'Versandvorbereitung gespeichert · noch keine Mail verschickt.';
+    status.style.color = '#1F8A5F';
+    await loadMemberGroups();
+  } catch (error) {
+    status.textContent = 'Fehler: ' + (error.message || error);
+    status.style.color = '#B8402C';
+  }
+}
+
+function memberPrivacyBaseComplete() {
+  const privacy = memberPrivacyNotices.get(memberSyncSource) || {};
+  return !!(privacy.privacy_notice_version && privacy.privacy_notice_responsible);
+}
+
+function memberCurrentFileIsReleased() {
+  const privacy = memberPrivacyNotices.get(memberSyncSource) || {};
+  const confirmedAt = privacy.privacy_import_confirmed_at ? new Date(privacy.privacy_import_confirmed_at) : null;
+  const lastImportAt = privacy.last_import_at ? new Date(privacy.last_import_at) : null;
+  return !!(memberSyncFile?.sha256 && confirmedAt
+    && privacy.privacy_import_file_sha256 === memberSyncFile.sha256
+    && (!lastImportAt || confirmedAt > lastImportAt));
+}
+
+async function prepareMemberNoticeBatch() {
+  const box = document.getElementById('msPrivacyTargets');
+  if (!memberSyncRows || !memberSyncFile?.sha256) return;
+  try {
+    const { data, error } = await sb.rpc('admin_prepare_member_notice_batch', {
+      p_source: memberSyncSource,
+      p_rows: memberSyncRows,
+      p_file_name: memberSyncFile.name || null,
+      p_file_sha256: memberSyncFile.sha256,
+    });
+    if (error) throw error;
+    memberNoticeBatch = data;
+    document.getElementById('memberSyncPrivacyConfirm').disabled = true;
+    box.textContent = 'Versandlauf vorbereitet. Noch wurde keine Mail verschickt.';
+    box.style.color = '#1F8A5F';
+    await loadMemberNoticeBatch();
+  } catch (error) {
+    box.textContent = 'Fehler: ' + (error.message || error);
+    box.style.color = '#B8402C';
+  }
+}
+
+async function callMemberNoticeFunction(payload) {
+  const session = (await sb.auth.getSession()).data.session;
+  if (!session?.access_token) throw new Error('Bitte neu als Admin anmelden.');
+  const response = await fetch(MEMBER_NOTICE_FUNCTION_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+      apikey: SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.error) throw new Error(data.error || `Versandfehler ${response.status}`);
+  return data;
+}
+
+function memberNoticeStatusLabel(status) {
+  return ({
+    pending: 'Noch nicht versendet', processing: 'Wird versendet', accepted: 'Von Resend angenommen',
+    sent: 'Versendet', delivery_delayed: 'Zustellung verzögert', delivered: 'Zugestellt',
+    bounced: 'Unzustellbar', complained: 'Als Spam gemeldet', failed: 'Fehlgeschlagen',
+    suppressed: 'Von Resend gesperrt', manually_informed: 'Manuell informiert',
+  })[status] || status;
+}
+
+function renderMemberNoticeBatch(result) {
+  const panel = document.getElementById('memberNoticeStatus');
+  const send = document.getElementById('memberNoticeSend');
+  const refresh = document.getElementById('memberNoticeRefresh');
+  const release = document.getElementById('memberNoticeRelease');
+  if (!panel || !send || !refresh || !release) return;
+  const batch = result?.batch || {};
+  const counts = result?.counts || {};
+  const recipients = Array.isArray(result?.recipients) ? result.recipients : [];
+  memberNoticeRecipients = new Map(recipients.map(item => [item.id, item]));
+  const failed = recipients.filter(item => ['bounced','complained','failed','suppressed','delivery_delayed'].includes(item.status));
+  const technicalFailures = recipients.filter(item => item.status === 'failed').length;
+  panel.style.display = 'block';
+  panel.innerHTML = `<strong>${Number(batch.recipient_count || 0)} eindeutige Adresse${Number(batch.recipient_count || 0) === 1 ? '' : 'n'}</strong><br>` +
+    `Noch offen: ${Number(counts.pending || 0) + Number(counts.processing || 0)} · angenommen: ${Number(counts.accepted || 0)} · zugestellt: ${Number(counts.delivered || 0)} · manuell: ${Number(counts.manual || 0)} · nacharbeiten: ${Number(counts.failed || 0) + Number(counts.delayed || 0)}` +
+    (failed.length ? `<div style="margin-top:8px;border-top:1px solid #E2DACB;padding-top:7px;">${failed.map(item =>
+      `<div style="margin:5px 0;"><strong>${adminUserEsc(item.email)}</strong> · ${adminUserEsc(memberNoticeStatusLabel(item.status))}${item.last_error ? ` · ${adminUserEsc(item.last_error)}` : ''}<br>` +
+      `<button type="button" class="admin-save-btn" style="margin:4px 5px 0 0;padding:5px 8px;" onclick="retryMemberNotice('${item.id}')">Adresse prüfen / erneut</button>` +
+      `<button type="button" class="admin-save-btn" style="margin-top:4px;padding:5px 8px;" onclick="markMemberNoticeManual('${item.id}')">Anders informiert</button></div>`
+    ).join('')}${technicalFailures ? `<button type="button" class="admin-save-btn" style="margin-top:7px;padding:6px 9px;" onclick="retryFailedMemberNotices()">${technicalFailures} technische Fehlschläge erneut einplanen</button>` : ''}</div>` : '');
+  const pending = Number(counts.pending || 0);
+  send.style.display = pending > 0 ? 'flex' : 'none';
+  refresh.style.display = Number(batch.recipient_count || 0) > 0 ? 'flex' : 'none';
+  release.style.display = batch.status === 'ready_for_import' ? 'flex' : 'none';
+  release.disabled = batch.status !== 'ready_for_import';
+}
+
+async function loadMemberNoticeBatch() {
+  if (!memberNoticeBatch) return;
+  const { data, error } = await sb.rpc('admin_get_member_notice_batch', { p_batch_id: memberNoticeBatch });
+  if (error) throw error;
+  renderMemberNoticeBatch(data);
+  return data;
+}
+
+async function sendMemberNotices() {
+  if (!memberNoticeBatch || !confirm('Informationsmails jetzt an die angezeigten neuen Adressen versenden?')) return;
+  const send = document.getElementById('memberNoticeSend');
+  send.disabled = true;
+  try {
+    let done = false;
+    while (!done) {
+      const result = await callMemberNoticeFunction({ action: 'dispatch_next', batch_id: memberNoticeBatch });
+      done = !!result.done;
+      await loadMemberNoticeBatch();
+    }
+    showToast('Versand angenommen. Die endgültigen Zustellmeldungen treffen nach und nach ein.');
+  } catch (error) {
+    showToast('Versand gestoppt: ' + (error.message || error), true);
+    await loadMemberNoticeBatch().catch(() => {});
+  } finally { send.disabled = false; }
+}
+
+async function retryMemberNotice(recipientId) {
+  const recipient = memberNoticeRecipients.get(recipientId);
+  if (!recipient) return showToast('Empfänger nicht mehr im aktuellen Versandstand gefunden.', true);
+  const email = prompt('E-Mail-Adresse prüfen oder korrigieren:', recipient.email);
+  if (email === null) return;
+  const { error } = await sb.rpc('admin_retry_member_notice_recipient', {
+    p_recipient_id: recipientId, p_email: email.trim() || null,
+  });
+  if (error) return showToast('Fehler: ' + error.message, true);
+  await loadMemberNoticeBatch();
+}
+
+async function retryFailedMemberNotices() {
+  if (!memberNoticeBatch || !confirm('Alle rein technischen Fehlschläge dieses Versandlaufs erneut einplanen? Unzustellbare oder gesperrte Adressen bleiben unberührt.')) return;
+  const { data, error } = await sb.rpc('admin_retry_failed_member_notices', { p_batch_id: memberNoticeBatch });
+  if (error) return showToast('Fehler: ' + error.message, true);
+  showToast(`${Number(data || 0)} technische Fehlschläge erneut eingeplant.`);
+  await loadMemberNoticeBatch();
+}
+
+async function markMemberNoticeManual(recipientId) {
+  const method = prompt('Wie wurde die Person informiert? (z. B. Brief oder persönliche Übergabe)');
+  if (!method) return;
+  const note = prompt('Optionale interne Notiz:') || '';
+  const { error } = await sb.rpc('admin_mark_member_notice_manual', {
+    p_recipient_id: recipientId, p_method: method, p_note: note,
+  });
+  if (error) return showToast('Fehler: ' + error.message, true);
+  await loadMemberNoticeBatch();
+}
+
+async function releaseMemberNoticeBatch() {
+  if (!memberNoticeBatch) return;
+  const { error } = await sb.rpc('admin_release_member_import_after_notices', { p_batch_id: memberNoticeBatch });
+  if (error) return showToast('Freigabe nicht möglich: ' + error.message, true);
+  const privacy = memberPrivacyNotices.get(memberSyncSource) || {};
+  privacy.privacy_import_confirmed_at = new Date().toISOString();
+  privacy.privacy_import_file_sha256 = memberSyncFile.sha256;
+  memberPrivacyNotices.set(memberSyncSource, privacy);
+  document.getElementById('memberSyncOk').disabled = false;
+  document.getElementById('msPrivacyTargets').textContent = 'Alle Adressen sind zugestellt oder nachvollziehbar manuell geklärt. Genau diese Datei ist für den Import freigegeben.';
+  showToast('Mitgliederdatei ist jetzt für den Import freigegeben.');
 }
 
 async function saveMemberGroup() {
@@ -13366,6 +13673,7 @@ async function saveMemberGroup() {
     await loadMemberGroups();
     document.getElementById('memberSyncSource').value = source;
     memberSyncSource = source;
+    renderMemberPrivacyNotice();
   } catch (error) {
     msg.textContent = 'Fehler: ' + (error.message || error);
     msg.style.color = '#B8402C';
@@ -13397,14 +13705,24 @@ async function handleMemberFile(input) {
     const fileSha256 = await memberFileSha256(file);
     memberSyncRows = rows;
     memberSyncFile = { name: file.name, sha256: fileSha256 };
-    const { data, error } = await sb.rpc('admin_sync_club_members_preview',
-      { p_source: memberSyncSource, p_rows: rows, p_file_name: file.name, p_file_sha256: fileSha256 });
-    if (error) throw error;
+    memberNoticeBatch = null;
+    const [previewResult, targetResult] = await Promise.all([
+      sb.rpc('admin_sync_club_members_preview',
+        { p_source: memberSyncSource, p_rows: rows, p_file_name: file.name, p_file_sha256: fileSha256 }),
+      sb.rpc('admin_list_new_member_notice_targets',
+        { p_source: memberSyncSource, p_rows: rows }),
+    ]);
+    if (previewResult.error) throw previewResult.error;
+    if (targetResult.error) throw targetResult.error;
+    memberSyncPreview = previewResult.data;
+    memberSyncNoticeTargets = targetResult.data || { new_members: [], target_emails: [], new_member_count: 0, target_email_count: 0 };
     msg.textContent = '';
-    openMemberSyncModal(data);
+    openMemberSyncModal(memberSyncPreview);
   } catch (e) {
     memberSyncRows = null;
     memberSyncFile = null;
+    memberSyncPreview = null;
+    memberSyncNoticeTargets = null;
     msg.style.color = '#B8402C';
     msg.textContent = 'Fehler: ' + (e.message || e);
   }
@@ -13432,18 +13750,61 @@ function openMemberSyncModal(p) {
     nEl.style.display = 'block';
   } else { nEl.textContent = ''; nEl.style.display = 'none'; }
 
+  const privacyBox = g('msPrivacyTargets');
+  const privacyConfirm = g('memberSyncPrivacyConfirm');
+  const newMembers = Array.isArray(memberSyncNoticeTargets?.new_members) ? memberSyncNoticeTargets.new_members : [];
+  const newMemberCount = Number(memberSyncNoticeTargets?.new_member_count || 0);
+  const targetEmailCount = Number(memberSyncNoticeTargets?.target_email_count || 0);
+  const targetPreview = newMembers.slice(0, 12).map(item =>
+    `${adminUserEsc(item.full_name || 'Ohne Name')} (${adminUserEsc(item.email || 'ohne E-Mail')})`
+  ).join('<br>');
+  privacyBox.style.color = '#5C564C';
+  privacyBox.innerHTML = newMemberCount
+    ? `<strong>Nur neu zu informieren:</strong> ${newMemberCount} Mitglied${newMemberCount === 1 ? '' : 'er'} an ${targetEmailCount} eindeutige${targetEmailCount === 1 ? 'r' : 'n'} Mailadresse${targetEmailCount === 1 ? '' : 'n'}.<br>${targetPreview}${newMembers.length > 12 ? `<br>… und ${newMembers.length - 12} weitere` : ''}`
+    : '<strong>Keine neuen Mitglieder:</strong> Für diese Quartalsliste ist keine Mitgliederinformation erforderlich. Bestehende und ausgeschiedene Mitglieder werden nicht angeschrieben.';
+
   const ok = g('memberSyncOk'), cancel = g('memberSyncCancel');
+  const send = g('memberNoticeSend'), refresh = g('memberNoticeRefresh'), release = g('memberNoticeRelease');
+  const noticeStatus = g('memberNoticeStatus');
+  const baseComplete = memberPrivacyBaseComplete();
+  const alreadyReleased = memberCurrentFileIsReleased();
+  ok.disabled = !alreadyReleased;
+  privacyConfirm.disabled = !baseComplete || alreadyReleased;
+  send.style.display = 'none';
+  refresh.style.display = 'none';
+  release.style.display = 'none';
+  noticeStatus.style.display = 'none';
+  privacyConfirm.querySelector('strong').textContent = newMemberCount
+    ? `Versandlauf für ${targetEmailCount} Adresse${targetEmailCount === 1 ? '' : 'n'} vorbereiten`
+    : 'Datei ohne neue Adressen vorbereiten';
+  privacyConfirm.querySelector('small').textContent = baseComplete
+    ? 'Gilt nur für diese geprüfte Datei; dieser Schritt verschickt noch nichts'
+    : 'Zuerst Textversion und Verantwortlichen speichern';
   const close = () => {
     overlay.classList.remove('open');
     ok.removeEventListener('click', onOk);
     cancel.removeEventListener('click', onCancel);
+    privacyConfirm.removeEventListener('click', onPrivacyConfirm);
+    send.removeEventListener('click', onSend);
+    refresh.removeEventListener('click', onRefresh);
+    release.removeEventListener('click', onRelease);
     overlay.removeEventListener('click', onBackdrop);
   };
   const onOk = async () => { ok.disabled = true; await applyMemberSync(); ok.disabled = false; close(); };
-  const onCancel = () => { memberSyncRows = null; memberSyncFile = null; close(); };
+  const onPrivacyConfirm = async () => { privacyConfirm.disabled = true; await prepareMemberNoticeBatch(); };
+  const onSend = async () => { await sendMemberNotices(); };
+  const onRefresh = async () => { await loadMemberNoticeBatch(); };
+  const onRelease = async () => { await releaseMemberNoticeBatch(); };
+  const onCancel = () => {
+    memberSyncRows = null; memberSyncFile = null; memberSyncPreview = null; memberSyncNoticeTargets = null; memberNoticeBatch = null; close();
+  };
   const onBackdrop = (e) => { if (e.target === overlay) onCancel(); };
   ok.addEventListener('click', onOk);
   cancel.addEventListener('click', onCancel);
+  privacyConfirm.addEventListener('click', onPrivacyConfirm);
+  send.addEventListener('click', onSend);
+  refresh.addEventListener('click', onRefresh);
+  release.addEventListener('click', onRelease);
   overlay.addEventListener('click', onBackdrop);
   overlay.classList.add('open');
 }
@@ -13471,6 +13832,9 @@ async function applyMemberSync() {
   } finally {
     memberSyncRows = null;
     memberSyncFile = null;
+    memberSyncPreview = null;
+    memberSyncNoticeTargets = null;
+    memberNoticeBatch = null;
   }
 }
 
@@ -21041,28 +21405,6 @@ body.bielstein-theme #upcomingBookingsCard {
   background: #EFE9DC !important;
   box-shadow: none !important;
 }
-.booking-cancel-row {
-  display: flex; justify-content: flex-end; align-items: center;
-  min-height: 34px; margin-top: 11px; padding-top: 11px;
-  border-top: 1px solid #D9CFBF;
-}
-.booking-cancel-btn {
-  min-height: 34px; padding: 8px 13px;
-  border: 1.5px solid #1C1A17; border-radius: 6px;
-  background: #FFFFFF; color: #1C1A17;
-  font: 700 12px/1 "Space Grotesk","Arial Narrow",sans-serif;
-  letter-spacing: 0; cursor: pointer;
-}
-.booking-cancel-btn:hover { background: #1C1A17; color: #FFFFFF; }
-.booking-cancel-btn:disabled { opacity: .55; cursor: wait; }
-.booking-cancel-deadline {
-  color: #7A7368; font: 600 11px/1.3 "Manrope",sans-serif;
-  letter-spacing: 0;
-}
-@media (max-width: 620px) {
-  .booking-cancel-row { justify-content: stretch; }
-  .booking-cancel-btn { width: 100%; }
-}
 .upcoming-item {
   display: flex; flex-direction: column; align-items: stretch;
   padding: 15px 16px; margin-top: 9px;
@@ -21095,6 +21437,28 @@ body.bielstein-theme #upcomingBookingsCard {
   background: #FFFFFF; color: #7A7368;
   font: 700 10.5px/1 "Space Grotesk",sans-serif; letter-spacing: .04em;
   text-transform: uppercase;
+}
+.booking-cancel-row {
+  display: flex; justify-content: flex-end; align-items: center;
+  min-height: 34px; margin-top: 11px; padding-top: 11px;
+  border-top: 1px solid #D9CFBF;
+}
+.booking-cancel-btn {
+  min-height: 34px; padding: 8px 13px;
+  border: 1.5px solid #1C1A17; border-radius: 6px;
+  background: #FFFFFF; color: #1C1A17;
+  font: 700 12px/1 "Space Grotesk","Arial Narrow",sans-serif;
+  letter-spacing: 0; cursor: pointer;
+}
+.booking-cancel-btn:hover { background: #1C1A17; color: #FFFFFF; }
+.booking-cancel-btn:disabled { opacity: .55; cursor: wait; }
+.booking-cancel-deadline {
+  color: #7A7368; font: 600 11px/1.3 "Manrope",sans-serif;
+  letter-spacing: 0;
+}
+@media (max-width: 620px) {
+  .booking-cancel-row { justify-content: stretch; }
+  .booking-cancel-btn { width: 100%; }
 }
 /* „Spieler informieren" – kompakter Button (nur textbreit), in der Kopfzeile
    zwischen Datum links und Badge rechts. */
@@ -22054,6 +22418,19 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     eb = eb || window.__earlybird || {};
     return !eb.appliesTo || eb.appliesTo === 'abo' || eb.appliesTo === 'both';
   };
+  window.refreshMarketingActionBanner = function(mode){
+    var eb=window.__earlybird||{};
+    var current=mode;
+    if(!current){
+      var aboTab=document.getElementById('tabAbo');
+      current=aboTab&&aboTab.classList.contains('active')?'abo':'book';
+    }
+    var applies=current==='book'
+      ? (eb.appliesTo==='single'||eb.appliesTo==='both')
+      : (current==='abo'&&(!eb.appliesTo||eb.appliesTo==='abo'||eb.appliesTo==='both'));
+    var banner=document.getElementById('earlybirdBanner');
+    if(banner) banner.classList.toggle('show',!!eb.enabled&&!!applies);
+  };
   window.ebFmtDate = function(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return '—'; } };
   window.loadEarlybird = async function(){
     try{
@@ -22076,12 +22453,11 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       window.__publicEarlybird = Object.assign({},window.__earlybird);
       var b=document.getElementById('earlybirdBanner');
       if(b){
-        // Jahresabo-Kachel nur im Zeitraum oder in der manuellen Vorschau zeigen.
-        b.classList.toggle('show', (window.__earlybird.active || window.__earlybird.preview) && window.pbActionAppliesToAbo(window.__earlybird));
         var as=document.getElementById('ebActionStart'); if(as) as.textContent=window.ebFmtDate(window.__earlybird.start);
         var ae=document.getElementById('ebActionEnd'); if(ae) ae.textContent=window.ebFmtDate(window.__earlybird.end);
         var s=document.getElementById('ebStart'); if(s) s.textContent=window.ebFmtDate(window.__earlybird.aboStart);
       }
+      window.refreshMarketingActionBanner();
       // Aktion 1 liefert die Datumswerte. Die Splash-PNG selbst wird separat ueber ihre URL gesteuert.
       var sp=document.getElementById('pbSplashAction');
       if(sp){
@@ -22116,6 +22492,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   window.__publicSplash = {};
   window.__splashCacheKey = 'pbSplashConfigCache';
   window.__pbSplashActionEnabled = true;
+  window.__pbSplashActionModalEnabled = true;
+  window.__pbSplashActionTarget = 'abo';
   window.pbSplashActionHexColor = function(value, fallback){
     var s=String(value||'').trim();
     if(/^#[0-9a-fA-F]{6}$/.test(s)) return s;
@@ -22177,6 +22555,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(Object.prototype.hasOwnProperty.call(d, 'splash_action_enabled')){
       window.__pbSplashActionEnabled = d.splash_action_enabled !== false;
     }
+    window.__pbSplashActionModalEnabled = d.splash_action_modal_enabled !== false;
+    window.__pbSplashActionTarget = d.splash_action_target || d.earlybird_applies_to || window.__pbSplashActionTarget || 'abo';
     var claim = document.querySelector('.pb-splash-claim');
     if(claim && d.splash_claim!=null){ claim.innerHTML = pbEsc(d.splash_claim).replace(/\n/g,'<br>'); }
     var foot = document.querySelector('.pb-splash-foot');
@@ -22222,6 +22602,10 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var visibility=await sb.rpc('get_splash_action_enabled');
         if(!visibility.error) r.data.splash_action_enabled=visibility.data!==false;
       }catch(e){}
+      try{
+        var navigation=await sb.rpc('get_splash_action_navigation');
+        if(!navigation.error&&navigation.data) r.data=Object.assign({},r.data,navigation.data);
+      }catch(e){}
       try{ sessionStorage.setItem(window.__splashCacheKey, JSON.stringify(r.data)); }catch(e){}
       window.pbApplySplashData(r.data);
     }catch(e){}
@@ -22250,6 +22634,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     setv('spEbKicker', d.splash_eb_kicker);
     setv('spEbText', d.splash_eb_text);
     setv('spActionCtaLabel', d.splash_action_cta_label || 'Mehr anzeigen');
+    var modalEnabled=document.getElementById('spActionModalEnabled');
+    if(modalEnabled) modalEnabled.checked=d.splash_action_modal_enabled!==false;
+    if(typeof window.refreshSplashActionModalFields==='function') window.refreshSplashActionModalFields();
     setv('spEbKickerColor', d.splash_eb_kicker_color || 'coral');
     setv('spEbTextColor', d.splash_eb_text_color || 'beige');
     setv('spEbHiColor', d.splash_eb_hi_color || 'coral');
@@ -22745,7 +23132,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var publicAbo=window.__publicAboBanner||window.__abobanner;
     var publicSplashEnabled=window.__pbSplashActionEnabled;
     window.__earlybird={active:false,enabled:!!a.action_enabled,preview:false,start:c.earlybird_start,end:c.earlybird_end,aboStart:c.earlybird_abo_start,discount:Number(c.earlybird_discount_pct)||25,termMonths:Number(c.earlybird_term_months)||24,audience:c.earlybird_audience||'members_partners',appliesTo:c.earlybird_applies_to||'abo',extraNoteVisible:c.earlybird_extra_note_visible!==false,extraNoteText:c.earlybird_extra_note_text||window.__earlybirdExtraNoteDefault};
-    window.__splash=Object.assign({},publicSplash,c,{splash_action_enabled:!!a.splash_enabled});
+    window.__splash=Object.assign({},publicSplash,c,{splash_action_enabled:!!a.splash_enabled,splash_action_modal_enabled:c.splash_action_modal_enabled!==false});
     window.__abobanner=c;
     window.__pbSplashActionEnabled=!!a.splash_enabled;
     window.fillEarlybirdAdmin(); window.fillSplashAdmin(); window.fillAboBannerAdmin();
@@ -22780,7 +23167,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       earlybird_audience:g('ebAdmAudience')||'members_partners',earlybird_applies_to:g('ebAdmAppliesTo')||'abo',
       earlybird_extra_note_visible:!!document.getElementById('ebAdmExtraNoteVisible')?.checked,earlybird_extra_note_text:g('ebAdmExtraNoteText'),
       splash_eb_kicker:g('spEbKicker'),splash_eb_kicker_color:g('spEbKickerColor'),splash_eb_text:g('spEbText'),splash_eb_text_color:g('spEbTextColor'),splash_eb_hi_color:g('spEbHiColor'),
-      splash_action_cta_label:g('spActionCtaLabel')||'Mehr anzeigen',splash_action_image_url:g('spActionImageUrl'),splash_action_tint_enabled:!!document.getElementById('spActionTintEnabled')?.checked,
+      splash_action_modal_enabled:!!document.getElementById('spActionModalEnabled')?.checked,splash_action_cta_label:g('spActionCtaLabel')||'Mehr anzeigen',splash_action_image_url:g('spActionImageUrl'),splash_action_tint_enabled:!!document.getElementById('spActionTintEnabled')?.checked,
       splash_action_tint_color:window.pbSplashActionHexColor(g('spActionTintHex'),'#FF5A36'),splash_action_scale_pct:window.pbClampActionNumber(g('spActionScale'),100,50,220),
       splash_action_rotation_deg:window.pbClampActionNumber(g('spActionRotation'),0,-180,180),splash_action_x_pct:window.pbClampActionNumber(g('spActionX'),50,8,92),splash_action_y_pct:window.pbClampActionNumber(g('spActionY'),22,8,60),
       ab_kicker:g('abKicker'),ab_kicker_color:g('abKickerColor'),ab_title:g('abTitle'),ab_title_color:g('abTitleColor'),ab_body:g('abBody'),ab_body_color:g('abBodyColor'),ab_hi_color:g('abHiColor'),
@@ -22842,6 +23229,13 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   window.setEarlybirdEnabled = function(on){
     window.__ebAdmEnabled=!!on;
     window.refreshEbToggle(window.__ebAdmEnabled);
+  };
+  window.refreshSplashActionModalFields=function(){
+    var checkbox=document.getElementById('spActionModalEnabled');
+    var fields=document.getElementById('spActionModalFields');
+    if(!checkbox||!fields) return;
+    fields.classList.toggle('is-disabled',!checkbox.checked);
+    fields.querySelectorAll('input,textarea,select').forEach(function(el){ el.disabled=!checkbox.checked; });
   };
   window.fillEarlybirdAdmin = function(){
     var eb=window.__earlybird||{};
@@ -23101,10 +23495,23 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       actionOverlay.classList.remove('open');
       actionOverlay.setAttribute('aria-hidden','true');
     }
-    if(actionBtn) actionBtn.addEventListener('click', function(e){ e.preventDefault(); openSplashAction(); });
+    function actionTargetMode(){
+      var applies=window.__pbSplashActionTarget||(window.__earlybird&&window.__earlybird.appliesTo)||'abo';
+      return applies==='single'?'book':'abo';
+    }
+    function goToSplashActionTarget(){
+      try{ setMode(actionTargetMode()); }catch(e){}
+      closeSplashAction();
+      leave(splash);
+    }
+    if(actionBtn) actionBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      if(window.__pbSplashActionModalEnabled===false) goToSplashActionTarget();
+      else openSplashAction();
+    });
     if(actionClose) actionClose.addEventListener('click', closeSplashAction);
     if(actionCloseBg) actionCloseBg.addEventListener('click', closeSplashAction);
-    if(actionPrimary) actionPrimary.addEventListener('click', function(){ try{ setMode('abo'); }catch(e){} closeSplashAction(); leave(splash); });
+    if(actionPrimary) actionPrimary.addEventListener('click', goToSplashActionTarget);
     document.addEventListener('keydown', function esc(e){
       if(e.key === 'Escape'){
         if(actionOverlay && actionOverlay.classList.contains('open')){ closeSplashAction(); return; }
