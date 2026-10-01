@@ -1243,6 +1243,7 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
 .kiosk-consent { display:flex; align-items:flex-start; gap:10px; margin:14px 0; padding:12px; border:1px solid #DDD3C4; border-radius:8px; background:#FFFDF9; color:#514B43; font-size:.72rem; line-height:1.45; cursor:pointer; }
 .kiosk-consent input { width:18px; height:18px; margin:1px 0 0; flex:0 0 auto; accent-color:#FF5A36; }
 .kiosk-tab-actions .kiosk-action:disabled { opacity:.45; cursor:not-allowed; }
+.kiosk-choice-error { margin:0 0 12px; color:#8D2F20; border-color:rgba(141,47,32,.3); background:rgba(141,47,32,.08); }
 .kiosk-undo-toast { position:fixed; z-index:10030; left:50%; bottom:24px; transform:translate(-50%,18px); width:min(520px,calc(100% - 28px)); display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border-radius:10px; background:#1C1A17; color:#fff; box-shadow:0 14px 38px rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:.18s ease; }
 .kiosk-undo-toast.show { opacity:1; transform:translate(-50%,0); pointer-events:auto; }
 .kiosk-undo-toast span { font-size:.76rem; font-weight:700; }
@@ -5390,8 +5391,9 @@ main {
           <input id="kioskChoiceConsentCheck" type="checkbox" onchange="updateKioskConsentButtons()">
           <span>Ich stimme zu, dass Padel Bielstein meine an diesem Tag auf dem Bierdeckel gebuchten Artikel um 23:59 Uhr in einer Summe über mein bei Stripe hinterlegtes Zahlungsmittel belastet. Die Summe ergibt sich aus meinen einzelnen Buchungen, die ich jeweils eine Minute lang rückgängig machen kann.</span>
         </label>
+        <div class="modal-err kiosk-choice-error" id="kioskChoiceErr" role="alert"></div>
         <div class="kiosk-tab-actions">
-          <button class="kiosk-action" type="button" onclick="kioskChoiceDirect()">Direkt bezahlen</button>
+          <button class="kiosk-action" type="button" onclick="kioskChoiceDirect()" id="kioskChoiceDirectBtn">Direkt bezahlen</button>
           <button class="kiosk-action secondary" type="button" onclick="kioskChoiceTab()" id="kioskChoiceTabBtn">Auf meinen Bierdeckel</button>
         </div>
         <div class="kiosk-tab-note" id="kioskChoiceNote"></div>
@@ -8207,9 +8209,14 @@ async function init() {
       renderSlots();
     }
   } else if (params.get('kiosk_setup') === 'success') {
-    try { localStorage.setItem('pb_kiosk_auto_debit', '1'); } catch(e) {}
+    const hasPendingItem = typeof markSuccessfulKioskSetupReturn === 'function' && markSuccessfulKioskSetupReturn();
     window.history.replaceState({}, '', '/');
-    showToast('Automatische Kiosk-Abbuchung ist eingerichtet.');
+    showToast(hasPendingItem ? 'Zahlungsmittel hinterlegt. Dein Artikel wird jetzt gebucht.' : 'Automatische Kiosk-Abbuchung wird eingerichtet.');
+    setMode('kiosk');
+  } else if (params.get('kiosk_setup') === 'cancelled') {
+    try { localStorage.removeItem(KIOSK_PENDING_SETUP_KEY); } catch(e) {}
+    window.history.replaceState({}, '', '/');
+    showToast('Bierdeckel-Aktivierung abgebrochen. Es wurde nichts gebucht.');
     setMode('kiosk');
   } else if (params.get('booking') === 'cancelled') {
     clearPendingAboCheckout();
@@ -8681,7 +8688,7 @@ async function openBookingFromMeet(source) {
 // ============================================================
 let currentUser = null;      // Supabase Auth User
 let currentProfile = null;   // users-Tabelle Eintrag
-let pendingAction = null;    // 'book' | 'abo' — was nach Login passieren soll
+let pendingAction = null;    // Aktion, die nach erfolgreicher Anmeldung fortgesetzt wird
 let passwordRecoveryActive = !!window.__pbPasswordRecovery;
 
 // Auth-State beim Laden prüfen — init() läuft unabhängig davon.
@@ -8978,7 +8985,7 @@ async function openPortal() {
 //  MODAL STEUERUNG
 // ============================================================
 function openModal(action) {
-  pendingAction = (action === 'book' || action === 'abo' || action === 'card' || action === 'loyalty') ? action : null;
+  pendingAction = ['book', 'abo', 'card', 'loyalty', 'kiosk'].includes(action) ? action : null;
   const startTab = (action === 'register') ? 'register' : 'login';
   document.getElementById('modalTitle').textContent = startTab === 'register' ? 'Registrieren' : 'Anmelden';
   document.getElementById('modalSub').textContent = startTab === 'register'
@@ -9084,6 +9091,7 @@ async function doLogin() {
     if (actionAfterLogin === 'abo')     submitAbo(true);
     if (actionAfterLogin === 'card')    confirmCardPurchase(true);
     if (actionAfterLogin === 'loyalty') openLoyaltyCard();
+    if (actionAfterLogin === 'kiosk' && typeof resumePendingKioskCheckout === 'function') resumePendingKioskCheckout();
   } catch(e) {
     showAuthErr('Netzwerkfehler – bitte versuche es erneut.');
   } finally {
@@ -14875,6 +14883,7 @@ function deleteKioskProduct() {
 // Kiosk Designer v2: freie Bereiche, flexible Varianten, Live-Vorschau und Bierdeckel.
 const KIOSK_DESIGN_STORAGE_KEY = 'pb_kiosk_design_v2';
 const KIOSK_TAB_STORAGE_KEY = 'pb_kiosk_open_tab_v1';
+const KIOSK_PENDING_SETUP_KEY = 'pb_kiosk_pending_setup_v1';
 const KIOSK_DEFAULT_DESIGN = {
   kicker: 'Club-Kiosk',
   title: 'Padel, Drinks, fertig.',
@@ -14893,7 +14902,11 @@ let kioskRemoteSyncUser = '';
 let kioskUndoTimer = null;
 const KIOSK_UNDO_MS = 60 * 1000;
 let kioskPendingChoice = null;
+let kioskPendingLoginChoice = null;
 let kioskChoiceAutoDebitReady = false;
+let kioskChoiceBusy = false;
+let kioskChoiceBusyReason = '';
+let kioskSetupResumePromise = null;
 let kioskProductsCache = null;
 let kioskDesignCache = null;
 let kioskCatalogPromise = null;
@@ -15541,6 +15554,7 @@ function renderKiosk() {
   applyKioskHero(document.getElementById('modeKiosk'), design);
   renderKioskTabSummary();
   syncKioskTabFromServer();
+  resumePendingKioskSetupChoice();
   if (!host.innerHTML.trim()) host.innerHTML = '<div class="play-empty"><div class="play-empty-text">Der Kiosk ist gerade leer.</div></div>';
 }
 
@@ -16429,7 +16443,13 @@ function saveKioskTab(items) { try { localStorage.setItem(kioskTabKey(), JSON.st
 
 async function checkoutKiosk(productId, variantId) {
   setKioskErr('');
-  if (!(await ensureActiveLogin())) return;
+  showToast('Kiosk-Auswahl wird geöffnet …');
+  if (!(await ensureActiveLogin())) {
+    kioskPendingLoginChoice = { productId, variantId };
+    showToast('Bitte melde dich an, um im Kiosk einzukaufen.');
+    openModal('kiosk');
+    return;
+  }
   const product = loadKioskProducts().find(p => p.id === productId);
   const variant = product && kioskLegacyVariants(product).find(v => v.id === variantId);
   if (!product || !variant) { setKioskErr('Dieses Produkt ist gerade nicht verfügbar.'); return; }
@@ -16437,33 +16457,80 @@ async function checkoutKiosk(productId, variantId) {
   await openKioskChoice(product, variant);
 }
 
+async function resumePendingKioskCheckout() {
+  const pending = kioskPendingLoginChoice;
+  kioskPendingLoginChoice = null;
+  if (pending) await checkoutKiosk(pending.productId, pending.variantId);
+}
+
 async function openKioskChoice(product, variant) {
   kioskPendingChoice = { product, variant };
-  kioskChoiceAutoDebitReady = await kioskAutoDebitReady();
+  kioskChoiceAutoDebitReady = false;
   const name = document.getElementById('kioskChoiceName'); if (name) name.textContent = product.name;
   const variantEl = document.getElementById('kioskChoiceVariant'); if (variantEl) variantEl.textContent = kioskVisibleOptionLabel(product.id, variant);
   const price = document.getElementById('kioskChoicePrice'); if (price) price.textContent = kioskMoney(variant.price);
   const consent = document.getElementById('kioskChoiceConsentCheck'); if (consent) consent.checked = false;
-  const consentWrap = document.getElementById('kioskChoiceConsentWrap'); if (consentWrap) consentWrap.style.display = kioskChoiceAutoDebitReady ? 'none' : 'flex';
-  const note = document.getElementById('kioskChoiceNote'); if (note) note.textContent = kioskChoiceAutoDebitReady
-    ? 'Der Artikel wird sofort notiert. Danach hast du eine Minute zum Rückgängigmachen.'
-    : 'Für den Bierdeckel hinterlegst du einmalig ein Zahlungsmittel bei Stripe. Anschließend wählst du den Artikel erneut aus.';
+  const consentWrap = document.getElementById('kioskChoiceConsentWrap'); if (consentWrap) consentWrap.style.display = 'none';
+  const note = document.getElementById('kioskChoiceNote'); if (note) note.textContent = 'Dein Bierdeckel-Status wird geprüft …';
+  setKioskChoiceErr('');
   updateKioskConsentButtons();
+  setKioskChoiceBusy(true, 'status');
   document.getElementById('kioskChoiceModal')?.classList.add('show');
+
+  const selected = kioskPendingChoice;
+  const ready = await kioskAutoDebitReady();
+  if (kioskPendingChoice !== selected) return;
+  kioskChoiceAutoDebitReady = ready;
+  if (consentWrap) consentWrap.style.display = ready ? 'none' : 'flex';
+  if (note) note.textContent = ready
+    ? 'Der Artikel wird sofort notiert. Danach hast du eine Minute zum Rückgängigmachen.'
+    : 'Für den Bierdeckel hinterlegst du einmalig ein Zahlungsmittel sicher bei Stripe.';
+  if (kioskChoiceBusyReason === 'status') setKioskChoiceBusy(false);
+  updateKioskConsentButtons();
 }
 
 function closeKioskChoice() {
   document.getElementById('kioskChoiceModal')?.classList.remove('show');
   kioskPendingChoice = null;
+  kioskChoiceBusy = false;
+  kioskChoiceBusyReason = '';
+  setKioskChoiceErr('');
+}
+
+function setKioskChoiceErr(message) {
+  const el = document.getElementById('kioskChoiceErr');
+  if (!el) return;
+  el.textContent = message || '';
+  el.classList.toggle('show', !!message);
+}
+
+function setKioskChoiceBusy(busy, reason = '') {
+  kioskChoiceBusy = busy;
+  kioskChoiceBusyReason = busy ? reason : '';
+  const directBtn = document.getElementById('kioskChoiceDirectBtn');
+  if (directBtn) directBtn.disabled = busy && reason !== 'status';
+  const tabBtn = document.getElementById('kioskChoiceTabBtn');
+  if (tabBtn && busy) {
+    tabBtn.disabled = true;
+    tabBtn.textContent = reason === 'status' ? 'Bierdeckel wird geprüft …' : 'Bitte warten …';
+  } else if (tabBtn) {
+    tabBtn.textContent = kioskChoiceAutoDebitReady ? 'Auf meinen Bierdeckel' : 'Bierdeckel aktivieren';
+    tabBtn.disabled = !kioskChoiceAutoDebitReady && !document.getElementById('kioskChoiceConsentCheck')?.checked;
+  }
 }
 
 async function kioskChoiceDirect() {
+  if (kioskChoiceBusy && kioskChoiceBusyReason !== 'status') return;
   const choice = kioskPendingChoice;
-  closeKioskChoice();
-  if (choice) await checkoutKioskImmediately(choice.product, choice.variant);
+  if (!choice) return;
+  setKioskChoiceErr('');
+  setKioskChoiceBusy(true, 'checkout');
+  const started = await checkoutKioskImmediately(choice.product, choice.variant);
+  if (!started) setKioskChoiceBusy(false);
 }
 
 async function kioskChoiceTab() {
+  if (kioskChoiceBusy) return;
   const choice = kioskPendingChoice;
   if (!choice) return;
   if (!kioskChoiceAutoDebitReady) {
@@ -16474,36 +16541,57 @@ async function kioskChoiceTab() {
   await addKioskItemToTab(choice.product, choice.variant);
 }
 
-async function addKioskItemToTab(product, variant) {
+async function addKioskItemToTab(product, variant, clientItemId = '') {
   const items = loadKioskTab();
-  items.push({ id:'tab-' + Date.now() + '-' + Math.random().toString(16).slice(2), productId:product.id, productName:product.name, variantId:variant.id, variantLabel:variant.label, price:Number(variant.price), at:new Date().toISOString() });
+  const item = { id:clientItemId || 'tab-' + Date.now() + '-' + Math.random().toString(16).slice(2), productId:product.id, productName:product.name, variantId:variant.id, variantLabel:variant.label, price:Number(variant.price), at:new Date().toISOString() };
+  const previous = items.find(row => row.id === item.id);
+  if (!previous) items.push(item);
   saveKioskTab(items);
-  const persisted = await persistKioskTabItem(items[items.length - 1]);
+  const persisted = await persistKioskTabItem(previous || item);
   if (!persisted) {
-    saveKioskTab(items.slice(0, -1));
+    if (!previous) saveKioskTab(items.filter(row => row.id !== item.id));
     renderKioskTabSummary();
     setKioskErr('Der Artikel konnte nicht auf den Bierdeckel gebucht werden. Bitte prüfe die Aktivierung und versuche es erneut.');
     showToast('Bierdeckel-Buchung nicht gespeichert.');
-    return;
+    return false;
   }
   saveKioskTab(items);
   renderKioskTabSummary();
-  showKioskUndo(items[items.length - 1]);
+  showKioskUndo(previous || item);
   const selection = kioskVisibleOptionLabel(product.id, variant);
   showToast(`${product.name}${selection ? ' · ' + selection : ''} auf deinen Bierdeckel gebucht.`);
+  return true;
 }
 
 async function checkoutKioskImmediately(product, variant, tabItemIds = []) {
   const headers = await checkoutHeaders();
   showToast('Weiter zu Stripe …');
   try {
-    const res = await fetch('https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout', {
-      method:'POST', headers,
-      body:JSON.stringify({ booking_type:'kiosk', product_id:product.id, variant:variant.id, tab_item_ids:tabItemIds.join(','), purchaser_email:currentProfile?.email || currentUser?.email || '', full_name:currentProfile?.full_name || '' }),
-    });
+    const res = await kioskCheckoutRequest(headers, { booking_type:'kiosk', product_id:product.id, variant:variant.id, tab_item_ids:tabItemIds.join(','), purchaser_email:currentProfile?.email || currentUser?.email || '', full_name:currentProfile?.full_name || '' });
     const data = await res.json();
-    if (data.url) redirectToExternalCheckout(data.url); else setKioskErr(data.error || 'Zahlung konnte nicht gestartet werden.');
-  } catch(e) { setKioskErr(e.message || 'Zahlung konnte nicht gestartet werden.'); }
+    if (data.url) { redirectToExternalCheckout(data.url); return true; }
+    const message = data.error || 'Zahlung konnte nicht gestartet werden.';
+    setKioskErr(message); setKioskChoiceErr(message); showToast(message);
+  } catch(e) {
+    const message = e.message || 'Zahlung konnte nicht gestartet werden.';
+    setKioskErr(message); setKioskChoiceErr(message); showToast(message);
+  }
+  return false;
+}
+
+async function kioskCheckoutRequest(headers, body) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+  try {
+    return await fetch('https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout', {
+      method:'POST', headers, signal:controller.signal, body:JSON.stringify(body),
+    });
+  } catch(e) {
+    if (e?.name === 'AbortError') throw new Error('Die Verbindung zu Stripe dauert zu lange. Bitte versuche es erneut.');
+    throw e;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function renderKioskTabSummary() {
@@ -16605,7 +16693,19 @@ async function persistKioskTabItem(item) {
       p_product_id:item.productId,
       p_variant_id:item.variantId,
     });
-    if (error) return false;
+    if (error) {
+      const existing = await sb.from('kiosk_tab_items')
+        .select('client_item_id,product_name,variant_label,price_cents,created_at,status')
+        .eq('auth_user_id', currentUser.id)
+        .eq('client_item_id', item.id)
+        .maybeSingle();
+      if (existing.error || existing.data?.status !== 'open') return false;
+      item.productName = existing.data.product_name;
+      item.variantLabel = existing.data.variant_label;
+      item.price = Number(existing.data.price_cents) / 100;
+      item.at = existing.data.created_at;
+      return true;
+    }
     if (data) {
       item.productName = data.product_name;
       item.variantLabel = data.variant_label;
@@ -16642,7 +16742,7 @@ function updateKioskConsentButtons() {
   const choiceBtn = document.getElementById('kioskChoiceTabBtn');
   if (choiceBtn) {
     choiceBtn.textContent = kioskChoiceAutoDebitReady ? 'Auf meinen Bierdeckel' : 'Bierdeckel aktivieren';
-    choiceBtn.disabled = !kioskChoiceAutoDebitReady && !document.getElementById('kioskChoiceConsentCheck')?.checked;
+    choiceBtn.disabled = kioskChoiceBusy || (!kioskChoiceAutoDebitReady && !document.getElementById('kioskChoiceConsentCheck')?.checked);
   }
   const active = localStorage.getItem('pb_kiosk_auto_debit') === '1';
   const tabBtn = document.getElementById('kioskAutoDebitBtn');
@@ -16650,23 +16750,50 @@ function updateKioskConsentButtons() {
 }
 
 async function enableKioskAutoDebit(source = 'tab') {
-  if (!(await ensureActiveLogin())) return;
+  if (!(await ensureActiveLogin())) { showToast('Bitte melde dich zuerst an.'); openModal('kiosk'); return; }
   const consent = document.getElementById(source === 'choice' ? 'kioskChoiceConsentCheck' : 'kioskTabConsentCheck');
   if (!consent?.checked) { showToast('Bitte stimme zuerst der täglichen Sammelabbuchung zu.'); return; }
+  if (source === 'choice' && kioskChoiceBusy) return;
+  if (source === 'choice') { setKioskChoiceErr(''); setKioskChoiceBusy(true, 'setup'); }
   const headers = await checkoutHeaders();
   showToast('Zahlungsmittel bei Stripe einrichten …');
   try {
-    const res = await fetch('https://hioaqcwqzeqcvvikollq.supabase.co/functions/v1/create-checkout', { method:'POST', headers, body:JSON.stringify({ booking_type:'kiosk_setup', consent_version:KIOSK_CONSENT_VERSION, purchaser_email:currentProfile?.email || currentUser?.email || '', full_name:currentProfile?.full_name || '' }) });
+    const res = await kioskCheckoutRequest(headers, { booking_type:'kiosk_setup', consent_version:KIOSK_CONSENT_VERSION, purchaser_email:currentProfile?.email || currentUser?.email || '', full_name:currentProfile?.full_name || '' });
     const data = await res.json();
-    if (data.url) redirectToExternalCheckout(data.url); else setKioskErr(data.error || 'Automatische Abbuchung konnte nicht eingerichtet werden.');
-  } catch(e) { setKioskErr(e.message || 'Automatische Abbuchung konnte nicht eingerichtet werden.'); }
+    if (data.url) {
+      if (source === 'choice' && kioskPendingChoice) {
+        const pending = {
+          userId:currentUser.id,
+          productId:kioskPendingChoice.product.id,
+          variantId:kioskPendingChoice.variant.id,
+          clientItemId:'tab-' + Date.now() + '-' + Math.random().toString(16).slice(2),
+          createdAt:Date.now(),
+          returned:false,
+        };
+        localStorage.setItem(KIOSK_PENDING_SETUP_KEY, JSON.stringify(pending));
+      }
+      redirectToExternalCheckout(data.url);
+      return;
+    }
+    const message = data.error || 'Automatische Abbuchung konnte nicht eingerichtet werden.';
+    setKioskErr(message); setKioskChoiceErr(message); showToast(message);
+  } catch(e) {
+    const message = e.message || 'Automatische Abbuchung konnte nicht eingerichtet werden.';
+    setKioskErr(message); setKioskChoiceErr(message); showToast(message);
+  }
+  if (source === 'choice') setKioskChoiceBusy(false);
 }
 
-async function kioskAutoDebitReady() {
-  if (localStorage.getItem('pb_kiosk_auto_debit') === '1') return true;
+async function kioskAutoDebitReady(options = {}) {
+  if (!options.force && localStorage.getItem('pb_kiosk_auto_debit') === '1') return true;
   try {
     if (typeof sb === 'undefined' || !currentUser?.id) return false;
-    const { data, error } = await sb.from('kiosk_payment_profiles').select('enabled,consent_version').eq('auth_user_id', currentUser.id).maybeSingle();
+    const timeoutMs = Math.max(500, Number(options.timeoutMs || 8000));
+    const query = sb.from('kiosk_payment_profiles').select('enabled,consent_version').eq('auth_user_id', currentUser.id).maybeSingle();
+    const { data, error } = await Promise.race([
+      query,
+      new Promise(resolve => setTimeout(() => resolve({ data:null, error:{ message:'Zeitüberschreitung' } }), timeoutMs)),
+    ]);
     if (!error && data?.enabled && data?.consent_version === KIOSK_CONSENT_VERSION) {
       localStorage.setItem('pb_kiosk_auto_debit', '1');
       return true;
@@ -16678,10 +16805,15 @@ async function kioskAutoDebitReady() {
 function settleSuccessfulKioskTab() {
   const params = new URLSearchParams(location.search);
   if (params.get('kiosk_setup') === 'success') {
-    localStorage.removeItem('pb_kiosk_auto_debit');
-    kioskRemoteSyncUser = '';
+    const hasPendingItem = markSuccessfulKioskSetupReturn();
     history.replaceState({}, '', location.pathname + location.hash);
-    showToast('Zahlungsmittel hinterlegt. Der Bierdeckel wird jetzt aktiviert.');
+    showToast(hasPendingItem ? 'Zahlungsmittel hinterlegt. Dein Artikel wird jetzt gebucht.' : 'Zahlungsmittel hinterlegt. Der Bierdeckel wird jetzt aktiviert.');
+    resumePendingKioskSetupChoice();
+  }
+  if (params.get('kiosk_setup') === 'cancelled') {
+    localStorage.removeItem(KIOSK_PENDING_SETUP_KEY);
+    history.replaceState({}, '', location.pathname + location.hash);
+    showToast('Bierdeckel-Aktivierung abgebrochen. Es wurde nichts gebucht.');
   }
   if (params.get('booking') === 'success') {
     try {
@@ -16689,6 +16821,66 @@ function settleSuccessfulKioskTab() {
       if (paid.length) { saveKioskTab(loadKioskTab().filter(i => !paid.includes(i.id))); localStorage.removeItem('pb_pending_kiosk_tab'); }
     } catch(e) {}
   }
+}
+
+function markSuccessfulKioskSetupReturn() {
+  localStorage.removeItem('pb_kiosk_auto_debit');
+  kioskRemoteSyncUser = '';
+  try {
+    const pending = JSON.parse(localStorage.getItem(KIOSK_PENDING_SETUP_KEY) || 'null');
+    if (!pending) return false;
+    localStorage.setItem(KIOSK_PENDING_SETUP_KEY, JSON.stringify({ ...pending, returned:true }));
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+function readPendingKioskSetup() {
+  try {
+    const pending = JSON.parse(localStorage.getItem(KIOSK_PENDING_SETUP_KEY) || 'null');
+    if (!pending || Date.now() - Number(pending.createdAt || 0) > 2 * 60 * 60 * 1000) {
+      localStorage.removeItem(KIOSK_PENDING_SETUP_KEY);
+      return null;
+    }
+    return pending;
+  } catch(e) {
+    localStorage.removeItem(KIOSK_PENDING_SETUP_KEY);
+    return null;
+  }
+}
+
+async function resumePendingKioskSetupChoice() {
+  if (kioskSetupResumePromise) return kioskSetupResumePromise;
+  const pending = readPendingKioskSetup();
+  if (!pending?.returned) return false;
+  kioskSetupResumePromise = (async () => {
+    if (!(await ensureActiveLogin()) || currentUser.id !== pending.userId) {
+      showToast('Bitte melde dich mit dem Konto der Bierdeckel-Aktivierung an.');
+      return false;
+    }
+    let ready = false;
+    for (let attempt = 0; attempt < 8 && !ready; attempt += 1) {
+      ready = await kioskAutoDebitReady({ force:true, timeoutMs:1000 });
+      if (!ready) await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!ready) {
+      showToast('Stripe verarbeitet die Aktivierung noch. Öffne den Kiosk gleich erneut.');
+      return false;
+    }
+    const product = loadKioskProducts().find(row => row.id === pending.productId);
+    const variant = product && kioskLegacyVariants(product).find(row => row.id === pending.variantId);
+    if (!product || !variant) {
+      localStorage.removeItem(KIOSK_PENDING_SETUP_KEY);
+      setKioskErr('Der zuvor gewählte Artikel ist nicht mehr verfügbar. Es wurde nichts gebucht.');
+      return false;
+    }
+    const saved = await addKioskItemToTab(product, variant, pending.clientItemId);
+    if (saved) localStorage.removeItem(KIOSK_PENDING_SETUP_KEY);
+    return saved;
+  })();
+  try { return await kioskSetupResumePromise; }
+  finally { kioskSetupResumePromise = null; }
 }
 function profileInitials(name = currentProfile?.full_name) {
   return (name || '').trim().split(/\s+/).filter(Boolean)
