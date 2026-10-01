@@ -6209,13 +6209,13 @@ main {
             <textarea id="ebAdmExtraNoteText" rows="3" class="eb-adm-inp" style="resize:vertical;line-height:1.5;margin-top:8px;" placeholder="Text des zusätzlichen Bulletpoints"></textarea>
           </div>
           <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:14px;">
-            <div style="flex:0 0 auto;"><label class="eb-adm-lbl">Aktion</label>
+            <div style="flex:0 0 auto;"><label class="eb-adm-lbl">Aktion (sofort gespeichert)</label>
               <div class="seg-toggle">
                 <button type="button" id="ebAdmOff" class="seg-btn seg-active" onclick="setEarlybirdEnabled(false)">Aus</button>
                 <button type="button" id="ebAdmOn" class="seg-btn" onclick="setEarlybirdEnabled(true)">An</button>
               </div>
             </div>
-            <button type="button" class="admin-save-btn" onclick="saveEarlybird()" style="margin-left:auto;">Aktion 1 speichern</button>
+            <button type="button" class="admin-save-btn" onclick="saveEarlybird()" style="margin-left:auto;">Einstellungen speichern</button>
           </div>
           <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #EFE9DC;">
             <div style="flex:1 1 220px;font-size:0.78rem;color:#7A7368;line-height:1.45;">
@@ -22554,12 +22554,45 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 
   // ── Admin-Konfiguration der Frühbucherphase ──
   window.__ebAdmEnabled = false;
+  window.__ebToggleSaving = false;
   window.refreshEbToggle = function(on){
     var off=document.getElementById('ebAdmOff'), onb=document.getElementById('ebAdmOn');
     if(!off||!onb) return;
     off.classList.toggle('seg-active', !on); onb.classList.toggle('seg-active', !!on);
   };
-  window.setEarlybirdEnabled = function(on){ window.__ebAdmEnabled=!!on; window.refreshEbToggle(!!on); };
+  window.setEarlybirdEnabled = async function(on){
+    on=!!on;
+    if(window.__ebToggleSaving || on===!!window.__ebAdmEnabled) return;
+    var previous=!!window.__ebAdmEnabled;
+    var off=document.getElementById('ebAdmOff'), onb=document.getElementById('ebAdmOn');
+    window.__ebAdmEnabled=on;
+    window.refreshEbToggle(on);
+    window.__ebToggleSaving=true;
+    if(off) off.disabled=true;
+    if(onb) onb.disabled=true;
+    try{
+      var r=await sb.rpc('admin_set_earlybird', {
+        p_enabled:on,
+        p_start:null,
+        p_end:null,
+        p_discount_pct:null,
+        p_abo_start:null,
+        p_term_months:null
+      });
+      if(r.error) throw r.error;
+      if(typeof loadEarlybird==='function') await loadEarlybird();
+      if(!!window.__earlybird?.enabled!==on) throw new Error('Der gespeicherte Schalterzustand konnte nicht bestätigt werden.');
+      if(typeof showToast==='function') showToast(on ? 'Aktion 1 ist jetzt an.' : 'Aktion 1 ist jetzt aus.');
+    }catch(e){
+      window.__ebAdmEnabled=previous;
+      window.refreshEbToggle(previous);
+      alert('Aktion konnte nicht geschaltet werden: ' + (e && e.message ? e.message : 'Unbekannter Fehler'));
+    }finally{
+      window.__ebToggleSaving=false;
+      if(off) off.disabled=false;
+      if(onb) onb.disabled=false;
+    }
+  };
   window.fillEarlybirdAdmin = function(){
     var eb=window.__earlybird||{};
     var p=function(n){ return String(n).padStart(2,'0'); };
