@@ -1898,7 +1898,7 @@ main {
       <div class="modal-sub" style="margin-bottom:16px;">Wir schicken dir einen Link zum Zurücksetzen deines Passworts.</div>
       <div class="form-group">
         <label class="form-label">E-Mail</label>
-        <input class="form-input" type="email" id="resetEmail" placeholder="deine@email.de">
+        <input class="form-input" type="email" id="resetEmail" placeholder="deine@email.de" autocomplete="email">
       </div>
       <button class="modal-btn" onclick="doReset()">Link senden →</button>
       <div class="modal-divider"><span>oder</span></div>
@@ -3805,7 +3805,6 @@ main {
           if (ownSourceIds.has(String(invite.id || &quot;&quot;))) return false;
           return true;
         }) : [];
-        invites = mergeDemoInvites(invites);
         state.accepted = invites.filter(invite =&gt; invite.inviteStatus === &quot;accepted&quot;).map(invite =&gt; invite.id);
         systemOpenInvitesEnabled = data.settings?.open_invites_enabled !== false;
       } catch (e) {
@@ -3846,81 +3845,6 @@ main {
     }
     function orderedInvites() {
       return invites.slice().sort((a, b) =&gt; (a.priority - b.priority) || sortByDate(a, b)).slice(0, 10);
-    }
-    function demoInvitesForUser(now = new Date()) {
-      const key = normalizeEmail(user.email);
-      if (![&quot;calvinjohncamp@aol.com&quot;, &quot;kaemper@padel-bielstein.de&quot;].includes(key)) return [];
-      const dayOne = addDays(now, 8);
-      const dayTwo = addDays(now, 12);
-      const dateOne = localDateKey(dayOne);
-      const dateTwo = localDateKey(dayTwo);
-      const one = dateParts(dateOne);
-      const two = dateParts(dateTwo);
-      const sentOne = new Date(now);
-      sentOne.setHours(9, 15, 0, 0);
-      const sentTwo = new Date(now);
-      sentTwo.setHours(10, 40, 0, 0);
-      return [
-        {
-          id: &quot;demo-invite-direct&quot;,
-          demo: true,
-          priority: 0,
-          from: &quot;Marc Hüller&quot;,
-          fromAvatar: &quot;&quot;,
-          mode: &quot;direct&quot;,
-          audience: &quot;Mitspieler&quot;,
-          invitedEmails: [user.email],
-          inviteStatus: &quot;invited&quot;,
-          day: one.day,
-          date: one.date,
-          dateISO: dateOne,
-          time: &quot;18:00&quot;,
-          end: &quot;20:00&quot;,
-          court: appFn(&quot;courtLabelShort&quot;) ? appFn(&quot;courtLabelShort&quot;)(1) : &quot;Court 1&quot;,
-          duration: &quot;2h&quot;,
-          levels: [&quot;A&quot;, &quot;B&quot;],
-          gender: &quot;egal&quot;,
-          deliveries: [{ email: normalizeEmail(user.email), mailType: &quot;lust_auf_padel&quot;, status: &quot;sent&quot;, sentAt: sentOne.toISOString(), error: &quot;&quot; }],
-          players: [
-            { email: &quot;marc.hueller@example.de&quot;, name: &quot;Marc Hüller&quot;, level: &quot;B&quot;, accepted: true, isOrganizer: true, acceptedAt: sentOne.toISOString() },
-            { email: &quot;ulrich.pflitsch@example.de&quot;, name: &quot;Ulrich Pflitsch&quot;, level: &quot;B&quot;, accepted: true, acceptedAt: sentOne.toISOString() },
-            null,
-            null
-          ]
-        },
-        {
-          id: &quot;demo-invite-open&quot;,
-          demo: true,
-          priority: 1,
-          from: &quot;Anne Fischer&quot;,
-          fromAvatar: &quot;&quot;,
-          mode: &quot;open&quot;,
-          audience: &quot;Alle&quot;,
-          inviteStatus: &quot;invited&quot;,
-          day: two.day,
-          date: two.date,
-          dateISO: dateTwo,
-          time: &quot;10:00&quot;,
-          end: &quot;11:00&quot;,
-          court: appFn(&quot;courtLabelShort&quot;) ? appFn(&quot;courtLabelShort&quot;)(2) : &quot;Court 2&quot;,
-          duration: &quot;1h&quot;,
-          levels: [&quot;B&quot;, &quot;C&quot;],
-          gender: &quot;egal&quot;,
-          deliveries: [{ email: normalizeEmail(user.email), mailType: &quot;lust_auf_padel&quot;, status: &quot;sent&quot;, sentAt: sentTwo.toISOString(), error: &quot;&quot; }],
-          players: [
-            { email: &quot;anne.fischer@example.de&quot;, name: &quot;Anne Fischer&quot;, level: &quot;B&quot;, accepted: true, isOrganizer: true, acceptedAt: sentTwo.toISOString() },
-            null,
-            null,
-            null
-          ]
-        }
-      ];
-    }
-    function mergeDemoInvites(current) {
-      const demos = demoInvitesForUser();
-      if (!demos.length) return current;
-      const realIds = new Set(current.map(invite =&gt; invite.id));
-      return [...current, ...demos.filter(invite =&gt; !realIds.has(invite.id))];
     }
     function editorDeckItems() {
       return [
@@ -9294,6 +9218,14 @@ document.getElementById('authModal').addEventListener('click', function(e) {
 
 function switchAuthTab(tab) {
   clearAuthMessages();
+  const loginEmail = document.getElementById('loginEmail');
+  const resetEmail = document.getElementById('resetEmail');
+  if (tab === 'reset' && resetEmail && loginEmail?.value.trim() && !resetEmail.value.trim()) {
+    resetEmail.value = loginEmail.value.trim();
+  }
+  if (tab === 'login' && loginEmail && resetEmail?.value.trim() && !loginEmail.value.trim()) {
+    loginEmail.value = resetEmail.value.trim();
+  }
   document.getElementById('formLogin').style.display    = tab==='login'    ? 'block' : 'none';
   document.getElementById('formRegister').style.display = tab==='register' ? 'block' : 'none';
   document.getElementById('formReset').style.display    = tab==='reset'    ? 'block' : 'none';
@@ -9301,6 +9233,7 @@ function switchAuthTab(tab) {
   document.getElementById('authTabs').style.display     = (tab==='reset' || tab==='recovery') ? 'none' : 'grid';
   document.getElementById('tabLogin').classList.toggle('active', tab==='login');
   document.getElementById('tabRegister').classList.toggle('active', tab==='register');
+  if (tab === 'reset') setTimeout(() => resetEmail?.focus(), 100);
 }
 
 
