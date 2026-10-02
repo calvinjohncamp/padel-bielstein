@@ -12163,6 +12163,13 @@ function addSponsorInTier(tier) {
   setTimeout(() => document.getElementById('spName')?.focus(), 350);
 }
 
+function isMissingOptionalSponsorPrivacyRpc(error, functionName) {
+  if (!error) return false;
+  const message = String(error.message || error.details || error.hint || '');
+  return error.code === 'PGRST202'
+    || (message.includes(functionName) && /could not find|schema cache|does not exist/i.test(message));
+}
+
 async function loadAdminSponsors() {
   const box = document.getElementById('sponsorsAdminList');
   if (!box) return;
@@ -12175,14 +12182,16 @@ async function loadAdminSponsors() {
     const { data: discountRows, error: discountError } = await sb.rpc('admin_list_sponsor_discount_emails');
     if (discountError) throw discountError;
     const { data: privacyRows, error: privacyError } = await sb.rpc('admin_list_sponsor_privacy_notices');
-    if (privacyError) throw privacyError;
+    const privacyRpcMissing = isMissingOptionalSponsorPrivacyRpc(privacyError, 'admin_list_sponsor_privacy_notices');
+    if (privacyError && !privacyRpcMissing) throw privacyError;
+    window.__sponsorPrivacyRpcAvailable = !privacyError;
     const discountBySponsor = new Map();
     (discountRows || []).forEach(item => {
       const emails = discountBySponsor.get(item.sponsor_id) || [];
       emails.push(item.email);
       discountBySponsor.set(item.sponsor_id, emails);
     });
-    const privacyBySponsor = new Map((privacyRows || []).map(item => [item.sponsor_id, item]));
+    const privacyBySponsor = new Map((privacyError ? [] : (privacyRows || [])).map(item => [item.sponsor_id, item]));
     rows.forEach(sponsor => {
       sponsor.discount_emails = (discountBySponsor.get(sponsor.id) || []).join('\n');
       Object.assign(sponsor, privacyBySponsor.get(sponsor.id) || {});
@@ -12607,6 +12616,10 @@ async function saveSponsor() {
   if (!Number.isFinite(annualAmountCents) || annualAmountCents < 0) { alert('Bitte einen gültigen Jahresbetrag angeben.'); return; }
   if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
   if (privacyInformed && (!privacyInformedAt || !privacyMethod)) { alert('Bitte Informationsdatum und Informationsweg für den Ansprechpartner ergänzen.'); return; }
+  if (privacyInformed && window.__sponsorPrivacyRpcAvailable === false) {
+    alert('Die Partnerdaten können schon gespeichert werden. Der gesonderte Datenschutznachweis wird jedoch erst mit dem vorbereiteten Datenschutzpaket freigeschaltet. Bitte dieses Häkchen vorerst weglassen.');
+    return;
+  }
   if (existingSponsor?.privacy_notice_informed_at && !privacyInformed) { alert('Ein protokollierter Datenschutznachweis kann nicht stillschweigend entfernt werden. Bitte eine Korrektur als neuen Nachweis speichern.'); return; }
   const discountEmailParts = [...new Set(discountEmails.split(/[\s,;]+/).map(v => v.trim().toLowerCase()).filter(Boolean))];
   if (discountEmailParts.some(value => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value))) {
@@ -12683,6 +12696,7 @@ async function saveSponsor() {
       || String(existingSponsor.privacy_notice_method || '') !== privacyMethod
       || String(existingSponsor.privacy_notice_note || '') !== privacyNote
     );
+    let privacyNoticeDeferred = false;
     if (privacyChanged) {
       const { error: privacyError } = await sb.rpc('admin_set_sponsor_privacy_notice', {
         p_sponsor_id: sponsorId,
@@ -12691,9 +12705,15 @@ async function saveSponsor() {
         p_method: privacyMethod,
         p_note: privacyNote,
       });
-      if (privacyError) throw privacyError;
+      if (isMissingOptionalSponsorPrivacyRpc(privacyError, 'admin_set_sponsor_privacy_notice')) {
+        window.__sponsorPrivacyRpcAvailable = false;
+        privacyNoticeDeferred = true;
+      }
+      if (privacyError && !privacyNoticeDeferred) throw privacyError;
     }
-    showToast('Sponsor gespeichert.');
+    showToast(privacyNoticeDeferred
+      ? 'Partner gespeichert. Der Datenschutznachweis folgt mit dem vorbereiteten Datenschutzpaket.'
+      : 'Sponsor gespeichert.');
     resetSponsorForm();
     loadAdminSponsors();
   } catch(e) {
