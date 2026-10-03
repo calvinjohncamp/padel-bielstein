@@ -6520,22 +6520,6 @@ main {
                 <textarea id="spDiscountEmailDomains" rows="2" placeholder="@sparkasse-gm.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;resize:vertical;"></textarea>
                 <div style="font-size:0.72rem;color:#7A7368;line-height:1.5;margin-top:5px;">Nur für aktive Premium-Partner. Eine Endung pro Zeile oder mit Komma getrennt, jeweils mit @ beginnen.</div>
               </div>
-              <div style="grid-column:1 / -1;border-top:1px solid #E2DACB;padding-top:12px;">
-                <div style="font:800 11.5px 'Space Grotesk',sans-serif;color:#1C1A17;margin-bottom:5px;">Datenschutzinformation des Ansprechpartners</div>
-                <div style="font-size:0.72rem;color:#7A7368;line-height:1.5;margin-bottom:9px;">Ein kurzer Link in der normalen Partnerkommunikation genügt. Die App verschickt keine zusätzliche Datenschutzmail; hier wird nur der bereits erfolgte Hinweis intern dokumentiert.</div>
-                <label style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:#5C564C;margin-bottom:9px;"><input id="spPrivacyInformed" type="checkbox"> Ansprechpartner wurde informiert</label>
-                <div style="display:grid;grid-template-columns:150px 1fr;gap:9px;">
-                  <input id="spPrivacyInformedAt" type="date" class="admin-input" aria-label="Informationsdatum Ansprechpartner">
-                  <select id="spPrivacyMethod" class="admin-input" aria-label="Informationsweg Ansprechpartner">
-                    <option value="">Informationsweg wählen</option>
-                    <option value="E-Mail mit Datenschutzhinweis">E-Mail mit Datenschutzhinweis</option>
-                    <option value="Vertragsanschreiben">Vertragsanschreiben</option>
-                    <option value="Persönlich mit anschließendem Link">Persönlich mit anschließendem Link</option>
-                    <option value="Sonstiger nachweisbarer Weg">Sonstiger nachweisbarer Weg</option>
-                  </select>
-                </div>
-                <input id="spPrivacyNote" type="text" class="admin-input" style="width:100%;margin-top:9px;" placeholder="Interner Nachweis oder Ablageort">
-              </div>
             </div>
           </div>
 
@@ -12163,13 +12147,6 @@ function addSponsorInTier(tier) {
   setTimeout(() => document.getElementById('spName')?.focus(), 350);
 }
 
-function isMissingOptionalSponsorPrivacyRpc(error, functionName) {
-  if (!error) return false;
-  const message = String(error.message || error.details || error.hint || '');
-  return error.code === 'PGRST202'
-    || (message.includes(functionName) && /could not find|schema cache|does not exist/i.test(message));
-}
-
 async function loadAdminSponsors() {
   const box = document.getElementById('sponsorsAdminList');
   if (!box) return;
@@ -12181,20 +12158,14 @@ async function loadAdminSponsors() {
     rows = (data || []).slice().sort(pbCompareSponsors);
     const { data: discountRows, error: discountError } = await sb.rpc('admin_list_sponsor_discount_emails');
     if (discountError) throw discountError;
-    const { data: privacyRows, error: privacyError } = await sb.rpc('admin_list_sponsor_privacy_notices');
-    const privacyRpcMissing = isMissingOptionalSponsorPrivacyRpc(privacyError, 'admin_list_sponsor_privacy_notices');
-    if (privacyError && !privacyRpcMissing) throw privacyError;
-    window.__sponsorPrivacyRpcAvailable = !privacyError;
     const discountBySponsor = new Map();
     (discountRows || []).forEach(item => {
       const emails = discountBySponsor.get(item.sponsor_id) || [];
       emails.push(item.email);
       discountBySponsor.set(item.sponsor_id, emails);
     });
-    const privacyBySponsor = new Map((privacyError ? [] : (privacyRows || [])).map(item => [item.sponsor_id, item]));
     rows.forEach(sponsor => {
       sponsor.discount_emails = (discountBySponsor.get(sponsor.id) || []).join('\n');
-      Object.assign(sponsor, privacyBySponsor.get(sponsor.id) || {});
     });
   } catch(e) {
     box.innerHTML = `<div style="color:#B8402C;padding:18px;">Sponsoren konnten nicht geladen werden: ${esc(e?.message || 'Unbekannter Fehler')}</div>`;
@@ -12282,7 +12253,6 @@ async function loadAdminSponsors() {
                 ${s.contact_name ? `<div style="font:600 13.2px 'Manrope',sans-serif;color:#1C1A17;line-height:1.3;">${esc(s.contact_name)}</div>` : ''}
                 ${s.contact_email ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;word-break:break-all;">${esc(s.contact_email)}</div>` : ''}
                 ${s.contact_phone ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;">${esc(s.contact_phone)}</div>` : ''}
-                ${s.privacy_notice_informed_at ? `<div style="font:800 11.5px 'Manrope',sans-serif;color:#1F8A5F;line-height:1.35;margin-top:4px;">Datenschutzinfo: ${new Date(s.privacy_notice_informed_at).toLocaleDateString('de-DE')}</div>` : `<div style="font:800 11.5px 'Manrope',sans-serif;color:#B8402C;line-height:1.35;margin-top:4px;">Datenschutzinfo offen</div>`}
                 ${discountEmails ? `<div style="font:700 11.5px 'Manrope',sans-serif;color:#1F8A5F;line-height:1.35;margin-top:4px;word-break:break-all;">Rabattadressen: ${esc(discountEmails).replace(/\n/g, '<br>')}</div>` : ''}
                 ${discountEmailDomains ? `<div style="font:700 11.5px 'Manrope',sans-serif;color:#1F8A5F;line-height:1.35;margin-top:4px;word-break:break-all;">Rabatt-Endungen: ${esc(discountEmailDomains)}</div>` : ''}
               ` : ''}
@@ -12423,10 +12393,6 @@ function editSponsor(id) {
   document.getElementById('spContactPhone').value = s.contact_phone || '';
   document.getElementById('spDiscountEmails').value = s.discount_emails || '';
   document.getElementById('spDiscountEmailDomains').value = s.discount_email_domains || '';
-  document.getElementById('spPrivacyInformed').checked = !!s.privacy_notice_informed_at;
-  document.getElementById('spPrivacyInformedAt').value = s.privacy_notice_informed_at ? String(s.privacy_notice_informed_at).slice(0, 10) : '';
-  document.getElementById('spPrivacyMethod').value = s.privacy_notice_method || '';
-  document.getElementById('spPrivacyNote').value = s.privacy_notice_note || '';
   const contractCompany = s.contract_company || s.name || '';
   document.getElementById('spContractCompany').value = contractCompany;
   setSponsorCompanyAuto(contractCompany === (s.name || ''));
@@ -12465,10 +12431,6 @@ function resetSponsorForm() {
   document.getElementById('spContactPhone').value = '';
   document.getElementById('spDiscountEmails').value = '';
   document.getElementById('spDiscountEmailDomains').value = '';
-  document.getElementById('spPrivacyInformed').checked = false;
-  document.getElementById('spPrivacyInformedAt').value = '';
-  document.getElementById('spPrivacyMethod').value = '';
-  document.getElementById('spPrivacyNote').value = '';
   document.getElementById('spContractCompany').value = '';
   setSponsorCompanyAuto(true);
   document.getElementById('spAddressStreet').value = '';
@@ -12592,10 +12554,6 @@ async function saveSponsor() {
   const contactPhone = document.getElementById('spContactPhone').value.trim();
   const discountEmails = document.getElementById('spDiscountEmails').value.trim();
   const discountEmailDomains = document.getElementById('spDiscountEmailDomains').value.trim();
-  const privacyInformed = document.getElementById('spPrivacyInformed').checked;
-  const privacyInformedAt = document.getElementById('spPrivacyInformedAt').value;
-  const privacyMethod = document.getElementById('spPrivacyMethod').value.trim();
-  const privacyNote = document.getElementById('spPrivacyNote').value.trim();
   const website      = document.getElementById('spWebsite').value.trim();
   const courtLabelValue = document.getElementById('spCourtLabel').value.trim();
   const courtPartnerEnabled = document.getElementById('spCourtPartnerEnabled').checked;
@@ -12615,12 +12573,6 @@ async function saveSponsor() {
   if (!name) { alert('Bitte eine Marke angeben.'); return; }
   if (!Number.isFinite(annualAmountCents) || annualAmountCents < 0) { alert('Bitte einen gültigen Jahresbetrag angeben.'); return; }
   if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
-  if (privacyInformed && (!privacyInformedAt || !privacyMethod)) { alert('Bitte Informationsdatum und Informationsweg für den Ansprechpartner ergänzen.'); return; }
-  if (privacyInformed && window.__sponsorPrivacyRpcAvailable === false) {
-    alert('Die Partnerdaten können schon gespeichert werden. Der gesonderte Datenschutznachweis wird jedoch erst mit dem vorbereiteten Datenschutzpaket freigeschaltet. Bitte dieses Häkchen vorerst weglassen.');
-    return;
-  }
-  if (existingSponsor?.privacy_notice_informed_at && !privacyInformed) { alert('Ein protokollierter Datenschutznachweis kann nicht stillschweigend entfernt werden. Bitte eine Korrektur als neuen Nachweis speichern.'); return; }
   const discountEmailParts = [...new Set(discountEmails.split(/[\s,;]+/).map(v => v.trim().toLowerCase()).filter(Boolean))];
   if (discountEmailParts.some(value => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value))) {
     alert('Bitte nur vollständige, gültige Rabatt-/Buchungs-E-Mail-Adressen eintragen.'); return;
@@ -12690,30 +12642,7 @@ async function saveSponsor() {
       p_emails: discountEmailParts.join('\n'),
     });
     if (discountError) throw discountError;
-    const privacyChanged = privacyInformed && (
-      !existingSponsor?.privacy_notice_informed_at
-      || String(existingSponsor.privacy_notice_informed_at).slice(0, 10) !== privacyInformedAt
-      || String(existingSponsor.privacy_notice_method || '') !== privacyMethod
-      || String(existingSponsor.privacy_notice_note || '') !== privacyNote
-    );
-    let privacyNoticeDeferred = false;
-    if (privacyChanged) {
-      const { error: privacyError } = await sb.rpc('admin_set_sponsor_privacy_notice', {
-        p_sponsor_id: sponsorId,
-        p_notice_version: '2026-09-30',
-        p_informed_at: `${privacyInformedAt}T12:00:00+02:00`,
-        p_method: privacyMethod,
-        p_note: privacyNote,
-      });
-      if (isMissingOptionalSponsorPrivacyRpc(privacyError, 'admin_set_sponsor_privacy_notice')) {
-        window.__sponsorPrivacyRpcAvailable = false;
-        privacyNoticeDeferred = true;
-      }
-      if (privacyError && !privacyNoticeDeferred) throw privacyError;
-    }
-    showToast(privacyNoticeDeferred
-      ? 'Partner gespeichert. Der Datenschutznachweis folgt mit dem vorbereiteten Datenschutzpaket.'
-      : 'Sponsor gespeichert.');
+    showToast('Sponsor gespeichert.');
     resetSponsorForm();
     loadAdminSponsors();
   } catch(e) {
