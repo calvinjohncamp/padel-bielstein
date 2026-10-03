@@ -8265,7 +8265,7 @@ async function init() {
     let paidKioskTab = false;
     try {
       boughtCard = localStorage.getItem('pb_pending_card') === '1';
-      boughtKiosk = localStorage.getItem('pb_pending_kiosk') === '1';
+      boughtKiosk = params.get('purchase') === 'kiosk' || localStorage.getItem('pb_pending_kiosk') === '1';
       const paidTabIds = JSON.parse(localStorage.getItem('pb_pending_kiosk_tab') || '[]');
       paidKioskTab = Array.isArray(paidTabIds) && paidTabIds.length > 0;
       if (paidKioskTab) {
@@ -17163,7 +17163,11 @@ async function checkoutKioskImmediately(product, variant, tabItemIds = []) {
   try {
     const res = await kioskCheckoutRequest(headers, { booking_type:'kiosk', product_id:product.id, variant:variant.id, tab_item_ids:tabItemIds.join(','), purchaser_email:currentProfile?.email || currentUser?.email || '', full_name:currentProfile?.full_name || '' });
     const data = await res.json();
-    if (data.url) { redirectToExternalCheckout(data.url); return true; }
+    if (data.url) {
+      try { localStorage.setItem('pb_pending_kiosk', '1'); } catch(e) {}
+      redirectToExternalCheckout(data.url);
+      return true;
+    }
     const message = data.error || 'Zahlung konnte nicht gestartet werden.';
     setKioskErr(message); setKioskChoiceErr(message); showToast(message);
   } catch(e) {
