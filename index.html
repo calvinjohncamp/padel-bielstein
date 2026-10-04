@@ -6455,6 +6455,16 @@ main {
 
       <div class="admin-section">
         <div class="admin-section-title">Absagen</div>
+        <div id="partnerRejectionForm" style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:14px;margin-bottom:12px;">
+          <input type="hidden" id="pcRejectionEditId">
+          <div style="display:grid;grid-template-columns:minmax(180px,1.4fr) minmax(160px,1fr) minmax(140px,.8fr) auto auto;gap:10px;align-items:end;">
+            <div><label class="eb-adm-lbl">Firma</label><input id="pcRejectionCompany" class="eb-adm-inp" type="text" placeholder="Unternehmen"></div>
+            <div><label class="eb-adm-lbl">Ansprechpartner</label><input id="pcRejectionContact" class="eb-adm-inp" type="text" placeholder="Name"></div>
+            <div><label class="eb-adm-lbl">Telefon</label><input id="pcRejectionPhone" class="eb-adm-inp" type="tel" placeholder="Telefon"></div>
+            <button id="pcRejectionSaveBtn" type="button" class="admin-save-btn" onclick="savePartnerRejectionEntry()">Absage speichern</button>
+            <button type="button" onclick="resetPartnerRejectionForm()" style="padding:11px 14px;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;color:#7A7368;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Neu / Abbrechen</button>
+          </div>
+        </div>
         <div id="partnerRejectionList"><div style="color:#7A7368;text-align:center;padding:18px;">Wird geladen …</div></div>
       </div>
 
@@ -12270,10 +12280,12 @@ function applyPartnerCampaignMode() {
   const note = document.getElementById('partnerCampaignReadOnlyNote');
   const editor = document.getElementById('partnerEditorSection');
   const pipelineForm = document.getElementById('partnerPipelineForm');
+  const rejectionForm = document.getElementById('partnerRejectionForm');
   const donationForm = document.getElementById('fundraisingDonationForm');
   if (note) note.style.display = archived ? '' : 'none';
   if (editor) editor.style.display = archived ? 'none' : '';
   if (pipelineForm) pipelineForm.style.display = archived ? 'none' : '';
+  if (rejectionForm) rejectionForm.style.display = archived ? 'none' : '';
   if (donationForm) donationForm.style.display = archived ? 'none' : '';
 }
 
@@ -12395,6 +12407,43 @@ async function savePartnerPipelineEntry() {
   } catch (e) { alert('Gespräch konnte nicht gespeichert werden: ' + (e?.message || 'Unbekannter Fehler')); }
 }
 
+function resetPartnerRejectionForm() {
+  ['pcRejectionEditId','pcRejectionCompany','pcRejectionContact','pcRejectionPhone'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const btn = document.getElementById('pcRejectionSaveBtn');
+  if (btn) btn.textContent = 'Absage speichern';
+}
+
+function editPartnerRejectionEntry(id) {
+  const row = (window.__partnerPipeline || []).find(item => item.id === id && item.stage === 'rejected');
+  if (!row) return;
+  document.getElementById('pcRejectionEditId').value = row.id;
+  document.getElementById('pcRejectionCompany').value = row.company || '';
+  document.getElementById('pcRejectionContact').value = row.contact_name || '';
+  document.getElementById('pcRejectionPhone').value = row.phone || '';
+  document.getElementById('pcRejectionSaveBtn').textContent = 'Änderung speichern';
+  document.getElementById('pcRejectionCompany').focus();
+}
+
+async function savePartnerRejectionEntry() {
+  if (!ensurePartnerCampaignEditable()) return;
+  const company = document.getElementById('pcRejectionCompany').value.trim();
+  if (!company) { alert('Bitte eine Firma angeben.'); return; }
+  try {
+    const { error } = await sb.rpc('admin_upsert_partner_campaign_pipeline', {
+      p_id:document.getElementById('pcRejectionEditId').value || null,
+      p_campaign_id:window.__partnerCampaignId, p_stage:'rejected', p_company:company,
+      p_contact_name:document.getElementById('pcRejectionContact').value.trim() || null,
+      p_phone:document.getElementById('pcRejectionPhone').value.trim() || null
+    });
+    if (error) throw error;
+    resetPartnerRejectionForm();
+    await loadPartnerPipeline();
+    showToast('Absage gespeichert.');
+  } catch (e) { alert('Absage konnte nicht gespeichert werden: ' + (e?.message || 'Unbekannter Fehler')); }
+}
+
 function convertPipelineToPartner(id) {
   if (!ensurePartnerCampaignEditable()) return;
   const row = (window.__partnerPipeline || []).find(item => item.id === id);
@@ -12480,7 +12529,7 @@ function renderPartnerPipelineList(stage, elementId) {
       ${archived ? '' : `<div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;">
         <button type="button" title="Nach oben" onclick="reorderPartnerPipeline('${stage}','${row.id}',-1)" ${index === 0 ? 'disabled' : ''} style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">↑</button>
         <button type="button" title="Nach unten" onclick="reorderPartnerPipeline('${stage}','${row.id}',1)" ${index === rows.length - 1 ? 'disabled' : ''} style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">↓</button>
-        ${stage === 'conversation' ? `<button type="button" onclick="convertPipelineToPartner('${row.id}')" style="padding:7px 9px;border:0;border-radius:6px;background:#1F8A5F;color:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Wird Partner</button><button type="button" onclick="setPartnerPipelineStage('${row.id}','rejected')" style="padding:7px 9px;border:1px solid #B8402C;border-radius:6px;background:#fff;color:#B8402C;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Absage</button><button type="button" title="Bearbeiten" onclick="editPartnerPipelineEntry('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">✎</button>` : `<button type="button" onclick="setPartnerPipelineStage('${row.id}','conversation')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Zurück</button>`}
+        ${stage === 'conversation' ? `<button type="button" onclick="convertPipelineToPartner('${row.id}')" style="padding:7px 9px;border:0;border-radius:6px;background:#1F8A5F;color:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Wird Partner</button><button type="button" onclick="setPartnerPipelineStage('${row.id}','rejected')" style="padding:7px 9px;border:1px solid #B8402C;border-radius:6px;background:#fff;color:#B8402C;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Absage</button><button type="button" title="Bearbeiten" onclick="editPartnerPipelineEntry('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">✎</button>` : `<button type="button" onclick="setPartnerPipelineStage('${row.id}','conversation')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Zurück</button><button type="button" title="Bearbeiten" onclick="editPartnerRejectionEntry('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">✎</button>`}
         <button type="button" title="Löschen" onclick="deletePartnerPipelineEntry('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;color:#B8402C;font-weight:800;cursor:pointer;">×</button>
       </div>`}
     </div>`).join('');
@@ -12509,23 +12558,23 @@ function openPartnerCampaignPdf() {
   const tierTable = tier => {
     const rows = sponsors.filter(s => s.tier === tier);
     const annual = rows.reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
-    return `<section class="block"><h2>${esc(SPONSOR_TIER_CONFIG[tier].label)}</h2><table><thead><tr><th>Unternehmen</th><th>Stand</th><th>Jahr 1</th><th>Jahr 2</th><th>Jahr 3</th><th>Summe</th></tr></thead><tbody>${rows.length ? rows.map(s => `<tr><td>${esc(s.name)}</td><td>${status(s)}${Number(s.annual_amount_cents) === 0 ? ' · Gegenleistung' : ''}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td><b>${pdfMoney(Number(s.annual_amount_cents) * 3)}</b></td></tr>`).join('') : '<tr><td colspan="6" class="empty">Noch keine Zusage erfasst.</td></tr>'}</tbody><tfoot><tr><td colspan="2">Summe</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual * 3)}</td></tr></tfoot></table></section>`;
+    return `<section class="block"><h2>${esc(SPONSOR_TIER_CONFIG[tier].label)}</h2><table class="partner-table"><colgroup><col class="company-col"><col class="status-col"><col class="money-col"><col class="money-col"><col class="money-col"><col class="total-col"></colgroup><thead><tr><th>Unternehmen</th><th>Stand</th><th>Jahr 1</th><th>Jahr 2</th><th>Jahr 3</th><th>Summe</th></tr></thead><tbody>${rows.length ? rows.map(s => `<tr><td>${esc(s.name)}</td><td>${status(s)}${Number(s.annual_amount_cents) === 0 ? ' · Gegenleistung' : ''}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td><b>${pdfMoney(Number(s.annual_amount_cents) * 3)}</b></td></tr>`).join('') : '<tr><td colspan="6" class="empty">Noch keine Zusage erfasst.</td></tr>'}</tbody><tfoot><tr><td colspan="2">Summe</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual * 3)}</td></tr></tfoot></table></section>`;
   };
   const kpis = `<div class="kpis"><div><span>Partner · 3 Jahre</span><strong>${pdfMoney(partnerTotal)}</strong><small>Summe aus Premium, Partner und Regional</small></div><div><span>Spenden · einmalig</span><strong>${pdfMoney(donationTotal)}</strong><small>Alle zugesagten Spenden</small></div><div><span>Gesamtsumme</span><strong>${pdfMoney(total)}</strong><small>Addition aus Partner + Spenden</small></div></div>`;
-  const donationsTable = `<section class="block"><h2>Spenden</h2><table><thead><tr><th>Name / Organisation</th><th>Stand</th><th>Datum</th><th>Einmalig</th></tr></thead><tbody>${donations.length ? donations.map(d => `<tr><td>${esc(d.donor_name)}</td><td>${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</td><td>${esc(d.donation_date || '')}</td><td><b>${pdfMoney(d.amount_cents)}</b></td></tr>`).join('') : '<tr><td colspan="4" class="empty">Noch keine Spende erfasst.</td></tr>'}</tbody></table></section>`;
+  const donationsTable = `<section class="block"><h2>Spenden</h2><table class="donation-table"><colgroup><col style="width:48%"><col style="width:20%"><col style="width:16%"><col style="width:16%"></colgroup><thead><tr><th>Name / Organisation</th><th>Stand</th><th>Datum</th><th>Einmalig</th></tr></thead><tbody>${donations.length ? donations.map(d => `<tr><td>${esc(d.donor_name)}</td><td>${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</td><td>${esc(d.donation_date || '')}</td><td><b>${pdfMoney(d.amount_cents)}</b></td></tr>`).join('') : '<tr><td colspan="4" class="empty">Noch keine Spende erfasst.</td></tr>'}</tbody></table></section>`;
   const pipelineTable = (stage, title) => {
     const rows = pipeline.filter(row => row.stage === stage);
-    return `<section class="pipeline"><h2>${title}</h2><table><thead><tr><th>Firma</th><th>Ansprechpartner</th><th>Telefon</th></tr></thead><tbody>${rows.length ? rows.map(row => `<tr><td>${esc(row.company)}</td><td>${esc(row.contact_name || '–')}</td><td>${esc(row.phone || '–')}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Keine Einträge.</td></tr>'}</tbody></table></section>`;
+    return `<section class="pipeline"><div class="pipeline-heading"><h2>${title}</h2><strong>${rows.length}</strong></div><table><colgroup><col style="width:44%"><col style="width:34%"><col style="width:22%"></colgroup><thead><tr><th>Firma</th><th>Ansprechpartner</th><th>Telefon</th></tr></thead><tbody>${rows.length ? rows.map(row => `<tr><td>${esc(row.company)}</td><td>${esc(row.contact_name || '–')}</td><td>${esc(row.phone || '–')}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Keine Einträge.</td></tr>'}</tbody></table></section>`;
   };
   const popup = window.open('', '_blank');
   if (!popup) { alert('Bitte Pop-ups für diese Seite erlauben, damit die PDF-Ansicht geöffnet werden kann.'); return; }
   const today = new Intl.DateTimeFormat('de-DE').format(new Date());
-  const printDensity = sponsors.length > 30 ? 'ultra-dense' : sponsors.length > 20 ? 'dense' : '';
+  const printDensity = sponsors.length > 32 ? 'ultra-dense' : sponsors.length > 24 ? 'dense' : '';
   popup.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${esc(campaign.name)} · Aktueller Stand</title><style>
-    @page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{margin:0;color:#1C1A17;font-family:Arial,sans-serif;background:#fff}.page{width:277mm;height:190mm;page-break-after:always;overflow:hidden;padding:2mm}.page:last-child{page-break-after:auto}.header{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:3px solid #FF5A36;padding:0 0 5mm;margin-bottom:4mm}.brand{font:900 23px Arial,sans-serif;letter-spacing:.02em}.brand b{color:#FF5A36}.meta{text-align:right;color:#756E64;font-size:9px}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-bottom:3mm}.kpis>div{border:1px solid #D8CDBB;border-radius:2mm;padding:3mm;background:#fff}.kpis>div:nth-child(2){background:#F7F3EA}.kpis>div:nth-child(3){background:#EDE5D7}.kpis span{display:block;font-size:8px;text-transform:uppercase;font-weight:800;color:#756E64}.kpis strong{display:block;font-size:17px;margin:1.5mm 0}.kpis small{font-size:7.5px;color:#756E64}.block{margin:0 0 2.2mm}.block h2,.pipeline h2{font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin:0;padding:2mm 2.5mm;background:#1C1A17;color:#fff}table{width:100%;border-collapse:collapse;font-size:7.5px}th{background:#F2EDE3;color:#5C564C;text-transform:uppercase;text-align:left;font-size:6.8px}th,td{padding:1.25mm 2mm;border-bottom:.3mm solid #E6DED1}th:nth-child(n+3),td:nth-child(n+3){text-align:right}tfoot td{font-weight:800;background:#F8F4EC;border-top:.5mm solid #BDB2A1}.empty{color:#8A8379;font-style:italic;text-align:left!important}.page2-grid{display:grid;grid-template-columns:1fr 1fr;gap:6mm}.pipeline{border:1px solid #D8CDBB;border-radius:2mm;overflow:hidden}.pipeline table{font-size:9px}.pipeline th,.pipeline td{padding:2.2mm 2.5mm;text-align:left!important}.footer{position:absolute;bottom:3mm;right:3mm;color:#8A8379;font-size:7px}.page{position:relative}.dense .header,.ultra-dense .header{padding-bottom:2.5mm;margin-bottom:2mm}.dense .kpis>div,.ultra-dense .kpis>div{padding:1.6mm 2mm}.dense .kpis strong,.ultra-dense .kpis strong{font-size:13px;margin:.6mm 0}.dense .kpis small,.ultra-dense .kpis small{font-size:6.5px}.dense .block,.ultra-dense .block{margin-bottom:1mm}.dense .block h2,.ultra-dense .block h2{padding:1mm 2mm;font-size:8px}.dense table{font-size:6.4px}.dense th,.dense td{padding:.65mm 1.5mm}.ultra-dense table{font-size:5.8px}.ultra-dense th,.ultra-dense td{padding:.4mm 1.2mm}@media print{button{display:none!important}}
+    @page{size:A4 landscape;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#1C1A17;font-family:Arial,sans-serif;background:#fff}.page{position:relative;width:281mm;height:194mm;page-break-after:always;overflow:hidden}.page:last-child{page-break-after:auto}.header{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1.2mm solid #FF5A36;padding:0 0 3mm;margin-bottom:3mm}.brand{font:900 24px Arial,sans-serif;letter-spacing:.01em}.brand b{color:#FF5A36}.report-title{font-size:13px;font-weight:800;margin-top:1mm}.meta{text-align:right;color:#756E64;font-size:9px;line-height:1.35}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-bottom:2.4mm}.kpis>div{border:.35mm solid #D8CDBB;border-radius:2mm;padding:2.8mm 3mm;background:#fff}.kpis>div:nth-child(2){background:#F7F3EA}.kpis>div:nth-child(3){background:#E9DFCF}.kpis span{display:block;font-size:8.5px;text-transform:uppercase;font-weight:800;color:#756E64}.kpis strong{display:block;font-size:18px;line-height:1.05;margin:1.1mm 0}.kpis small{font-size:8px;color:#756E64}.block{margin:0 0 1.7mm}.block h2{font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin:0;padding:1.6mm 2.5mm;background:#1C1A17;color:#fff}table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:9px}.company-col{width:32%}.status-col{width:18%}.money-col{width:12%}.total-col{width:14%}th{background:#F2EDE3;color:#5C564C;text-transform:uppercase;text-align:left;font-size:8px}th,td{padding:1mm 2mm;border-bottom:.3mm solid #E6DED1;line-height:1.15;vertical-align:middle}th:nth-child(n+3),td:nth-child(n+3){text-align:right}td{overflow-wrap:anywhere}tfoot td{font-weight:800;background:#F8F4EC;border-top:.5mm solid #BDB2A1}.empty{color:#8A8379;font-style:italic;text-align:left!important}.page2-stack{display:flex;flex-direction:column;gap:6mm}.pipeline{border:.35mm solid #D8CDBB;border-radius:2mm;overflow:hidden}.pipeline-heading{display:flex;align-items:center;justify-content:space-between;padding:2.3mm 3mm;background:#1C1A17;color:#fff}.pipeline h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:0}.pipeline-heading strong{display:grid;place-items:center;min-width:7mm;height:7mm;padding:0 2mm;border-radius:1mm;background:#FF5A36;font-size:11px}.pipeline table{font-size:11px}.pipeline th{font-size:9px}.pipeline th,.pipeline td{padding:2.6mm 3mm;text-align:left!important}.footer{position:absolute;bottom:0;right:0;color:#8A8379;font-size:8px}.dense .header,.ultra-dense .header{padding-bottom:2mm;margin-bottom:1.8mm}.dense .kpis>div,.ultra-dense .kpis>div{padding:1.7mm 2.2mm}.dense .kpis strong,.ultra-dense .kpis strong{font-size:15px;margin:.6mm 0}.dense .kpis small,.ultra-dense .kpis small{font-size:7px}.dense .block,.ultra-dense .block{margin-bottom:.9mm}.dense .block h2,.ultra-dense .block h2{padding:1mm 2mm;font-size:9px}.dense table{font-size:7.7px}.dense th,.dense td{padding:.65mm 1.5mm}.ultra-dense table{font-size:6.8px}.ultra-dense th,.ultra-dense td{padding:.4mm 1.2mm}@media print{button{display:none!important}}
   </style></head><body class="${printDensity}">
-    <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div style="font-size:12px;font-weight:800;margin-top:1mm;">A. ${esc(campaign.name)}</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header>${kpis}${SPONSOR_TIER_ORDER.map(tierTable).join('')}${donationsTable}${kpis}<div class="footer">Seite 1 von 2</div></section>
-    <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div style="font-size:12px;font-weight:800;margin-top:1mm;">${esc(campaign.name)} · Akquise</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header><div class="page2-grid">${pipelineTable('conversation','B. Im Gespräch')}${pipelineTable('rejected','C. Absagen')}</div><div class="footer">Seite 2 von 2</div></section>
+    <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">A. ${esc(campaign.name)}</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header>${kpis}${SPONSOR_TIER_ORDER.map(tierTable).join('')}${donationsTable}${kpis}<div class="footer">Seite 1 von 2</div></section>
+    <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">${esc(campaign.name)} · Akquise</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header><div class="page2-stack">${pipelineTable('conversation','B. Im Gespräch')}${pipelineTable('rejected','C. Absagen')}</div><div class="footer">Seite 2 von 2</div></section>
     <script>window.addEventListener('load',()=>setTimeout(()=>window.print(),300));<\/script></body></html>`);
   popup.document.close();
 }
