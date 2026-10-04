@@ -749,9 +749,10 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 .cover-caption {
   font-family: "Space Grotesk","Arial Narrow","Impact",sans-serif;
   font-weight: 500; font-size: 0.68rem; letter-spacing: 0.2em;
-  text-transform: uppercase; color: #7A7368;
+  text-transform: uppercase; color: #7A7368; white-space: nowrap;
 }
-.cover-footer { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.cover-level-row { width:100%; display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.cover-footer { display:flex; align-items:center; justify-content:center; min-width:0; }
 .acct-signout-btn { min-height:34px; padding:7px 12px; border:1px solid #D9CFBF; border-radius:999px; background:transparent; color:#655F56; font:700 .72rem "Space Grotesk","Arial Narrow",sans-serif; cursor:pointer; white-space:nowrap; }
 .acct-signout-btn:hover { border-color:#FF5A36; color:#1C1A17; }
 .acct-session-zone { margin-top:22px; padding-top:18px; border-top:1px solid #E2DACB; text-align:left; }
@@ -6463,6 +6464,21 @@ main {
       </div>
 
       <div class="admin-section">
+        <div class="admin-section-title">Potenzial</div>
+        <div id="partnerPotentialForm" style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:14px;margin-bottom:12px;">
+          <input type="hidden" id="pcPotentialEditId">
+          <div style="display:grid;grid-template-columns:minmax(180px,1.4fr) minmax(160px,1fr) minmax(140px,.8fr) auto auto;gap:10px;align-items:end;">
+            <div><label class="eb-adm-lbl">Firma</label><input id="pcPotentialCompany" class="eb-adm-inp" type="text" placeholder="Unternehmen"></div>
+            <div><label class="eb-adm-lbl">Ansprechpartner</label><input id="pcPotentialContact" class="eb-adm-inp" type="text" placeholder="Name"></div>
+            <div><label class="eb-adm-lbl">Telefon</label><input id="pcPotentialPhone" class="eb-adm-inp" type="tel" placeholder="Telefon"></div>
+            <button id="pcPotentialSaveBtn" type="button" class="admin-save-btn" onclick="savePartnerPotentialEntry()">Potenzial speichern</button>
+            <button type="button" onclick="resetPartnerPotentialForm()" style="padding:11px 14px;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;color:#7A7368;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Neu / Abbrechen</button>
+          </div>
+        </div>
+        <div id="partnerPotentialList"><div style="color:#7A7368;text-align:center;padding:18px;">Wird geladen …</div></div>
+      </div>
+
+      <div class="admin-section">
         <div class="admin-section-title">Absagen</div>
         <div id="partnerRejectionForm" style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:14px;margin-bottom:12px;">
           <input type="hidden" id="pcRejectionEditId">
@@ -12122,15 +12138,8 @@ function renderFundraisingSummary() {
       <div style="font:800 20px 'Space Grotesk',sans-serif;color:${accent};">${adminFormatEuro(value)}</div>
       <div style="font:600 11px 'Manrope',sans-serif;color:#7A7368;margin-top:4px;line-height:1.35;">${note}</div>
     </div>`;
-  const statusBadge = sponsor => {
-    const commitment = sponsor.contract_received
-      ? '<span style="display:inline-block;margin-left:7px;color:#1F8A5F;font:800 10px Manrope,sans-serif;">Vertrag</span>'
-      : '<span style="display:inline-block;margin-left:7px;color:#B06A00;font:800 10px Manrope,sans-serif;">Mündlich</span>';
-    const inKind = Number(sponsor.annual_amount_cents) === 0
-      ? '<span style="display:inline-block;margin-left:7px;color:#5C564C;font:800 10px Manrope,sans-serif;">Gegenleistung</span>'
-      : '';
-    return commitment + inKind;
-  };
+  const statusCell = sponsor => `<td style="padding:10px 8px;text-align:left;white-space:nowrap;font:800 10px 'Manrope',sans-serif;color:${sponsor.contract_received ? '#1F8A5F' : '#B06A00'};">${sponsor.contract_received ? 'Vertrag' : 'Mündlich'}${Number(sponsor.annual_amount_cents) === 0 ? '<br><span style="color:#5C564C;">Gegenleistung</span>' : ''}</td>`;
+  const contractCell = sponsor => `<td aria-label="Vertrag liegt vor" style="width:42px;padding:10px 5px;text-align:center;color:#FF5A36;font:900 20px/1 'Space Grotesk',sans-serif;">${sponsor.contract_received ? '✓' : ''}</td>`;
   const moneyCell = value => `<td style="padding:10px 12px;text-align:right;white-space:nowrap;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${adminFormatEuro(value)}</td>`;
   const partnerTable = tier => {
     const config = SPONSOR_TIER_CONFIG[tier];
@@ -12139,14 +12148,18 @@ function renderFundraisingSummary() {
     const body = rows.length ? rows.map(s => {
       const amount = Number(s.annual_amount_cents) || 0;
       return `<tr style="border-top:1px solid #EFE9DC;">
-        <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${esc(s.name)}${statusBadge(s)}</td>
+        <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${esc(s.name)}</td>
+        ${statusCell(s)}${contractCell(s)}
         ${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount * 3)}
       </tr>`;
-    }).join('') : `<tr style="border-top:1px solid #EFE9DC;"><td colspan="5" style="padding:10px 12px;color:#8A8379;font:600 12px 'Manrope',sans-serif;">Noch keine Zusage erfasst.</td></tr>`;
+    }).join('') : `<tr style="border-top:1px solid #EFE9DC;"><td colspan="7" style="padding:10px 12px;color:#8A8379;font:600 12px 'Manrope',sans-serif;">Noch keine Zusage erfasst.</td></tr>`;
     return `<div style="margin-top:14px;overflow-x:auto;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;">
-      <table style="width:100%;min-width:650px;border-collapse:collapse;">
+      <table style="width:100%;min-width:780px;border-collapse:collapse;table-layout:fixed;">
+        <colgroup><col style="width:35%"><col style="width:11%"><col style="width:4%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:14%"></colgroup>
         <thead><tr style="background:#F6F2E9;">
           <th style="padding:10px 12px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">${config.label}</th>
+          <th style="padding:10px 8px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Stand</th>
+          <th title="Vertrag liegt vor" style="padding:10px 5px;text-align:center;font:900 15px 'Space Grotesk',sans-serif;color:#1C1A17;">✓</th>
           <th style="padding:10px 12px;text-align:right;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Jahr 1</th>
           <th style="padding:10px 12px;text-align:right;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Jahr 2</th>
           <th style="padding:10px 12px;text-align:right;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Jahr 3</th>
@@ -12154,7 +12167,7 @@ function renderFundraisingSummary() {
         </tr></thead>
         <tbody>${body}</tbody>
         <tfoot><tr style="border-top:2px solid #D8CDBB;background:#FCFAF5;">
-          <td style="padding:10px 12px;font:800 12px 'Space Grotesk',sans-serif;color:#1C1A17;">Summe ${config.label}</td>
+          <td colspan="3" style="padding:10px 12px;font:800 12px 'Space Grotesk',sans-serif;color:#1C1A17;">Summe ${config.label}</td>
           ${moneyCell(annual)}${moneyCell(annual)}${moneyCell(annual)}${moneyCell(annual * 3)}
         </tr></tfoot>
       </table>
@@ -12284,11 +12297,13 @@ function applyPartnerCampaignMode() {
   const note = document.getElementById('partnerCampaignReadOnlyNote');
   const editor = document.getElementById('partnerEditorSection');
   const pipelineForm = document.getElementById('partnerPipelineForm');
+  const potentialForm = document.getElementById('partnerPotentialForm');
   const rejectionForm = document.getElementById('partnerRejectionForm');
   const donationForm = document.getElementById('fundraisingDonationForm');
   if (note) note.style.display = archived ? '' : 'none';
   if (editor) editor.style.display = archived ? 'none' : '';
   if (pipelineForm) pipelineForm.style.display = archived ? 'none' : '';
+  if (potentialForm) potentialForm.style.display = archived ? 'none' : '';
   if (rejectionForm) rejectionForm.style.display = archived ? 'none' : '';
   if (donationForm) donationForm.style.display = archived ? 'none' : '';
 }
@@ -12299,6 +12314,8 @@ async function selectPartnerCampaign(id) {
   sessionStorage.setItem('partnerCampaignId', id);
   resetSponsorForm();
   resetPartnerPipelineForm();
+  resetPartnerPotentialForm();
+  resetPartnerRejectionForm();
   renderPartnerCampaignTabs();
   await loadAdminSponsors(true);
 }
@@ -12390,7 +12407,8 @@ function editPartnerPipelineEntry(id) {
   document.getElementById('pcPipelineContact').value = row.contact_name || '';
   document.getElementById('pcPipelinePhone').value = row.phone || '';
   document.getElementById('pcPipelineSaveBtn').textContent = 'Änderung speichern';
-  document.getElementById('pcPipelineCompany').focus();
+  document.getElementById('pcPipelineCompany').scrollIntoView({ behavior:'smooth', block:'center' });
+  setTimeout(() => document.getElementById('pcPipelineCompany')?.focus(), 350);
 }
 
 async function savePartnerPipelineEntry() {
@@ -12411,6 +12429,44 @@ async function savePartnerPipelineEntry() {
   } catch (e) { alert('Gespräch konnte nicht gespeichert werden: ' + (e?.message || 'Unbekannter Fehler')); }
 }
 
+function resetPartnerPotentialForm() {
+  ['pcPotentialEditId','pcPotentialCompany','pcPotentialContact','pcPotentialPhone'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const btn = document.getElementById('pcPotentialSaveBtn');
+  if (btn) btn.textContent = 'Potenzial speichern';
+}
+
+function editPartnerPotentialEntry(id) {
+  const row = (window.__partnerPipeline || []).find(item => item.id === id && item.stage === 'potential');
+  if (!row) return;
+  document.getElementById('pcPotentialEditId').value = row.id;
+  document.getElementById('pcPotentialCompany').value = row.company || '';
+  document.getElementById('pcPotentialContact').value = row.contact_name || '';
+  document.getElementById('pcPotentialPhone').value = row.phone || '';
+  document.getElementById('pcPotentialSaveBtn').textContent = 'Änderung speichern';
+  document.getElementById('pcPotentialCompany').scrollIntoView({ behavior:'smooth', block:'center' });
+  setTimeout(() => document.getElementById('pcPotentialCompany')?.focus(), 350);
+}
+
+async function savePartnerPotentialEntry() {
+  if (!ensurePartnerCampaignEditable()) return;
+  const company = document.getElementById('pcPotentialCompany').value.trim();
+  if (!company) { alert('Bitte eine Firma angeben.'); return; }
+  try {
+    const { error } = await sb.rpc('admin_upsert_partner_campaign_pipeline', {
+      p_id:document.getElementById('pcPotentialEditId').value || null,
+      p_campaign_id:window.__partnerCampaignId, p_stage:'potential', p_company:company,
+      p_contact_name:document.getElementById('pcPotentialContact').value.trim() || null,
+      p_phone:document.getElementById('pcPotentialPhone').value.trim() || null
+    });
+    if (error) throw error;
+    resetPartnerPotentialForm();
+    await loadPartnerPipeline();
+    showToast('Potenzial gespeichert.');
+  } catch (e) { alert('Potenzial konnte nicht gespeichert werden: ' + (e?.message || 'Unbekannter Fehler')); }
+}
+
 function resetPartnerRejectionForm() {
   ['pcRejectionEditId','pcRejectionCompany','pcRejectionContact','pcRejectionPhone'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
@@ -12427,7 +12483,8 @@ function editPartnerRejectionEntry(id) {
   document.getElementById('pcRejectionContact').value = row.contact_name || '';
   document.getElementById('pcRejectionPhone').value = row.phone || '';
   document.getElementById('pcRejectionSaveBtn').textContent = 'Änderung speichern';
-  document.getElementById('pcRejectionCompany').focus();
+  document.getElementById('pcRejectionCompany').scrollIntoView({ behavior:'smooth', block:'center' });
+  setTimeout(() => document.getElementById('pcRejectionCompany')?.focus(), 350);
 }
 
 async function savePartnerRejectionEntry() {
@@ -12471,7 +12528,8 @@ async function setPartnerPipelineStage(id, stage) {
     });
     if (error) throw error;
     await loadPartnerPipeline();
-    showToast(stage === 'rejected' ? 'Eintrag zu Absagen verschoben.' : 'Eintrag verschoben.');
+    const destination = { conversation:'Im Gespräch', potential:'Potenzial', rejected:'Absagen' }[stage] || 'den neuen Bereich';
+    showToast(`Eintrag zu ${destination} verschoben.`);
   } catch (e) { alert('Eintrag konnte nicht verschoben werden: ' + (e?.message || 'Unbekannter Fehler')); }
 }
 
@@ -12520,10 +12578,21 @@ function renderPartnerPipelineList(stage, elementId) {
   if (!box) return;
   const rows = (window.__partnerPipeline || []).filter(item => item.stage === stage);
   if (!rows.length) {
-    box.innerHTML = `<div style="color:#7A7368;text-align:center;padding:18px;border:1.5px dashed #E2DACB;border-radius:8px;">${stage === 'conversation' ? 'Aktuell keine Gespräche erfasst.' : 'Noch keine Absagen erfasst.'}</div>`;
+    const empty = { conversation:'Aktuell keine Gespräche erfasst.', potential:'Noch kein Potenzial erfasst.', rejected:'Noch keine Absagen erfasst.' };
+    box.innerHTML = `<div style="color:#7A7368;text-align:center;padding:18px;border:1.5px dashed #E2DACB;border-radius:8px;">${empty[stage] || 'Keine Einträge erfasst.'}</div>`;
     return;
   }
   const archived = partnerCampaignIsArchived();
+  const stageActions = row => {
+    const edit = stage === 'conversation' ? 'editPartnerPipelineEntry' : stage === 'potential' ? 'editPartnerPotentialEntry' : 'editPartnerRejectionEntry';
+    const buttons = [];
+    if (stage !== 'conversation') buttons.push(`<button type="button" onclick="setPartnerPipelineStage('${row.id}','conversation')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Im Gespräch</button>`);
+    if (stage !== 'potential') buttons.push(`<button type="button" onclick="setPartnerPipelineStage('${row.id}','potential')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Potenzial</button>`);
+    if (stage === 'conversation') buttons.unshift(`<button type="button" onclick="convertPipelineToPartner('${row.id}')" style="padding:7px 9px;border:0;border-radius:6px;background:#1F8A5F;color:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Wird Partner</button>`);
+    if (stage !== 'rejected') buttons.push(`<button type="button" onclick="setPartnerPipelineStage('${row.id}','rejected')" style="padding:7px 9px;border:1px solid #B8402C;border-radius:6px;background:#fff;color:#B8402C;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Absage</button>`);
+    buttons.push(`<button type="button" title="Bearbeiten" onclick="${edit}('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">✎</button>`);
+    return buttons.join('');
+  };
   box.innerHTML = rows.map((row, index) => `
     <div draggable="${archived ? 'false' : 'true'}" ${archived ? '' : `ondragstart="startPartnerPipelineDrag('${stage}','${row.id}')" ondragover="event.preventDefault()" ondrop="dropPartnerPipeline('${stage}','${row.id}')"`} style="display:grid;grid-template-columns:${archived ? '' : '28px '}minmax(170px,1.3fr) minmax(150px,1fr) minmax(130px,.8fr) ${archived ? '' : 'auto'};gap:10px;align-items:center;padding:11px 12px;background:#fff;border:1.5px solid #E2DACB;border-radius:8px;margin-bottom:8px;">
       ${archived ? '' : '<button type="button" title="Zeile ziehen" style="border:0;background:transparent;color:#8A8379;font-size:18px;cursor:grab;padding:4px;">⋮⋮</button>'}
@@ -12533,7 +12602,7 @@ function renderPartnerPipelineList(stage, elementId) {
       ${archived ? '' : `<div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;">
         <button type="button" title="Nach oben" onclick="reorderPartnerPipeline('${stage}','${row.id}',-1)" ${index === 0 ? 'disabled' : ''} style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">↑</button>
         <button type="button" title="Nach unten" onclick="reorderPartnerPipeline('${stage}','${row.id}',1)" ${index === rows.length - 1 ? 'disabled' : ''} style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">↓</button>
-        ${stage === 'conversation' ? `<button type="button" onclick="convertPipelineToPartner('${row.id}')" style="padding:7px 9px;border:0;border-radius:6px;background:#1F8A5F;color:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Wird Partner</button><button type="button" onclick="setPartnerPipelineStage('${row.id}','rejected')" style="padding:7px 9px;border:1px solid #B8402C;border-radius:6px;background:#fff;color:#B8402C;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Absage</button><button type="button" title="Bearbeiten" onclick="editPartnerPipelineEntry('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">✎</button>` : `<button type="button" onclick="setPartnerPipelineStage('${row.id}','conversation')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Zurück</button><button type="button" title="Bearbeiten" onclick="editPartnerRejectionEntry('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">✎</button>`}
+        ${stageActions(row)}
         <button type="button" title="Löschen" onclick="deletePartnerPipelineEntry('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;color:#B8402C;font-weight:800;cursor:pointer;">×</button>
       </div>`}
     </div>`).join('');
@@ -12544,6 +12613,7 @@ async function loadPartnerPipeline() {
   if (error) throw error;
   window.__partnerPipeline = data || [];
   renderPartnerPipelineList('conversation', 'partnerConversationList');
+  renderPartnerPipelineList('potential', 'partnerPotentialList');
   renderPartnerPipelineList('rejected', 'partnerRejectionList');
 }
 
@@ -12559,10 +12629,11 @@ function openPartnerCampaignPdf() {
   const total = partnerTotal + donationTotal;
   const pdfMoney = value => adminFormatEuro(value);
   const status = sponsor => sponsor.contract_received ? 'Vertrag' : 'Mündlich';
+  const reportCampaignName = String(campaign.name || '').replace(/^Partner\b/i, 'Partnerprogramm');
   const tierTable = tier => {
     const rows = sponsors.filter(s => s.tier === tier);
     const annual = rows.reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
-    return `<section class="block tier-${tier}"><h2>${esc(SPONSOR_TIER_CONFIG[tier].label)}</h2><table class="partner-table"><colgroup><col class="company-col"><col class="status-col"><col class="money-col"><col class="money-col"><col class="money-col"><col class="total-col"></colgroup><thead><tr><th>Unternehmen</th><th>Stand</th><th>Jahr 1</th><th>Jahr 2</th><th>Jahr 3</th><th>Summe</th></tr></thead><tbody>${rows.length ? rows.map(s => `<tr><td>${esc(s.name)}</td><td>${status(s)}${Number(s.annual_amount_cents) === 0 ? ' · Gegenleistung' : ''}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td><b>${pdfMoney(Number(s.annual_amount_cents) * 3)}</b></td></tr>`).join('') : '<tr><td colspan="6" class="empty">Noch keine Zusage erfasst.</td></tr>'}</tbody><tfoot><tr><td colspan="2">Summe</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual * 3)}</td></tr></tfoot></table></section>`;
+    return `<section class="block tier-${tier}"><h2>${esc(SPONSOR_TIER_CONFIG[tier].label)}</h2><table class="partner-table"><colgroup><col class="company-col"><col class="status-col"><col class="contract-col"><col class="money-col"><col class="money-col"><col class="money-col"><col class="total-col"></colgroup><thead><tr><th>Unternehmen</th><th>Stand</th><th class="contract-head" title="Vertrag liegt vor">✓</th><th>Jahr 1</th><th>Jahr 2</th><th>Jahr 3</th><th>Summe</th></tr></thead><tbody>${rows.length ? rows.map(s => `<tr><td>${esc(s.name)}</td><td>${status(s)}${Number(s.annual_amount_cents) === 0 ? ' · Gegenleistung' : ''}</td><td class="contract-check">${s.contract_received ? '✓' : ''}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td><b>${pdfMoney(Number(s.annual_amount_cents) * 3)}</b></td></tr>`).join('') : '<tr><td colspan="7" class="empty">Noch keine Zusage erfasst.</td></tr>'}</tbody><tfoot><tr><td colspan="3">Summe</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual * 3)}</td></tr></tfoot></table></section>`;
   };
   const kpis = `<div class="kpis"><div><span>Partner · 3 Jahre</span><strong>${pdfMoney(partnerTotal)}</strong><small>Summe aus Premium, Partner und Regional</small></div><div><span>Spenden · einmalig</span><strong>${pdfMoney(donationTotal)}</strong><small>Alle zugesagten Spenden</small></div><div><span>Gesamtsumme</span><strong>${pdfMoney(total)}</strong><small>Addition aus Partner + Spenden</small></div></div>`;
   const donationsTable = `<section class="block"><h2>Spenden</h2><table class="donation-table"><colgroup><col style="width:48%"><col style="width:20%"><col style="width:16%"><col style="width:16%"></colgroup><thead><tr><th>Name / Organisation</th><th>Stand</th><th>Datum</th><th>Einmalig</th></tr></thead><tbody>${donations.length ? donations.map(d => `<tr><td>${esc(d.donor_name)}</td><td>${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</td><td>${esc(d.donation_date || '')}</td><td><b>${pdfMoney(d.amount_cents)}</b></td></tr>`).join('') : '<tr><td colspan="4" class="empty">Noch keine Spende erfasst.</td></tr>'}</tbody><tfoot><tr><td colspan="3">Summe Spenden</td><td>${pdfMoney(donationTotal)}</td></tr></tfoot></table></section>`;
@@ -12570,6 +12641,11 @@ function openPartnerCampaignPdf() {
     const rows = pipeline.filter(row => row.stage === stage);
     return `<section class="pipeline"><div class="pipeline-heading"><h2>${title}</h2><strong>${rows.length}</strong></div><table><colgroup><col style="width:44%"><col style="width:34%"><col style="width:22%"></colgroup><thead><tr><th>Firma</th><th>Ansprechpartner</th><th>Telefon</th></tr></thead><tbody>${rows.length ? rows.map(row => `<tr><td>${esc(row.company)}</td><td>${esc(row.contact_name || '–')}</td><td>${esc(row.phone || '–')}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Keine Einträge.</td></tr>'}</tbody></table></section>`;
   };
+  const conversationCount = pipeline.filter(row => row.stage === 'conversation').length;
+  const rejectedCount = pipeline.filter(row => row.stage === 'rejected').length;
+  const potentialTable = pipelineTable('potential','2. Potenzial');
+  const pipelineLeft = `${pipelineTable('conversation','1. Im Gespräch')}${conversationCount <= rejectedCount ? potentialTable : ''}`;
+  const pipelineRight = `${pipelineTable('rejected','3. Absagen')}${conversationCount > rejectedCount ? potentialTable : ''}`;
   const popup = window.open('', '_blank');
   if (!popup) { alert('Bitte Pop-ups für diese Seite erlauben, damit die PDF-Ansicht geöffnet werden kann.'); return; }
   const today = new Intl.DateTimeFormat('de-DE').format(new Date());
@@ -12578,11 +12654,11 @@ function openPartnerCampaignPdf() {
     sponsors.filter(s => s.tier === 'regional').length + donations.length
   );
   const printDensity = printRowLoad > 25 ? 'ultra-dense' : printRowLoad > 18 ? 'dense' : '';
-  popup.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${esc(campaign.name)} · Aktueller Stand</title><style>
-    @page{size:A4 landscape;margin:7mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{color:#1C1A17;font-family:Arial,sans-serif;background:#fff}.page{position:relative;break-after:page;page-break-after:always}.page:last-of-type{break-after:auto;page-break-after:auto}.header{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1.2mm solid #FF5A36;padding:0 0 2.5mm;margin-bottom:2.5mm}.brand{font:900 26px Arial,sans-serif;letter-spacing:.01em}.brand b{color:#FF5A36}.report-title{font-size:14px;font-weight:800;margin-top:1mm}.meta{text-align:right;color:#756E64;font-size:10px;line-height:1.35}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-bottom:2.5mm}.kpis>div{min-height:20mm;border:.35mm solid #D8CDBB;border-radius:2mm;padding:2.7mm 3mm;background:#fff}.kpis>div:nth-child(2){background:#F7F3EA}.kpis>div:nth-child(3){background:#E9DFCF}.kpis span{display:block;font-size:9.5px;text-transform:uppercase;font-weight:800;color:#756E64}.kpis strong{display:block;font-size:20px;line-height:1.05;margin:1mm 0}.kpis small{font-size:8.5px;color:#756E64}.report-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'premium regional' 'partner regional' 'partner donations';gap:2.5mm 3mm;align-items:start;margin-bottom:2.5mm}.tier-premium{grid-area:premium}.tier-partner{grid-area:partner}.tier-regional{grid-area:regional}.donation-block{grid-area:donations}.block{margin:0;min-width:0;border:.35mm solid #D8CDBB;border-radius:1.5mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid}.block h2{font-size:11px;text-transform:uppercase;letter-spacing:.07em;margin:0;padding:1.7mm 2mm;background:#1C1A17;color:#fff}table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:9.5px}.company-col{width:31%}.status-col{width:19%}.money-col{width:12%}.total-col{width:14%}th{background:#F2EDE3;color:#5C564C;text-transform:uppercase;text-align:left;font-size:8.2px}th,td{padding:1.05mm 1.3mm;border-bottom:.3mm solid #E6DED1;line-height:1.15;vertical-align:middle}th:nth-child(n+3),td:nth-child(n+3){text-align:right}.partner-table th:nth-child(n+3),.partner-table td:nth-child(n+3),.donation-table th:last-child,.donation-table td:last-child{white-space:nowrap;overflow-wrap:normal;font-variant-numeric:tabular-nums}.donation-table tfoot td:last-child{text-align:right}td{overflow-wrap:anywhere}tfoot td{font-weight:800;background:#F8F4EC;border-top:.5mm solid #BDB2A1;border-bottom:0}.empty{color:#8A8379;font-style:italic;text-align:left!important}.page2-grid{display:grid;grid-template-columns:1fr 1fr;gap:3mm;align-items:start}.pipeline{min-width:0;border:.35mm solid #D8CDBB;border-radius:1.5mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid}.pipeline-heading{display:flex;align-items:center;justify-content:space-between;padding:1.5mm 2mm;background:#1C1A17;color:#fff}.pipeline h2{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;margin:0}.pipeline-heading strong{display:grid;place-items:center;min-width:6mm;height:6mm;padding:0 1.5mm;border-radius:1mm;background:#FF5A36;font-size:10px}.pipeline table{font-size:9.5px}.pipeline th{font-size:8px}.pipeline th,.pipeline td{padding:1.15mm 1.5mm;text-align:left!important;line-height:1.1}.footer{position:absolute;bottom:0;right:0;color:#8A8379;font-size:9px}.dense .kpis>div,.ultra-dense .kpis>div{min-height:18mm;padding:2mm 2.5mm}.dense .kpis strong,.ultra-dense .kpis strong{font-size:17px;margin:.6mm 0}.dense table{font-size:8.5px}.dense th,.dense td{padding:.75mm 1mm}.ultra-dense table{font-size:7.5px}.ultra-dense th,.ultra-dense td{padding:.5mm .8mm}@media screen{html,body{width:283mm;min-width:283mm}body{margin:0 auto}.page{width:283mm;min-height:196mm}.page+.page{border-top:3mm solid #F2EDE3}}@media print{html,body{width:auto!important;min-width:0!important}.page{width:100%!important;min-height:0;overflow:visible}.brand{font-size:28px}.report-title{font-size:16px}.meta{font-size:10.5px}.kpis>div{min-height:23mm;padding:3mm 3.5mm}.kpis span{font-size:10.5px}.kpis strong{font-size:23px;margin:1.1mm 0}.kpis small{font-size:9.5px}.block h2{font-size:11.5px;padding:1.8mm 2mm}table{font-size:10px}th{font-size:8.3px}th,td{padding:1.15mm .8mm}.pipeline table{font-size:9.5px}.pipeline th{font-size:8px}.pipeline th,.pipeline td{padding:1.15mm 1.2mm}.dense table{font-size:9px}.dense th,.dense td{padding:.8mm .7mm}.ultra-dense table{font-size:8.2px}.ultra-dense th,.ultra-dense td{padding:.55mm .6mm}.footer{position:static;text-align:right;margin-top:2mm;font-size:9px}button{display:none!important}}
+  popup.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${esc(reportCampaignName)} · Aktueller Stand</title><style>
+    @page{size:A4 landscape;margin:7mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{color:#1C1A17;font-family:Arial,sans-serif;background:#fff}.page{position:relative;break-after:page;page-break-after:always}.page:last-of-type{break-after:auto;page-break-after:auto}.header{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1.2mm solid #FF5A36;padding:0 0 2.5mm;margin-bottom:2.5mm}.brand{font:900 26px Arial,sans-serif;letter-spacing:.01em}.brand b{color:#FF5A36}.report-title{font-size:14px;font-weight:800;margin-top:1mm}.meta{text-align:right;color:#756E64;font-size:10px;line-height:1.35}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-bottom:2.5mm}.kpis>div{min-height:20mm;border:.35mm solid #D8CDBB;border-radius:2mm;padding:2.7mm 3mm;background:#fff}.kpis>div:nth-child(2){background:#F7F3EA}.kpis>div:nth-child(3){background:#E9DFCF}.kpis span{display:block;font-size:9.5px;text-transform:uppercase;font-weight:800;color:#756E64}.kpis strong{display:block;font-size:20px;line-height:1.05;margin:1mm 0}.kpis small{font-size:8.5px;color:#756E64}.report-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'premium regional' 'partner regional' 'partner donations';gap:2.5mm 3mm;align-items:start;margin-bottom:2.5mm}.tier-premium{grid-area:premium}.tier-partner{grid-area:partner}.tier-regional{grid-area:regional}.donation-block{grid-area:donations}.block{margin:0;min-width:0;border:.35mm solid #D8CDBB;border-radius:1.5mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid}.block h2{font-size:11px;text-transform:uppercase;letter-spacing:.07em;margin:0;padding:1.7mm 2mm;background:#1C1A17;color:#fff}table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:9.5px}.company-col{width:31%}.status-col{width:15%}.contract-col{width:5%}.money-col{width:11%}.total-col{width:16%}th{background:#F2EDE3;color:#5C564C;text-transform:uppercase;text-align:left;font-size:8.2px}th,td{padding:1.05mm 1.3mm;border-bottom:.3mm solid #E6DED1;line-height:1.15;vertical-align:middle}th:nth-child(n+4),td:nth-child(n+4){text-align:right}.partner-table th:nth-child(n+4),.partner-table td:nth-child(n+4),.donation-table th:last-child,.donation-table td:last-child{white-space:nowrap;overflow-wrap:normal;font-variant-numeric:tabular-nums}.contract-head{text-align:center!important;color:#1C1A17;font-size:12px}.contract-check{text-align:center!important;color:#FF5A36;font-size:16px;font-weight:900}.donation-table tfoot td:last-child{text-align:right}td{overflow-wrap:anywhere}tfoot td{font-weight:800;background:#F8F4EC;border-top:.5mm solid #BDB2A1;border-bottom:0}.empty{color:#8A8379;font-style:italic;text-align:left!important}.page2-grid{display:grid;grid-template-columns:1fr 1fr;gap:3mm;align-items:start}.pipeline-column{display:flex;flex-direction:column;gap:3mm;min-width:0}.pipeline{min-width:0;border:.35mm solid #D8CDBB;border-radius:1.5mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid}.pipeline-heading{display:flex;align-items:center;justify-content:space-between;padding:1.5mm 2mm;background:#1C1A17;color:#fff}.pipeline h2{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;margin:0}.pipeline-heading strong{display:grid;place-items:center;min-width:6mm;height:6mm;padding:0 1.5mm;border-radius:1mm;background:#FF5A36;font-size:10px}.pipeline table{font-size:9.5px}.pipeline th{font-size:8px}.pipeline th,.pipeline td{padding:1.15mm 1.5mm;text-align:left!important;line-height:1.1}.footer{position:absolute;bottom:0;right:0;color:#8A8379;font-size:9px}.dense .kpis>div,.ultra-dense .kpis>div{min-height:18mm;padding:2mm 2.5mm}.dense .kpis strong,.ultra-dense .kpis strong{font-size:17px;margin:.6mm 0}.dense table{font-size:8.5px}.dense th,.dense td{padding:.75mm 1mm}.ultra-dense table{font-size:7.5px}.ultra-dense th,.ultra-dense td{padding:.5mm .8mm}@media screen{html,body{width:283mm;min-width:283mm}body{margin:0 auto}.page{width:283mm;min-height:196mm}.page+.page{border-top:3mm solid #F2EDE3}}@media print{html,body{width:auto!important;min-width:0!important}.page{width:100%!important;min-height:0;overflow:visible}.brand{font-size:28px}.report-title{font-size:16px}.meta{font-size:10.5px}.kpis>div{min-height:23mm;padding:3mm 3.5mm}.kpis span{font-size:10.5px}.kpis strong{font-size:23px;margin:1.1mm 0}.kpis small{font-size:9.5px}.block h2{font-size:11.5px;padding:1.8mm 2mm}table{font-size:10px}th{font-size:8.3px}th,td{padding:1.15mm .8mm}.pipeline table{font-size:9.5px}.pipeline th{font-size:8px}.pipeline th,.pipeline td{padding:1.15mm 1.2mm}.dense table{font-size:9px}.dense th,.dense td{padding:.8mm .7mm}.ultra-dense table{font-size:8.2px}.ultra-dense th,.ultra-dense td{padding:.55mm .6mm}.footer{position:static;text-align:right;margin-top:2mm;font-size:9px}button{display:none!important}}
   </style></head><body class="${printDensity}">
-    <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">A. ${esc(campaign.name)}</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header>${kpis}<div class="report-grid">${SPONSOR_TIER_ORDER.map(tierTable).join('')}${donationsTable.replace('class="block"','class="block donation-block"')}</div><div class="footer">Seite 1 von 2</div></section>
-    <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">B. ${esc(campaign.name)} · Akquise</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header><div class="page2-grid">${pipelineTable('conversation','1. Im Gespräch')}${pipelineTable('rejected','2. Absagen')}</div><div class="footer">Seite 2 von 2</div></section>
+    <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">A. ${esc(reportCampaignName)}</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header>${kpis}<div class="report-grid">${SPONSOR_TIER_ORDER.map(tierTable).join('')}${donationsTable.replace('class="block"','class="block donation-block"')}</div><div class="footer">Seite 1 von 2</div></section>
+    <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">B. ${esc(reportCampaignName)} · Akquise</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header><div class="page2-grid"><div class="pipeline-column">${pipelineLeft}</div><div class="pipeline-column">${pipelineRight}</div></div><div class="footer">Seite 2 von 2</div></section>
     <script>window.addEventListener('load',()=>setTimeout(()=>window.print(),300));<\/script></body></html>`);
   popup.document.close();
 }
@@ -12636,8 +12712,10 @@ async function loadAdminSponsors(campaignsReady = false) {
   loadPartnerPipeline().catch(e => {
     const message = `<div style="color:#B8402C;padding:18px;">Pipeline konnte nicht geladen werden: ${esc(e?.message || 'Unbekannter Fehler')}</div>`;
     const conversations = document.getElementById('partnerConversationList');
+    const potentials = document.getElementById('partnerPotentialList');
     const rejections = document.getElementById('partnerRejectionList');
     if (conversations) conversations.innerHTML = message;
+    if (potentials) potentials.innerHTML = message;
     if (rejections) rejections.innerHTML = message;
   });
   loadSponsorWeights();
@@ -12875,7 +12953,9 @@ function editSponsor(id) {
   renderLogoPreview(esc(s.logo_url || ''), 'spLogoPreview');
   renderLogoPreview(esc(s.action_logo_url || ''), 'spActionLogoPreview');
   document.getElementById('spSaveBtn').textContent = 'Änderung speichern';
-  document.getElementById('adminSponsors').scrollIntoView({ behavior:'smooth', block:'start' });
+  const editor = document.getElementById('partnerEditorSection');
+  (editor || document.getElementById('spName')).scrollIntoView({ behavior:'smooth', block:'start' });
+  setTimeout(() => document.getElementById('spName')?.focus({ preventScroll:true }), 450);
 }
 
 function resetSponsorForm() {
@@ -19084,11 +19164,13 @@ function coverCardHTML(nextMatch) {
         ${coverAvatar}
       </div>
       ${matchHtml}
-      ${accountLevelPillHTML(level)}
+      <div class="cover-level-row">
+        ${accountLevelPillHTML(level)}
+        <button type="button" class="acct-signout-btn cover-signout-btn" onclick="doLogout()">Abmelden</button>
+      </div>
     </div>
     <div class="cover-footer">
       <div class="cover-caption">Rewards · Wertkarten · Account</div>
-      <button type="button" class="acct-signout-btn cover-signout-btn" onclick="doLogout()">Abmelden</button>
     </div>
   </div>`;
 }
@@ -21663,6 +21745,9 @@ body.bielstein-theme .acct-cover-redesign .cover-greet-name { font-size: clamp(3
 body.bielstein-theme .acct-cover-redesign .cover-greet-wrap { width: 100%; margin-bottom: 6px; }
 body.bielstein-theme .acct-cover-redesign .cover-avatar.has-photo { background-image: var(--avatar-image) !important; }
 body.bielstein-theme .cover-footer { width:100%; }
+body.bielstein-theme .cover-level-row { width:100%; }
+body.bielstein-theme .cover-level-row .acct-level-pill { margin-top:37px; }
+body.bielstein-theme .cover-level-row .cover-signout-btn { align-self:flex-end; margin-bottom:-2px; }
 body.bielstein-theme .acct-signout-btn { transition:border-color .15s,color .15s,background-color .15s; }
 body.bielstein-theme .acct-signout-btn:hover { background:#FFFFFF; }
 body.bielstein-theme .cover-section-kicker { display: block; margin: 0 0 7px; font: 800 10.5px/1 "Space Grotesk","Arial Narrow",sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #FF5A36; }
