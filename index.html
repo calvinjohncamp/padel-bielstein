@@ -12641,11 +12641,9 @@ function openPartnerCampaignPdf() {
     const rows = pipeline.filter(row => row.stage === stage);
     return `<section class="pipeline"><div class="pipeline-heading"><h2>${title}</h2><strong>${rows.length}</strong></div><table><colgroup><col style="width:44%"><col style="width:34%"><col style="width:22%"></colgroup><thead><tr><th>Firma</th><th>Ansprechpartner</th><th>Telefon</th></tr></thead><tbody>${rows.length ? rows.map(row => `<tr><td>${esc(row.company)}</td><td>${esc(row.contact_name || '–')}</td><td>${esc(row.phone || '–')}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Keine Einträge.</td></tr>'}</tbody></table></section>`;
   };
-  const conversationCount = pipeline.filter(row => row.stage === 'conversation').length;
-  const rejectedCount = pipeline.filter(row => row.stage === 'rejected').length;
   const potentialTable = pipelineTable('potential','2. Potenzial');
-  const pipelineLeft = `${pipelineTable('conversation','1. Im Gespräch')}${conversationCount <= rejectedCount ? potentialTable : ''}`;
-  const pipelineRight = `${pipelineTable('rejected','3. Absagen')}${conversationCount > rejectedCount ? potentialTable : ''}`;
+  const pipelineLeft = pipelineTable('conversation','1. Im Gespräch');
+  const pipelineRight = `${potentialTable}${pipelineTable('rejected','3. Absagen')}`;
   const popup = window.open('', '_blank');
   if (!popup) { alert('Bitte Pop-ups für diese Seite erlauben, damit die PDF-Ansicht geöffnet werden kann.'); return; }
   const today = new Intl.DateTimeFormat('de-DE').format(new Date());
