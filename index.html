@@ -6385,6 +6385,10 @@ main {
     </div><!-- /adminAktionen -->
 
     <div id="adminSponsors" style="display:none;">
+      <div class="admin-section" id="partnerCampaignNavigation" style="display:none;">
+        <div class="admin-section-title">Partnerkampagnen</div>
+        <div id="partnerCampaignTabs" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      </div>
       <div class="admin-section">
         <div class="admin-section-title">Partner-Seite im Hauptmenü (7. Tab)</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -6399,7 +6403,7 @@ main {
         <div class="admin-section-title">Partnerwerbung auf den übrigen Seiten</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
           <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
-            Steuert die Partner-/Sponsorenflächen auf Startseite, Buchen, Abo, Jetzt spielen, Verabreden, Guthaben und Kiosk. Auf <strong>„Aus"</strong> läuft das Buchungssystem werbefrei. Der Schalter darüber bestimmt zusätzlich, ob die eigene Partner-Seite im Hauptmenü angeboten wird.
+            Steuert die Partnerflächen auf Startseite, Buchen, Abo, Jetzt spielen, Verabreden, Guthaben und Kiosk. Auf <strong>„Aus"</strong> läuft das Buchungssystem werbefrei. Der Schalter darüber bestimmt zusätzlich, ob die eigene Partner-Seite im Hauptmenü angeboten wird.
           </div>
           <div class="seg-toggle" style="flex:0 0 auto;">
             <button type="button" id="adsOff" class="seg-btn" onclick="setSponsorsEnabled(false)">Aus</button>
@@ -6427,14 +6431,33 @@ main {
         </div>
       </div>
       <div class="admin-section">
-        <div class="admin-section-title">Akquise und Finanzierung</div>
-        <div style="font-size:0.78rem;color:#7A7368;line-height:1.5;margin-bottom:12px;">
-          Verträge ersetzen in der Summe eine frühere mündliche Zusage. Spenden werden einmalig addiert; Partnerbeiträge werden für ein, zwei und drei Jahre hochgerechnet.
-        </div>
+        <div class="admin-section-title" id="partnerCampaignSummaryTitle">Partner 2027-2030</div>
         <div id="fundraisingSummary"><div style="color:#7A7368;text-align:center;padding:18px;">Wird geladen …</div></div>
+        <button type="button" class="admin-save-btn" style="margin-top:14px;" onclick="openPartnerCampaignPdf()">PDF Aktueller Stand</button>
       </div>
+
       <div class="admin-section">
-        <div class="admin-section-title">🤝 Sponsor anlegen / bearbeiten</div>
+        <div class="admin-section-title">Im Gespräch</div>
+        <div style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:14px;margin-bottom:12px;">
+          <input type="hidden" id="pcPipelineEditId">
+          <div style="display:grid;grid-template-columns:minmax(180px,1.4fr) minmax(160px,1fr) minmax(140px,.8fr) auto auto;gap:10px;align-items:end;">
+            <div><label class="eb-adm-lbl">Firma</label><input id="pcPipelineCompany" class="eb-adm-inp" type="text" placeholder="Unternehmen"></div>
+            <div><label class="eb-adm-lbl">Ansprechpartner</label><input id="pcPipelineContact" class="eb-adm-inp" type="text" placeholder="Name"></div>
+            <div><label class="eb-adm-lbl">Telefon</label><input id="pcPipelinePhone" class="eb-adm-inp" type="tel" placeholder="Telefon"></div>
+            <button id="pcPipelineSaveBtn" type="button" class="admin-save-btn" onclick="savePartnerPipelineEntry()">Gespräch speichern</button>
+            <button type="button" onclick="resetPartnerPipelineForm()" style="padding:11px 14px;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;color:#7A7368;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Neu / Abbrechen</button>
+          </div>
+        </div>
+        <div id="partnerConversationList"><div style="color:#7A7368;text-align:center;padding:18px;">Wird geladen …</div></div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Absagen</div>
+        <div id="partnerRejectionList"><div style="color:#7A7368;text-align:center;padding:18px;">Wird geladen …</div></div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Partner anlegen / bearbeiten</div>
         <div style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5;">
           <strong>Premium</strong> erscheint bis zu zweimal oben auf der Partner-Seite; auf der Startseite bleibt der erste aktive Premium-Partner exklusiv.
           In App und Mails rotieren <strong>Premium</strong> und <strong>Partner</strong> gleich häufig; <strong>Regional-Partner</strong> laufen mit dem eigenen Regional-Gewicht.
@@ -6442,6 +6465,7 @@ main {
         </div>
         <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
           <input type="hidden" id="spEditId">
+          <input type="hidden" id="spSourcePipelineId">
           <input type="hidden" id="spLogoUrl">
           <input type="hidden" id="spActionLogoUrl">
           <div style="display:grid;grid-template-columns:1fr 120px;gap:12px;margin-bottom:12px;">
@@ -6609,7 +6633,7 @@ main {
       </div>
 
       <div class="admin-section">
-        <div class="admin-section-title">Aktuelle Sponsoren</div>
+        <div class="admin-section-title" id="partnerCampaignListTitle">Partner 2027-2030</div>
         <div id="sponsorsAdminList"><div style="color:#7A7368;text-align:center;padding:24px;">Wird geladen …</div></div>
       </div>
 
@@ -6634,7 +6658,7 @@ main {
       </div>
 
       <div class="admin-section">
-        <div class="admin-section-title">Digitale Häufigkeit</div>
+        <div class="admin-section-title">Digitale Häufigkeit/Rotation</div>
         <div style="font-size:0.78rem;color:#888;margin-bottom:12px;line-height:1.5;">
           Normale Rotation auf Unterseiten und in Bestätigungsmails. Premium hat zusätzlich die exklusive Splash-Sichtbarkeit.
         </div>
@@ -6648,6 +6672,22 @@ main {
             <input id="spWRegional" type="number" min="1" value="1" style="width:110px;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
           </div>
           <button onclick="saveSponsorWeights()" style="padding:11px 16px;border:0;border-radius:9px;background:#FF5A36;color:#1C1A17;font:700 13px 'Space Grotesk',sans-serif;cursor:pointer;">Speichern</button>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <button id="newPartnerCampaignToggle" type="button" class="admin-save-btn" onclick="toggleNewPartnerCampaignForm()">Neue Kampagne anlegen</button>
+        <div id="newPartnerCampaignForm" style="display:none;margin-top:12px;background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:14px;">
+          <div style="display:grid;grid-template-columns:minmax(210px,1fr) 120px 120px;gap:10px;margin-bottom:10px;">
+            <div><label class="eb-adm-lbl">Bezeichnung</label><input id="newPartnerCampaignName" class="eb-adm-inp" type="text" placeholder="Partner 2030-2033"></div>
+            <div><label class="eb-adm-lbl">Von</label><input id="newPartnerCampaignStart" class="eb-adm-inp" type="number" min="2027" max="2100"></div>
+            <div><label class="eb-adm-lbl">Bis</label><input id="newPartnerCampaignEnd" class="eb-adm-inp" type="number" min="2027" max="2100"></div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;font:700 13px 'Manrope',sans-serif;color:#1C1A17;margin-bottom:12px;cursor:pointer;"><input id="newPartnerCampaignCopy" type="checkbox" checked style="width:18px;height:18px;accent-color:#FF5A36;"> Partnerstamm und Jahresbeträge übernehmen; Zusagen und Verträge neu beginnen</label>
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="admin-save-btn" onclick="createPartnerCampaign()">Kampagne speichern</button>
+            <button type="button" onclick="toggleNewPartnerCampaignForm(false)" style="padding:11px 14px;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;color:#7A7368;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Abbrechen</button>
+          </div>
         </div>
       </div>
     </div><!-- /adminSponsors -->
@@ -12055,8 +12095,8 @@ function renderFundraisingSummary() {
   const partnerThreeYearTotal = partnerAnnualTotal * 3;
   const donationTotal = donations.reduce((sum, d) => sum + (Number(d.amount_cents) || 0), 0);
   const committedTotal = partnerThreeYearTotal + donationTotal;
-  const metric = (label, value, note, accent = '#1C1A17') => `
-    <div style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:13px 14px;min-width:0;">
+  const metric = (label, value, note, accent = '#1C1A17', background = '#fff') => `
+    <div style="background:${background};border:1.5px solid #E2DACB;border-radius:8px;padding:13px 14px;min-width:0;">
       <div style="font:800 10px 'Space Grotesk',sans-serif;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">${label}</div>
       <div style="font:800 20px 'Space Grotesk',sans-serif;color:${accent};">${adminFormatEuro(value)}</div>
       <div style="font:600 11px 'Manrope',sans-serif;color:#7A7368;margin-top:4px;line-height:1.35;">${note}</div>
@@ -12106,15 +12146,15 @@ function renderFundraisingSummary() {
   </tr>`).join('') : '<tr style="border-top:1px solid #EFE9DC;"><td colspan="3" style="padding:10px 12px;color:#8A8379;font:600 12px Manrope,sans-serif;">Noch keine Spende erfasst.</td></tr>';
   box.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:14px;">
-      ${metric('Gesamt zugesagt', committedTotal, 'Partner für 3 Jahre plus einmalige Spenden', '#FF5A36')}
-      ${metric('Partner', partnerThreeYearTotal, 'Alle mündlichen und vertraglichen Zusagen für 3 Jahre', '#1C1A17')}
-      ${metric('Spenden', donationTotal, 'Einmalige zugesagte und eingegangene Spenden', '#1F8A5F')}
+      ${metric('Partner · 3 Jahre', partnerThreeYearTotal, 'Summe aus Premium, Partner und Regional', '#1C1A17', '#FFFFFF')}
+      ${metric('Spenden · einmalig', donationTotal, 'Alle zugesagten Spenden', '#1F6E50', '#F7F3EA')}
+      ${metric('Gesamtsumme', committedTotal, 'Addition aus Partner + Spenden', '#FF5A36', '#EDE5D7')}
     </div>
     ${SPONSOR_TIER_ORDER.map(partnerTable).join('')}
     <div style="margin-top:14px;overflow-x:auto;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;">
       <table style="width:100%;min-width:520px;border-collapse:collapse;">
         <thead><tr style="background:#F6F2E9;">
-          <th style="padding:10px 12px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Spender</th>
+          <th style="padding:10px 12px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Spenden</th>
           <th style="padding:10px 12px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Stand</th>
           <th style="padding:10px 12px;text-align:right;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Einmalig</th>
         </tr></thead>
@@ -12126,9 +12166,9 @@ function renderFundraisingSummary() {
       </table>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:14px;padding-top:14px;border-top:2px solid #D8CDBB;">
-      ${metric('Partner · 3 Jahre', partnerThreeYearTotal, 'Summe aus Premium, Partner und Regional')}
-      ${metric('Spenden · einmalig', donationTotal, 'Alle erfassten Spenden')}
-      ${metric('Gesamtsumme', committedTotal, 'Entspricht der Kennzahl oben', '#FF5A36')}
+      ${metric('Partner · 3 Jahre', partnerThreeYearTotal, 'Summe aus Premium, Partner und Regional', '#1C1A17', '#FFFFFF')}
+      ${metric('Spenden · einmalig', donationTotal, 'Alle zugesagten Spenden', '#1F6E50', '#F7F3EA')}
+      ${metric('Gesamtsumme', committedTotal, 'Addition aus Partner + Spenden', '#FF5A36', '#EDE5D7')}
     </div>`;
 }
 
@@ -12147,15 +12187,277 @@ function addSponsorInTier(tier) {
   setTimeout(() => document.getElementById('spName')?.focus(), 350);
 }
 
-async function loadAdminSponsors() {
+function currentPartnerCampaign() {
+  return (window.__partnerCampaigns || []).find(c => c.id === window.__partnerCampaignId) || null;
+}
+
+async function loadPartnerCampaigns(preferredId = null) {
+  const { data, error } = await sb.rpc('admin_list_partner_campaigns');
+  if (error) throw error;
+  window.__partnerCampaigns = data || [];
+  const stored = sessionStorage.getItem('partnerCampaignId');
+  const selected = preferredId
+    || (window.__partnerCampaigns.some(c => c.id === stored) ? stored : null)
+    || window.__partnerCampaigns.find(c => c.is_current)?.id
+    || window.__partnerCampaigns[0]?.id;
+  window.__partnerCampaignId = selected || null;
+  renderPartnerCampaignTabs();
+}
+
+function renderPartnerCampaignTabs() {
+  const campaigns = window.__partnerCampaigns || [];
+  const nav = document.getElementById('partnerCampaignNavigation');
+  const box = document.getElementById('partnerCampaignTabs');
+  const campaign = currentPartnerCampaign();
+  if (nav) nav.style.display = campaigns.length > 1 ? '' : 'none';
+  if (box) box.innerHTML = campaigns.map(c => `
+    <button type="button" onclick="selectPartnerCampaign('${c.id}')" style="padding:10px 15px;border:1.5px solid ${c.id === window.__partnerCampaignId ? '#1C1A17' : '#E2DACB'};border-radius:8px;background:${c.id === window.__partnerCampaignId ? '#1C1A17' : '#fff'};color:${c.id === window.__partnerCampaignId ? '#fff' : '#5C564C'};font:800 12px 'Space Grotesk',sans-serif;cursor:pointer;">${esc(c.name)}</button>`).join('');
+  if (campaign) {
+    const title = campaign.name;
+    const summaryTitle = document.getElementById('partnerCampaignSummaryTitle');
+    const listTitle = document.getElementById('partnerCampaignListTitle');
+    if (summaryTitle) summaryTitle.textContent = title;
+    if (listTitle) listTitle.textContent = title;
+  }
+}
+
+async function selectPartnerCampaign(id) {
+  if (id === window.__partnerCampaignId) return;
+  window.__partnerCampaignId = id;
+  sessionStorage.setItem('partnerCampaignId', id);
+  resetSponsorForm();
+  resetPartnerPipelineForm();
+  renderPartnerCampaignTabs();
+  await loadAdminSponsors(true);
+}
+
+function toggleNewPartnerCampaignForm(force) {
+  const form = document.getElementById('newPartnerCampaignForm');
+  if (!form) return;
+  const open = typeof force === 'boolean' ? force : form.style.display === 'none';
+  form.style.display = open ? '' : 'none';
+  if (!open) return;
+  const current = currentPartnerCampaign();
+  const start = current ? current.end_year : new Date().getFullYear();
+  const end = start + 3;
+  document.getElementById('newPartnerCampaignStart').value = start;
+  document.getElementById('newPartnerCampaignEnd').value = end;
+  document.getElementById('newPartnerCampaignName').value = `Partner ${start}-${end}`;
+}
+
+async function createPartnerCampaign() {
+  const name = document.getElementById('newPartnerCampaignName').value.trim();
+  const start = parseInt(document.getElementById('newPartnerCampaignStart').value, 10);
+  const end = parseInt(document.getElementById('newPartnerCampaignEnd').value, 10);
+  if (!name || !Number.isInteger(start) || !Number.isInteger(end) || end < start) {
+    alert('Bitte Bezeichnung und einen gültigen Zeitraum eintragen.'); return;
+  }
+  try {
+    const { data, error } = await sb.rpc('admin_create_partner_campaign', {
+      p_name:name, p_start_year:start, p_end_year:end,
+      p_source_campaign_id:window.__partnerCampaignId,
+      p_copy_members:document.getElementById('newPartnerCampaignCopy').checked
+    });
+    if (error) throw error;
+    toggleNewPartnerCampaignForm(false);
+    await loadPartnerCampaigns(data);
+    await loadAdminSponsors(true);
+    showToast('Neue Partnerkampagne angelegt. Zusagen und Verträge beginnen leer.');
+  } catch (e) {
+    alert('Kampagne konnte nicht angelegt werden: ' + (e?.message || 'Unbekannter Fehler'));
+  }
+}
+
+function resetPartnerPipelineForm() {
+  ['pcPipelineEditId','pcPipelineCompany','pcPipelineContact','pcPipelinePhone'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const btn = document.getElementById('pcPipelineSaveBtn');
+  if (btn) btn.textContent = 'Gespräch speichern';
+}
+
+function editPartnerPipelineEntry(id) {
+  const row = (window.__partnerPipeline || []).find(item => item.id === id);
+  if (!row) return;
+  document.getElementById('pcPipelineEditId').value = row.id;
+  document.getElementById('pcPipelineCompany').value = row.company || '';
+  document.getElementById('pcPipelineContact').value = row.contact_name || '';
+  document.getElementById('pcPipelinePhone').value = row.phone || '';
+  document.getElementById('pcPipelineSaveBtn').textContent = 'Änderung speichern';
+  document.getElementById('pcPipelineCompany').focus();
+}
+
+async function savePartnerPipelineEntry() {
+  const company = document.getElementById('pcPipelineCompany').value.trim();
+  if (!company) { alert('Bitte eine Firma angeben.'); return; }
+  try {
+    const { error } = await sb.rpc('admin_upsert_partner_campaign_pipeline', {
+      p_id:document.getElementById('pcPipelineEditId').value || null,
+      p_campaign_id:window.__partnerCampaignId, p_stage:'conversation', p_company:company,
+      p_contact_name:document.getElementById('pcPipelineContact').value.trim() || null,
+      p_phone:document.getElementById('pcPipelinePhone').value.trim() || null
+    });
+    if (error) throw error;
+    resetPartnerPipelineForm();
+    await loadPartnerPipeline();
+    showToast('Gespräch gespeichert.');
+  } catch (e) { alert('Gespräch konnte nicht gespeichert werden: ' + (e?.message || 'Unbekannter Fehler')); }
+}
+
+function convertPipelineToPartner(id) {
+  const row = (window.__partnerPipeline || []).find(item => item.id === id);
+  if (!row) return;
+  resetSponsorForm();
+  document.getElementById('spSourcePipelineId').value = row.id;
+  document.getElementById('spName').value = row.company || '';
+  document.getElementById('spContractCompany').value = row.company || '';
+  document.getElementById('spContactName').value = row.contact_name || '';
+  document.getElementById('spContactPhone').value = row.phone || '';
+  setSponsorCompanyAuto(true);
+  document.getElementById('spName').scrollIntoView({ behavior:'smooth', block:'center' });
+  setTimeout(() => document.getElementById('spTier')?.focus(), 350);
+}
+
+async function setPartnerPipelineStage(id, stage) {
+  try {
+    const { error } = await sb.rpc('admin_set_partner_campaign_pipeline_stage', {
+      p_id:id, p_campaign_id:window.__partnerCampaignId, p_stage:stage, p_converted_sponsor_id:null
+    });
+    if (error) throw error;
+    await loadPartnerPipeline();
+    showToast(stage === 'rejected' ? 'Eintrag zu Absagen verschoben.' : 'Eintrag verschoben.');
+  } catch (e) { alert('Eintrag konnte nicht verschoben werden: ' + (e?.message || 'Unbekannter Fehler')); }
+}
+
+async function deletePartnerPipelineEntry(id) {
+  if (!confirm('Diesen Eintrag wirklich löschen?')) return;
+  const { error } = await sb.rpc('admin_delete_partner_campaign_pipeline', { p_id:id, p_campaign_id:window.__partnerCampaignId });
+  if (error) { alert('Löschen fehlgeschlagen: ' + error.message); return; }
+  await loadPartnerPipeline();
+}
+
+async function reorderPartnerPipeline(stage, id, direction) {
+  const rows = (window.__partnerPipeline || []).filter(item => item.stage === stage);
+  const index = rows.findIndex(item => item.id === id);
+  const target = index + direction;
+  if (index < 0 || target < 0 || target >= rows.length) return;
+  [rows[index], rows[target]] = [rows[target], rows[index]];
+  await persistPartnerPipelineOrder(stage, rows.map(item => item.id));
+}
+
+let partnerPipelineDrag = null;
+function startPartnerPipelineDrag(stage, id) { partnerPipelineDrag = { stage, id }; }
+async function dropPartnerPipeline(stage, targetId) {
+  if (!partnerPipelineDrag || partnerPipelineDrag.stage !== stage || partnerPipelineDrag.id === targetId) return;
+  const rows = (window.__partnerPipeline || []).filter(item => item.stage === stage);
+  const from = rows.findIndex(item => item.id === partnerPipelineDrag.id);
+  const to = rows.findIndex(item => item.id === targetId);
+  if (from < 0 || to < 0) return;
+  const [moved] = rows.splice(from, 1); rows.splice(to, 0, moved);
+  partnerPipelineDrag = null;
+  await persistPartnerPipelineOrder(stage, rows.map(item => item.id));
+}
+
+async function persistPartnerPipelineOrder(stage, ids) {
+  const { error } = await sb.rpc('admin_reorder_partner_campaign_pipeline', {
+    p_campaign_id:window.__partnerCampaignId, p_stage:stage, p_ids:ids
+  });
+  if (error) { alert('Sortierung konnte nicht gespeichert werden: ' + error.message); return; }
+  await loadPartnerPipeline();
+}
+
+function renderPartnerPipelineList(stage, elementId) {
+  const box = document.getElementById(elementId);
+  if (!box) return;
+  const rows = (window.__partnerPipeline || []).filter(item => item.stage === stage);
+  if (!rows.length) {
+    box.innerHTML = `<div style="color:#7A7368;text-align:center;padding:18px;border:1.5px dashed #E2DACB;border-radius:8px;">${stage === 'conversation' ? 'Aktuell keine Gespräche erfasst.' : 'Noch keine Absagen erfasst.'}</div>`;
+    return;
+  }
+  box.innerHTML = rows.map((row, index) => `
+    <div draggable="true" ondragstart="startPartnerPipelineDrag('${stage}','${row.id}')" ondragover="event.preventDefault()" ondrop="dropPartnerPipeline('${stage}','${row.id}')" style="display:grid;grid-template-columns:28px minmax(170px,1.3fr) minmax(150px,1fr) minmax(130px,.8fr) auto;gap:10px;align-items:center;padding:11px 12px;background:#fff;border:1.5px solid #E2DACB;border-radius:8px;margin-bottom:8px;">
+      <button type="button" title="Zeile ziehen" style="border:0;background:transparent;color:#8A8379;font-size:18px;cursor:grab;padding:4px;">⋮⋮</button>
+      <div><strong style="font:800 13px 'Space Grotesk',sans-serif;">${esc(row.company)}</strong></div>
+      <div style="font:600 12px 'Manrope',sans-serif;color:#5C564C;">${esc(row.contact_name || '–')}</div>
+      <div style="font:600 12px 'Manrope',sans-serif;color:#5C564C;">${esc(row.phone || '–')}</div>
+      <div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;">
+        <button type="button" title="Nach oben" onclick="reorderPartnerPipeline('${stage}','${row.id}',-1)" ${index === 0 ? 'disabled' : ''} style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">↑</button>
+        <button type="button" title="Nach unten" onclick="reorderPartnerPipeline('${stage}','${row.id}',1)" ${index === rows.length - 1 ? 'disabled' : ''} style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">↓</button>
+        ${stage === 'conversation' ? `<button type="button" onclick="convertPipelineToPartner('${row.id}')" style="padding:7px 9px;border:0;border-radius:6px;background:#1F8A5F;color:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Wird Partner</button><button type="button" onclick="setPartnerPipelineStage('${row.id}','rejected')" style="padding:7px 9px;border:1px solid #B8402C;border-radius:6px;background:#fff;color:#B8402C;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Absage</button><button type="button" title="Bearbeiten" onclick="editPartnerPipelineEntry('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">✎</button>` : `<button type="button" onclick="setPartnerPipelineStage('${row.id}','conversation')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Zurück</button>`}
+        <button type="button" title="Löschen" onclick="deletePartnerPipelineEntry('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;color:#B8402C;font-weight:800;cursor:pointer;">×</button>
+      </div>
+    </div>`).join('');
+}
+
+async function loadPartnerPipeline() {
+  const { data, error } = await sb.rpc('admin_list_partner_campaign_pipeline', { p_campaign_id:window.__partnerCampaignId });
+  if (error) throw error;
+  window.__partnerPipeline = data || [];
+  renderPartnerPipelineList('conversation', 'partnerConversationList');
+  renderPartnerPipelineList('rejected', 'partnerRejectionList');
+}
+
+function openPartnerCampaignPdf() {
+  const campaign = currentPartnerCampaign();
+  if (!campaign) { alert('Keine Partnerkampagne ausgewählt.'); return; }
+  const sponsors = (window.__sponsorRows || []).filter(s => s.verbal_commitment || s.contract_received);
+  const donations = window.__fundraisingDonations || [];
+  const pipeline = window.__partnerPipeline || [];
+  const partnerAnnual = sponsors.reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
+  const partnerTotal = partnerAnnual * 3;
+  const donationTotal = donations.reduce((sum, d) => sum + (Number(d.amount_cents) || 0), 0);
+  const total = partnerTotal + donationTotal;
+  const pdfMoney = value => adminFormatEuro(value);
+  const status = sponsor => sponsor.contract_received ? 'Vertrag' : 'Mündlich';
+  const tierTable = tier => {
+    const rows = sponsors.filter(s => s.tier === tier);
+    const annual = rows.reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
+    return `<section class="block"><h2>${esc(SPONSOR_TIER_CONFIG[tier].label)}</h2><table><thead><tr><th>Unternehmen</th><th>Stand</th><th>Jahr 1</th><th>Jahr 2</th><th>Jahr 3</th><th>Summe</th></tr></thead><tbody>${rows.length ? rows.map(s => `<tr><td>${esc(s.name)}</td><td>${status(s)}${Number(s.annual_amount_cents) === 0 ? ' · Gegenleistung' : ''}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td><b>${pdfMoney(Number(s.annual_amount_cents) * 3)}</b></td></tr>`).join('') : '<tr><td colspan="6" class="empty">Noch keine Zusage erfasst.</td></tr>'}</tbody><tfoot><tr><td colspan="2">Summe</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual * 3)}</td></tr></tfoot></table></section>`;
+  };
+  const kpis = `<div class="kpis"><div><span>Partner · 3 Jahre</span><strong>${pdfMoney(partnerTotal)}</strong><small>Summe aus Premium, Partner und Regional</small></div><div><span>Spenden · einmalig</span><strong>${pdfMoney(donationTotal)}</strong><small>Alle zugesagten Spenden</small></div><div><span>Gesamtsumme</span><strong>${pdfMoney(total)}</strong><small>Addition aus Partner + Spenden</small></div></div>`;
+  const donationsTable = `<section class="block"><h2>Spenden</h2><table><thead><tr><th>Name / Organisation</th><th>Stand</th><th>Datum</th><th>Einmalig</th></tr></thead><tbody>${donations.length ? donations.map(d => `<tr><td>${esc(d.donor_name)}</td><td>${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</td><td>${esc(d.donation_date || '')}</td><td><b>${pdfMoney(d.amount_cents)}</b></td></tr>`).join('') : '<tr><td colspan="4" class="empty">Noch keine Spende erfasst.</td></tr>'}</tbody></table></section>`;
+  const pipelineTable = (stage, title) => {
+    const rows = pipeline.filter(row => row.stage === stage);
+    return `<section class="pipeline"><h2>${title}</h2><table><thead><tr><th>Firma</th><th>Ansprechpartner</th><th>Telefon</th></tr></thead><tbody>${rows.length ? rows.map(row => `<tr><td>${esc(row.company)}</td><td>${esc(row.contact_name || '–')}</td><td>${esc(row.phone || '–')}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Keine Einträge.</td></tr>'}</tbody></table></section>`;
+  };
+  const popup = window.open('', '_blank');
+  if (!popup) { alert('Bitte Pop-ups für diese Seite erlauben, damit die PDF-Ansicht geöffnet werden kann.'); return; }
+  const today = new Intl.DateTimeFormat('de-DE').format(new Date());
+  const printDensity = sponsors.length > 30 ? 'ultra-dense' : sponsors.length > 20 ? 'dense' : '';
+  popup.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${esc(campaign.name)} · Aktueller Stand</title><style>
+    @page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{margin:0;color:#1C1A17;font-family:Arial,sans-serif;background:#fff}.page{width:277mm;height:190mm;page-break-after:always;overflow:hidden;padding:2mm}.page:last-child{page-break-after:auto}.header{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:3px solid #FF5A36;padding:0 0 5mm;margin-bottom:4mm}.brand{font:900 23px Arial,sans-serif;letter-spacing:.02em}.brand b{color:#FF5A36}.meta{text-align:right;color:#756E64;font-size:9px}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-bottom:3mm}.kpis>div{border:1px solid #D8CDBB;border-radius:2mm;padding:3mm;background:#fff}.kpis>div:nth-child(2){background:#F7F3EA}.kpis>div:nth-child(3){background:#EDE5D7}.kpis span{display:block;font-size:8px;text-transform:uppercase;font-weight:800;color:#756E64}.kpis strong{display:block;font-size:17px;margin:1.5mm 0}.kpis small{font-size:7.5px;color:#756E64}.block{margin:0 0 2.2mm}.block h2,.pipeline h2{font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin:0;padding:2mm 2.5mm;background:#1C1A17;color:#fff}table{width:100%;border-collapse:collapse;font-size:7.5px}th{background:#F2EDE3;color:#5C564C;text-transform:uppercase;text-align:left;font-size:6.8px}th,td{padding:1.25mm 2mm;border-bottom:.3mm solid #E6DED1}th:nth-child(n+3),td:nth-child(n+3){text-align:right}tfoot td{font-weight:800;background:#F8F4EC;border-top:.5mm solid #BDB2A1}.empty{color:#8A8379;font-style:italic;text-align:left!important}.page2-grid{display:grid;grid-template-columns:1fr 1fr;gap:6mm}.pipeline{border:1px solid #D8CDBB;border-radius:2mm;overflow:hidden}.pipeline table{font-size:9px}.pipeline th,.pipeline td{padding:2.2mm 2.5mm;text-align:left!important}.footer{position:absolute;bottom:3mm;right:3mm;color:#8A8379;font-size:7px}.page{position:relative}.dense .header,.ultra-dense .header{padding-bottom:2.5mm;margin-bottom:2mm}.dense .kpis>div,.ultra-dense .kpis>div{padding:1.6mm 2mm}.dense .kpis strong,.ultra-dense .kpis strong{font-size:13px;margin:.6mm 0}.dense .kpis small,.ultra-dense .kpis small{font-size:6.5px}.dense .block,.ultra-dense .block{margin-bottom:1mm}.dense .block h2,.ultra-dense .block h2{padding:1mm 2mm;font-size:8px}.dense table{font-size:6.4px}.dense th,.dense td{padding:.65mm 1.5mm}.ultra-dense table{font-size:5.8px}.ultra-dense th,.ultra-dense td{padding:.4mm 1.2mm}@media print{button{display:none!important}}
+  </style></head><body class="${printDensity}">
+    <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div style="font-size:12px;font-weight:800;margin-top:1mm;">A. ${esc(campaign.name)}</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header>${kpis}${SPONSOR_TIER_ORDER.map(tierTable).join('')}${donationsTable}${kpis}<div class="footer">Seite 1 von 2</div></section>
+    <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div style="font-size:12px;font-weight:800;margin-top:1mm;">${esc(campaign.name)} · Akquise</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header><div class="page2-grid">${pipelineTable('conversation','B. Im Gespräch')}${pipelineTable('rejected','C. Absagen')}</div><div class="footer">Seite 2 von 2</div></section>
+    <script>window.addEventListener('load',()=>setTimeout(()=>window.print(),300));<\/script></body></html>`);
+  popup.document.close();
+}
+
+async function loadAdminSponsors(campaignsReady = false) {
   const box = document.getElementById('sponsorsAdminList');
   if (!box) return;
   box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:24px;">Wird geladen …</div>';
   let rows = [];
   try {
+    if (!campaignsReady || !window.__partnerCampaignId) await loadPartnerCampaigns();
+    if (!window.__partnerCampaignId) throw new Error('Keine Partnerkampagne gefunden.');
     const { data, error } = await sb.rpc('admin_list_sponsors');
     if (error) throw error;
-    rows = (data || []).slice().sort(pbCompareSponsors);
+    const allSponsors = (data || []).slice();
+    const { data: memberRows, error: memberError } = await sb.rpc('admin_list_partner_campaign_members', {
+      p_campaign_id:window.__partnerCampaignId
+    });
+    if (memberError) throw memberError;
+    const members = new Map((memberRows || []).map(member => [member.sponsor_id, member]));
+    rows = allSponsors.filter(sponsor => members.has(sponsor.id)).map(sponsor => {
+      const member = members.get(sponsor.id);
+      return { ...sponsor,
+        annual_amount_cents:member.annual_amount_cents,
+        verbal_commitment:member.verbal_commitment,
+        contract_received:member.contract_received,
+        campaign_sort_order:member.sort_order
+      };
+    }).sort(pbCompareSponsors);
     const { data: discountRows, error: discountError } = await sb.rpc('admin_list_sponsor_discount_emails');
     if (discountError) throw discountError;
     const discountBySponsor = new Map();
@@ -12168,16 +12470,23 @@ async function loadAdminSponsors() {
       sponsor.discount_emails = (discountBySponsor.get(sponsor.id) || []).join('\n');
     });
   } catch(e) {
-    box.innerHTML = `<div style="color:#B8402C;padding:18px;">Sponsoren konnten nicht geladen werden: ${esc(e?.message || 'Unbekannter Fehler')}</div>`;
+    box.innerHTML = `<div style="color:#B8402C;padding:18px;">Partner konnten nicht geladen werden: ${esc(e?.message || 'Unbekannter Fehler')}</div>`;
     return;
   }
   window.__sponsorRows = rows;
   renderFundraisingSummary();
   loadFundraisingDonations();
+  loadPartnerPipeline().catch(e => {
+    const message = `<div style="color:#B8402C;padding:18px;">Pipeline konnte nicht geladen werden: ${esc(e?.message || 'Unbekannter Fehler')}</div>`;
+    const conversations = document.getElementById('partnerConversationList');
+    const rejections = document.getElementById('partnerRejectionList');
+    if (conversations) conversations.innerHTML = message;
+    if (rejections) rejections.innerHTML = message;
+  });
   loadSponsorWeights();
   if(typeof refreshPartnerToggleBtn==='function') refreshPartnerToggleBtn(window.__partnerTabOn);
 
-  // Sponsoren nach Tier gruppieren und nummerieren
+  // Partner nach Stufe gruppieren und nummerieren
   const byTier = { premium: [], partner: [], regional: [] };
   rows.forEach(s => {
     if (s.tier in byTier) byTier[s.tier].push(s);
@@ -12412,6 +12721,7 @@ function editSponsor(id) {
 
 function resetSponsorForm() {
   document.getElementById('spEditId').value   = '';
+  document.getElementById('spSourcePipelineId').value = '';
   document.getElementById('spLogoUrl').value  = '';
   document.getElementById('spActionLogoUrl').value = '';
   document.getElementById('spTier').value     = 'partner';
@@ -12541,12 +12851,14 @@ async function saveSponsor() {
   const tier   = document.getElementById('spTier').value;
   const name   = document.getElementById('spName').value.trim();
   const sort   = parseInt(document.getElementById('spSort').value) || 0;
-  const active = document.getElementById('spActive').checked;
+  const activeRequested = document.getElementById('spActive').checked;
   let   logoUrl = document.getElementById('spLogoUrl').value || null;
   let   actionLogoUrl = document.getElementById('spActionLogoUrl').value || null;
   const file   = document.getElementById('spFile').files[0];
   const actionFile = document.getElementById('spActionFile').files[0];
   const existingSponsor = id ? (window.__sponsorRows || []).find(s => s.id === id) : null;
+  const campaign = currentPartnerCampaign();
+  const active = campaign?.is_current ? activeRequested : (existingSponsor?.active || false);
   const actionLogoMode = document.getElementById('spActionLogoMode').value || 'off';
   const hasActionLogo = actionLogoMode !== 'off';
   const contactName  = document.getElementById('spContactName').value.trim();
@@ -12637,12 +12949,26 @@ async function saveSponsor() {
     if (error) throw error;
     const sponsorId = id || savedSponsorId;
     if (!sponsorId) throw new Error('Die gespeicherte Partner-ID fehlt.');
+    const { error: campaignError } = await sb.rpc('admin_upsert_partner_campaign_member', {
+      p_campaign_id:window.__partnerCampaignId, p_sponsor_id:sponsorId,
+      p_annual_amount_cents:annualAmountCents,
+      p_verbal_commitment:verbalCommitment, p_contract_received:contractReceived
+    });
+    if (campaignError) throw campaignError;
     const { error: discountError } = await sb.rpc('admin_set_sponsor_discount_emails', {
       p_sponsor_id: sponsorId,
       p_emails: discountEmailParts.join('\n'),
     });
     if (discountError) throw discountError;
-    showToast('Sponsor gespeichert.');
+    const sourcePipelineId = document.getElementById('spSourcePipelineId').value;
+    if (sourcePipelineId) {
+      const { error: pipelineError } = await sb.rpc('admin_set_partner_campaign_pipeline_stage', {
+        p_id:sourcePipelineId, p_campaign_id:window.__partnerCampaignId,
+        p_stage:'converted', p_converted_sponsor_id:sponsorId
+      });
+      if (pipelineError) throw pipelineError;
+    }
+    showToast('Partner gespeichert.');
     resetSponsorForm();
     loadAdminSponsors();
   } catch(e) {
@@ -12655,11 +12981,11 @@ async function saveSponsor() {
 
 async function deleteSponsor(id) {
   const s = (window.__sponsorRows || []).find(r => r.id === id);
-  if (!confirm(`Sponsor „${s ? s.name : ''}” wirklich löschen?`)) return;
+  if (!confirm(`Partner „${s ? s.name : ''}” wirklich löschen?`)) return;
   try {
     const { error } = await sb.rpc('admin_delete_sponsor', { p_id: id });
     if (error) throw error;
-    showToast('Sponsor gelöscht.');
+    showToast('Partner gelöscht.');
     loadAdminSponsors();
   } catch(e) {
     alert('Löschen fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
@@ -12682,7 +13008,7 @@ async function loadFundraisingDonations() {
   if (!document.getElementById('fdDate')?.value) resetFundraisingDonationForm();
   box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:18px;">Wird geladen …</div>';
   try {
-    const { data, error } = await sb.rpc('admin_list_fundraising_donations');
+    const { data, error } = await sb.rpc('admin_list_campaign_donations', { p_campaign_id:window.__partnerCampaignId });
     if (error) throw error;
     window.__fundraisingDonations = data || [];
     renderFundraisingSummary();
@@ -12736,8 +13062,8 @@ async function saveFundraisingDonation() {
   if (!donorName) { alert('Bitte einen Namen für die Spende angeben.'); return; }
   if (!Number.isFinite(amountCents) || amountCents <= 0) { alert('Bitte einen gültigen Spendenbetrag angeben.'); return; }
   try {
-    const { error } = await sb.rpc('admin_upsert_fundraising_donation', {
-      p_id:id, p_donor_name:donorName, p_amount_cents:amountCents,
+    const { error } = await sb.rpc('admin_upsert_campaign_donation', {
+      p_id:id, p_campaign_id:window.__partnerCampaignId, p_donor_name:donorName, p_amount_cents:amountCents,
       p_status:status, p_donation_date:donationDate, p_note:note || null
     });
     if (error) throw error;
@@ -12753,7 +13079,7 @@ async function deleteFundraisingDonation(id) {
   const donation = (window.__fundraisingDonations || []).find(d => d.id === id);
   if (!confirm(`Spende von „${donation?.donor_name || ''}” wirklich löschen?`)) return;
   try {
-    const { error } = await sb.rpc('admin_delete_fundraising_donation', { p_id:id });
+    const { error } = await sb.rpc('admin_delete_campaign_donation', { p_id:id, p_campaign_id:window.__partnerCampaignId });
     if (error) throw error;
     showToast('Spende gelöscht.');
     loadFundraisingDonations();
