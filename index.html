@@ -636,9 +636,10 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 .value-dot { aspect-ratio: 1; border-radius: 50%; background: #1C1A17; box-shadow: inset 0 0 0 1px rgba(18,20,17,.06); }
 
 /* Persönlicher Kontoauszug */
-.statement-entry-card { min-height:520px; display:flex; flex-direction:column; justify-content:center; }
-.statement-badge { font-family:"Space Grotesk",sans-serif; font-size:1.4rem; }
-.statement-number { font-size:3.2rem; }
+.statement-entry-card { position:relative; min-height:520px; margin-top:26px; padding:44px 26px 28px; display:flex; flex-direction:column; justify-content:center; }
+.statement-badge { font-family:"Space Grotesk",sans-serif; font-size:1.15rem; line-height:1; }
+.statement-number { font-size:3.85rem; line-height:.94; overflow-wrap:anywhere; }
+.statement-headline { margin-top:8px; color:#FF5A36; font-size:1.45rem; }
 .statement-entry-copy { margin:4px auto 22px; max-width:300px; color:#5F5A52; font-size:.86rem; line-height:1.55; }
 .statement-open-btn { width:100%; min-height:50px; border:0; border-radius:8px; background:#FF5A36; color:#1C1A17; font:900 .8rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; }
 .account-statement-overlay { z-index:760; }
@@ -1951,7 +1952,7 @@ main {
   </div>
 </div>
 
-<!-- Persönlicher Kontoauszug: Buchungen 24 Monate, Kiosk 2 Monate -->
+<!-- Persönlicher Kontoauszug: Buchungen 12 Monate, Kiosk 2 Monate -->
 <div class="modal-overlay account-statement-overlay" id="accountStatementModal">
   <div class="modal account-statement-modal">
     <button class="modal-close" onclick="closeAccountStatement()" aria-label="Abrechnungsübersicht schließen">✕</button>
@@ -2355,7 +2356,7 @@ main {
       <h3>Dienstleister und Empfänger</h3>
       <p>Wir setzen insbesondere GitHub Pages für die Website, Supabase für Anmeldung, Datenbank, Speicher und Serverfunktionen, Stripe für Zahlungen sowie Resend für E-Mails ein. Innerhalb des Vereins erhalten nur Personen Zugriff, die ihn für Betrieb, Abrechnung, Support oder gesetzliche Aufgaben benötigen. Je nach Leistung handeln Dienstleister als Auftragsverarbeiter oder in eigener datenschutzrechtlicher Verantwortung. Übermittlungen außerhalb des Europäischen Wirtschaftsraums werden nur auf Grundlage eines Angemessenheitsbeschlusses, geeigneter Garantien wie EU-Standardvertragsklauseln oder einer anderen gesetzlichen Grundlage vorgenommen.</p>
       <h3>Speicherdauer</h3>
-      <p>Dein Konto bleibt bis zur Selbstlöschung oder einem berechtigten Löschverlangen gespeichert. Bei der Kontolöschung werden Anmeldung und persönliche Profildaten entfernt; eine spätere Registrierung wird nicht mit der alten Historie verbunden. In deinem Konto ist die Buchungshistorie der letzten 24 Monate abrufbar; ältere Vorgänge werden dort nicht angezeigt. Für operative Buchungs-, Einladungs-, Import-, Mail- und Sicherheitsdaten werden feste Löschfristen technisch umgesetzt und regelmäßig kontrolliert. Bis zur Aktivierung dieses Fristenlaufs werden Bestände administrativ geprüft und nur zweckgebunden verwendet. Gesetzlich erforderliche Buchungs- und Zahlungsbelege werden getrennt, zugriffsbeschränkt und ohne erneute Kontoverknüpfung aufbewahrt; Buchungsbelege grundsätzlich acht Jahre, andere Unterlagen je nach gesetzlicher Kategorie sechs oder zehn Jahre. Danach werden sie gelöscht.</p>
+      <p>Dein Konto bleibt bis zur Selbstlöschung oder einem berechtigten Löschverlangen gespeichert. Bei der Kontolöschung werden Anmeldung und persönliche Profildaten entfernt; eine spätere Registrierung wird nicht mit der alten Historie verbunden. In deinem Konto ist die Buchungshistorie der letzten 12 Monate abrufbar; ältere Vorgänge werden dort nicht angezeigt. Für operative Buchungs-, Einladungs-, Import-, Mail- und Sicherheitsdaten werden feste Löschfristen technisch umgesetzt und regelmäßig kontrolliert. Bis zur Aktivierung dieses Fristenlaufs werden Bestände administrativ geprüft und nur zweckgebunden verwendet. Gesetzlich erforderliche Buchungs- und Zahlungsbelege werden getrennt, zugriffsbeschränkt und ohne erneute Kontoverknüpfung aufbewahrt; Buchungsbelege grundsätzlich acht Jahre, andere Unterlagen je nach gesetzlicher Kategorie sechs oder zehn Jahre. Danach werden sie gelöscht.</p>
       <h3>Daten aus anderen Quellen</h3>
       <p>Wenn Daten nicht direkt bei dir erhoben wurden, stammen sie aus einer benannten Vereins- oder Kooperationsmitgliederliste, von einem einladenden Nutzer oder im geschäftlichen Kontext von deinem Unternehmen beziehungsweise Vertragspartner. Verarbeitet werden jeweils nur die oben beschriebenen Datenkategorien und Zwecke. Die direkte Information erfolgt über den dokumentierten Informationsweg der jeweiligen Mitgliedergruppe, in der ersten Einladungsnachricht oder beim Erstkontakt mit einem Partner-Ansprechpartner. Die Nachweise enthalten nur die für Rechenschaft und Prüfung erforderlichen Angaben.</p>
       <h3>Deine Rechte</h3>
@@ -12173,7 +12174,7 @@ function renderFundraisingSummary() {
         <tbody>${donationRows}</tbody>
         <tfoot><tr style="border-top:2px solid #D8CDBB;background:#FCFAF5;">
           <td colspan="2" style="padding:10px 12px;font:800 12px 'Space Grotesk',sans-serif;color:#1C1A17;">Summe Spenden</td>
-          ${moneyCell(donationTotal)}
+          <td style="padding:10px 12px;text-align:right;white-space:nowrap;font:800 12px 'Space Grotesk',sans-serif;color:#1C1A17;">${adminFormatEuro(donationTotal)}</td>
         </tr></tfoot>
       </table>
     </div>`;
@@ -12570,7 +12571,7 @@ function openPartnerCampaignPdf() {
   );
   const printDensity = printRowLoad > 25 ? 'ultra-dense' : printRowLoad > 18 ? 'dense' : '';
   popup.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${esc(campaign.name)} · Aktueller Stand</title><style>
-    @page{size:A4 landscape;margin:7mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{color:#1C1A17;font-family:Arial,sans-serif;background:#fff}.page{position:relative;break-after:page;page-break-after:always}.page:last-of-type{break-after:auto;page-break-after:auto}.header{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1.2mm solid #FF5A36;padding:0 0 2.5mm;margin-bottom:2.5mm}.brand{font:900 26px Arial,sans-serif;letter-spacing:.01em}.brand b{color:#FF5A36}.report-title{font-size:14px;font-weight:800;margin-top:1mm}.meta{text-align:right;color:#756E64;font-size:10px;line-height:1.35}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-bottom:2.5mm}.kpis>div{min-height:20mm;border:.35mm solid #D8CDBB;border-radius:2mm;padding:2.7mm 3mm;background:#fff}.kpis>div:nth-child(2){background:#F7F3EA}.kpis>div:nth-child(3){background:#E9DFCF}.kpis span{display:block;font-size:9.5px;text-transform:uppercase;font-weight:800;color:#756E64}.kpis strong{display:block;font-size:20px;line-height:1.05;margin:1mm 0}.kpis small{font-size:8.5px;color:#756E64}.report-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'premium regional' 'partner regional' 'partner donations';gap:2.5mm 3mm;align-items:start;margin-bottom:2.5mm}.tier-premium{grid-area:premium}.tier-partner{grid-area:partner}.tier-regional{grid-area:regional}.donation-block{grid-area:donations}.block{margin:0;min-width:0;border:.35mm solid #D8CDBB;border-radius:1.5mm;overflow:hidden}.block h2{font-size:11px;text-transform:uppercase;letter-spacing:.07em;margin:0;padding:1.7mm 2mm;background:#1C1A17;color:#fff}table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:9.5px}.company-col{width:31%}.status-col{width:19%}.money-col{width:12%}.total-col{width:14%}th{background:#F2EDE3;color:#5C564C;text-transform:uppercase;text-align:left;font-size:8.2px}th,td{padding:1.05mm 1.3mm;border-bottom:.3mm solid #E6DED1;line-height:1.15;vertical-align:middle}th:nth-child(n+3),td:nth-child(n+3){text-align:right}td{overflow-wrap:anywhere}tfoot td{font-weight:800;background:#F8F4EC;border-top:.5mm solid #BDB2A1;border-bottom:0}.empty{color:#8A8379;font-style:italic;text-align:left!important}.page2-stack{display:flex;flex-direction:column;gap:6mm}.pipeline{border:.35mm solid #D8CDBB;border-radius:2mm;overflow:hidden}.pipeline-heading{display:flex;align-items:center;justify-content:space-between;padding:2.5mm 3mm;background:#1C1A17;color:#fff}.pipeline h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;margin:0}.pipeline-heading strong{display:grid;place-items:center;min-width:8mm;height:8mm;padding:0 2mm;border-radius:1mm;background:#FF5A36;font-size:12px}.pipeline table{font-size:12px}.pipeline th{font-size:10px}.pipeline th,.pipeline td{padding:2.8mm 3mm;text-align:left!important}.footer{position:absolute;bottom:0;right:0;color:#8A8379;font-size:9px}.dense .kpis>div,.ultra-dense .kpis>div{min-height:18mm;padding:2mm 2.5mm}.dense .kpis strong,.ultra-dense .kpis strong{font-size:17px;margin:.6mm 0}.dense table{font-size:8.5px}.dense th,.dense td{padding:.75mm 1mm}.ultra-dense table{font-size:7.5px}.ultra-dense th,.ultra-dense td{padding:.5mm .8mm}@media screen{html,body{width:283mm;min-width:283mm}body{margin:0 auto}.page{width:283mm;min-height:196mm}.page+.page{border-top:3mm solid #F2EDE3}}@media print{html,body{width:auto!important;min-width:0!important}.page{width:100%!important;min-height:0;overflow:visible}.brand{font-size:32px}.report-title{font-size:18px}.meta{font-size:12px}.kpis>div{min-height:27mm;padding:3.7mm 4mm}.kpis span{font-size:12px}.kpis strong{font-size:27px;margin:1.5mm 0}.kpis small{font-size:11px}.block h2{font-size:15px;padding:2.4mm 2.5mm}table{font-size:15px}th{font-size:12px}th,td{padding:2.35mm 1.7mm}.dense table{font-size:12.5px}.dense th,.dense td{padding:1.45mm 1.3mm}.ultra-dense table{font-size:10.5px}.ultra-dense th,.ultra-dense td{padding:1mm 1.1mm}.footer{position:static;text-align:right;margin-top:3mm;font-size:10px}button{display:none!important}}
+    @page{size:A4 landscape;margin:7mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{color:#1C1A17;font-family:Arial,sans-serif;background:#fff}.page{position:relative;break-after:page;page-break-after:always}.page:last-of-type{break-after:auto;page-break-after:auto}.header{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1.2mm solid #FF5A36;padding:0 0 2.5mm;margin-bottom:2.5mm}.brand{font:900 26px Arial,sans-serif;letter-spacing:.01em}.brand b{color:#FF5A36}.report-title{font-size:14px;font-weight:800;margin-top:1mm}.meta{text-align:right;color:#756E64;font-size:10px;line-height:1.35}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-bottom:2.5mm}.kpis>div{min-height:20mm;border:.35mm solid #D8CDBB;border-radius:2mm;padding:2.7mm 3mm;background:#fff}.kpis>div:nth-child(2){background:#F7F3EA}.kpis>div:nth-child(3){background:#E9DFCF}.kpis span{display:block;font-size:9.5px;text-transform:uppercase;font-weight:800;color:#756E64}.kpis strong{display:block;font-size:20px;line-height:1.05;margin:1mm 0}.kpis small{font-size:8.5px;color:#756E64}.report-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'premium regional' 'partner regional' 'partner donations';gap:2.5mm 3mm;align-items:start;margin-bottom:2.5mm}.tier-premium{grid-area:premium}.tier-partner{grid-area:partner}.tier-regional{grid-area:regional}.donation-block{grid-area:donations}.block{margin:0;min-width:0;border:.35mm solid #D8CDBB;border-radius:1.5mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid}.block h2{font-size:11px;text-transform:uppercase;letter-spacing:.07em;margin:0;padding:1.7mm 2mm;background:#1C1A17;color:#fff}table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:9.5px}.company-col{width:31%}.status-col{width:19%}.money-col{width:12%}.total-col{width:14%}th{background:#F2EDE3;color:#5C564C;text-transform:uppercase;text-align:left;font-size:8.2px}th,td{padding:1.05mm 1.3mm;border-bottom:.3mm solid #E6DED1;line-height:1.15;vertical-align:middle}th:nth-child(n+3),td:nth-child(n+3){text-align:right}.partner-table th:nth-child(n+3),.partner-table td:nth-child(n+3),.donation-table th:last-child,.donation-table td:last-child{white-space:nowrap;overflow-wrap:normal}.donation-table tfoot td:last-child{text-align:right}td{overflow-wrap:anywhere}tfoot td{font-weight:800;background:#F8F4EC;border-top:.5mm solid #BDB2A1;border-bottom:0}.empty{color:#8A8379;font-style:italic;text-align:left!important}.page2-stack{display:flex;flex-direction:column;gap:6mm}.pipeline{border:.35mm solid #D8CDBB;border-radius:2mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid}.pipeline-heading{display:flex;align-items:center;justify-content:space-between;padding:2.5mm 3mm;background:#1C1A17;color:#fff}.pipeline h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;margin:0}.pipeline-heading strong{display:grid;place-items:center;min-width:8mm;height:8mm;padding:0 2mm;border-radius:1mm;background:#FF5A36;font-size:12px}.pipeline table{font-size:12px}.pipeline th{font-size:10px}.pipeline th,.pipeline td{padding:2.8mm 3mm;text-align:left!important}.footer{position:absolute;bottom:0;right:0;color:#8A8379;font-size:9px}.dense .kpis>div,.ultra-dense .kpis>div{min-height:18mm;padding:2mm 2.5mm}.dense .kpis strong,.ultra-dense .kpis strong{font-size:17px;margin:.6mm 0}.dense table{font-size:8.5px}.dense th,.dense td{padding:.75mm 1mm}.ultra-dense table{font-size:7.5px}.ultra-dense th,.ultra-dense td{padding:.5mm .8mm}@media screen{html,body{width:283mm;min-width:283mm}body{margin:0 auto}.page{width:283mm;min-height:196mm}.page+.page{border-top:3mm solid #F2EDE3}}@media print{html,body{width:auto!important;min-width:0!important}.page{width:100%!important;min-height:0;overflow:visible}.brand{font-size:28px}.report-title{font-size:16px}.meta{font-size:10.5px}.kpis>div{min-height:23mm;padding:3mm 3.5mm}.kpis span{font-size:10.5px}.kpis strong{font-size:23px;margin:1.1mm 0}.kpis small{font-size:9.5px}.block h2{font-size:12.5px;padding:2mm 2.2mm}table{font-size:11.5px}th{font-size:9.5px}th,td{padding:1.55mm 1.25mm}.dense table{font-size:10px}.dense th,.dense td{padding:1mm 1mm}.ultra-dense table{font-size:8.7px}.ultra-dense th,.ultra-dense td{padding:.7mm .8mm}.footer{position:static;text-align:right;margin-top:2mm;font-size:9px}button{display:none!important}}
   </style></head><body class="${printDensity}">
     <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">A. ${esc(campaign.name)}</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header>${kpis}<div class="report-grid">${SPONSOR_TIER_ORDER.map(tierTable).join('')}${donationsTable.replace('class="block"','class="block donation-block"')}</div><div class="footer">Seite 1 von 2</div></section>
     <section class="page"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">B. ${esc(campaign.name)} · Akquise</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header><div class="page2-stack">${pipelineTable('conversation','1. Im Gespräch')}${pipelineTable('rejected','2. Absagen')}</div><div class="footer">Seite 2 von 2</div></section>
@@ -18170,15 +18171,15 @@ function anyCardHTML(card) {
 }
 function statementCardHTML() {
   return `<div class="loyalty-card statement-entry-card">
-    <div class="value-badge statement-badge">≡</div>
-    <div class="rw-tagline">Meine Abrechnungen</div>
-    <div class="rw-number statement-number">24 / 2</div>
-    <div class="rw-headline">Monate im Blick</div>
-    <div class="rw-subtitle">Buchungen / Kiosk-Einkäufe</div>
+    <div class="value-badge statement-badge" aria-hidden="true">€</div>
+    <div class="rw-tagline">Money, Money, Money</div>
+    <div class="rw-number statement-number">Meine</div>
+    <div class="rw-headline statement-headline">Abrechnungen</div>
+    <div class="rw-subtitle">Buchungen · Kiosk-Einkäufe</div>
     <div class="rw-divider"></div>
-    <p class="statement-entry-copy">Vergleiche deine Buchungen und abgeschlossenen Bierdeckel mit deiner Kartenabrechnung.</p>
+    <p class="statement-entry-copy">Vergleiche deine Buchungen und erledigten Bierdeckel mit deiner Kreditkartenabrechnung.</p>
     <button type="button" class="statement-open-btn" onclick="openAccountStatement()">Abrechnungsübersicht öffnen</button>
-    <div class="rw-legend">Buchungen bleiben hier 24 Monate sichtbar, Kiosk-Abrechnungen zwei Monate.</div>
+    <div class="rw-legend">Buchungen bleiben hier 12 Monate sichtbar, Kiosk-Abrechnungen zwei Monate.</div>
   </div>`;
 }
 
@@ -18226,13 +18227,13 @@ async function showAccountStatementTab(tab) {
   list.innerHTML = statementEmpty('Wird geladen …');
   try {
     if (accountStatementTab === 'bookings') {
-      period.textContent = 'Deine Einzelbuchungen der letzten 24 Monate';
+      period.textContent = 'Deine Einzelbuchungen der letzten 12 Monate';
       const userId = await dataUserId();
-      const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 24);
+      const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 12);
       const data = [];
       for (let offset = 0, more = true; more; offset += 500) {
         const page = await sb.from('bookings')
-          .select('id,court,date,hour_start,duration,price_gross_cents,price_paid_cents,discount_pct,loyalty_discount_cents,loyalty_reward_threshold,status,stripe_session_id,cancelled_at')
+          .select('id,court,date,hour_start,duration,price_gross_cents,price_paid_cents,discount_pct,loyalty_discount_cents,loyalty_reward_threshold,status,receipt_number,stripe_session_id,cancelled_at')
           .eq('user_id', userId)
           .gte('date', localISODate(cutoff))
           .in('status', ['paid','active','cancelled'])
@@ -18251,7 +18252,7 @@ async function showAccountStatementTab(tab) {
         return `<article class="statement-item${cancelled ? ' is-cancelled' : ''}">
           <div class="statement-item-head"><strong>${statementDate(row.date, false)}</strong><b>${statementMoney(row.price_paid_cents)}</b></div>
           <div class="statement-item-main">${esc(courtLabel(row.court))} · ${String(row.hour_start).padStart(2,'0')}:00–${String(end).padStart(2,'0')}:00 Uhr · ${row.duration} Std.</div>
-          <div class="statement-item-meta"><span>${cancelled ? 'Storniert · als Spielguthaben gutgeschrieben' : 'Bezahlt'}</span>${loyalty}<span>Beleg ${esc(statementReference(row.stripe_session_id))}</span></div>
+          <div class="statement-item-meta"><span>${cancelled ? 'Storniert · als Spielguthaben gutgeschrieben' : 'Bezahlt'}</span>${loyalty}<span>${row.receipt_number ? `Beleg ${esc(row.receipt_number)}` : `Zahlungsreferenz ${esc(statementReference(row.stripe_session_id))}`}</span></div>
         </article>`;
       }).join('') : statementEmpty('Noch keine Buchungen in diesem Zeitraum.');
     } else {
@@ -18260,7 +18261,7 @@ async function showAccountStatementTab(tab) {
       const data = [];
       for (let offset = 0, more = true; more; offset += 500) {
         const page = await sb.from('kiosk_tab_items')
-          .select('id,product_name,variant_label,price_cents,status,stripe_payment_intent_id,settlement_key,created_at,settled_at')
+          .select('id,product_name,variant_label,price_cents,status,receipt_number,stripe_payment_intent_id,settlement_key,created_at,settled_at')
           .eq('auth_user_id', currentUser.id)
           .gte('settled_at', cutoff.toISOString())
           .in('status', ['paid','failed','cancelled'])
@@ -18273,7 +18274,7 @@ async function showAccountStatementTab(tab) {
       const groups = new Map();
       (data || []).forEach(row => {
         const key = row.settlement_key || row.stripe_payment_intent_id || row.id;
-        if (!groups.has(key)) groups.set(key, { key, at:row.settled_at || row.created_at, status:row.status, payment:row.stripe_payment_intent_id, rows:[] });
+        if (!groups.has(key)) groups.set(key, { key, at:row.settled_at || row.created_at, status:row.status, receipt:row.receipt_number, payment:row.stripe_payment_intent_id, rows:[] });
         groups.get(key).rows.push(row);
       });
       list.innerHTML = groups.size ? Array.from(groups.values()).map(group => {
@@ -18283,7 +18284,7 @@ async function showAccountStatementTab(tab) {
           <div class="statement-item-head"><strong>${statementDate(group.at, true)}</strong><b>${statementMoney(total)}</b></div>
           <div class="statement-item-main">${direct ? 'Direkt bezahlt' : `Bierdeckel · ${group.rows.length} Artikel`}</div>
           <div class="statement-lines">${group.rows.map(row => `<div><span>${esc(row.product_name)}${row.variant_label ? ' · ' + esc(row.variant_label) : ''}</span><b>${statementMoney(row.price_cents)}</b></div>`).join('')}</div>
-          <div class="statement-item-meta"><span>${group.status === 'paid' ? 'Bezahlt' : 'Nicht abgeschlossen'}</span><span>Beleg ${esc(statementReference(group.payment || group.key))}</span></div>
+          <div class="statement-item-meta"><span>${group.status === 'paid' ? 'Bezahlt' : 'Nicht abgeschlossen'}</span><span>${group.receipt ? `Beleg ${esc(group.receipt)}` : `Zahlungsreferenz ${esc(statementReference(group.payment || group.key))}`}</span></div>
         </article>`;
       }).join('') : statementEmpty('Noch keine abgeschlossenen Kiosk-Abrechnungen in diesem Zeitraum.');
     }
