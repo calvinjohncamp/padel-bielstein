@@ -6388,7 +6388,9 @@ main {
       <div class="admin-section" id="partnerCampaignNavigation" style="display:none;">
         <div class="admin-section-title">Partnerkampagnen</div>
         <div id="partnerCampaignTabs" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+        <div id="partnerCampaignStateActions" style="margin-top:12px;"></div>
       </div>
+      <div id="partnerCampaignReadOnlyNote" class="admin-section" style="display:none;border-color:#B7AA95;background:#F2EDE3;color:#5C564C;font:700 13px 'Manrope',sans-serif;line-height:1.5;">Historie: Diese abgeschlossene Kampagne ist schreibgeschützt. Übersicht und PDF bleiben verfügbar.</div>
       <div class="admin-section">
         <div class="admin-section-title">Partner-Seite im Hauptmenü (7. Tab)</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -6438,7 +6440,7 @@ main {
 
       <div class="admin-section">
         <div class="admin-section-title">Im Gespräch</div>
-        <div style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:14px;margin-bottom:12px;">
+        <div id="partnerPipelineForm" style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:14px;margin-bottom:12px;">
           <input type="hidden" id="pcPipelineEditId">
           <div style="display:grid;grid-template-columns:minmax(180px,1.4fr) minmax(160px,1fr) minmax(140px,.8fr) auto auto;gap:10px;align-items:end;">
             <div><label class="eb-adm-lbl">Firma</label><input id="pcPipelineCompany" class="eb-adm-inp" type="text" placeholder="Unternehmen"></div>
@@ -6456,7 +6458,7 @@ main {
         <div id="partnerRejectionList"><div style="color:#7A7368;text-align:center;padding:18px;">Wird geladen …</div></div>
       </div>
 
-      <div class="admin-section">
+      <div class="admin-section" id="partnerEditorSection">
         <div class="admin-section-title">Partner anlegen / bearbeiten</div>
         <div style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5;">
           <strong>Premium</strong> erscheint bis zu zweimal oben auf der Partner-Seite; auf der Startseite bleibt der erste aktive Premium-Partner exklusiv.
@@ -6640,7 +6642,7 @@ main {
       <div class="admin-section">
         <div class="admin-section-title">Spenden</div>
         <div style="font-size:0.78rem;color:#7A7368;line-height:1.5;margin-bottom:12px;">Einmalige Spenden werden getrennt als zugesagt oder eingegangen geführt und in der Finanzierungsübersicht genau einmal berücksichtigt.</div>
-        <div style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:14px;margin-bottom:12px;">
+        <div id="fundraisingDonationForm" style="background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:14px;margin-bottom:12px;">
           <input type="hidden" id="fdEditId">
           <div style="display:grid;grid-template-columns:minmax(180px,1.4fr) 130px 150px 150px;gap:10px;margin-bottom:10px;">
             <div><label class="eb-adm-lbl">Spender / Organisation</label><input id="fdDonorName" class="eb-adm-inp" type="text" placeholder="Name"></div>
@@ -12173,6 +12175,7 @@ function renderFundraisingSummary() {
 }
 
 function addSponsorInTier(tier) {
+  if (!ensurePartnerCampaignEditable()) return;
   if (!SPONSOR_TIER_CONFIG[tier]) return;
   const count = (window.__sponsorRows || []).filter(s => s.tier === tier).length;
   const limit = SPONSOR_TIER_CONFIG[tier].limit;
@@ -12191,6 +12194,16 @@ function currentPartnerCampaign() {
   return (window.__partnerCampaigns || []).find(c => c.id === window.__partnerCampaignId) || null;
 }
 
+function partnerCampaignIsArchived() {
+  return currentPartnerCampaign()?.status === 'archived';
+}
+
+function ensurePartnerCampaignEditable() {
+  if (!partnerCampaignIsArchived()) return true;
+  alert('Diese Kampagne ist beendet und nur noch als Historie lesbar.');
+  return false;
+}
+
 async function loadPartnerCampaigns(preferredId = null) {
   const { data, error } = await sb.rpc('admin_list_partner_campaigns');
   if (error) throw error;
@@ -12198,7 +12211,7 @@ async function loadPartnerCampaigns(preferredId = null) {
   const stored = sessionStorage.getItem('partnerCampaignId');
   const selected = preferredId
     || (window.__partnerCampaigns.some(c => c.id === stored) ? stored : null)
-    || window.__partnerCampaigns.find(c => c.is_current)?.id
+    || window.__partnerCampaigns.find(c => c.status === 'active' || c.is_current)?.id
     || window.__partnerCampaigns[0]?.id;
   window.__partnerCampaignId = selected || null;
   renderPartnerCampaignTabs();
@@ -12208,10 +12221,21 @@ function renderPartnerCampaignTabs() {
   const campaigns = window.__partnerCampaigns || [];
   const nav = document.getElementById('partnerCampaignNavigation');
   const box = document.getElementById('partnerCampaignTabs');
+  const actions = document.getElementById('partnerCampaignStateActions');
   const campaign = currentPartnerCampaign();
-  if (nav) nav.style.display = campaigns.length > 1 ? '' : 'none';
-  if (box) box.innerHTML = campaigns.map(c => `
-    <button type="button" onclick="selectPartnerCampaign('${c.id}')" style="padding:10px 15px;border:1.5px solid ${c.id === window.__partnerCampaignId ? '#1C1A17' : '#E2DACB'};border-radius:8px;background:${c.id === window.__partnerCampaignId ? '#1C1A17' : '#fff'};color:${c.id === window.__partnerCampaignId ? '#fff' : '#5C564C'};font:800 12px 'Space Grotesk',sans-serif;cursor:pointer;">${esc(c.name)}</button>`).join('');
+  const active = campaigns.filter(c => c.status === 'active' || (!c.status && c.is_current));
+  const drafts = campaigns.filter(c => c.status === 'draft' || (!c.status && !c.is_current));
+  const archived = campaigns.filter(c => c.status === 'archived');
+  if (campaign?.status === 'archived') window.__partnerHistoryOpen = true;
+  if (nav) nav.style.display = campaigns.length ? '' : 'none';
+  const campaignButton = (c, label = c.name) => `
+    <button type="button" onclick="selectPartnerCampaign('${c.id}')" style="padding:10px 15px;border:1.5px solid ${c.id === window.__partnerCampaignId ? '#1C1A17' : '#E2DACB'};border-radius:8px;background:${c.id === window.__partnerCampaignId ? '#1C1A17' : '#fff'};color:${c.id === window.__partnerCampaignId ? '#fff' : '#5C564C'};font:800 12px 'Space Grotesk',sans-serif;cursor:pointer;">${esc(label)}</button>`;
+  if (box) box.innerHTML = [
+    ...active.map(c => campaignButton(c)),
+    ...drafts.map(c => campaignButton(c, `${c.name} · Entwurf`)),
+    ...(archived.length ? [`<button type="button" onclick="togglePartnerCampaignHistory()" style="padding:10px 15px;border:1.5px solid #B7AA95;border-radius:8px;background:#F2EDE3;color:#5C564C;font:800 12px 'Space Grotesk',sans-serif;cursor:pointer;">Historie (${archived.length}) ${window.__partnerHistoryOpen ? '▴' : '▾'}</button>`] : []),
+    ...(window.__partnerHistoryOpen ? archived.map(c => campaignButton(c, `${c.name} · Historie`)) : [])
+  ].join('');
   if (campaign) {
     const title = campaign.name;
     const summaryTitle = document.getElementById('partnerCampaignSummaryTitle');
@@ -12219,6 +12243,38 @@ function renderPartnerCampaignTabs() {
     if (summaryTitle) summaryTitle.textContent = title;
     if (listTitle) listTitle.textContent = title;
   }
+  if (actions) {
+    const successor = campaigns
+      .filter(c => c.status === 'draft' && (!campaign || c.start_year >= campaign.end_year))
+      .sort((a,b) => a.start_year - b.start_year)[0];
+    if (campaign?.status === 'active') {
+      actions.innerHTML = successor
+        ? `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><span style="font:800 11px 'Space Grotesk',sans-serif;color:#1F8A5F;text-transform:uppercase;letter-spacing:.06em;">Laufende Kampagne</span><button type="button" onclick="finishPartnerCampaign()" style="padding:9px 12px;border:1.5px solid #B8402C;border-radius:8px;background:#fff;color:#B8402C;font:800 11px 'Space Grotesk',sans-serif;cursor:pointer;">Kampagne beenden</button><span style="font:600 11px 'Manrope',sans-serif;color:#7A7368;">Danach startet ${esc(successor.name)}.</span></div>`
+        : `<div style="font:700 11px 'Manrope',sans-serif;color:#7A7368;">Laufende Kampagne. Zum Beenden zuerst eine neue Kampagne als Entwurf anlegen.</div>`;
+    } else if (campaign?.status === 'draft') {
+      actions.innerHTML = `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><span style="font:800 11px 'Space Grotesk',sans-serif;color:#B06A00;text-transform:uppercase;letter-spacing:.06em;">Entwurf</span><button type="button" onclick="deleteDraftPartnerCampaign()" style="padding:9px 12px;border:1.5px solid #B8402C;border-radius:8px;background:#fff;color:#B8402C;font:800 11px 'Space Grotesk',sans-serif;cursor:pointer;">Entwurf löschen</button></div>`;
+    } else {
+      actions.innerHTML = `<span style="font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;text-transform:uppercase;letter-spacing:.06em;">Historie · schreibgeschützt</span>`;
+    }
+  }
+  applyPartnerCampaignMode();
+}
+
+function togglePartnerCampaignHistory() {
+  window.__partnerHistoryOpen = !window.__partnerHistoryOpen;
+  renderPartnerCampaignTabs();
+}
+
+function applyPartnerCampaignMode() {
+  const archived = partnerCampaignIsArchived();
+  const note = document.getElementById('partnerCampaignReadOnlyNote');
+  const editor = document.getElementById('partnerEditorSection');
+  const pipelineForm = document.getElementById('partnerPipelineForm');
+  const donationForm = document.getElementById('fundraisingDonationForm');
+  if (note) note.style.display = archived ? '' : 'none';
+  if (editor) editor.style.display = archived ? 'none' : '';
+  if (pipelineForm) pipelineForm.style.display = archived ? 'none' : '';
+  if (donationForm) donationForm.style.display = archived ? 'none' : '';
 }
 
 async function selectPartnerCampaign(id) {
@@ -12229,6 +12285,40 @@ async function selectPartnerCampaign(id) {
   resetPartnerPipelineForm();
   renderPartnerCampaignTabs();
   await loadAdminSponsors(true);
+}
+
+async function finishPartnerCampaign() {
+  const campaign = currentPartnerCampaign();
+  const successor = (window.__partnerCampaigns || [])
+    .filter(c => c.status === 'draft' && c.start_year >= campaign.end_year)
+    .sort((a,b) => a.start_year - b.start_year)[0];
+  if (!campaign || campaign.status !== 'active') return;
+  if (!successor) { alert('Bitte zuerst eine neue Kampagne als Entwurf anlegen.'); return; }
+  if (!confirm(`„${campaign.name}“ wirklich beenden? Die Kampagne wandert unveränderlich in die Historie. Anschließend läuft „${successor.name}“ als aktuelle Kampagne.`)) return;
+  try {
+    const { error } = await sb.rpc('admin_finish_partner_campaign', {
+      p_campaign_id:campaign.id, p_successor_campaign_id:successor.id
+    });
+    if (error) throw error;
+    window.__partnerHistoryOpen = false;
+    await loadPartnerCampaigns(successor.id);
+    await loadAdminSponsors(true);
+    showToast('Kampagne beendet und in die Historie verschoben.');
+  } catch (e) { alert('Kampagne konnte nicht beendet werden: ' + (e?.message || 'Unbekannter Fehler')); }
+}
+
+async function deleteDraftPartnerCampaign() {
+  const campaign = currentPartnerCampaign();
+  if (!campaign || campaign.status !== 'draft') return;
+  if (!confirm(`Entwurf „${campaign.name}“ mit seinen kampagnenbezogenen Daten wirklich löschen?`)) return;
+  try {
+    const { error } = await sb.rpc('admin_delete_partner_campaign', { p_campaign_id:campaign.id });
+    if (error) throw error;
+    sessionStorage.removeItem('partnerCampaignId');
+    await loadPartnerCampaigns();
+    await loadAdminSponsors(true);
+    showToast('Kampagnenentwurf gelöscht.');
+  } catch (e) { alert('Kampagne konnte nicht gelöscht werden: ' + (e?.message || 'Unbekannter Fehler')); }
 }
 
 function toggleNewPartnerCampaignForm(force) {
@@ -12288,6 +12378,7 @@ function editPartnerPipelineEntry(id) {
 }
 
 async function savePartnerPipelineEntry() {
+  if (!ensurePartnerCampaignEditable()) return;
   const company = document.getElementById('pcPipelineCompany').value.trim();
   if (!company) { alert('Bitte eine Firma angeben.'); return; }
   try {
@@ -12305,6 +12396,7 @@ async function savePartnerPipelineEntry() {
 }
 
 function convertPipelineToPartner(id) {
+  if (!ensurePartnerCampaignEditable()) return;
   const row = (window.__partnerPipeline || []).find(item => item.id === id);
   if (!row) return;
   resetSponsorForm();
@@ -12319,6 +12411,7 @@ function convertPipelineToPartner(id) {
 }
 
 async function setPartnerPipelineStage(id, stage) {
+  if (!ensurePartnerCampaignEditable()) return;
   try {
     const { error } = await sb.rpc('admin_set_partner_campaign_pipeline_stage', {
       p_id:id, p_campaign_id:window.__partnerCampaignId, p_stage:stage, p_converted_sponsor_id:null
@@ -12330,6 +12423,7 @@ async function setPartnerPipelineStage(id, stage) {
 }
 
 async function deletePartnerPipelineEntry(id) {
+  if (!ensurePartnerCampaignEditable()) return;
   if (!confirm('Diesen Eintrag wirklich löschen?')) return;
   const { error } = await sb.rpc('admin_delete_partner_campaign_pipeline', { p_id:id, p_campaign_id:window.__partnerCampaignId });
   if (error) { alert('Löschen fehlgeschlagen: ' + error.message); return; }
@@ -12337,6 +12431,7 @@ async function deletePartnerPipelineEntry(id) {
 }
 
 async function reorderPartnerPipeline(stage, id, direction) {
+  if (!ensurePartnerCampaignEditable()) return;
   const rows = (window.__partnerPipeline || []).filter(item => item.stage === stage);
   const index = rows.findIndex(item => item.id === id);
   const target = index + direction;
@@ -12348,6 +12443,7 @@ async function reorderPartnerPipeline(stage, id, direction) {
 let partnerPipelineDrag = null;
 function startPartnerPipelineDrag(stage, id) { partnerPipelineDrag = { stage, id }; }
 async function dropPartnerPipeline(stage, targetId) {
+  if (!ensurePartnerCampaignEditable()) return;
   if (!partnerPipelineDrag || partnerPipelineDrag.stage !== stage || partnerPipelineDrag.id === targetId) return;
   const rows = (window.__partnerPipeline || []).filter(item => item.stage === stage);
   const from = rows.findIndex(item => item.id === partnerPipelineDrag.id);
@@ -12374,18 +12470,19 @@ function renderPartnerPipelineList(stage, elementId) {
     box.innerHTML = `<div style="color:#7A7368;text-align:center;padding:18px;border:1.5px dashed #E2DACB;border-radius:8px;">${stage === 'conversation' ? 'Aktuell keine Gespräche erfasst.' : 'Noch keine Absagen erfasst.'}</div>`;
     return;
   }
+  const archived = partnerCampaignIsArchived();
   box.innerHTML = rows.map((row, index) => `
-    <div draggable="true" ondragstart="startPartnerPipelineDrag('${stage}','${row.id}')" ondragover="event.preventDefault()" ondrop="dropPartnerPipeline('${stage}','${row.id}')" style="display:grid;grid-template-columns:28px minmax(170px,1.3fr) minmax(150px,1fr) minmax(130px,.8fr) auto;gap:10px;align-items:center;padding:11px 12px;background:#fff;border:1.5px solid #E2DACB;border-radius:8px;margin-bottom:8px;">
-      <button type="button" title="Zeile ziehen" style="border:0;background:transparent;color:#8A8379;font-size:18px;cursor:grab;padding:4px;">⋮⋮</button>
+    <div draggable="${archived ? 'false' : 'true'}" ${archived ? '' : `ondragstart="startPartnerPipelineDrag('${stage}','${row.id}')" ondragover="event.preventDefault()" ondrop="dropPartnerPipeline('${stage}','${row.id}')"`} style="display:grid;grid-template-columns:${archived ? '' : '28px '}minmax(170px,1.3fr) minmax(150px,1fr) minmax(130px,.8fr) ${archived ? '' : 'auto'};gap:10px;align-items:center;padding:11px 12px;background:#fff;border:1.5px solid #E2DACB;border-radius:8px;margin-bottom:8px;">
+      ${archived ? '' : '<button type="button" title="Zeile ziehen" style="border:0;background:transparent;color:#8A8379;font-size:18px;cursor:grab;padding:4px;">⋮⋮</button>'}
       <div><strong style="font:800 13px 'Space Grotesk',sans-serif;">${esc(row.company)}</strong></div>
       <div style="font:600 12px 'Manrope',sans-serif;color:#5C564C;">${esc(row.contact_name || '–')}</div>
       <div style="font:600 12px 'Manrope',sans-serif;color:#5C564C;">${esc(row.phone || '–')}</div>
-      <div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;">
+      ${archived ? '' : `<div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;">
         <button type="button" title="Nach oben" onclick="reorderPartnerPipeline('${stage}','${row.id}',-1)" ${index === 0 ? 'disabled' : ''} style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">↑</button>
         <button type="button" title="Nach unten" onclick="reorderPartnerPipeline('${stage}','${row.id}',1)" ${index === rows.length - 1 ? 'disabled' : ''} style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">↓</button>
         ${stage === 'conversation' ? `<button type="button" onclick="convertPipelineToPartner('${row.id}')" style="padding:7px 9px;border:0;border-radius:6px;background:#1F8A5F;color:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Wird Partner</button><button type="button" onclick="setPartnerPipelineStage('${row.id}','rejected')" style="padding:7px 9px;border:1px solid #B8402C;border-radius:6px;background:#fff;color:#B8402C;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Absage</button><button type="button" title="Bearbeiten" onclick="editPartnerPipelineEntry('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;cursor:pointer;">✎</button>` : `<button type="button" onclick="setPartnerPipelineStage('${row.id}','conversation')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;font:800 10px 'Space Grotesk',sans-serif;cursor:pointer;">Zurück</button>`}
         <button type="button" title="Löschen" onclick="deletePartnerPipelineEntry('${row.id}')" style="padding:7px 9px;border:1px solid #E2DACB;border-radius:6px;background:#fff;color:#B8402C;font-weight:800;cursor:pointer;">×</button>
-      </div>
+      </div>`}
     </div>`).join('');
 }
 
@@ -12448,10 +12545,12 @@ async function loadAdminSponsors(campaignsReady = false) {
       p_campaign_id:window.__partnerCampaignId
     });
     if (memberError) throw memberError;
-    const members = new Map((memberRows || []).map(member => [member.sponsor_id, member]));
-    rows = allSponsors.filter(sponsor => members.has(sponsor.id)).map(sponsor => {
-      const member = members.get(sponsor.id);
-      return { ...sponsor,
+    const sponsorsById = new Map(allSponsors.map(sponsor => [sponsor.id, sponsor]));
+    const archived = partnerCampaignIsArchived();
+    rows = (memberRows || []).map(member => {
+      const sponsor = sponsorsById.get(member.sponsor_id) || {};
+      const snapshot = archived && member.sponsor_snapshot ? member.sponsor_snapshot : {};
+      return { ...sponsor, ...snapshot, id:member.sponsor_id,
         annual_amount_cents:member.annual_amount_cents,
         verbal_commitment:member.verbal_commitment,
         contract_received:member.contract_received,
@@ -12467,13 +12566,14 @@ async function loadAdminSponsors(campaignsReady = false) {
       discountBySponsor.set(item.sponsor_id, emails);
     });
     rows.forEach(sponsor => {
-      sponsor.discount_emails = (discountBySponsor.get(sponsor.id) || []).join('\n');
+      if (!archived) sponsor.discount_emails = (discountBySponsor.get(sponsor.id) || []).join('\n');
     });
   } catch(e) {
     box.innerHTML = `<div style="color:#B8402C;padding:18px;">Partner konnten nicht geladen werden: ${esc(e?.message || 'Unbekannter Fehler')}</div>`;
     return;
   }
   window.__sponsorRows = rows;
+  applyPartnerCampaignMode();
   renderFundraisingSummary();
   loadFundraisingDonations();
   loadPartnerPipeline().catch(e => {
@@ -12503,6 +12603,7 @@ async function loadAdminSponsors(campaignsReady = false) {
     return '?';
   };
 
+  const archivedCampaign = partnerCampaignIsArchived();
   box.innerHTML = SPONSOR_TIER_ORDER.map((tier, tierIndex) => {
     const tierRows = byTier[tier];
     const config = SPONSOR_TIER_CONFIG[tier];
@@ -12581,14 +12682,14 @@ async function loadAdminSponsors(campaignsReady = false) {
           </div>
 
           <!-- Buttons rechts -->
-          <div style="display:flex;flex-direction:column;gap:6px;flex:none;">
+          ${archivedCampaign ? '' : `<div style="display:flex;flex-direction:column;gap:6px;flex:none;">
             <div style="display:flex;gap:3px;">
               <button onclick="moveSponsor('${s.id}', 'up')" ${canMoveUp ? '' : 'disabled'} style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:${canMoveUp ? '#fff' : '#f5f5f5'};color:#1C1A17;font:700 12px 'Space Grotesk',sans-serif;cursor:${canMoveUp ? 'pointer' : 'not-allowed'};opacity:${canMoveUp ? '1' : '0.5'};">↑</button>
               <button onclick="moveSponsor('${s.id}', 'down')" ${canMoveDown ? '' : 'disabled'} style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:${canMoveDown ? '#fff' : '#f5f5f5'};color:#1C1A17;font:700 12px 'Space Grotesk',sans-serif;cursor:${canMoveDown ? 'pointer' : 'not-allowed'};opacity:${canMoveDown ? '1' : '0.5'};">↓</button>
             </div>
             <button onclick="editSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#1C1A17;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Ändern</button>
-            <button onclick="deleteSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#B8402C;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Löschen</button>
-          </div>
+            <button onclick="deleteSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#B8402C;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Aus Kampagne entfernen</button>
+          </div>`}
         </div>`;
     }).join('');
     return `<section style="margin-bottom:22px;">
@@ -12597,7 +12698,7 @@ async function loadAdminSponsors(campaignsReady = false) {
           <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${config.label}</div>
           <div style="font:600 11px 'Manrope',sans-serif;color:${isFull ? '#B8402C' : '#7A7368'};margin-top:2px;">${tierRows.length} von maximal ${config.limit} belegt</div>
         </div>
-        <button type="button" onclick="addSponsorInTier('${tier}')" ${isFull ? 'disabled' : ''} style="padding:9px 12px;border:0;border-radius:8px;background:${isFull ? '#E2DACB' : '#FF5A36'};color:${isFull ? '#7A7368' : '#1C1A17'};font:800 12px 'Space Grotesk',sans-serif;cursor:${isFull ? 'not-allowed' : 'pointer'};">+ Neuer Partner</button>
+        ${archivedCampaign ? '<span style="font:800 10px Space Grotesk,sans-serif;color:#7A7368;text-transform:uppercase;letter-spacing:.06em;">Historie</span>' : `<button type="button" onclick="addSponsorInTier('${tier}')" ${isFull ? 'disabled' : ''} style="padding:9px 12px;border:0;border-radius:8px;background:${isFull ? '#E2DACB' : '#FF5A36'};color:${isFull ? '#7A7368' : '#1C1A17'};font:800 12px 'Space Grotesk',sans-serif;cursor:${isFull ? 'not-allowed' : 'pointer'};">+ Neuer Partner</button>`}
       </div>
       ${cards || '<div style="color:#7A7368;text-align:center;padding:18px;border:1.5px dashed #E2DACB;border-radius:10px;">Noch kein Partner in dieser Kategorie.</div>'}
     </section>`;
@@ -12680,6 +12781,7 @@ function markSponsorCompanyManual() {
 }
 
 function editSponsor(id) {
+  if (!ensurePartnerCampaignEditable()) return;
   const s = (window.__sponsorRows || []).find(r => r.id === id);
   if (!s) return;
   document.getElementById('spEditId').value   = s.id;
@@ -12846,6 +12948,7 @@ function downloadPartnerGuide() {
 }
 
 async function saveSponsor() {
+  if (!ensurePartnerCampaignEditable()) return;
   const btn    = document.getElementById('spSaveBtn');
   const id     = document.getElementById('spEditId').value || null;
   const tier   = document.getElementById('spTier').value;
@@ -12980,12 +13083,15 @@ async function saveSponsor() {
 }
 
 async function deleteSponsor(id) {
+  if (!ensurePartnerCampaignEditable()) return;
   const s = (window.__sponsorRows || []).find(r => r.id === id);
-  if (!confirm(`Partner „${s ? s.name : ''}” wirklich löschen?`)) return;
+  if (!confirm(`Partner „${s ? s.name : ''}” wirklich aus dieser Kampagne entfernen? Der Partnerstamm und frühere Kampagnen bleiben erhalten.`)) return;
   try {
-    const { error } = await sb.rpc('admin_delete_sponsor', { p_id: id });
+    const { error } = await sb.rpc('admin_remove_partner_campaign_member', {
+      p_campaign_id:window.__partnerCampaignId, p_sponsor_id:id
+    });
     if (error) throw error;
-    showToast('Partner gelöscht.');
+    showToast('Partner aus der Kampagne entfernt.');
     loadAdminSponsors();
   } catch(e) {
     alert('Löschen fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
@@ -12993,6 +13099,7 @@ async function deleteSponsor(id) {
 }
 
 async function moveSponsor(id, direction) {
+  if (!ensurePartnerCampaignEditable()) return;
   try {
     const { error } = await sb.rpc('admin_move_sponsor', { p_id: id, p_direction: direction });
     if (error) throw error;
@@ -13012,6 +13119,7 @@ async function loadFundraisingDonations() {
     if (error) throw error;
     window.__fundraisingDonations = data || [];
     renderFundraisingSummary();
+    const archived = partnerCampaignIsArchived();
     box.innerHTML = window.__fundraisingDonations.length
       ? window.__fundraisingDonations.map(d => `
         <div style="display:grid;grid-template-columns:minmax(150px,1fr) 130px 130px minmax(160px,1fr) auto;gap:12px;align-items:center;padding:12px 13px;border-bottom:1px solid #EFE9DC;">
@@ -13019,7 +13127,7 @@ async function loadFundraisingDonations() {
           <div style="font:800 14px 'Space Grotesk',sans-serif;color:#1C1A17;">${adminFormatEuro(d.amount_cents)}</div>
           <div style="font:800 11px 'Manrope',sans-serif;color:${d.status === 'received' ? '#1F8A5F' : '#B06A00'};">${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</div>
           <div style="font:600 11px 'Manrope',sans-serif;color:#7A7368;">${esc(d.note || '')}</div>
-          <div style="display:flex;gap:6px;"><button type="button" onclick="editFundraisingDonation('${d.id}')" style="padding:7px 9px;border:1.5px solid #E2DACB;border-radius:6px;background:#fff;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Ändern</button><button type="button" onclick="deleteFundraisingDonation('${d.id}')" style="padding:7px 9px;border:1.5px solid #E2DACB;border-radius:6px;background:#fff;color:#B8402C;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Löschen</button></div>
+          ${archived ? '<div style="font:800 10px Space Grotesk,sans-serif;color:#7A7368;text-transform:uppercase;">Historie</div>' : `<div style="display:flex;gap:6px;"><button type="button" onclick="editFundraisingDonation('${d.id}')" style="padding:7px 9px;border:1.5px solid #E2DACB;border-radius:6px;background:#fff;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Ändern</button><button type="button" onclick="deleteFundraisingDonation('${d.id}')" style="padding:7px 9px;border:1.5px solid #E2DACB;border-radius:6px;background:#fff;color:#B8402C;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Löschen</button></div>`}
         </div>`).join('')
       : '<div style="color:#7A7368;text-align:center;padding:18px;">Noch keine Spenden erfasst.</div>';
   } catch (e) {
@@ -13040,6 +13148,7 @@ function resetFundraisingDonationForm() {
 }
 
 function editFundraisingDonation(id) {
+  if (!ensurePartnerCampaignEditable()) return;
   const donation = (window.__fundraisingDonations || []).find(d => d.id === id);
   if (!donation) return;
   document.getElementById('fdEditId').value = donation.id;
@@ -13053,6 +13162,7 @@ function editFundraisingDonation(id) {
 }
 
 async function saveFundraisingDonation() {
+  if (!ensurePartnerCampaignEditable()) return;
   const id = document.getElementById('fdEditId').value || null;
   const donorName = document.getElementById('fdDonorName').value.trim();
   const amountCents = Math.round(adminParseEuro(document.getElementById('fdAmount').value) * 100);
@@ -13076,6 +13186,7 @@ async function saveFundraisingDonation() {
 }
 
 async function deleteFundraisingDonation(id) {
+  if (!ensurePartnerCampaignEditable()) return;
   const donation = (window.__fundraisingDonations || []).find(d => d.id === id);
   if (!confirm(`Spende von „${donation?.donor_name || ''}” wirklich löschen?`)) return;
   try {
