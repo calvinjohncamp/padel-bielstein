@@ -636,10 +636,10 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 .value-dot { aspect-ratio: 1; border-radius: 50%; background: #1C1A17; box-shadow: inset 0 0 0 1px rgba(18,20,17,.06); }
 
 /* Persönlicher Kontoauszug */
-.statement-entry-card { position:relative; min-height:520px; margin-top:26px; padding:44px 26px 28px; display:flex; flex-direction:column; justify-content:center; }
+.statement-entry-card { position:relative; width:100%; max-width:100%; min-width:0; min-height:520px; margin-top:26px; padding:44px 26px 28px; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; }
 .statement-badge { font-family:"Space Grotesk",sans-serif; font-size:1.15rem; line-height:1; }
 .statement-number { font-size:3.85rem; line-height:.94; overflow-wrap:anywhere; }
-.statement-headline { margin-top:8px; color:#FF5A36; font-size:1.45rem; }
+.statement-headline { min-width:0; margin:8px -34% 0; color:#FF5A36; font-size:4.5rem; line-height:.9; letter-spacing:0; white-space:nowrap; transform:scaleX(.58); transform-origin:center; }
 .statement-entry-copy { margin:4px auto 22px; max-width:300px; color:#5F5A52; font-size:.86rem; line-height:1.55; }
 .statement-open-btn { width:100%; min-height:50px; border:0; border-radius:8px; background:#FF5A36; color:#1C1A17; font:900 .8rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; }
 .account-statement-overlay { z-index:760; }
@@ -647,8 +647,8 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 .statement-kicker { color:#FF5A36; font:800 .7rem "Space Grotesk",sans-serif; text-transform:uppercase; letter-spacing:.14em; }
 .statement-title { margin:6px 42px 18px 0; font:900 1.65rem "Space Grotesk",sans-serif; letter-spacing:0; }
 .statement-tabs { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
-.statement-tab { min-height:44px; border:1px solid #D8CFC1; border-radius:8px; background:#FFFDF9; color:#655F56; font:800 .75rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; }
-.statement-tab.active { border-color:#1C1A17; background:#1C1A17; color:#F6F1E7; }
+.statement-tab { min-height:44px; border:1px solid #1C1A17; border-radius:8px; background:#1C1A17; color:#F6F1E7; font:800 .75rem "Space Grotesk",sans-serif; text-transform:uppercase; cursor:pointer; }
+.statement-tab.active { border-color:#FF5A36; background:#FF5A36; color:#1C1A17; }
 .statement-period { margin:0 0 16px; color:#756E64; font-size:.76rem; }
 .statement-list { display:grid; gap:10px; }
 .statement-item { padding:15px; border:1px solid #DDD3C4; border-radius:8px; background:#FFFDF9; }
@@ -753,10 +753,11 @@ body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 
 /* ■■ ACCOUNT-MODAL: EINE feste Fußzeile – links Punkte+Pfeile, rechts ggf. Button.
    Konstante Höhe => beim Blättern springt nichts, man klickt an Ort und Stelle. ■■ */
-.card-pager { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 46px; margin-top: 12px; padding: 12px 4px 2px; border-top: 1px solid #E7E0D5; background: transparent; }
+.card-pager { flex:0 0 auto; display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; gap:10px; min-height:46px; margin-top:12px; padding:12px 4px 2px; border-top:1px solid #E7E0D5; background:transparent; }
 .card-pager-label { display: none; }
-.pager-nav { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.pager-nav { grid-column:2; display:flex; align-items:center; justify-content:center; gap:7px; min-width:0; }
 .pager-action {
+  grid-column: 3; justify-self: end;
   border: 1px solid #D9CFBF; background: transparent; color: #7A7368;
   font-family: "Space Grotesk","Arial Narrow",sans-serif; font-weight: 600;
   font-size: 12.5px; letter-spacing: 0.02em; padding: 7px 16px; border-radius: 999px;
@@ -18175,7 +18176,7 @@ function statementCardHTML() {
     <div class="rw-tagline">Money, Money, Money</div>
     <div class="rw-number statement-number">Meine</div>
     <div class="rw-headline statement-headline">Abrechnungen</div>
-    <div class="rw-subtitle">Buchungen · Kiosk-Einkäufe</div>
+    <div class="rw-subtitle">Padel-Buchungen · Kiosk-Einkäufe</div>
     <div class="rw-divider"></div>
     <p class="statement-entry-copy">Vergleiche deine Buchungen und erledigten Bierdeckel mit deiner Kreditkartenabrechnung.</p>
     <button type="button" class="statement-open-btn" onclick="openAccountStatement()">Abrechnungsübersicht öffnen</button>
@@ -21405,6 +21406,25 @@ body.bielstein-theme .rw-number {
   font-family: "Space Grotesk","Arial Narrow",sans-serif !important;
   font-weight: 700 !important; font-size: 48px !important; color: #1C1A17 !important; line-height: 1;
 }
+body.bielstein-theme .statement-entry-card .statement-number {
+  font-size: 48px !important;
+}
+body.bielstein-theme .statement-entry-card .statement-headline {
+  margin: 8px -34% 0 !important;
+  font-size: 72px !important;
+  line-height: .9 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap;
+  transform: scaleX(.58);
+  transform-origin: center;
+}
+@media (max-width: 480px) {
+  body.bielstein-theme .statement-entry-card .statement-headline {
+    margin-right: -42% !important;
+    margin-left: -42% !important;
+    transform: scaleX(.5);
+  }
+}
 body.bielstein-theme .value-card .rw-number { font-size: 40px !important; }
 /* Account-Abo-Karte: MITTWOCHS ist der King – Space Grotesk, Versalien, ORANGE;
    darunter die Uhrzeit SCHWARZ in der Zahlen-Schrift (Manrope). Plakette „ABO". */
@@ -21786,13 +21806,14 @@ body.bielstein-theme .acct-delete-result { min-height: 18px; margin-top: 10px; c
 /* Pager: dezente Punkte + zurückhaltende Pfeile – die Karte steht im Mittelpunkt,
    nicht die Steuerung. (Ersetzt die früheren großen Coral-Kreise.) */
 body.bielstein-theme .card-pager {
-  display: flex !important; align-items: center; justify-content: space-between !important;
+  display: grid !important; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); align-items: center;
   gap: 10px; min-height: 46px; margin-top: 12px; padding: 12px 4px 2px; border-top: 1px solid #E2DACB;
 }
-body.bielstein-theme .card-pager .pager-nav { display: flex; align-items: center; gap: 10px; }
+body.bielstein-theme .card-pager .pager-nav { grid-column: 2; display: flex; align-items: center; justify-content: center; gap: 10px; }
 body.bielstein-theme .card-pager .pager-dots { display: flex; align-items: center; gap: 7px; }
 /* Rechter Aktionsbutton: dezent, klein, in derselben Zeile. */
 body.bielstein-theme .card-pager .pager-action {
+  grid-column: 3; justify-self: end;
   border: 1px solid #D9CFBF !important; background: transparent !important; color: #7A7368 !important;
   font-family: "Space Grotesk","Arial Narrow",sans-serif !important; font-weight: 600 !important;
   font-size: 12.5px !important; letter-spacing: 0.02em !important; padding: 7px 16px !important;
