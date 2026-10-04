@@ -12128,6 +12128,10 @@ function renderFundraisingSummary() {
   const sponsors = window.__sponsorRows || [];
   const donations = window.__fundraisingDonations || [];
   const committedSponsors = sponsors.filter(s => s.verbal_commitment || s.contract_received);
+  const reportDonations = [...donations].sort((a, b) =>
+    (Number(b.amount_cents) || 0) - (Number(a.amount_cents) || 0)
+    || String(a.donor_name || '').localeCompare(String(b.donor_name || ''), 'de', { sensitivity:'base' })
+  );
   const partnerAnnualTotal = committedSponsors.reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
   const partnerThreeYearTotal = partnerAnnualTotal * 3;
   const donationTotal = donations.reduce((sum, d) => sum + (Number(d.amount_cents) || 0), 0);
@@ -12143,7 +12147,9 @@ function renderFundraisingSummary() {
   const moneyCell = value => `<td style="padding:10px 12px;text-align:right;white-space:nowrap;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${adminFormatEuro(value)}</td>`;
   const partnerTable = tier => {
     const config = SPONSOR_TIER_CONFIG[tier];
-    const rows = committedSponsors.filter(s => s.tier === tier);
+    const rows = committedSponsors
+      .filter(s => s.tier === tier)
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de', { sensitivity:'base' }));
     const annual = rows.reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
     const body = rows.length ? rows.map(s => {
       const amount = Number(s.annual_amount_cents) || 0;
@@ -12173,7 +12179,7 @@ function renderFundraisingSummary() {
       </table>
     </div>`;
   };
-  const donationRows = donations.length ? donations.map(d => `<tr style="border-top:1px solid #EFE9DC;">
+  const donationRows = reportDonations.length ? reportDonations.map(d => `<tr style="border-top:1px solid #EFE9DC;">
     <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${esc(d.donor_name)}</td>
     <td style="padding:10px 12px;font:800 10px 'Manrope',sans-serif;color:${d.status === 'received' ? '#1F8A5F' : '#B06A00'};">${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</td>
     ${moneyCell(d.amount_cents)}
@@ -12622,6 +12628,10 @@ function openPartnerCampaignPdf() {
   if (!campaign) { alert('Keine Partnerkampagne ausgewählt.'); return; }
   const sponsors = (window.__sponsorRows || []).filter(s => s.verbal_commitment || s.contract_received);
   const donations = window.__fundraisingDonations || [];
+  const reportDonations = [...donations].sort((a, b) =>
+    (Number(b.amount_cents) || 0) - (Number(a.amount_cents) || 0)
+    || String(a.donor_name || '').localeCompare(String(b.donor_name || ''), 'de', { sensitivity:'base' })
+  );
   const pipeline = window.__partnerPipeline || [];
   const partnerAnnual = sponsors.reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
   const partnerTotal = partnerAnnual * 3;
@@ -12631,12 +12641,14 @@ function openPartnerCampaignPdf() {
   const status = sponsor => sponsor.contract_received ? 'Vertrag' : 'Mündlich';
   const reportCampaignName = String(campaign.name || '').replace(/^Partner\b/i, 'Partnerprogramm');
   const tierTable = tier => {
-    const rows = sponsors.filter(s => s.tier === tier);
+    const rows = sponsors
+      .filter(s => s.tier === tier)
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de', { sensitivity:'base' }));
     const annual = rows.reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
     return `<section class="block tier-${tier}"><h2>${esc(SPONSOR_TIER_CONFIG[tier].label)}</h2><table class="partner-table"><colgroup><col class="company-col"><col class="status-col"><col class="contract-col"><col class="money-col"><col class="money-col"><col class="money-col"><col class="total-col"></colgroup><thead><tr><th>Unternehmen</th><th>Stand</th><th class="contract-head" title="Vertrag liegt vor">✓</th><th>Jahr 1</th><th>Jahr 2</th><th>Jahr 3</th><th>Summe</th></tr></thead><tbody>${rows.length ? rows.map(s => `<tr><td>${esc(s.name)}</td><td>${status(s)}${Number(s.annual_amount_cents) === 0 ? ' · Gegenleistung' : ''}</td><td class="contract-check">${s.contract_received ? '✓' : ''}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td>${pdfMoney(s.annual_amount_cents)}</td><td><b>${pdfMoney(Number(s.annual_amount_cents) * 3)}</b></td></tr>`).join('') : '<tr><td colspan="7" class="empty">Noch keine Zusage erfasst.</td></tr>'}</tbody><tfoot><tr><td colspan="3">Summe</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual)}</td><td>${pdfMoney(annual * 3)}</td></tr></tfoot></table></section>`;
   };
   const kpis = `<div class="kpis"><div><span>Partner · 3 Jahre</span><strong>${pdfMoney(partnerTotal)}</strong><small>Summe aus Premium, Partner und Regional</small></div><div><span>Spenden · einmalig</span><strong>${pdfMoney(donationTotal)}</strong><small>Alle zugesagten Spenden</small></div><div><span>Gesamtsumme</span><strong>${pdfMoney(total)}</strong><small>Addition aus Partner + Spenden</small></div></div>`;
-  const donationsTable = `<section class="block"><h2>Spenden</h2><table class="donation-table"><colgroup><col style="width:48%"><col style="width:20%"><col style="width:16%"><col style="width:16%"></colgroup><thead><tr><th>Name / Organisation</th><th>Stand</th><th>Datum</th><th>Einmalig</th></tr></thead><tbody>${donations.length ? donations.map(d => `<tr><td>${esc(d.donor_name)}</td><td>${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</td><td>${esc(d.donation_date || '')}</td><td><b>${pdfMoney(d.amount_cents)}</b></td></tr>`).join('') : '<tr><td colspan="4" class="empty">Noch keine Spende erfasst.</td></tr>'}</tbody><tfoot><tr><td colspan="3">Summe Spenden</td><td>${pdfMoney(donationTotal)}</td></tr></tfoot></table></section>`;
+  const donationsTable = `<section class="block"><h2>Spenden</h2><table class="donation-table"><colgroup><col style="width:48%"><col style="width:20%"><col style="width:16%"><col style="width:16%"></colgroup><thead><tr><th>Name / Organisation</th><th>Stand</th><th>Datum</th><th>Einmalig</th></tr></thead><tbody>${reportDonations.length ? reportDonations.map(d => `<tr><td>${esc(d.donor_name)}</td><td>${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</td><td>${esc(d.donation_date || '')}</td><td><b>${pdfMoney(d.amount_cents)}</b></td></tr>`).join('') : '<tr><td colspan="4" class="empty">Noch keine Spende erfasst.</td></tr>'}</tbody><tfoot><tr><td colspan="3">Summe Spenden</td><td>${pdfMoney(donationTotal)}</td></tr></tfoot></table></section>`;
   const pipelineTable = (stage, title) => {
     const rows = pipeline.filter(row => row.stage === stage);
     return `<section class="pipeline"><div class="pipeline-heading"><h2>${title}</h2><strong>${rows.length}</strong></div><table><colgroup><col style="width:44%"><col style="width:34%"><col style="width:22%"></colgroup><thead><tr><th>Firma</th><th>Ansprechpartner</th><th>Telefon</th></tr></thead><tbody>${rows.length ? rows.map(row => `<tr><td>${esc(row.company)}</td><td>${esc(row.contact_name || '–')}</td><td>${esc(row.phone || '–')}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Keine Einträge.</td></tr>'}</tbody></table></section>`;
