@@ -27,6 +27,27 @@ window.__pbPasswordRecovery =
   /[?&]password_recovery=1(?:&|$)/.test(location.search) ||
   /(?:^|[&#])type=recovery(?:&|$)/.test(location.hash) ||
   /[?&]type=recovery(?:&|$)/.test(location.search);
+
+// Eine vorbereitete Datei enthaelt Einstellungen und die kleinen Splash-Bilder.
+// Der frische Abruf beginnt vor dem Parsen der umfangreichen App-Oberflaeche.
+window.pbFetchSplashSnapshot = async function(){
+  try{
+    var response=await fetch('https://hioaqcwqzeqcvvikollq.supabase.co/storage/v1/object/public/sponsor-logos/splash-public/splash.json?v='+Date.now(),{
+      cache:'no-store',priority:'high',signal:AbortSignal.timeout(1500)
+    });
+    if(!response.ok) return null;
+    var data=await response.json();
+    if(data.schemaVersion!==1 || !Array.isArray(data.sponsors) || !data.config || typeof data.sponsorsEnabled!=='boolean') return null;
+    window.__pbSplashBootstrap=data;
+    return data;
+  }catch(e){ return null; }
+};
+window.__pbSplashBootstrapReady=window.pbFetchSplashSnapshot();
+window.pbSplashAssetUrl=function(url){
+  var images=window.__pbSplashBootstrap && window.__pbSplashBootstrap.images;
+  var image=images && images[url];
+  return typeof image==='string' && /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(image) ? image : url;
+};
 window.__pbReleaseBoot = function(){
   document.documentElement.classList.remove('pb-boot');
 };
@@ -12909,6 +12930,17 @@ async function uploadSponsorLogo(file, prefix) {
   const path = `${prefix}-${uid}.${ext}`;
   const { error: upErr } = await sb.storage.from('sponsor-logos').upload(path, file, { upsert:true, cacheControl:'3600' });
   if (upErr) throw upErr;
+  try {
+    const image=await createImageBitmap(file);
+    const scale=Math.min(1,768/image.width,256/image.height);
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(image.width*scale));
+    canvas.height=Math.max(1,Math.round(image.height*scale));
+    canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+    image.close();
+    const preview=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.85));
+    if(preview?.type==='image/webp')await sb.storage.from('sponsor-logos').upload('splash-previews/'+path+'.webp',preview,{upsert:true,cacheControl:'31536000',contentType:'image/webp'});
+  }catch(e){ /* Das Original bleibt bei nicht unterstuetzten Bildformaten nutzbar. */ }
   return sb.storage.from('sponsor-logos').getPublicUrl(path).data.publicUrl;
 }
 
@@ -13218,6 +13250,7 @@ async function saveSponsor() {
       });
       if (pipelineError) throw pipelineError;
     }
+    if(typeof window.pbPublishSplashSnapshot==='function')await window.pbPublishSplashSnapshot();
     showToast('Partner gespeichert.');
     resetSponsorForm();
     loadAdminSponsors();
@@ -13238,6 +13271,7 @@ async function deleteSponsor(id) {
       p_campaign_id:window.__partnerCampaignId, p_sponsor_id:id
     });
     if (error) throw error;
+    if(typeof window.pbPublishSplashSnapshot==='function')await window.pbPublishSplashSnapshot();
     showToast('Partner aus der Kampagne entfernt.');
     loadAdminSponsors();
   } catch(e) {
@@ -13250,6 +13284,7 @@ async function moveSponsor(id, direction) {
   try {
     const { error } = await sb.rpc('admin_move_sponsor', { p_id: id, p_direction: direction });
     if (error) throw error;
+    if(typeof window.pbPublishSplashSnapshot==='function')await window.pbPublishSplashSnapshot();
     loadAdminSponsors();
   } catch(e) {
     alert('Verschieben fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
@@ -23051,6 +23086,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   };
   window.loadSponsorsEnabled = async function(){
     try{
+      var snapshot=window.__pbSplashBootstrapReady ? await window.__pbSplashBootstrapReady : null;
+      if(snapshot){window.applySponsorVisibility(snapshot.sponsorsEnabled);return;}
       if(typeof sb==='undefined' || !sb) return;
       var r=await sb.from('app_flags').select('sponsors_enabled').maybeSingle();
       if(r.error || !r.data) return;   // ohne Skript 44 bleibt Werbung an
@@ -23063,6 +23100,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       var r=await sb.rpc('admin_set_sponsors_enabled', { p_enabled: on });
       if(r.error) throw r.error;
       window.applySponsorVisibility(on);
+      if(typeof window.pbPublishSplashSnapshot==='function') await window.pbPublishSplashSnapshot();
       if(typeof showToast==='function') showToast(on ? 'Partner-Anzeige ist aktiv.' : 'Partner-Anzeige komplett ausgeblendet.');
     }catch(e){ alert('Umschalten fehlgeschlagen: ' + (e && e.message ? e.message : 'Unbekannter Fehler')); }
   };
@@ -23305,6 +23343,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(tint){
       tint.style.backgroundColor = color || '';
       var url=window.__pbSplashActionImageUrl || '';
+      if(typeof window.pbSplashAssetUrl==='function')url=window.pbSplashAssetUrl(url);
       var mask=url ? 'url("'+url.replace(/"/g,'%22').replace(/'/g,'%27')+'")' : '';
       tint.style.webkitMaskImage = mask;
       tint.style.maskImage = mask;
@@ -23322,7 +23361,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var clean=String(url||'').trim();
     window.__pbSplashActionImageUrl = clean;
     if(teaser){
-      if(clean){ teaser.src=clean; }
+      if(clean && window.__pbSplashActionEnabled!==false){ teaser.src=typeof window.pbSplashAssetUrl==='function'?window.pbSplashAssetUrl(clean):clean; }
       else { teaser.removeAttribute('src'); }
     }
     window.pbApplySplashActionStyle(window.__splash||{});
@@ -23367,6 +23406,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   };
   window.loadSplash = async function(){
     try{
+      var snapshot=window.__pbSplashBootstrapReady ? await window.__pbSplashBootstrapReady : null;
+      if(snapshot){window.pbApplySplashData(snapshot.config);return;}
       if(typeof sb==='undefined' || !sb) return;
       try{
         var cached=JSON.parse(sessionStorage.getItem(window.__splashCacheKey)||'null');
@@ -23399,6 +23440,34 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       try{ sessionStorage.setItem(window.__splashCacheKey, JSON.stringify(r.data)); }catch(e){}
       window.pbApplySplashData(r.data);
     }catch(e){}
+  };
+
+  window.pbPublishSplashSnapshot = async function(){
+    window.__pbSplashBootstrapReady=null;
+    window.__pbSplashBootstrap=null;
+    try{sessionStorage.removeItem(window.__splashCacheKey);sessionStorage.removeItem('pbSponsorsPublicCache');}catch(e){}
+    try{
+      var result;
+      for(var attempt=0;attempt<5;attempt++){
+        result=await sb.functions.invoke('publish-splash',{body:{}});
+        if(result.error) throw result.error;
+        if(result.data && result.data.published) break;
+      }
+      if(!result.data || !result.data.published) throw new Error('Publikation noch ausstehend');
+      window.__pbSplashBootstrapReady=window.pbFetchSplashSnapshot();
+      var snapshot=await window.__pbSplashBootstrapReady;
+      if(!snapshot || snapshot.revision<result.data.revision) throw new Error('Neuer Splash-Stand noch nicht abrufbar');
+      window.applySponsorVisibility(snapshot.sponsorsEnabled);
+      window.pbApplySplashData(snapshot.config);
+      if(typeof window.pbApplySplashSponsors==='function')window.pbApplySplashSponsors(snapshot.sponsors);
+      try{sessionStorage.removeItem(window.__splashCacheKey);sessionStorage.removeItem('pbSponsorsPublicCache');}catch(e){}
+      return true;
+    }catch(e){
+      // Das Speichern ist bereits erfolgreich; der Server wiederholt
+      // ausstehende Publikationen unabhaengig von diesem Browser.
+      if(typeof showToast==='function')showToast('Gespeichert. Splash-Aktualisierung wird automatisch wiederholt.');
+      return false;
+    }
   };
 
   // ── Admin-Editor: Splash-Texte ──
@@ -23755,6 +23824,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(urlEl) urlEl.value = actionImageUrl || '';
       if(actionImageFile) actionImageFile.value = '';
       if(typeof showToast==='function') showToast(wantsActionImage ? 'Aktionstexte und PNG gespeichert.' : 'Splash-Texte gespeichert.');
+      if(typeof window.pbPublishSplashSnapshot==='function') await window.pbPublishSplashSnapshot();
       if(typeof loadSplash==='function') await loadSplash();
     }catch(e){
       var msg = e && e.message ? e.message : 'Unbekannter Fehler';
@@ -23782,6 +23852,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       });
       if(r.error) throw r.error;
       if(typeof showToast==='function') showToast('Splash-Startseite gespeichert.');
+      if(typeof window.pbPublishSplashSnapshot==='function') await window.pbPublishSplashSnapshot();
       if(typeof loadSplash==='function') await loadSplash();
     }catch(e){ alert('Speichern fehlgeschlagen: '+(e&&e.message?e.message:'Unbekannter Fehler')); }
   };
@@ -23982,6 +24053,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(fileEl) fileEl.value='';
       await window.loadMarketingActions(id);
       if(typeof loadEarlybird==='function') await loadEarlybird();
+      if(typeof window.pbPublishSplashSnapshot==='function') await window.pbPublishSplashSnapshot();
       if(typeof loadSplash==='function') await loadSplash();
       if(typeof loadAboBanner==='function') await loadAboBanner();
       window.selectMarketingAction(id,false);
@@ -24250,12 +24322,23 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(f && last){ f.value = last; var pw = document.getElementById('loginPw'); if(pw) pw.focus(); }
     } catch(e){}
   }
-  function start(){
+  async function start(){
     var splash = document.getElementById('pbSplash');
     if(!splash){ if(window.__pbReleaseBoot) window.__pbReleaseBoot(); return; }
     // Rueckkehr von Stripe: Wer gerade bezahlt hat, will das Ergebnis sehen
     // und nicht wieder auf der Startseite anfangen.
     if(FROM_STRIPE || FROM_PASSWORD_RECOVERY){ if(window.__pbReleaseBoot) window.__pbReleaseBoot(); return; }
+    var snapshot=window.__pbSplashBootstrapReady ? await window.__pbSplashBootstrapReady : null;
+    if(snapshot){
+      window.applySponsorVisibility(snapshot.sponsorsEnabled);
+      window.pbApplySplashData(snapshot.config);
+      if(typeof window.pbApplySplashSponsors==='function')window.pbApplySplashSponsors(snapshot.sponsors);
+      var images=Array.from(splash.querySelectorAll('img')).filter(function(img){return img.getAttribute('src') && (!img.closest('#pbSplashActionArt') || window.__pbSplashActionEnabled!==false);});
+      await Promise.race([
+        Promise.all(images.map(function(img){return img.decode ? img.decode().catch(function(){}) : Promise.resolve();})),
+        new Promise(function(resolve){setTimeout(resolve,300);})
+      ]);
+    }
     splash.removeAttribute('hidden');
     try { splash.scrollTop = 0; window.scrollTo(0, 0); } catch(e) {}
     var touchLike = false;
@@ -24376,7 +24459,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   }
   function displayLogoUrl(s, quiet){
     if(!s) return '';
-    if(quiet) return s.logo_url || '';
+    if(quiet) return typeof window.pbSplashAssetUrl==='function'?window.pbSplashAssetUrl(s.logo_url || ''):(s.logo_url || '');
     return (s.action_logo_mode === 'replace' && s.action_logo_url) ? s.action_logo_url : s.logo_url;
   }
   function linkedTile(s, cl, inner){
@@ -24436,10 +24519,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     el.style.display = window.__sponsorsEnabled === false ? 'none' : '';
   }
   function renderSplashPremiumFromRows(rows){
+    var slot=document.getElementById('pbSplashSponsor');
+    if(window.__sponsorsEnabled===false){if(slot){slot.innerHTML='';slot.style.display='none';}return;}
     var prem=(rows||[]).filter(function(r){return r.tier==='premium';})
       .sort(function(a,b){return (a.sort_order||0)-(b.sort_order||0);});
     if(prem.length) fillPremiumDuo('pbSplashSponsor', 'Präsentiert von unseren Premium-Partnern', prem);
+    else if(slot)slot.innerHTML='';
   }
+  window.pbApplySplashSponsors=renderSplashPremiumFromRows;
   function buildFairPlaylist(groups){
     var active=(groups||[]).map(function(group){
       var rows=(group.rows||[]).filter(function(row){ return displayLogoUrl(row); });
@@ -24531,14 +24618,17 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   async function loadSponsorsDisplay(visibilityReady){
     try{
       if(typeof sb==='undefined' || !sb) return;
+      var snapshot=window.__pbSplashBootstrapReady ? await window.__pbSplashBootstrapReady : null;
       // Daten bereits laden, waehrend der Master-Schalter geprueft wird.
-      var rowsRequest = Promise.resolve(sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order,website_url,court_label,court_partner_enabled')).catch(function(error){return {error:error};});
+      var rowsRequest = snapshot ? Promise.resolve({data:snapshot.sponsors}) : Promise.resolve(sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,action_logo_mode,sort_order,website_url,court_label,court_partner_enabled')).catch(function(error){return {error:error};});
       var cached=[];
       if(visibilityReady) await visibilityReady;
       try{
+        if(!snapshot){
         cached=JSON.parse(sessionStorage.getItem(CACHE_KEY)||'[]');
         if(Array.isArray(cached) && cached.length) renderSplashPremiumFromRows(cached);
         else cached=[];
+        }
       }catch(e){ cached=[]; }
       var res = await rowsRequest;
       if(res.error) res = await sb.from('sponsors_public').select('tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
@@ -24558,7 +24648,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
                                   }); };
       var prem=pick('premium'), part=pick('partner'), reg=pick('regional');
       // Splash: zwei gleichwertige Premium-Partnerplaetze.
-      if(prem.length) fillPremiumDuo('pbSplashSponsor', 'Präsentiert von unseren Premium-Partnern', prem);
+      renderSplashPremiumFromRows(rows);
 
       await loadRotationIndex();
 
