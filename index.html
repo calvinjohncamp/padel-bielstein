@@ -6556,7 +6556,7 @@ main {
           <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
             <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Ansprechpartner (Partner-Vorteil)</div>
             <div style="font-size:0.76rem;color:#7A7368;line-height:1.5;margin-bottom:10px;">
-              Kontaktangaben und Buchungsberechtigung werden getrennt gepflegt. Rabatt gibt es nur über eine ausdrücklich hinterlegte Rabatt-/Buchungsadresse oder – bei Premium-Partnern – über eine freigegebene Mitarbeiter-Mailendung.
+              Kontaktangaben und Buchungsberechtigung werden getrennt gepflegt. Nur bestätigte Konten mit einer hinterlegten Rabatt-/Buchungsadresse erhalten den Rabatt.
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
               <div>
@@ -6572,14 +6572,8 @@ main {
                 <input id="spContactEmail" type="email" placeholder="kontakt@firma.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
               </div>
               <div style="grid-column:1 / -1;">
-                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Rabatt-/Buchungs-E-Mail-Adressen</label>
-                <textarea id="spDiscountEmails" rows="2" placeholder="buchung@firma.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;resize:vertical;"></textarea>
-                <div style="font-size:0.72rem;color:#7A7368;line-height:1.5;margin-top:5px;">Eine oder mehrere vollständige Adressen. Nur bestätigte Konten mit diesen Adressen erhalten den Rabatt.</div>
-              </div>
-              <div style="grid-column:1 / -1;">
-                <label style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Premium-Partner-Rabatt für diese Mail-Adressen</label>
-                <textarea id="spDiscountEmailDomains" rows="2" placeholder="@sparkasse-gm.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;resize:vertical;"></textarea>
-                <div style="font-size:0.72rem;color:#7A7368;line-height:1.5;margin-top:5px;">Nur für aktive Premium-Partner. Eine Endung pro Zeile oder mit Komma getrennt, jeweils mit @ beginnen.</div>
+                <label for="spDiscountEmails" style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Rabatt-/Buchungs-E-Mail-Adressen (max. 5)</label>
+                <textarea id="spDiscountEmails" rows="5" placeholder="buchung@firma.de&#10;zweite@firma.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;resize:vertical;"></textarea>
               </div>
             </div>
           </div>
@@ -12782,9 +12776,8 @@ async function loadAdminSponsors(campaignsReady = false) {
       const action = (actionLabel && s.action_logo_url)
         ? `<span style="color:#FF5A36;font-weight:800;"> · ${actionLabel}</span>`
         : '';
-      const discountEmailDomains = String(s.discount_email_domains || '').trim();
       const discountEmails = String(s.discount_emails || '').trim();
-      const hasContact = s.contact_name || s.contact_email || s.contact_phone || discountEmails || discountEmailDomains;
+      const hasContact = s.contact_name || s.contact_email || s.contact_phone || discountEmails;
       const hasAddress = s.contract_company || s.address_street || s.address_zip || s.address_city || s.address_country || s.contract_note;
       const financeState = s.contract_received ? 'Vertrag liegt vor' : (s.verbal_commitment ? 'Mündlich zugesagt' : 'Noch keine Zusage');
       const financeColor = s.contract_received ? '#1F8A5F' : (s.verbal_commitment ? '#B06A00' : '#7A7368');
@@ -12820,7 +12813,6 @@ async function loadAdminSponsors(campaignsReady = false) {
                 ${s.contact_email ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;word-break:break-all;">${esc(s.contact_email)}</div>` : ''}
                 ${s.contact_phone ? `<div style="font:500 12.1px 'Manrope',sans-serif;color:#5C564C;line-height:1.3;">${esc(s.contact_phone)}</div>` : ''}
                 ${discountEmails ? `<div style="font:700 11.5px 'Manrope',sans-serif;color:#1F8A5F;line-height:1.35;margin-top:4px;word-break:break-all;">Rabattadressen: ${esc(discountEmails).replace(/\n/g, '<br>')}</div>` : ''}
-                ${discountEmailDomains ? `<div style="font:700 11.5px 'Manrope',sans-serif;color:#1F8A5F;line-height:1.35;margin-top:4px;word-break:break-all;">Rabatt-Endungen: ${esc(discountEmailDomains)}</div>` : ''}
               ` : ''}
             </div>
 
@@ -12959,7 +12951,6 @@ function editSponsor(id) {
   document.getElementById('spContactEmail').value = s.contact_email || '';
   document.getElementById('spContactPhone').value = s.contact_phone || '';
   document.getElementById('spDiscountEmails').value = s.discount_emails || '';
-  document.getElementById('spDiscountEmailDomains').value = s.discount_email_domains || '';
   const contractCompany = s.contract_company || s.name || '';
   document.getElementById('spContractCompany').value = contractCompany;
   setSponsorCompanyAuto(contractCompany === (s.name || ''));
@@ -13000,7 +12991,6 @@ function resetSponsorForm() {
   document.getElementById('spContactEmail').value = '';
   document.getElementById('spContactPhone').value = '';
   document.getElementById('spDiscountEmails').value = '';
-  document.getElementById('spDiscountEmailDomains').value = '';
   document.getElementById('spContractCompany').value = '';
   setSponsorCompanyAuto(true);
   document.getElementById('spAddressStreet').value = '';
@@ -13126,7 +13116,6 @@ async function saveSponsor() {
   const contactEmail = document.getElementById('spContactEmail').value.trim();
   const contactPhone = document.getElementById('spContactPhone').value.trim();
   const discountEmails = document.getElementById('spDiscountEmails').value.trim();
-  const discountEmailDomains = document.getElementById('spDiscountEmailDomains').value.trim();
   const website      = document.getElementById('spWebsite').value.trim();
   const courtLabelValue = document.getElementById('spCourtLabel').value.trim();
   const courtPartnerEnabled = document.getElementById('spCourtPartnerEnabled').checked;
@@ -13150,12 +13139,9 @@ async function saveSponsor() {
   if (discountEmailParts.some(value => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value))) {
     alert('Bitte nur vollständige, gültige Rabatt-/Buchungs-E-Mail-Adressen eintragen.'); return;
   }
-  const domainParts = discountEmailDomains
-    ? discountEmailDomains.split(/[\s,;]+/).map(v => v.trim()).filter(Boolean)
-    : [];
-  const invalidDomains = domainParts.filter(v => !/^@[a-z0-9.-]+\.[a-z]{2,}$/i.test(v));
-  if (invalidDomains.length) { alert('Bitte Rabatt-Mailendungen mit @ eintragen, z. B. @sparkasse-gm.de.'); return; }
-  if (discountEmailDomains && tier !== 'premium') { alert('Mailendungen für den Partner-Rabatt sind nur bei Premium-Partnern vorgesehen.'); return; }
+  if (discountEmailParts.length > 5) {
+    alert('Pro Partner sind maximal fünf Rabatt-/Buchungs-E-Mail-Adressen erlaubt.'); return;
+  }
   if (courtPartnerEnabled && tier !== 'premium') { alert('Die Court-Anzeige ist nur bei Premium-Partnern vorgesehen.'); return; }
   if (courtPartnerEnabled && !courtLabelValue) { alert('Bitte zuerst eine ausdrückliche Court-Bezeichnung eintragen.'); return; }
   const tierConfig = SPONSOR_TIER_CONFIG[tier];
@@ -13189,7 +13175,7 @@ async function saveSponsor() {
       p_annual_amount_cents: annualAmountCents,
       p_verbal_commitment: verbalCommitment,
       p_contract_received: contractReceived,
-      p_discount_email_domains: domainParts.join('\n') || null,
+      p_discount_email_domains: null,
       p_action_logo_url: actionLogoUrl,
       p_has_action_logo: hasActionLogo,
       p_action_logo_mode: actionLogoMode
@@ -14999,23 +14985,26 @@ async function loadAdminUsers() {
       return;
     }
     adminUserRows = data;
-    // Partner-Kontakte laden -> E-Mail/Domain => {phone, tier} (für Telefon + Partner-Kennung)
+    // Partner-Kennung nur fuer ausdruecklich hinterlegte Rabattadressen.
     const partnerBy = {};
-    const partnerDomains = [];
+    const contactPhones = {};
     try {
       const { data: sp } = await sb.rpc('admin_list_sponsors');
+      const { data: emails } = await sb.rpc('admin_list_sponsor_discount_emails');
+      const sponsorsById = new Map((sp || []).map(s => [s.id, s]));
       (sp || []).forEach(s => {
-        if (s.contact_email) partnerBy[String(s.contact_email).trim().toLowerCase()] = { phone: s.contact_phone || '', tier: s.tier, active: s.active };
-        String(s.discount_email_domains || '').split(/[\s,;]+/).map(v => v.trim().toLowerCase()).filter(Boolean).forEach(domain => {
-          if (domain[0] === '@') partnerDomains.push({ domain, phone: s.contact_phone || '', tier: s.tier, active: s.active });
-        });
+        if (s.contact_email) contactPhones[String(s.contact_email).trim().toLowerCase()] = s.contact_phone || '';
+      });
+      (emails || []).forEach(d => {
+        const s = sponsorsById.get(d.sponsor_id);
+        if (s?.active) partnerBy[d.email] = { phone:s.contact_phone || '', tier:s.tier, active:true };
       });
     } catch(e) { /* ohne Partner-Infos weiter */ }
     const tierLbl = { premium:'Premium-Partner', partner:'Partner', regional:'Regional-Partner', supporter:'Supporter' };
     tbody.innerHTML = data.map(u => {
       const userEmail = String(u.email || '').trim().toLowerCase();
-      const p = partnerBy[userEmail] || partnerDomains.find(d => userEmail.endsWith(d.domain));
-      const phone = (u.phone && String(u.phone).trim()) ? u.phone : ((p && p.phone) ? p.phone : '—');
+      const p = partnerBy[userEmail];
+      const phone = (u.phone && String(u.phone).trim()) ? u.phone : (p?.phone || contactPhones[userEmail] || '—');
       const partnerChip = (p && p.active) ? ` <span class="admin-badge member" style="margin-left:4px;">★ ${tierLbl[p.tier] || 'Partner'}</span>` : '';
       const role = String(u.role || 'customer').toLowerCase();
       const ownAccount = !!(currentUser && u.auth_id === currentUser.id);
