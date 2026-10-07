@@ -76,10 +76,33 @@
     const abos = (raw.subs || []).map((a) => ({ sale: dn(a[0]), start: dn(a[1]), end: dn(a[2]), wdSun: a[3], h: a[4], dur: a[5], court: a[6], priceC: a[7] || 0, holder: a[8], grp: a[9], eb: !!a[10] }));
     for (const a of abos) { a.wd = (a.wdSun + 6) % 7; a.price = a.priceC / 100; }   // 0 = Montag
     const cards = (raw.cards || []).map((c) => ({ sale: dn(c[0]), amountC: c[1] || 0, person: c[2], grp: c[3] }));
-    const hasWeather = Array.isArray(raw.weather) && raw.weather.length > 0;
+    const weatherArchive = !!raw.weather_archive;
+    const hasWeather = weatherArchive || Array.isArray(raw.weather) && raw.weather.length > 0;
     const wlost = new Map(), rainh = new Map();
     for (const w of raw.weather || []) { const d = dn(w[0]); wlost.set(d, [w[1], w[2]]); rainh.set(d, w[3]); }
-    const lostDay = (d, c) => { const v = wlost.get(d); return v ? (c ? v[c - 1] : v[0] + v[1]) : 0; };
+    const weatherSlots = new Map((raw.weather_hours || []).map(w => [dn(w[0]) + '-' + w[1], w]));
+    const weatherDayCache = new Map();
+    function weatherDay(d) {
+      if (weatherDayCache.has(d)) return weatherDayCache.get(d);
+      const occupied = [new Set(), new Set()];
+      const add = b => { if (b.court === 1 || b.court === 2) for (let h = b.h; h < b.h + b.dur; h++) occupied[b.court - 1].add(h); };
+      for (const b of [...live, ...verein]) if (b.date === d) add(b);
+      for (const a of abos) if (a.start <= d && d <= a.end && a.wd === wdMon(d)) add(a);
+      const v = { wet: [0, 0], unknown: [0, 0], known: 0 };
+      for (const h of HOURS) {
+        const w = weatherSlots.get(d + '-' + h);
+        const known = w && typeof w[2] === 'number' && Number.isFinite(w[2]);
+        if (known) v.known++;
+        for (let c = 0; c < 2; c++) if (!occupied[c].has(h)) {
+          if (!known) v.unknown[c]++;
+          else if (w[2] > 0) v.wet[c]++;
+        }
+      }
+      weatherDayCache.set(d, v);
+      return v;
+    }
+    const lostDay = (d, c) => { const v = weatherArchive ? weatherDay(d).wet : wlost.get(d); return v ? (c ? v[c - 1] : v[0] + v[1]) : 0; };
+    const unknownDay = (d, c) => { const v = weatherArchive ? weatherDay(d).unknown : [0, 0]; return c ? v[c - 1] : v[0] + v[1]; };
 
     // Unbekannte Personen (Gastbuchung ohne Konto) zaehlen je Vorgang einzeln
     let anon = 0; const pkey = (p) => (p === null || p === undefined ? 'g' + (anon++) : p);
@@ -110,7 +133,9 @@
       Object.assign(r, { u_bu: u_bu / 100, u_cred: u_cred / 100, u_gut: u_gut / 100, u_ein: (u_bu + u_gut) / 100, u_abo: u_abo / 100, h_ein, h_abo, h_ver, h_wet, n_abo, n_abo_h });
       r.u = (u_bu + u_gut + u_abo) / 100;
       r.h_bel = h_ein + h_abo + h_ver;
-      r.h_frei = r.cap - r.h_bel - h_wet;
+      r.h_unknown = 0; r.weather_known = 0;
+      if (weatherArchive) for (let d = s; d <= e; d++) { r.h_unknown += unknownDay(d); r.weather_known += weatherDay(d).known; }
+      r.h_frei = r.cap - r.h_bel - h_wet - r.h_unknown;
       r.ausl = r.h_bel / r.cap * 100;
       const act = abos.filter((a) => a.start <= e && e <= a.end);
       r.abo_act = act.length; r.abo_wk = act.reduce((t, a) => t + a.dur, 0);
@@ -133,7 +158,7 @@
       for (const c of cards) if (c.sale === d) { ub += c.amountC; pers.add(pkey(c.person)); }
       ua /= 100; ub /= 100;
       for (const v of verein) if (v.date === d) hv += v.dur;
-      const rh = hasWeather ? 2 * (rainh.get(d) || 0) : null;
+      const rh = weatherArchive ? (weatherDay(d).known === 14 ? lostDay(d) : null) : hasWeather ? 2 * (rainh.get(d) || 0) : null;
       return { d, ha, he, hv, rh, bel: ha + he + hv, ua, ub, uv: 0, u: Math.round((ua + ub) * 100) / 100, pers };
     }
     function aggDays(rows) {
@@ -141,7 +166,7 @@
       const pers = new Set();
       for (const x of rows) { for (const k of Object.keys(r)) r[k] += x[k] || 0; x.pers.forEach((p) => pers.add(p)); }
       r.pers = pers; r.n = rows.length; r.ausl = rows.length ? r.bel / (28 * rows.length) * 100 : 0;
-      if (!hasWeather) r.rh = null;
+      if (!hasWeather || rows.some(x => x.rh === null)) r.rh = null;
       return r;
     }
     const today = dayVals(TODAY);
@@ -195,7 +220,8 @@
       for (const b of live) if (b.court === c && b.date >= s && b.date <= e) he += b.dur;
       for (const v of verein) if (v.court === c && v.date >= s && v.date <= e) hv += v.dur;
       for (let d = s; d <= e; d++) hw += lostDay(d, c);
-      return { cap, ha, he, hv, hw };
+      let hu = 0; for (let d = s; d <= e; d++) hu += unknownDay(d, c);
+      return { cap, ha, he, hv, hw, hu };
     }
     const s3 = END - 91; const cnt = {}; const wdn = [0, 0, 0, 0, 0, 0, 0];
     for (let d = s3; d <= END; d++) wdn[wdMon(d)]++;
@@ -203,10 +229,15 @@
     for (const b of live) if (b.date >= s3 && b.date <= END) addCnt(wdMon(b.date), b.h, b.dur);
     for (const a of abos) for (let d = Math.max(s3, a.start); d <= Math.min(END, a.end); d++) if (wdMon(d) === a.wd) addCnt(a.wd, a.h, a.dur);
     for (const v of verein) if (v.date >= s3 && v.date <= END) addCnt(wdMon(v.date), v.h, v.dur);
-    const dailyDetail = []; for (let d = S30; d <= E30; d++) { const x = dayVals(d); x.hw = lostDay(d); dailyDetail.push(x); }
+    const dailyDetail = []; for (let d = S30; d <= E30; d++) { const x = dayVals(d); x.hw = lostDay(d); x.hu = unknownDay(d); dailyDetail.push(x); }
 
     const fs = raw.finance_sample || null;
-    return { sample, archiveLabel: opts.archiveLabel || null, testMode: !!raw.test_mode, hasWeather, TODAY, END, S30, E30, S12, W, MONTHS, M, today, days30, todayV, days30v, aggDays,
+    const weatherClaimHours = (raw.weather_claims || []).filter(w => dn(w[0]) >= S30 && dn(w[0]) <= END).reduce((sum, w) => sum + w[3] * w[4] / 100, 0);
+    const rainRows = (raw.weather_hours || []).filter(w => dn(w[0]) >= S30 && dn(w[0]) <= END);
+    const observedRainMm = rainRows.reduce((sum, w) => sum + Number(w[2] || 0), 0);
+    const observedRainHours = rainRows.filter(w => Number(w[2]) > 0).length;
+    const weatherAccounting = raw.weather_accounting_month || raw.weather_accounting || { open: [], events: [] };
+    return { sample, archiveLabel: opts.archiveLabel || null, testMode: !!raw.test_mode, hasWeather, weatherArchive, weatherClaimHours, observedRainMm, observedRainHours, weatherAccounting, TODAY, END, S30, E30, S12, W, MONTHS, M, today, days30, todayV, days30v, aggDays,
       cc, cp, fy, fm, F, Fv, FY, FYv, FM, rapEnd: rapAt(mend(fy, fm)), rapBeg: rapAt(mstart(fy, fm) - 1), courts, cnt, wdn, dailyDetail, fs };
   }
 
@@ -294,7 +325,7 @@
     const badge = (md.archiveLabel ? `<span class="demo">ARCHIV · ${esc(md.archiveLabel)}</span>` : '')
       + (md.sample ? '<span class="demo">MUSTERBERICHT · erfundene Zahlen</span>'
       : md.testMode ? '<span class="demo">TESTBETRIEB · Testdaten</span>' : '');
-    const KEY = `<div class="key"><span><i style="background:${ABO}"></i>Abos</span><span><i style="background:${EIN}"></i>Buchungen</span><span><i style="background:${VER}"></i>Verein (ohne Umsatz)</span><span><i style="background:${WETCSS}"></i>Wetter (nicht bespielbar)</span><span><i style="background:${FREI};border:1px solid #D8D0C0"></i>frei</span></div>`;
+    const KEY = `<div class="key"><span><i style="background:${ABO}"></i>Abos</span><span><i style="background:${EIN}"></i>Buchungen</span><span><i style="background:${VER}"></i>Verein (ohne Umsatz)</span><span><i style="background:${WETCSS}"></i>${md.weatherArchive ? 'Regen, unbelegt' : 'Wetter (nicht bespielbar)'}</span>${md.weatherArchive ? `<span><i style="background:${GREY}"></i>Wetter offen</span>` : ''}<span><i style="background:${FREI};border:1px solid #D8D0C0"></i>frei</span></div>`;
     const head = (title, sub, today) => `<header><div class="brand"><span>PADEL</span><span class="bs">BIELSTEIN</span><span class="sep">|</span><span class="mis">Management-Information</span></div>
 <div class="meta">${badge}Stand: ${md.archiveLabel ? 'Monatsende ' + dd(md.END, true) : fd(md.TODAY) + ymd(md.TODAY)[0]} · Tageswerte</div></header>
 <div class="ttl"><div class="tl1"><h1>${title}</h1>${today ? `<span class="tbox">${today}</span>` : ''}${sub ? `<p>${sub}</p>` : ''}</div>
@@ -335,9 +366,9 @@
 <div class="dts">${tilesHtml}</div>
 <div class="panel tday"><table class="day">
 <colgroup><col style="width:4%"><col style="width:6%"><col style="width:7.2%"><col style="width:6.6%"><col style="width:6.6%"><col style="width:7.2%"><col style="width:14%"><col style="width:6.4%"><col class="ce" style="width:9.6%"><col class="ce" style="width:8.4%"><col class="ce" style="width:6.2%"><col class="ce" style="width:9.2%"><col style="width:8.6%"></colgroup>
-<thead><tr><th colspan="2">Tag</th><th class="n">Buchung <u>h</u></th><th class="n">Abo <u>h</u></th><th class="n">TFB <u>h</u></th><th class="n rl">Σ <u>h</u></th><th class="c">Auslastung <u>%</u></th><th class="n rl">Ausfall <u>h</u></th><th class="n">Buchung* <u>€</u></th><th class="n">Abo <u>€</u></th><th class="n">TFB <u>€</u></th><th class="n rl">Σ <u>€</u></th><th class="n">Personen</th></tr></thead>
+<thead><tr><th colspan="2">Tag</th><th class="n">Buchung <u>h</u></th><th class="n">Abo <u>h</u></th><th class="n">TFB <u>h</u></th><th class="n rl">Σ <u>h</u></th><th class="c">Auslastung <u>%</u></th><th class="n rl">${md.weatherArchive ? 'Regen' : 'Ausfall'} <u>h</u></th><th class="n">Buchung* <u>€</u></th><th class="n">Abo <u>€</u></th><th class="n">TFB <u>€</u></th><th class="n rl">Σ <u>€</u></th><th class="n">Personen</th></tr></thead>
 <tbody>${rows0}</tbody></table></div>
-${foot(1, 'Heute = ganzer Tag laut App · * inkl. Guthaben/Gutscheine · Abos voll am Verkaufstag · TFB = Verein · Personen = Käufer mit Umsatz, je Woche/Monat einmal gezählt' + (md.hasWeather ? '' : ' · Wetter-Ausfall wird noch nicht erfasst'))}</section>`;
+${foot(1, 'Heute = ganzer Tag laut App · * inkl. Guthaben/Gutscheine · Abos voll am Verkaufstag · TFB = Verein · Personen = Käufer mit Umsatz, je Woche/Monat einmal gezählt' + (md.weatherArchive ? ' · Regen = unbelegte Platzstunden; – = Wetterdaten fehlen' : md.hasWeather ? '' : ' · Wetter-Ausfall wird noch nicht erfasst'))}</section>`;
 
     // ---------- Seite 2: Umsatz ----------
     const P30 = `<span class="ph p30">Letzte 30 Tage<em>${lab30}</em></span>`, P12 = `<span class="ph p12">Letzte 12 Monate<em>${lab12}</em></span>`;
@@ -417,25 +448,26 @@ ${foot(2, 'Umsatz = am Tag des Verkaufs gezählt · Buchungen = stundenweise geb
     const belegBlock = (k, kv, ph) => {
       const r = W[k], rv = W[kv], d = r.days;
       const row = (lab, col, v) => `<tr><td><i style="background:${col === WET ? WETCSS : col}${col === FREI ? ';border:1px solid #D8D0C0' : ''}"></i>${lab}</td><td class="n">${de(v)} h</td><td class="n mu">${de(v / d, 1)} h/Tag</td></tr>`;
-      return `<div class="bblk">${ph}<div class="bside">${donut([['Abos', r.h_abo, ABO], ['Buchungen', r.h_ein, EIN], ['Verein', r.h_ver, VER], ['Wetter', r.h_wet, WET], ['frei', r.h_frei, FREI]], 170, pct(r.ausl), 'Auslastung')}
+      const weatherLabel = md.weatherArchive ? 'Regen, unbelegt' : md.hasWeather ? 'Wetter (nicht bespielbar)' : 'Wetter-Ausfall (noch nicht erfasst)';
+      return `<div class="bblk">${ph}<div class="bside">${donut([['Abos', r.h_abo, ABO], ['Buchungen', r.h_ein, EIN], ['Verein', r.h_ver, VER], ['Wetter', r.h_wet, WET], ['Wetter offen', r.h_unknown, GREY], ['frei', r.h_frei, FREI]], 170, pct(r.ausl), 'Auslastung')}
 <table class="leg"><tr class="cap"><td>verfügbar</td><td class="n">${de(r.cap)} h</td><td class="n mu">28,0 h/Tag</td></tr>
 ${row('Abos', ABO, r.h_abo)}${row('Buchungen', EIN, r.h_ein)}${row('Verein', VER, r.h_ver)}
 <tr class="sumb"><td>belegt</td><td class="n">${de(r.h_bel)} h</td><td class="n mu">${de(r.h_bel / d, 1)} h/Tag</td></tr>
-${row('Wetter (nicht bespielbar)' + noWx, WET, r.h_wet)}${row('frei', FREI, r.h_frei)}
+${row(weatherLabel, WET, r.h_wet)}${md.weatherArchive ? row('Wetterdaten fehlen', GREY, r.h_unknown) : ''}${row('frei', FREI, r.h_frei)}
 <tr class="vjb"><td>Auslastung ${pct(r.ausl)}</td><td class="n" colspan="2"><span class="mu">Vorjahr ${pct(rv.ausl)}</span> ${dl(r.ausl, rv.ausl, true)}</td></tr></table></div></div>`;
     };
-    const bChart = stack24(MONTHS, [['Abos', M.map((m) => m.h_abo / m.days), ABO], ['Buchungen', M.map((m) => m.h_ein / m.days), EIN], ['Verein', M.map((m) => m.h_ver / m.days), VER], ['Wetter', M.map((m) => m.h_wet / m.days), WET], ['frei', M.map((m) => m.h_frei / m.days), FREI]],
+    const bChart = stack24(MONTHS, [['Abos', M.map((m) => m.h_abo / m.days), ABO], ['Buchungen', M.map((m) => m.h_ein / m.days), EIN], ['Verein', M.map((m) => m.h_ver / m.days), VER], ['Wetter', M.map((m) => m.h_wet / m.days), WET], ['Wetter offen', M.map((m) => m.h_unknown / m.days), GREY], ['frei', M.map((m) => m.h_frei / m.days), FREI]],
       1000, 275, (v) => de(v) + ' h', M.map((m) => pct(m.ausl)), [28, 4]);
-    const KEYB = `<span class="kk"><i style="background:${ABO}"></i>Abos <i style="background:${EIN}"></i>Buchungen <i style="background:${VER}"></i>Verein <i style="background:${WETCSS}"></i>Wetter (nicht bespielbar) <i style="background:${FREI};border:1px solid #D8D0C0"></i>frei</span>`;
+    const KEYB = `<span class="kk"><i style="background:${ABO}"></i>Abos <i style="background:${EIN}"></i>Buchungen <i style="background:${VER}"></i>Verein <i style="background:${WETCSS}"></i>${md.weatherArchive ? 'Regen, unbelegt <i style="background:'+GREY+'"></i>Wetter offen' : 'Wetter (nicht bespielbar)'} <i style="background:${FREI};border:1px solid #D8D0C0"></i>frei</span>`;
     const pg3 = `<section class="page">${head('Platzbelegung', 'Wie viele Stunden standen zur Verfügung – und wofür wurden sie genutzt?')}
 <div class="panel"><h2>Verfügbare Stunden <small>2 Plätze × 14 Stunden = 28 Stunden pro Tag</small></h2><div class="b2">${belegBlock('30', '30v', P30)}${belegBlock('12', '12v', P12)}</div>
-<div class="abo-line">Abos heute: <b>${w30.abo_act} aktive Abos</b> belegen <b>${w30.abo_wk} Stunden pro Woche</b> (${w30.abo_1} × 1 Std., ${w30.abo_2} × 2 Std.) · Verein = Training, Kurse und Veranstaltungen ohne Umsatz · Wetter (nicht bespielbar) = laut Wetter-App und nicht belegt${noWx}</div></div>
+<div class="abo-line">Abos heute: <b>${w30.abo_act} aktive Abos</b> belegen <b>${w30.abo_wk} Stunden pro Woche</b> (${w30.abo_1} × 1 Std., ${w30.abo_2} × 2 Std.) · Verein = Training, Kurse und Veranstaltungen ohne Umsatz · ${md.weatherArchive ? 'Regen = Niederschlag > 0 mm, unbelegt; keine automatische Unbespielbarkeit. Wetter offen = fehlende Messwerte.' : 'Wetter (nicht bespielbar) = laut Wetter-App und nicht belegt' + noWx}</div></div>
 <div class="panel"><h2>Platzbelegung je Monat <small>Ø Stunden pro Tag · jeder Balken = 28 Stunden · links die letzten 12 Monate (neuester zuerst), rechts Vorjahr</small>${KEYB}</h2>${bChart}</div>
-${foot(3, 'Platzbelegung = am Spieltag gezählt · Auslastung = belegte Stunden ÷ verfügbare Stunden · gezählt wird, was gebucht ist')}</section>`;
+${foot(3, md.weatherArchive ? `DWD/Bright Sky 8–22 Uhr · 30 Tage: ${w30.weather_known}/${w30.days * 14} Messwerte, ${de(md.observedRainMm, 1)} mm, ${md.observedRainHours} Regenstunden (auch belegt) · Reklamationen: ${de(md.weatherClaimHours, 1)} h bestätigt; ${md.weatherAccounting.open.length} offen · Umsätze unverändert durch Wetter` : 'Platzbelegung = am Spieltag gezählt · Auslastung = belegte Stunden ÷ verfügbare Stunden · gezählt wird, was gebucht ist')}</section>`;
 
     // ---------- Seite 4: Details ----------
     const courtBar = (x) => {
-      const w = 440, parts = [[x.ha, ABO], [x.he, EIN], [x.hv, VER], [x.hw, WET], [x.cap - x.ha - x.he - x.hv - x.hw, FREI]];
+      const w = 440, parts = [[x.ha, ABO], [x.he, EIN], [x.hv, VER], [x.hw, WET], [x.hu, GREY], [x.cap - x.ha - x.he - x.hv - x.hw - x.hu, FREI]];
       let px = 0; const out = [`<svg viewBox="0 0 ${w} 20" class="cb">`];
       for (const [v, col] of parts) { const ww = v / x.cap * w; out.push(`<rect x="${f1(px)}" y="0" width="${f1(ww)}" height="20" fill="${col}"/>`); if (ww > 26) out.push(`<text x="${f1(px + ww / 2)}" y="13.5" text-anchor="middle" class="sb" fill="${col === FREI || col === WET ? INK : '#fff'}">${Math.round(v / x.cap * 100)} %</text>`); px += ww; }
       out.push('</svg>');
@@ -468,7 +500,7 @@ ${foot(3, 'Platzbelegung = am Spieltag gezählt · Auslastung = belegte Stunden 
       md.dailyDetail.forEach((x, i) => {
         const px = L + i * bw + bw * 0.15; let yb = T + ph;
         s.push(`<rect x="${f1(px)}" y="${f1(T)}" width="${f1(bw * 0.7)}" height="${f1(ph)}" fill="${FREI}"/>`);
-        for (const [v, col] of [[x.ha, ABO], [x.he, EIN], [x.hv, VER], [x.hw, WET]]) { const hh = v / 28 * ph; s.push(`<rect x="${f1(px)}" y="${f1(yb - hh)}" width="${f1(bw * 0.7)}" height="${f1(hh)}" fill="${col}"/>`); yb -= hh; }
+        for (const [v, col] of [[x.ha, ABO], [x.he, EIN], [x.hv, VER], [x.hw, WET], [x.hu, GREY]]) { const hh = v / 28 * ph; s.push(`<rect x="${f1(px)}" y="${f1(yb - hh)}" width="${f1(bw * 0.7)}" height="${f1(hh)}" fill="${col}"/>`); yb -= hh; }
         s.push(`<text x="${f1(px + bw * 0.35)}" y="${T - 6}" text-anchor="middle" class="dlab">${x.bel}</text>`);
         s.push(`<text x="${f1(px + bw * 0.35)}" y="${T + ph + 12}" text-anchor="middle" class="ax${wdMon(x.d) >= 5 ? ' b' : ''}">${ymd(x.d)[2]}.</text>`);
         s.push(`<text x="${f1(px + bw * 0.35)}" y="${T + ph + 21}" text-anchor="middle" class="ax">${'MDMDFSS'[wdMon(x.d)]}</text>`);
@@ -483,7 +515,7 @@ ${KEY}
  <p class="note">Abos und Vereinsnutzung sind festen Plätzen zugeordnet; Buchungen verteilen sich auf den jeweils freien Platz.</p></div>
  <div class="panel"><h2>Auslastung nach Tagen und Tageszeiten <small>belegte Stunden in % · letzte 3 Monate · Wochentag × Startzeit</small></h2>${heat}</div>
 </div>
-<div class="panel mt"><h2>Letzte 30 Tage – Tag für Tag <small>28 Stunden je Tag: belegt, wetterbedingt nicht bespielbar oder frei${noWx}</small></h2>${daily}</div>
+<div class="panel mt"><h2>Letzte 30 Tage – Tag für Tag <small>${md.weatherArchive ? '28 Stunden je Tag: belegt, Regen/unbelegt, Wetter offen oder frei' : '28 Stunden je Tag: belegt, wetterbedingt nicht bespielbar oder frei' + noWx}</small></h2>${daily}</div>
 ${foot(4)}</section>`;
 
     // ---------- Seite 5: Finanzen ----------
@@ -606,6 +638,8 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
       subs: raw.subs.filter((a) => sold(a[0])),
       cards: raw.cards.filter((c) => sold(c[0])),
       weather: (raw.weather || []).filter((w) => dn(w[0]) <= today),
+      weather_hours: (raw.weather_hours || []).filter((w) => dn(w[0]) < today),
+      weather_claims: (raw.weather_claims || []).filter((w) => dn(w[0]) < today && (!w[6] || dn(w[6]) < today)),
     };
   }
   function archiveCsv(raw, monthIso) {

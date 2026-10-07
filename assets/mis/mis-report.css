@@ -125,9 +125,11 @@ h2 small i.sw { display: inline-block; width: 9px; height: 9px; border-radius: 2
 .dc em { display: block; font-style: normal; font-size: 9.2px; color: var(--muted); }
 .ph.p0 { background: #EFE9DC; color: var(--ink); }
 .dnote { font-size: 8.8px; color: var(--muted); border-top: 1px dashed var(--line); margin-top: 5px; padding-top: 3px; }
-.b2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-.bside { display: grid; grid-template-columns: 170px 1fr; gap: 16px; align-items: center; }
+.b2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.bblk, .bside { min-width: 0; }
+.bside { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 16px; align-items: center; }
 .bside table.leg { margin-top: 0; }
+.bside table.leg td:first-child { white-space: normal; line-height: 1.15; }
 table.leg tr.sumb td { font-weight: 800; border-top: 1.5px solid var(--ink); }
 .abo-line { margin-top: 10px; font-size: 9.6px; color: var(--muted); background: var(--paper); border-radius: 4px; padding: 5px 9px; } .abo-line b { color: var(--ink); }
 h2 .kk { float: right; font-family: Manrope; font-size: 9.5px; font-weight: 600; } h2 .kk i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin: 0 3px 0 10px; vertical-align: -1px; }

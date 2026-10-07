@@ -6787,7 +6787,7 @@ main {
     // Datenquelle: Musterdaten (assets/mis/mis-musterdaten.json) oder Echtdaten über
     // sb.rpc('admin_mis_report_data') – nur lesend, nur für Admins.
     // Definitionen und Regeln: 00 START HIER/MIS_PROJEKTGEDAECHTNIS.md
-    const MIS_ASSET_VERSION = 'v22-3';
+    const MIS_ASSET_VERSION = 'v22-7';
     const misState = { mode: null, model: null, raw: null, css: null, loading: null };
 
     function misAssetUrl(path) {
@@ -6976,6 +6976,7 @@ main {
             + '<td>' + misDe(a.created_at) + '</td><td class="n">'
             + '<button type="button" class="ab-btn pri" data-arch="report" data-month="' + misEsc(a.month) + '">Bericht</button>'
             + '<button type="button" class="ab-btn" data-arch="csv" data-month="' + misEsc(a.month) + '">CSV</button>'
+            + (!a.sample ? '<button type="button" class="ab-btn" data-arch="weather-csv" data-month="' + misEsc(a.month) + '">Reklamationen CSV</button>' : '')
             + (live && a.test_mode ? '<button type="button" class="ab-btn del" data-arch="delete" data-month="' + misEsc(a.month) + '">Testmonat löschen</button>' : '')
             + '</td></tr>').join('')
           + '</tbody></table><div class="arch-note">Bericht = 5-Seiten-MIS zum Monatsende · CSV = Buchungsliste des Monats für Kassierer/Steuerberater (Buchungen, Abos, Guthaben mit Belegnummer, Kundengruppe, Betrag, Guthabenanteil, Zahlungseingang).</div>';
@@ -6995,6 +6996,7 @@ main {
         const action = btn.getAttribute('data-arch');
         if (action === 'report') return misOpenArchiveReport(month);
         if (action === 'csv') return misDownloadArchiveCsv(month);
+        if (action === 'weather-csv') return misDownloadArchiveCsv(month, true);
         if (action === 'delete') {
           if (!confirm('Testbetriebs-Monat ' + window.PBMIS.monthLabel(month) + ' aus dem Archiv löschen?')) return;
           const { error } = await sb.rpc('admin_mis_archive_delete_test', { p_month: month });
@@ -7025,13 +7027,15 @@ main {
       }
     }
 
-    async function misDownloadArchiveCsv(month) {
+    async function misDownloadArchiveCsv(month, weather = false) {
       try {
         const entry = await misArchiveEntry(month);
-        const blob = new Blob(['﻿' + entry.csv], { type: 'text/csv;charset=utf-8' });
+        const csv = weather ? entry.report_data.weather_accounting_csv : entry.csv;
+        if (!csv) throw new Error('Für diesen älteren Monat ist noch kein Reklamationsabschluss gespeichert.');
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'padel-bielstein-buchungsliste-' + month.slice(0, 7) + (entry.sample ? '-muster' : '') + '.csv';
+        link.download = 'padel-bielstein-' + (weather ? 'reklamationen-' : 'buchungsliste-') + month.slice(0, 7) + (entry.sample ? '-muster' : '') + '.csv';
         document.body.appendChild(link);
         link.click();
         setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
@@ -7040,7 +7044,6 @@ main {
         misSetStatus(err.message || 'CSV konnte nicht erstellt werden.', true);
       }
     }
-
 </script>
 
     <!-- ── NUTZERVERWALTUNG ── -->
@@ -11632,8 +11635,7 @@ async function doAdminWipe() {
 //  ✓ ruft admin_decide_weather_report(approve=true) auf - die GUTSCHRIFT
 //  rechnet und schreibt ausschließlich die Datenbank (Skript 21).
 // ============================================================
-const WEATHER_COORDS = { lat: 50.97, lon: 7.52 };   // Wiehl-Bielstein
-const weatherDayCache = {};                          // "YYYY-MM-DD" -> Stundenliste
+const weatherDayCache = {};                          // Datum -> Stundenliste mit Abrufzeit
 
 async function loadAdminWeather() {
   const box = document.getElementById('weatherAdminList');
@@ -11705,30 +11707,41 @@ async function fillWeatherInfo(r) {
   if (!el) return;
   try {
     const day = String(r.booking_date).slice(0, 10);
-    if (!weatherDayCache[day]) {
-      const json = await window.pbFetchWeather('history', {date:day});
-      weatherDayCache[day] = json.weather || [];
+    let evidence = null;
+    if(r.status !== 'pending') {
+      const result = await sb.rpc('admin_weather_report_evidence', { p_report_id:r.report_id });
+      if(!result.error) evidence = result.data;
     }
-    const hours = weatherDayCache[day].filter(w => {
-      const h = new Date(w.timestamp).getHours();
-      return h >= r.hour_start && h < r.hour_start + r.duration;
+    if (!evidence && (!weatherDayCache[day] || Date.now()-weatherDayCache[day].savedAt > 60000)) {
+      const json = await window.pbFetchWeather('history', {date:day});
+      weatherDayCache[day] = {rows:json.weather || [],savedAt:Date.now()};
+    }
+    const hourOf = w => w.hour == null ? Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',hour:'2-digit',hourCycle:'h23'}).format(new Date(w.timestamp))) : Number(w.hour);
+    const hours = (evidence?.weather || weatherDayCache[day]?.rows || []).filter(w => {
+      const h = hourOf(w);
+      return (w.day || day) === day && h >= r.hour_start && h < r.hour_start + r.duration;
     });
     if (!hours.length) {
       el.textContent = 'Für diesen Zeitraum liegen (noch) keine DWD-Stundenwerte vor – bitte selbst einschätzen.';
       return;
     }
     const parts = hours.map(w => {
-      const h = new Date(w.timestamp).getHours();
+      const h = hourOf(w);
       const mm   = w.precipitation != null ? w.precipitation.toLocaleString('de-DE', {maximumFractionDigits: 1}) : '?';
       const wind = w.wind_speed    != null ? Math.round(w.wind_speed) : '?';
       const temp = w.temperature   != null ? Math.round(w.temperature) : '?';
-      return `${h}–${h + 1} Uhr: <strong>${mm} mm Niederschlag</strong> · Wind ${wind} km/h · ${temp} °C`;
+      const source = w.sources?.precipitation;
+      const station = source?.station_name ? ` · ${esc(source.station_name)}${source.distance == null ? '' : ` (${(source.distance/1000).toLocaleString('de-DE',{maximumFractionDigits:1})} km)`}` : '';
+      return `${h}–${h + 1} Uhr: <strong>${mm} mm Niederschlag</strong> · Wind ${wind} km/h · ${temp} °C am Stundenende${station}`;
     });
     const totalRain = hours.reduce((s, w) => s + (w.precipitation || 0), 0);
+    const complete = hours.length === Number(r.duration) && hours.every(w=>w.precipitation != null);
     const verdict = totalRain > 0
-      ? `<span style="color:#1F8A5F;font-weight:800;">Regen bestätigt (${totalRain.toLocaleString('de-DE',{maximumFractionDigits:1})} mm gesamt)</span>`
-      : `<span style="color:#B8402C;font-weight:800;">Kein Niederschlag gemessen</span>`;
-    el.innerHTML = `${verdict}<br>` + parts.join('<br>');
+      ? `Niederschlag an der Station erfasst (${totalRain.toLocaleString('de-DE',{maximumFractionDigits:1})} mm)`
+      : complete ? 'Kein Niederschlag an der Station gemessen' : 'Niederschlagsdaten unvollständig';
+    const archived = hours.filter(w=>w.archived).length;
+    el.innerHTML = `<strong>${verdict}</strong>${complete?'':' · Daten fehlen'}<br>` + parts.join('<br>')
+      + `<br><span>${evidence ? 'Gespeicherter Stand zur Entscheidung' : `${archived} von ${r.duration} Spielstunden archiviert`} · Stationswerte ersetzen keine Prüfung vor Ort.</span>`;
   } catch(e) {
     el.textContent = 'Wetterdaten gerade nicht abrufbar (' + (e?.message || 'Fehler') + ') – bitte selbst einschätzen.';
   }
@@ -19586,7 +19599,10 @@ init();
     return {t:'Bewölkt',ic:'bewoelkt'};
   }
   function wxDateKeyLocal(d){
-    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    return new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
+  }
+  function wxHour(w){
+    return w.hour == null ? Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',hour:'2-digit',hourCycle:'h23'}).format(wxDataTime(w))) : Number(w.hour);
   }
   function wxIsoLocal(d){
     return wxDateKeyLocal(d)+'T'+String(d.getHours()).padStart(2,'0')+':00';
@@ -19595,13 +19611,13 @@ init();
   function wxHourRow(rows,dateKey,hour){
     return (rows||[]).find(w => {
       const t = wxDataTime(w);
-      return wxDateKeyLocal(t) === dateKey && t.getHours() === hour;
+      return (w.day || wxDateKeyLocal(t)) === dateKey && wxHour(w) === hour;
     }) || null;
   }
   function wxWeightedRainStats(rows){
     const all = rows || [];
-    const outdoor = all.filter(w => { const h = wxDataTime(w).getHours(); return h >= 8 && h < 22; });
-    const other   = all.filter(w => { const h = wxDataTime(w).getHours(); return h < 8 || h >= 22; });
+    const outdoor = all.filter(w => { const h = wxHour(w); return h >= 8 && h < 22; });
+    const other   = all.filter(w => { const h = wxHour(w); return h < 8 || h >= 22; });
     const sumRain = list => list.reduce((sum,w)=>sum+Number(w.precipitation||0),0);
     const wetCount = list => list.filter(w=>Number(w.precipitation||0)>0).length;
     return {
@@ -19613,7 +19629,7 @@ init();
     const all = rows || [];
     const text = all.map(w => String(w.condition || w.icon || w.weather || '').toLowerCase()).join(' ');
     const rain = all.reduce((sum,w)=>sum+Number(w.precipitation||0),0);
-    const temps = all.map(w=>Number(w.temperature)).filter(v=>!Number.isNaN(v));
+    const temps = all.filter(w=>w.temperature!=null).map(w=>Number(w.temperature)).filter(Number.isFinite);
     const maxTemp = temps.length ? Math.max(...temps) : null;
     if(/thunder|gewitter|storm/.test(text)) return {t:'Gewitter',ic:'thunder'};
     if(/snow|schnee|sleet|graupel|hail/.test(text)) return {t:'Schnee',ic:'snow'};
@@ -19651,7 +19667,7 @@ init();
   }
   function wxBrightMood(rows){
     const weighted = wxWeightedRainStats(rows || []);
-    const temps = (rows||[]).map(w=>Number(w.temperature)).filter(v=>!Number.isNaN(v));
+    const temps = (rows||[]).filter(w=>w.temperature!=null).map(w=>Number(w.temperature)).filter(Number.isFinite);
     const maxTemp = temps.length ? Math.max(...temps) : null;
     return wxFriendlyMood(wxObservedBaseMood(rows || []),weighted.rain,weighted.wetHours,maxTemp,null);
   }
@@ -19667,6 +19683,7 @@ init();
     return Number(n) === 1 ? '1 '+label.slice(0,-1) : Number(n)+' '+label;
   }
   function hourlyMmLabel(v){
+    if(v == null) return '–';
     const amount = Number(v || 0);
     // Positive Werte immer mit einer Nachkommastelle (1 -> "1,0"), damit die
     // Reihe konsistent ist; glatte 0 bleibt "0".
@@ -19764,6 +19781,7 @@ init();
     const loadingTarget = document.getElementById('pbwxToday');
     if(loadingTarget && !loadingTarget.innerHTML) loadingTarget.innerHTML = '<div class="pbwx-note">Wetterdaten werden geladen …</div>';
     try{
+      const observedTodayPromise = wxFetchBrightSkyDay(wxDateKeyLocal(new Date())).catch(()=>[]);
       let d = null;
       try{
         d = await window.pbFetchWeather('forecast');
@@ -19778,6 +19796,7 @@ init();
       const todayIdx = Math.max(0, dayIndex(todayKey));
       const tomorrowIdx = todayIdx + 1;
       const tomorrowKey = (dl.time && dl.time[tomorrowIdx]) || todayKey;
+      const observedToday = await observedTodayPromise;
       const dayName = new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'});
       const shortDay = new Intl.DateTimeFormat('de-DE',{weekday:'short'});
 
@@ -19799,7 +19818,7 @@ init();
         for(let hour=0; hour<24; hour++){
           const stamp = dateKey+'T'+String(hour).padStart(2,'0')+':00';
           const i = hourly.time.findIndex(t => t === stamp);
-          if(i >= 0) rows.push({timestamp:stamp, precipitation:Number(hourly.precipitation[i]||0)});
+          if(i >= 0) rows.push({timestamp:stamp, hour, precipitation:Number(hourly.precipitation[i]||0)});
         }
         return rows.length ? wxWeightedRainStats(rows) : {rain:null, wetHours:null};
       }
@@ -19808,7 +19827,7 @@ init();
         if(!hourly.time || !hourly.precipitation) return null;
         let rain = 0; let found = false;
         for(let hour=8; hour<=21; hour++){
-          const stamp = dateKey+'T'+String(hour).padStart(2,'0')+':00';
+          const stamp = dateKey+'T'+String(hour+1).padStart(2,'0')+':00';
           const i = hourly.time.findIndex(t => t === stamp);
           if(i >= 0){ found = true; rain += Math.max(0,Number(hourly.precipitation[i]||0)); }
         }
@@ -19854,23 +19873,28 @@ init();
       function renderHourlyBox(el, dateKey, title){
         const hourly = d.hourly || {};
         if(!el || !hourly.time) return;
-        let bars = ''; let windowRain = 0;
+        let bars = ''; let windowRain = 0; let missing = false;
         for(let hour=8; hour<=21; hour++){
-          const stamp = dateKey+'T'+String(hour).padStart(2,'0')+':00';
+          const stamp = dateKey+'T'+String(hour+1).padStart(2,'0')+':00';
           const i = hourly.time.findIndex(t => t === stamp);
-          const amount = i >= 0 && hourly.precipitation ? Math.max(0, Number(hourly.precipitation[i]||0)) : 0;
-          windowRain += amount;
-          const temp = i >= 0 && hourly.temperature_2m ? Math.round(Number(hourly.temperature_2m[i]||0)) : null;
+          const observed = dateKey === todayKey ? wxHourRow(observedToday,dateKey,hour) : null;
+          const elapsed = dateKey === todayKey && hour < wxHour({timestamp:new Date().toISOString()});
+          const value = elapsed ? observed?.precipitation : i >= 0 && hourly.precipitation ? hourly.precipitation[i] : null;
+          const amount = value == null ? null : Math.max(0, Number(value));
+          if(amount !== null) windowRain += amount;
+          else missing = true;
+          const temperature = elapsed ? observed?.temperature : i >= 0 && hourly.temperature_2m ? hourly.temperature_2m[i] : null;
+          const temp = temperature == null ? null : Math.round(Number(temperature));
           const h = Math.min(100, amount * 32);
-          bars += '<div class="wx-wx-bar">'
+          bars += '<div class="wx-wx-bar" title="'+hour+'–'+(hour+1)+' Uhr · '+(elapsed ? observed?.archived ? 'archivierter Messwert' : 'Messwert' : 'Prognose')+'">'
             + '<span class="mm">'+hourlyMmLabel(amount)+'</span>'
             + '<div class="track"><div class="fill" style="height:'+Math.max(2,h)+'%"></div><span class="temp">'+(temp==null?'–':temp+'°')+'</span></div>'
             + '<span class="hr">'+hour+'</span></div>';
         }
-        el.innerHTML = '<div class="hd"><span>'+esc(title)+'</span><b>'+mmFmt(windowRain)+' mm</b></div><div class="wx-wx-bars">'+bars+'</div>';
+        el.innerHTML = '<div class="hd"><span>'+esc(title)+'</span><b>'+mmFmt(windowRain)+' mm'+(missing?' · unvollständig':'')+'</b></div><div class="wx-wx-bars">'+bars+'</div>';
         el.style.display = '';
       }
-      renderHourlyBox(document.getElementById('pbwxTodayHourly'), todayKey, 'Niederschlag heute · 8 bis 22 Uhr · Prognose');
+      renderHourlyBox(document.getElementById('pbwxTodayHourly'), todayKey, 'Niederschlag heute · 8 bis 22 Uhr · Messwerte / Prognose');
       renderHourlyBox(document.getElementById('pbwxTomorrowHourly'), tomorrowKey, 'Niederschlag morgen · 8 bis 22 Uhr · Prognose');
 
       const daysEl = document.getElementById('pbwxDays');
@@ -19906,11 +19930,8 @@ init();
     }
   }
 
-  // ============ „Jetzt spielen"-Beleg: EINE große Folio-Gestern-Karte zum Spieltag.
-  //  Bewusst OHNE Stundenleiste/Viertelraster: DWD liefert Stundenwerte, die sich
-  //  nicht seriös auf 15-Minuten herunterbrechen lassen. Die Karte gibt den Tages-
-  //  kontext (24h / 8-22 Uhr / Regenstunden / Wind); den Ausfallanteil melden die
-  //  Spieler ehrlich selbst (25/50/75/100 %). ============
+  // Spieltag: beobachtete Stunden 08:00-22:00, keine Viertelstunden-Simulation.
+  // Den Ausfallanteil melden Spieler selbst (25/50/75/100 %).
   // Überschrift der Spieltag-Kachel: wird IMMER automatisch aus der jeweiligen
   // Buchung gebaut (Datum · Spielzeit · Court) – die Beispielbuchung ist nur ein
   // Platzhalter im Testmodus.
@@ -19925,11 +19946,11 @@ init();
     return out;
   }
   function proofCardHTML(rows, b){
-    const temps = rows.map(w=>Number(w.temperature)).filter(v=>!Number.isNaN(v));
-    const winds = rows.map(w=>Number(w.wind_gust_speed||w.wind_speed)).filter(v=>!Number.isNaN(v));
+    const temps = rows.filter(w=>w.temperature!=null).map(w=>Number(w.temperature)).filter(Number.isFinite);
+    const winds = rows.filter(w=>w.wind_gust_speed!=null || w.wind_speed!=null).map(w=>Number(w.wind_gust_speed ?? w.wind_speed)).filter(Number.isFinite);
     const rain = rows.reduce((s,w)=>s+Number(w.precipitation||0),0);
-    const wetHours = rows.filter(w=>Number(w.precipitation||0)>0).length;
-    const outdoorRain = rows.reduce((s,w)=>{ const h = wxDataTime(w).getHours(); return h>=8 && h<22 ? s+Number(w.precipitation||0) : s; },0);
+    const knownHours = rows.filter(w=>w.precipitation!=null).length;
+    const wetHours = knownHours ? rows.filter(w=>Number(w.precipitation||0)>0).length : null;
     const dm = wxBrightMood(rows);
     const hoursLabel = wxHoursLabel(dm);
     const min = temps.length ? Math.min(...temps) : null;
@@ -19944,8 +19965,8 @@ init();
       + '<div class="wx-wx-cond">'+esc(dm.t)+'</div></div></div>'
       + '</div>'
       + '<div class="wx-wx-meta">'
-      + '<span>Niederschlag 24h <b>'+mmFmt(rain)+' mm</b><em>8-22 Uhr: '+mmFmt(outdoorRain)+' mm</em></span>'
-      + '<span>'+hoursLabel+' <b>'+wetHours+'</b></span>'
+      + '<span>Niederschlag 8–22 Uhr <b>'+mmFmt(knownHours ? rain : null)+' mm</b><em>'+knownHours+' von 14 Stunden erfasst</em></span>'
+      + '<span>'+hoursLabel+' <b>'+rnd(wetHours)+'</b></span>'
       + '<span>Wind <b>bis '+rnd(wind)+' km/h</b></span>'
       + '</div></div>';
   }
@@ -19956,8 +19977,8 @@ init();
     let bars = ''; let windowRain = 0;
     for(let hour=8; hour<=21; hour++){
       const row = wxHourRow(rows,dayKey,hour);
-      const amount = row && row.precipitation != null ? Math.max(0,Number(row.precipitation||0)) : 0;
-      windowRain += amount;
+      const amount = row && row.precipitation != null ? Math.max(0,Number(row.precipitation)) : null;
+      if(amount !== null) windowRain += amount;
       const temp = row && row.temperature != null ? Math.round(Number(row.temperature)) : null;
       const h = Math.min(100, amount * 32);
       const played = hour >= playStart && hour < playEnd;
@@ -19966,7 +19987,8 @@ init();
         + '<div class="track"><div class="fill" style="height:'+Math.max(2,h)+'%"></div><span class="temp">'+(temp==null?'–':temp+'°')+'</span></div>'
         + '<span class="hr">'+hour+'</span></div>';
     }
-    return '<div class="wx-wx-hourly"><div class="hd"><span>Niederschlag am Spieltag · 8 bis 22 Uhr · DWD/Bright Sky</span><b>'+mmFmt(windowRain)+' mm</b></div><div class="wx-wx-bars">'+bars+'</div></div>';
+    const complete = rows.filter(w=>w.precipitation!=null).length === 14;
+    return '<div class="wx-wx-hourly"><div class="hd"><span>Niederschlag am Spieltag · 8 bis 22 Uhr · DWD/Bright Sky</span><b>'+mmFmt(windowRain)+' mm'+(complete?'':' · unvollständig')+'</b></div><div class="wx-wx-bars">'+bars+'</div></div>';
   }
   async function renderBookingProof(container, b){
     if(!container || !b) return;
@@ -19981,7 +20003,9 @@ init();
         + '<div class="pbwx-note">Die Wetterdaten sind gerade nicht abrufbar. Deine Meldung bleibt trotzdem möglich – der Abgleich mit den DWD-Werten erfolgt nachträglich.</div></div>';
       return;
     }
-    container.innerHTML = proofCardHTML(rows, b) + proofHourlyHTML(rows, dayKey, playStart, playEnd);
+    const archived = rows.filter(w=>w.archived).length;
+    container.innerHTML = proofCardHTML(rows, b) + proofHourlyHTML(rows, dayKey, playStart, playEnd)
+      + '<div class="pbwx-note">'+archived+' von 14 Stunden archiviert · Stationswerte als Orientierung für die Prüfung.</div>';
   }
 
   window.PBWeather = { renderBookingProof: renderBookingProof };
