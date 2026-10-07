@@ -146,6 +146,9 @@
     }
     const today = dayVals(TODAY);
     const days30 = []; for (let k = 0; k < 30; k++) days30.push(dayVals(END - k));
+    // Vorjahr: exakt derselbe Zeitraum 365 Tage frueher (Admin-Kacheln)
+    const todayV = dayVals(TODAY - Y1);
+    const days30v = []; for (let k = 0; k < 30; k++) days30v.push(dayVals(END - Y1 - k));
 
     // Kumuliert (taggenau)
     function cumulDaily(s) {
@@ -203,7 +206,7 @@
     const dailyDetail = []; for (let d = S30; d <= E30; d++) { const x = dayVals(d); x.hw = lostDay(d); dailyDetail.push(x); }
 
     const fs = raw.finance_sample || null;
-    return { sample, testMode: !!raw.test_mode, hasWeather, TODAY, END, S30, E30, S12, W, MONTHS, M, today, days30, aggDays,
+    return { sample, testMode: !!raw.test_mode, hasWeather, TODAY, END, S30, E30, S12, W, MONTHS, M, today, days30, todayV, days30v, aggDays,
       cc, cp, fy, fm, F, Fv, FY, FYv, FM, rapEnd: rapAt(mend(fy, fm)), rapBeg: rapAt(mstart(fy, fm) - 1), courts, cnt, wdn, dailyDetail, fs };
   }
 
@@ -541,20 +544,47 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
     return { pages: pg1 + pg2 + pg3 + pg4 + pg5, tilesHtml };
   }
 
-  function renderTiles(md) {
-    const fd = (n) => { const [, m, d] = ymd(n); return `${WD_DE[wdMon(n)]}, ${p2(d)}.${p2(m)}.`; };
+  function renderTiles(md, which = 'cur') {
+    const fd = (n, y) => { const [yy, m, d] = ymd(n); return `${WD_DE[wdMon(n)]}, ${p2(d)}.${p2(m)}.${y ? yy : ''}`; };
     const kv = (v, unit) => (v ? de(v) + unit : '–');
+    const ag = md.aggDays;
+    const prevYear = which === 'prev';
+    const T = prevYear ? md.TODAY - 365 : md.TODAY;
+    const sets = prevYear
+      ? [ag([md.todayV]), ag([md.days30v[0]]), ag(md.days30v.slice(0, 7)), ag(md.days30v)]
+      : [ag([md.today]), ag([md.days30[0]]), ag(md.days30.slice(0, 7)), ag(md.days30)];
+    const D30 = prevYear ? md.days30v : md.days30;
+    const vj = '';
+    const heads = [
+      `<span class="ph ${prevYear ? 'pv' : 'pd'} s">Heute${vj} · ${fd(T, prevYear)}</span>`,
+      `<span class="ph ${prevYear ? 'pv' : 'pd2'} s">Gestern${vj} · ${fd(D30[0].d, prevYear)}</span>`,
+      `<span class="ph ${prevYear ? 'pv' : 'p7'} s">Letzte 7 Tage${vj} · ${dd(D30[6].d)}–${dd(D30[0].d, prevYear)}</span>`,
+      `<span class="ph ${prevYear ? 'pv' : 'p30'} s">Letzte 30 Tage${vj} · ${dd(D30[29].d)}–${dd(D30[0].d, prevYear)}</span>`,
+    ];
+    if (which === 'dev') {
+      const cur = [ag([md.today]), ag([md.days30[0]]), ag(md.days30.slice(0, 7)), ag(md.days30)];
+      const prv = [ag([md.todayV]), ag([md.days30v[0]]), ag(md.days30v.slice(0, 7)), ag(md.days30v)];
+      const names = ['Heute', 'Gestern', 'Letzte 7 Tage', 'Letzte 30 Tage'];
+      const signed = (v, fmt, unit) => {
+        const cls = Math.abs(v) < 0.05 ? 'dn' : v > 0 ? 'up' : 'down';
+        return `<span class="${cls}">${v > 0 ? '+' : v < 0 ? '−' : '±'}${fmt(Math.abs(v))}${unit}</span>`;
+      };
+      return cur.map((c, i) => {
+        const p = prv[i];
+        return `<div class="dt dev"><span class="ph pdev s">${names[i]} · ggü. Vorjahr</span>`
+          + '<table class="kt"><tr><th></th><th>Abweichung</th><th>in %</th></tr>'
+          + `<tr><td class="kl">Auslastung</td><td>${signed(c.ausl - p.ausl, (v) => de(v, 1), ' PP')}</td><td></td></tr>`
+          + `<tr><td class="kl">Stunden</td><td>${signed(c.bel - p.bel, (v) => de(v), ' h')}</td><td>${dl(c.bel, p.bel)}</td></tr>`
+          + `<tr class="sg"><td class="kl">Umsatz</td><td><b>${signed(c.u - p.u, (v) => de(v), ' €')}</b></td><td>${dl(c.u, p.u)}</td></tr></table></div>`;
+      }).join('');
+    }
     const tile = (headHtml, r) => {
       const row = (lab, col, h, u) => `<tr><td class="kl"><i style="background:${col}"></i>${lab}</td><td>${kv(h, ' h')}</td><td>${kv(u, ' €')}</td></tr>`;
       return `<div class="dt">${headHtml}<table class="kt"><tr><th></th><th>Stunden</th><th>Umsatz</th></tr>`
         + row('Buchung', EIN, r.he, r.ub) + row('Abo', ABO, r.ha, r.ua) + row('TFB', VER, r.hv, r.uv)
         + `<tr class="sg"><td class="kl"><span class="sgl">Σ</span><span class="au">${pct(r.ausl)}</span></td><td><b>${de(r.bel)} h</b></td><td><b>${eur(r.u)}</b></td></tr></table></div>`;
     };
-    const ag = md.aggDays;
-    return tile(`<span class="ph pd s">Heute · ${fd(md.TODAY)}</span>`, ag([md.today]))
-      + tile(`<span class="ph pd2 s">Gestern · ${fd(md.days30[0].d)}</span>`, ag([md.days30[0]]))
-      + tile(`<span class="ph p7 s">Letzte 7 Tage · ${dd(md.days30[6].d)}–${dd(md.days30[0].d)}</span>`, ag(md.days30.slice(0, 7)))
-      + tile(`<span class="ph p30 s">Letzte 30 Tage · ${dd(md.S30)}–${dd(md.E30)}</span>`, ag(md.days30));
+    return sets.map((r, i) => tile(heads[i], r)).join('');
   }
 
   // =====================================================================
@@ -572,7 +602,7 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
         + (fontsHref ? `<link rel="stylesheet" href="${esc(fontsHref)}">` : '')
         + `<style>${css}</style></head><body>${PATTERN}${pages}</body></html>`;
     },
-    /** Nur die 4 KPI-Kacheln (fuer den Admin-Tab) */
-    tilesHtml(md) { return renderTiles(md); },
+    /** 4 KPI-Kacheln fuer den Admin-Tab: which = 'cur' (aktuell), 'prev' (Vorjahr, gleicher Zeitraum), 'dev' (Abweichung) */
+    tilesHtml(md, which) { return renderTiles(md, which || 'cur'); },
   };
 })();
