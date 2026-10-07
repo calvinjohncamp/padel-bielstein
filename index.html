@@ -6787,7 +6787,7 @@ main {
     // Datenquelle: Musterdaten (assets/mis/mis-musterdaten.json) oder Echtdaten über
     // sb.rpc('admin_mis_report_data') – nur lesend, nur für Admins.
     // Definitionen und Regeln: 00 START HIER/MIS_PROJEKTGEDAECHTNIS.md
-    const MIS_ASSET_VERSION = 'v22-7';
+    const MIS_ASSET_VERSION = 'v22-8';
     const misState = { mode: null, model: null, raw: null, css: null, loading: null };
 
     function misAssetUrl(path) {
@@ -7032,7 +7032,8 @@ main {
         const entry = await misArchiveEntry(month);
         const csv = weather ? entry.report_data.weather_accounting_csv : entry.csv;
         if (!csv) throw new Error('Für diesen älteren Monat ist noch kein Reklamationsabschluss gespeichert.');
-        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+        const exportCsv = window.PBMIS.csvWithTotals(parseCsv(csv), weather);
+        const blob = new Blob(['﻿' + exportCsv], { type: 'text/csv;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = 'padel-bielstein-' + (weather ? 'reklamationen-' : 'buchungsliste-') + month.slice(0, 7) + (entry.sample ? '-muster' : '') + '.csv';

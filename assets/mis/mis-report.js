@@ -667,6 +667,55 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
     return out;
   }
 
+  // Export footers are derived from archived positions, never written back.
+  function csvWithTotals(matrix, weather = false) {
+    const head = matrix[0];
+    const width = weather ? 7 : 11;
+    if (!head || head.length !== width || head[weather ? 5 : 8] !== (weather ? 'Betrag EUR' : 'Betrag brutto EUR')) {
+      throw new Error('CSV-Spalten stimmen nicht mit dem Monatsarchiv überein.');
+    }
+    const rows = matrix.slice(1);
+    const cents = (value) => {
+      const match = /^(-?)(\d+),(\d{2})$/.exec(String(value));
+      if (!match) throw new Error('Ungültiger Geldbetrag im Monatsarchiv.');
+      const n = (Number(match[2]) * 100 + Number(match[3])) * (match[1] ? -1 : 1);
+      if (!Number.isSafeInteger(n)) throw new Error('Geldbetrag im Monatsarchiv zu groß.');
+      return n;
+    };
+    for (const r of rows) {
+      if (r.length !== width) throw new Error('Unvollständige CSV-Zeile im Monatsarchiv.');
+      for (const i of weather ? [5] : [8, 9, 10]) cents(r[i]);
+    }
+    const sum = (positions, i) => {
+      const total = positions.reduce((n, r) => n + cents(r[i]), 0);
+      if (!Number.isSafeInteger(total)) throw new Error('Monatssumme zu groß.');
+      return money(total);
+    };
+    const footer = (label, positions, effect = '') => {
+      const r = Array(width).fill('');
+      r[weather ? 4 : 2] = label + ' (' + positions.length + ' Positionen)';
+      for (const i of weather ? [5] : [8, 9, 10]) r[i] = sum(positions, i);
+      if (weather) r[6] = effect;
+      return r;
+    };
+    const footers = weather ? [
+      footer('SUMME Meldungen im Monat', rows.filter(r => r[4] === 'reported'), 'Nur beantragt, keine Buchung'),
+      footer('SUMME gewährtes Spielguthaben', rows.filter(r => r[4] === 'credit_granted'), 'Spielguthaben, keine Barauszahlung'),
+      footer('SUMME abgelehnte Meldungen', rows.filter(r => r[4] === 'rejected'), 'Keine Buchung'),
+      footer('SUMME offen am Monatsende', rows.filter(r => r[4] === 'open_at_cutoff'), 'Nur beantragt, keine Buchung'),
+    ] : [
+      footer('ZWISCHENSUMME Buchungen', rows.filter(r => r[2] === 'Buchung')),
+      footer('ZWISCHENSUMME Abos', rows.filter(r => ['Abo', 'Abo (2 Jahre)'].includes(r[2]))),
+      footer('ZWISCHENSUMME Guthaben/Gutscheine', rows.filter(r => r[2] === 'Guthaben/Gutschein')),
+      footer('MONATSSUMME', rows),
+    ];
+    if (rows.some(r => !(weather ? ['reported','credit_granted','rejected','open_at_cutoff'] : ['Buchung','Abo','Abo (2 Jahre)','Guthaben/Gutschein']).includes(r[weather ? 4 : 2]))) {
+      throw new Error('Unbekannte Vorgangsart im Monatsarchiv.');
+    }
+    const cell = value => /[;"\r\n]/.test(value) ? '"' + value.replace(/"/g, '""') + '"' : value;
+    return [head, ...rows, ...footers].map(r => r.map(cell).join(';')).join('\r\n');
+  }
+
   const PATTERN = '<svg width="0" height="0" style="position:absolute"><defs><pattern id="wh" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)"><rect width="5" height="5" fill="#E6E0D5"/><rect width="2" height="5" fill="#C2BAAD"/></pattern></defs></svg>';
 
   window.PBMIS = {
@@ -681,6 +730,6 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
     },
     /** 4 KPI-Kacheln fuer den Admin-Tab: which = 'cur' (aktuell), 'prev' (Vorjahr, gleicher Zeitraum), 'dev' (Abweichung) */
     tilesHtml(md, which) { return renderTiles(md, which || 'cur'); },
-    monthLabel, archiveRaw, archiveCsv, sampleArchiveList,
+    monthLabel, archiveRaw, archiveCsv, sampleArchiveList, csvWithTotals,
   };
 })();
