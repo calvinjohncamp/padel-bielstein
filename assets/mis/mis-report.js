@@ -65,6 +65,11 @@
     const TODAY = dn(raw.today || opts.today);
     const END = TODAY - 1;
     const Y1 = 365;
+    const calendarMonth = opts.calendarMonth || null;
+    if (calendarMonth && (!/^\d{4}-\d{2}-01$/.test(calendarMonth) || calendarMonth.slice(0, 7) !== isoOf(END).slice(0, 7)
+      || END !== mend(Number(calendarMonth.slice(0, 4)), Number(calendarMonth.slice(5, 7))))) {
+      throw new Error('Archivmonat und Datenstand stimmen nicht überein.');
+    }
 
     const live = [], verein = [];
     for (const b of raw.bookings || []) {
@@ -144,8 +149,11 @@
       return r;
     }
 
-    const S30 = END - 29, E30 = END, S12 = END - Y1 + 1;
-    const W = { '30': K(S30, E30), '30v': K(S30 - Y1, E30 - Y1), '12': K(S12, END), '12v': K(S12 - Y1, END - Y1) };
+    const S30 = calendarMonth ? dn(calendarMonth) : END - 29, E30 = END, S12 = END - Y1 + 1;
+    const [cy, cm] = ymd(END);
+    const prevStart = calendarMonth ? mstart(cy - 1, cm) : S30 - Y1;
+    const prevEnd = calendarMonth ? mend(cy - 1, cm) : END - Y1;
+    const W = { '30': K(S30, E30), '30v': K(prevStart, prevEnd), '12': K(S12, END), '12v': K(S12 - Y1, END - Y1) };
     const [ey, em] = ymd(END);
     const MONTHS = []; for (let k = 0; k < 24; k++) MONTHS.push(ymAdd(ey, em, k - 23));
     const M = MONTHS.map(([y, m]) => K(mstart(y, m), Math.min(mend(y, m), END)));
@@ -169,11 +177,11 @@
       if (!hasWeather || rows.some(x => x.rh === null)) r.rh = null;
       return r;
     }
-    const today = dayVals(TODAY);
-    const days30 = []; for (let k = 0; k < 30; k++) days30.push(dayVals(END - k));
+    const today = dayVals(calendarMonth ? END : TODAY);
+    const days30 = []; for (let d = END; d >= S30; d--) days30.push(dayVals(d));
     // Vorjahr: exakt derselbe Zeitraum 365 Tage frueher (Admin-Kacheln)
-    const todayV = dayVals(TODAY - Y1);
-    const days30v = []; for (let k = 0; k < 30; k++) days30v.push(dayVals(END - Y1 - k));
+    const todayV = dayVals(calendarMonth ? prevEnd : TODAY - Y1);
+    const days30v = []; for (let d = prevEnd; d >= prevStart; d--) days30v.push(dayVals(d));
 
     // Kumuliert (taggenau)
     function cumulDaily(s) {
@@ -237,7 +245,7 @@
     const observedRainMm = rainRows.reduce((sum, w) => sum + Number(w[2] || 0), 0);
     const observedRainHours = rainRows.filter(w => Number(w[2]) > 0).length;
     const weatherAccounting = raw.weather_accounting_month || raw.weather_accounting || { open: [], events: [] };
-    return { sample, archiveLabel: opts.archiveLabel || null, testMode: !!raw.test_mode, hasWeather, weatherArchive, weatherClaimHours, observedRainMm, observedRainHours, weatherAccounting, TODAY, END, S30, E30, S12, W, MONTHS, M, today, days30, todayV, days30v, aggDays,
+    return { sample, calendarMonth, archiveLabel: opts.archiveLabel || null, testMode: !!raw.test_mode, hasWeather, weatherArchive, weatherClaimHours, observedRainMm, observedRainHours, weatherAccounting, TODAY, END, S30, E30, S12, W, MONTHS, M, today, days30, todayV, days30v, aggDays,
       cc, cp, fy, fm, F, Fv, FY, FYv, FM, rapEnd: rapAt(mend(fy, fm)), rapBeg: rapAt(mstart(fy, fm) - 1), courts, cnt, wdn, dailyDetail, fs };
   }
 
@@ -358,11 +366,11 @@
       return g.map((x) => drow(x, x.d === md.TODAY ? 'trow' : '')).join('')
         + srow(`Summe KW ${isoWeek(g[0].d)} <span class="kwd">${p2(ymd(lo)[2])}.–${dd(hi)}</span>`, md.aggDays(g), 'wk');
     };
-    for (const x of [md.today, ...md.days30]) { const k = isoWeek(x.d); if (k !== wk && grp.length) { rows0 += flush(grp); grp = []; } wk = k; grp.push(x); }
+    for (const x of md.calendarMonth ? md.days30 : [md.today, ...md.days30]) { const k = isoWeek(x.d); if (k !== wk && grp.length) { rows0 += flush(grp); grp = []; } wk = k; grp.push(x); }
     rows0 += flush(grp);
     const all30 = md.aggDays(md.days30);
-    rows0 += srow('Summe 30 Tage', all30, 'tot');
-    const pg1 = `<section class="page">${head('Tagesübersicht', '', `Heute · ${fd(md.TODAY)}${ymd(md.TODAY)[0]}`)}
+    rows0 += srow(md.calendarMonth ? 'Monatssumme' : 'Summe 30 Tage', all30, 'tot');
+    const pg1 = `<section class="page">${head('Tagesübersicht', '', md.calendarMonth ? monthLabel(md.calendarMonth) : `Heute · ${fd(md.TODAY)}${ymd(md.TODAY)[0]}`)}
 <div class="dts">${tilesHtml}</div>
 <div class="panel tday"><table class="day">
 <colgroup><col style="width:4%"><col style="width:6%"><col style="width:7.2%"><col style="width:6.6%"><col style="width:6.6%"><col style="width:7.2%"><col style="width:14%"><col style="width:6.4%"><col class="ce" style="width:9.6%"><col class="ce" style="width:8.4%"><col class="ce" style="width:6.2%"><col class="ce" style="width:9.2%"><col style="width:8.6%"></colgroup>
@@ -431,9 +439,9 @@ ${foot(1, 'Heute = ganzer Tag laut App · * inkl. Guthaben/Gutscheine · Abos vo
 <div class="panel"><h2>Umsatz je Monat <small>in Tausend € · <i class="sw" style="background:${ABO}"></i>Abos <i class="sw" style="background:${EIN}"></i>Buchungen* · links die letzten 12 Monate (neuester Monat zuerst), rechts Vorjahr</small></h2>${uChart}</div>
 <div class="drvs4">
  <div class="drv abol" style="border-top-color:${ABO}"><h3>Abos</h3>
-  <div class="ah"><span class="ph p0 s">Heute aktiv · ${dd(md.TODAY, true)}</span>
+  <div class="ah"><span class="ph p0 s">${md.calendarMonth ? 'Monatsende aktiv' : 'Heute aktiv'} · ${dd(md.calendarMonth ? md.END : md.TODAY, true)}</span>
    <div class="anum"><div><b>${w30.abo_act}</b><em>Abos</em></div><div class="sl">/</div><div><b>${w30.abo_wk}</b><em>Std. pro Woche</em></div></div></div>
-  <div class="ah vjb2"><span class="ph pv s">Vorjahr · ${dd(md.TODAY - 365, true)}</span>
+  <div class="ah vjb2"><span class="ph pv s">Vorjahr · ${dd(md.calendarMonth ? md.todayV.d : md.TODAY - 365, true)}</span>
    <div class="anum"><div><b>${w30v.abo_act}</b><em>${dl(w30.abo_act, w30v.abo_act)}</em></div><div class="sl">/</div><div><b>${w30v.abo_wk}</b><em>${dl(w30.abo_wk, w30v.abo_wk)}</em></div></div></div></div>
  <div class="drv span2" style="border-top-color:${ABO}"><h3>Abo-Entwicklung <small>12 Monate · <i class="sw" style="background:${ABO}"></i>Std./Woche <i class="sw" style="background:${GREY}"></i>Vorjahr · <b class="cc">▲▼</b> ggü. Vormonat</small></h3>${aboChart}</div>
  <div class="drv" style="border-top-color:${EIN}"><h3>Stunden &amp; Personen <small>(Stunden: nur echte Buchungen mit Umsatz, hier keine Abos)</small></h3>
@@ -574,7 +582,9 @@ ${foot(4)}</section>`;
 </div>
 ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkaufte Guthaben/Gutscheine · mit Guthaben bezahlte Buchungen zählen nicht doppelt')}</section>`;
 
-    return { pages: pg1 + pg2 + pg3 + pg4 + pg5, tilesHtml };
+    let pages = pg1 + pg2 + pg3 + pg4 + pg5;
+    if (md.calendarMonth) pages = pages.replace(/Letzte 30 Tage/g, 'Kalendermonat').replace(/letzten 30 Tage/g, 'Kalendermonat').replace(/30 Tage/g, 'Monat').replace(/Heute = ganzer Tag laut App/g, 'Vollständiger Kalendermonat');
+    return { pages, tilesHtml };
   }
 
   function renderTiles(md, which = 'cur') {
@@ -582,21 +592,23 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
     const kv = (v, unit) => (v ? de(v) + unit : '–');
     const ag = md.aggDays;
     const prevYear = which === 'prev';
-    const T = prevYear ? md.todayV.d : md.TODAY;
+    const T = prevYear ? md.todayV.d : md.today.d;
+    const yesterdayIndex = md.calendarMonth ? 1 : 0;
+    const periodSets = (today, days) => [ag([today]), ag([days[yesterdayIndex]]), ag(days.slice(0, 7)), ag(days)];
     const sets = prevYear
-      ? [ag([md.todayV]), ag([md.days30v[0]]), ag(md.days30v.slice(0, 7)), ag(md.days30v)]
-      : [ag([md.today]), ag([md.days30[0]]), ag(md.days30.slice(0, 7)), ag(md.days30)];
+      ? periodSets(md.todayV, md.days30v)
+      : periodSets(md.today, md.days30);
     const D30 = prevYear ? md.days30v : md.days30;
     const heads = [
-      `<span class="ph ${prevYear ? 'pv' : 'pd'} s">${prevYear ? '' : 'Heute · '}${fd(T, prevYear)}</span>`,
-      `<span class="ph ${prevYear ? 'pv' : 'pd2'} s">${prevYear ? '' : 'Gestern · '}${fd(D30[0].d, prevYear)}</span>`,
+      `<span class="ph ${prevYear ? 'pv' : 'pd'} s">${prevYear ? '' : md.calendarMonth ? 'Monatsende · ' : 'Heute · '}${fd(T, prevYear)}</span>`,
+      `<span class="ph ${prevYear ? 'pv' : 'pd2'} s">${prevYear ? '' : md.calendarMonth ? 'Vortag · ' : 'Gestern · '}${fd(D30[yesterdayIndex].d, prevYear)}</span>`,
       `<span class="ph ${prevYear ? 'pv' : 'p7'} s">${prevYear ? '' : 'Letzte 7 Tage · '}${dd(D30[6].d)}–${dd(D30[0].d, prevYear)}</span>`,
-      `<span class="ph ${prevYear ? 'pv' : 'p30'} s">${prevYear ? '' : 'Letzte 30 Tage · '}${dd(D30[29].d)}–${dd(D30[0].d, prevYear)}</span>`,
+      `<span class="ph ${prevYear ? 'pv' : 'p30'} s">${prevYear ? '' : md.calendarMonth ? 'Kalendermonat · ' : 'Letzte 30 Tage · '}${dd(D30[D30.length - 1].d)}–${dd(D30[0].d, prevYear)}</span>`,
     ];
     if (which === 'dev') {
-      const cur = [ag([md.today]), ag([md.days30[0]]), ag(md.days30.slice(0, 7)), ag(md.days30)];
-      const prv = [ag([md.todayV]), ag([md.days30v[0]]), ag(md.days30v.slice(0, 7)), ag(md.days30v)];
-      const names = ['Heute', 'Gestern', 'Letzte 7 Tage', 'Letzte 30 Tage'];
+      const cur = periodSets(md.today, md.days30);
+      const prv = periodSets(md.todayV, md.days30v);
+      const names = md.calendarMonth ? ['Monatsende', 'Vortag', 'Letzte 7 Tage', 'Kalendermonat'] : ['Heute', 'Gestern', 'Letzte 7 Tage', 'Letzte 30 Tage'];
       const signed = (v, fmt, unit) => {
         const cls = Math.abs(v) < 0.05 ? 'dn' : v > 0 ? 'up' : 'down';
         return `<span class="${cls}">${v > 0 ? '+' : v < 0 ? '−' : '±'}${fmt(Math.abs(v))}${unit}</span>`;
@@ -723,7 +735,7 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
     /** Vollstaendiges HTML-Dokument des 5-seitigen Berichts */
     reportDocument(md, css, fontsHref) {
       const { pages } = render(md);
-      return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>MIS Padel Bielstein · ${esc(dd(md.TODAY, true))}</title>`
+      return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>MIS Padel Bielstein · ${esc(md.calendarMonth ? monthLabel(md.calendarMonth) : dd(md.TODAY, true))}</title>`
         + (fontsHref ? `<link rel="stylesheet" href="${esc(fontsHref)}">` : '')
         + `<style>${css}</style></head><body>${PATTERN}${pages}</body></html>`;
     },

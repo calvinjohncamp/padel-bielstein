@@ -6784,8 +6784,8 @@ main {
         <div id="archiveStatus" class="archive-status"></div>
         <div class="archive-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>Datum</th><th>Art</th><th>Status</th><th>Beschreibung</th><th>Referenz</th><th>Konto</th><th>Betrag</th></tr></thead>
-            <tbody id="archiveTbody"><tr><td colspan="7" style="text-align:center;padding:24px;">Zeitraum wählen und Archiv laden.</td></tr></tbody>
+            <thead><tr><th>Datum</th><th>Art</th><th>Status</th><th>Beschreibung</th><th>Referenz</th><th>Betrag</th></tr></thead>
+            <tbody id="archiveTbody"><tr><td colspan="6" style="text-align:center;padding:24px;">Zeitraum wählen und Archiv laden.</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -6799,7 +6799,7 @@ main {
     // Datenquelle: Musterdaten (assets/mis/mis-musterdaten.json) oder Echtdaten über
     // sb.rpc('admin_mis_report_data') – nur lesend, nur für Admins.
     // Definitionen und Regeln: 00 START HIER/MIS_PROJEKTGEDAECHTNIS.md
-    const MIS_ASSET_VERSION = 'v22-10';
+    const MIS_ASSET_VERSION = 'v22-11';
     const misState = { mode: null, model: null, raw: null, css: null, loading: null, view: 'management' };
 
     function misSetView(view) {
@@ -6971,13 +6971,9 @@ main {
       try {
         const model = await misEnsureModel(false);
         const fonts = new URL('assets/vendor/fonts/local-fonts.css', document.baseURI).href;
-        const toolbar = '<style>.mis-print{position:fixed;top:12px;right:12px;z-index:9;font:600 13px Manrope,Arial,sans-serif;'
-          + 'background:#FF5A36;color:#fff;border:0;border-radius:8px;padding:9px 16px;cursor:pointer}@media print{.mis-print{display:none}}</style>'
-          + '<button class="mis-print" onclick="window.print()">Drucken / als PDF speichern</button>';
-        const html = window.PBMIS.reportDocument(model, misState.css, fonts).replace('</body>', toolbar + '</body>');
-        w.document.open();
-        w.document.write(html);
-        w.document.close();
+        await misEnsureExports();
+        const html = window.PBMIS.reportDocument(model, misState.css, fonts);
+        window.PBMISExport.showPdf(w, await window.PBMISExport.managementPdf(html));
       } catch (err) {
         console.error(err);
         w.document.body.textContent = err.message || 'MIS-Bericht konnte nicht erstellt werden.';
@@ -7023,7 +7019,9 @@ main {
             + (a.sample ? '<span class="tag">MUSTER</span>' : a.test_mode ? '<span class="tag">TESTBETRIEB</span>' : '') + '</td>'
             + '<td class="n" data-label="Zahlungseingang">' + misEur(a.summary.zahlungseingang_cents || 0) + '</td><td class="n" data-label="Belege">' + (a.summary.belege || 0) + '</td>'
             + '<td data-label="Archiviert am">' + misDe(a.created_at) + '</td><td class="n">'
-            + '<button type="button" class="ab-btn pri" data-arch="report" data-month="' + misEsc(a.month) + '">Bericht</button>'
+            + '<button type="button" class="ab-btn pri" data-arch="report" data-month="' + misEsc(a.month) + '">Management-PDF</button>'
+            + '<button type="button" class="ab-btn" data-arch="finance-pdf" data-month="' + misEsc(a.month) + '">Finanz-PDF</button>'
+            + '<button type="button" class="ab-btn" data-arch="excel" data-month="' + misEsc(a.month) + '">Excel</button>'
             + '<button type="button" class="ab-btn" data-arch="csv" data-month="' + misEsc(a.month) + '">CSV</button>'
             + (!a.sample ? '<button type="button" class="ab-btn" data-arch="weather-csv" data-month="' + misEsc(a.month) + '">Reklamationen CSV</button>' : '')
             + (live && a.test_mode ? '<button type="button" class="ab-btn del" data-arch="delete" data-month="' + misEsc(a.month) + '">Testmonat löschen</button>' : '')
@@ -7044,6 +7042,8 @@ main {
         const month = btn.getAttribute('data-month');
         const action = btn.getAttribute('data-arch');
         if (action === 'report') return misOpenArchiveReport(month);
+        if (action === 'finance-pdf') return misExportArchiveFinance(month, 'pdf');
+        if (action === 'excel') return misExportArchiveFinance(month, 'xlsx');
         if (action === 'csv') return misDownloadArchiveCsv(month);
         if (action === 'weather-csv') return misDownloadArchiveCsv(month, true);
         if (action === 'delete') {
@@ -7062,17 +7062,37 @@ main {
       try {
         await misEnsureAssets();
         const entry = await misArchiveEntry(month);
-        const model = window.PBMIS.buildModel(entry.report_data, { sample: !!entry.sample, archiveLabel: 'Monatsabschluss ' + window.PBMIS.monthLabel(month) });
+        const model = window.PBMIS.buildModel(entry.report_data, { sample: !!entry.sample, calendarMonth: month, archiveLabel: 'Monatsabschluss ' + window.PBMIS.monthLabel(month) });
         const fonts = new URL('assets/vendor/fonts/local-fonts.css', document.baseURI).href;
-        const toolbar = '<style>.mis-print{position:fixed;top:12px;right:12px;z-index:9;font:600 13px Manrope,Arial,sans-serif;'
-          + 'background:#FF5A36;color:#fff;border:0;border-radius:8px;padding:9px 16px;cursor:pointer}@media print{.mis-print{display:none}}</style>'
-          + '<button class="mis-print" onclick="window.print()">Drucken / als PDF speichern</button>';
-        w.document.open();
-        w.document.write(window.PBMIS.reportDocument(model, misState.css, fonts).replace('</body>', toolbar + '</body>'));
-        w.document.close();
+        await misEnsureExports();
+        window.PBMISExport.showPdf(w, await window.PBMISExport.managementPdf(window.PBMIS.reportDocument(model, misState.css, fonts)));
       } catch (err) {
         console.error(err);
         w.document.body.textContent = err.message || 'Archivbericht konnte nicht erstellt werden.';
+      }
+    }
+
+    async function misEnsureExports() {
+      if (!window.PBMISExport) await misLoadScript(misAssetUrl('assets/mis/mis-export.js'));
+    }
+
+    async function misExportArchiveFinance(month, format) {
+      const w = format === 'pdf' ? window.open('', '_blank') : null;
+      if (format === 'pdf' && !w) { misSetStatus('Bitte Pop-ups für diese Seite erlauben.', true); return; }
+      if (w) w.document.write('<!doctype html><meta charset="utf-8"><title>Finanzbericht</title><p>Finanz-PDF wird erstellt …</p>');
+      misSetStatus(format === 'pdf' ? 'Finanz-PDF wird erstellt …' : 'Excel-Datei wird erstellt …');
+      try {
+        await misEnsureAssets(); await misEnsureExports();
+        const entry = await misArchiveEntry(month);
+        const matrix = parseCsv(entry.csv);
+        const blob = format === 'pdf' ? await window.PBMISExport.financePdf(entry, matrix, false, parseCsv)
+          : await window.PBMISExport.financeWorkbook(entry, matrix, false, parseCsv);
+        if (w) window.PBMISExport.showPdf(w, blob);
+        else window.PBMISExport.download(blob, window.PBMISExport.filename(entry, false, 'xlsx'));
+        misSetStatus(format === 'pdf' ? 'Finanz-PDF geöffnet.' : 'Excel-Datei erstellt.');
+      } catch (err) {
+        console.error(err); misSetStatus(err.message || 'Finanzexport fehlgeschlagen.', true);
+        if (w && !w.closed) w.document.body.textContent = err.message || 'Finanzexport fehlgeschlagen.';
       }
     }
 
@@ -14678,7 +14698,7 @@ async function loadAdminArchive(action) {
   const search = document.getElementById('archiveSearch').value.trim();
   if (!from || !to || from > to) { status.textContent = 'Bitte einen gültigen Zeitraum wählen.'; return []; }
 
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;">Archiv wird geladen …</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;">Archiv wird geladen …</td></tr>';
   status.textContent = '';
   exportBtn.disabled = true;
   try {
@@ -14691,7 +14711,7 @@ async function loadAdminArchive(action) {
     const total = Number(adminArchiveRows[0]?.total_count || 0);
     status.textContent = `${total.toLocaleString('de-DE')} Vorgänge gefunden${total > adminArchiveRows.length ? ` · die ersten ${adminArchiveRows.length.toLocaleString('de-DE')} werden angezeigt` : ''}.`;
     if (!adminArchiveRows.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;">Keine Vorgänge im gewählten Zeitraum.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;">Keine Vorgänge im gewählten Zeitraum.</td></tr>';
       return [];
     }
     tbody.innerHTML = adminArchiveRows.map(row => `
@@ -14699,16 +14719,15 @@ async function loadAdminArchive(action) {
         <td>${formatDateDE(row.service_date)}</td>
         <td>${esc(archiveKindLabel(row.record_kind))}</td>
         <td>${esc(row.status || '—')}</td>
-        <td>${esc(row.description || '—')}</td>
+        <td>${esc(row.description || '—')}${row.account_state === 'anonymisiert' ? ' <span class="archive-state anonymous" title="Keine Zuordnung zu einem Nutzerkonto in der App. Der Beleg bleibt erhalten; dies ist keine Aussage zum Zahlungsstatus.">Ohne Nutzerzuordnung</span>' : ''}</td>
         <td class="archive-reference">${esc(row.reference || row.record_id || '—')}</td>
-        <td><span class="archive-state ${row.account_state === 'anonymisiert' ? 'anonymous' : ''}">${esc(row.account_state || '—')}</span></td>
         <td class="archive-amount">${(Number(row.amount_cents || 0) / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
       </tr>`).join('');
     exportBtn.disabled = false;
     return adminArchiveRows;
   } catch (error) {
     adminArchiveRows = [];
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#B8402C;">Archiv konnte nicht geladen werden.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#B8402C;">Archiv konnte nicht geladen werden.</td></tr>';
     status.textContent = error.message || 'Archivzugriff fehlgeschlagen.';
     return [];
   }
@@ -14722,7 +14741,7 @@ function archiveCsvCell(value) {
 async function exportAdminArchive() {
   const rows = await loadAdminArchive('export');
   if (!rows.length) return;
-  const header = ['Datum','Art','Status','Beschreibung','Referenz','Kontostatus','Betrag EUR'];
+  const header = ['Datum','Art','Status','Beschreibung','Referenz','Nutzerzuordnung','Betrag EUR'];
   const lines = [header, ...rows.map(row => [
     row.service_date, archiveKindLabel(row.record_kind), row.status, row.description,
     row.reference || row.record_id, row.account_state, (Number(row.amount_cents || 0) / 100).toFixed(2).replace('.', ','),
