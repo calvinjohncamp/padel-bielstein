@@ -6776,7 +6776,7 @@ main {
         </div>
       </div>
       <div id="misTilesHost"></div>
-      <div class="mis-note">Der Bericht öffnet sich in einem neuen Fenster und lässt sich dort drucken oder als PDF speichern. Musterdaten bleiben eingestellt, bis auf Echtdaten umgeschaltet wird. Buchungsliste (CSV) für Kassierer/Steuerberater folgt nach Abstimmung.</div>
+      <div class="mis-note">Der Bericht öffnet sich in einem neuen Fenster und lässt sich dort drucken oder als PDF speichern. Musterdaten bleiben eingestellt, bis auf Echtdaten umgeschaltet wird. Monatsberichte und Buchungslisten (CSV) für Kassierer/Steuerberater stehen im Monatsarchiv unter den Kacheln.</div>
 
     </div><!-- /adminMis -->
 
@@ -6787,8 +6787,8 @@ main {
     // Datenquelle: Musterdaten (assets/mis/mis-musterdaten.json) oder Echtdaten über
     // sb.rpc('admin_mis_report_data') – nur lesend, nur für Admins.
     // Definitionen und Regeln: 00 START HIER/MIS_PROJEKTGEDAECHTNIS.md
-    const MIS_ASSET_VERSION = 'v22-2';
-    const misState = { mode: null, model: null, css: null, loading: null };
+    const MIS_ASSET_VERSION = 'v22-3';
+    const misState = { mode: null, model: null, raw: null, css: null, loading: null };
 
     function misAssetUrl(path) {
       return new URL(path + '?v=' + MIS_ASSET_VERSION, document.baseURI).href;
@@ -6856,7 +6856,7 @@ main {
         await misEnsureAssets();
         const raw = await misFetchRaw(mode);
         const model = window.PBMIS.buildModel(raw, { sample: mode === 'sample' });
-        if (misMode() === mode) misState.model = model;
+        if (misMode() === mode) { misState.model = model; misState.raw = raw; }
         return model;
       })();
       try { return await misState.loading; } finally { misState.loading = null; }
@@ -6893,12 +6893,19 @@ main {
           + '@media (max-width:560px){.dts{grid-template-columns:minmax(0,1fr)}}'
           + '.mrow{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#7A7368;margin:14px 0 6px}'
           + '.mrow:first-child{margin-top:0}.ph.pdev{background:#1C1A17;color:#F6F1E7}'
+          + 'table.arch{width:100%;border-collapse:collapse;font-size:11px}table.arch th{font-size:8.4px;text-transform:uppercase;letter-spacing:.05em;color:#7A7368;text-align:left;padding:4px 8px;border-bottom:1.5px solid #1C1A17}'
+          + 'table.arch td{padding:6px 8px;border-bottom:1px solid #EFE9DC}table.arch .n{text-align:right}table.arch td.m{font-weight:800;font-family:"Space Grotesk"}'
+          + '.ab-btn{border:1px solid #1C1A17;background:#fff;color:#1C1A17;border-radius:6px;padding:4px 10px;font:700 10.5px Manrope,Arial,sans-serif;cursor:pointer;margin-left:6px}.ab-btn.pri{background:#FF5A36;border-color:#FF5A36;color:#fff}.ab-btn.del{border-color:#B83428;color:#B83428}'
+          + '.tag{display:inline-block;font-size:8px;font-weight:800;letter-spacing:.05em;padding:1px 6px;border-radius:3px;background:#FFE0D7;color:#C2381A;margin-left:6px}.arch-note{font-size:10px;color:#7A7368;padding:6px 2px}'
           + '.dt.dev table.kt td{font-size:11.5px}.dt.dev table.kt td.kl{font-size:8.4px}.dt.dev table.kt tr.sg td.kl{font-size:9px;padding-left:2px}.dt.dev table.kt td .dn,.dt.dev table.kt td .up,.dt.dev table.kt td .down{font-weight:700}'
           + '</style><div class="mis-wrap">'
           + '<div class="mrow">Aktueller Zeitraum</div><div class="dts">' + window.PBMIS.tilesHtml(model, 'cur') + '</div>'
           + '<div class="mrow">Vorjahr · exakt derselbe Zeitraum ein Jahr früher</div><div class="dts">' + window.PBMIS.tilesHtml(model, 'prev') + '</div>'
           + '<div class="mrow">Abweichung zum Vorjahr</div><div class="dts">' + window.PBMIS.tilesHtml(model, 'dev') + '</div>'
+          + '<div class="mrow">Monatsarchiv · automatisch zum Monatsende eingefroren</div><div id="misArchive"><div class="arch-note">Archiv wird geladen …</div></div>'
           + '</div>';
+        misBindArchive(root);
+        misRenderArchive(root);
         const label = model.sample ? 'Musterdaten (erfundene Zahlen für die Präsentation)'
           : (model.testMode ? 'Echtdaten aus der App · Testbetrieb' : 'Echtdaten aus der App');
         misSetStatus(label);
@@ -6927,6 +6934,113 @@ main {
         w.document.body.textContent = err.message || 'MIS-Bericht konnte nicht erstellt werden.';
       }
     }
+
+    // ── MIS-Monatsarchiv ──
+    // Echtdaten: sb.rpc('admin_mis_archive_list' | 'admin_mis_archive_get' | 'admin_mis_archive_delete_test').
+    // Musterdaten: virtuelles Archiv der letzten 12 Monate aus den Musterdaten.
+    function misEsc(v) { return String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+    function misEur(cents) { return (Math.round(cents / 100)).toLocaleString('de-DE') + ' €'; }
+    function misDe(iso) { const [y, m, d] = String(iso).slice(0, 10).split('-'); return `${d}.${m}.${y}`; }
+
+    async function misArchiveList() {
+      if (misMode() === 'sample') return window.PBMIS.sampleArchiveList(misState.raw);
+      const { data, error } = await sb.rpc('admin_mis_archive_list');
+      if (error) throw new Error('Archiv konnte nicht geladen werden: ' + (error.message || error));
+      return data || [];
+    }
+
+    async function misArchiveEntry(month) {
+      if (misMode() === 'sample') {
+        const raw = window.PBMIS.archiveRaw(misState.raw, month);
+        return { month, sample: true, test_mode: true, report_data: raw, ...window.PBMIS.archiveCsv(misState.raw, month) };
+      }
+      const { data, error } = await sb.rpc('admin_mis_archive_get', { p_month: month });
+      if (error || !data) throw new Error('Archivmonat konnte nicht geladen werden: ' + ((error && error.message) || 'nicht gefunden'));
+      return data;
+    }
+
+    async function misRenderArchive(root) {
+      const box = root.getElementById('misArchive');
+      if (!box) return;
+      try {
+        const list = await misArchiveList();
+        if (!list.length) {
+          box.innerHTML = '<div class="arch-note">Noch kein Monat archiviert. Der erste Monat wird automatisch in der Nacht nach dem Monatsende eingefroren.</div>';
+          return;
+        }
+        const live = misMode() === 'live';
+        box.innerHTML = '<table class="arch"><thead><tr><th>Monat</th><th class="n">Umsatz (Zahlungseingang)</th><th class="n">Belege</th><th>Eingefroren am</th><th class="n">Abruf</th></tr></thead><tbody>'
+          + list.map((a) => '<tr><td class="m">' + misEsc(window.PBMIS.monthLabel(a.month))
+            + (a.sample ? '<span class="tag">MUSTER</span>' : a.test_mode ? '<span class="tag">TESTBETRIEB</span>' : '') + '</td>'
+            + '<td class="n">' + misEur(a.summary.zahlungseingang_cents || 0) + '</td><td class="n">' + (a.summary.belege || 0) + '</td>'
+            + '<td>' + misDe(a.created_at) + '</td><td class="n">'
+            + '<button type="button" class="ab-btn pri" data-arch="report" data-month="' + misEsc(a.month) + '">Bericht</button>'
+            + '<button type="button" class="ab-btn" data-arch="csv" data-month="' + misEsc(a.month) + '">CSV</button>'
+            + (live && a.test_mode ? '<button type="button" class="ab-btn del" data-arch="delete" data-month="' + misEsc(a.month) + '">Testmonat löschen</button>' : '')
+            + '</td></tr>').join('')
+          + '</tbody></table><div class="arch-note">Bericht = 5-Seiten-MIS zum Monatsende · CSV = Buchungsliste des Monats für Kassierer/Steuerberater (Buchungen, Abos, Guthaben mit Belegnummer, Kundengruppe, Betrag, Guthabenanteil, Zahlungseingang).</div>';
+      } catch (err) {
+        console.error(err);
+        box.innerHTML = '<div class="arch-note" style="color:#B83428">' + misEsc(err.message || 'Archiv konnte nicht geladen werden.') + '</div>';
+      }
+    }
+
+    function misBindArchive(root) {
+      if (root.__misArchiveBound) return;
+      root.__misArchiveBound = true;
+      root.addEventListener('click', async (ev) => {
+        const btn = ev.target.closest('[data-arch]');
+        if (!btn) return;
+        const month = btn.getAttribute('data-month');
+        const action = btn.getAttribute('data-arch');
+        if (action === 'report') return misOpenArchiveReport(month);
+        if (action === 'csv') return misDownloadArchiveCsv(month);
+        if (action === 'delete') {
+          if (!confirm('Testbetriebs-Monat ' + window.PBMIS.monthLabel(month) + ' aus dem Archiv löschen?')) return;
+          const { error } = await sb.rpc('admin_mis_archive_delete_test', { p_month: month });
+          if (error) { misSetStatus('Löschen fehlgeschlagen: ' + (error.message || error), true); return; }
+          misRenderArchive(root);
+        }
+      });
+    }
+
+    async function misOpenArchiveReport(month) {
+      const w = window.open('', '_blank');
+      if (!w) { misSetStatus('Bitte Pop-ups für diese Seite erlauben, um den Bericht zu öffnen.', true); return; }
+      w.document.write('<!doctype html><meta charset="utf-8"><title>MIS wird erstellt …</title><p style="font-family:Arial,sans-serif;padding:24px">Archivbericht wird erstellt …</p>');
+      try {
+        await misEnsureAssets();
+        const entry = await misArchiveEntry(month);
+        const model = window.PBMIS.buildModel(entry.report_data, { sample: !!entry.sample, archiveLabel: 'Monatsabschluss ' + window.PBMIS.monthLabel(month) });
+        const fonts = new URL('assets/vendor/fonts/local-fonts.css', document.baseURI).href;
+        const toolbar = '<style>.mis-print{position:fixed;top:12px;right:12px;z-index:9;font:600 13px Manrope,Arial,sans-serif;'
+          + 'background:#FF5A36;color:#fff;border:0;border-radius:8px;padding:9px 16px;cursor:pointer}@media print{.mis-print{display:none}}</style>'
+          + '<button class="mis-print" onclick="window.print()">Drucken / als PDF speichern</button>';
+        w.document.open();
+        w.document.write(window.PBMIS.reportDocument(model, misState.css, fonts).replace('</body>', toolbar + '</body>'));
+        w.document.close();
+      } catch (err) {
+        console.error(err);
+        w.document.body.textContent = err.message || 'Archivbericht konnte nicht erstellt werden.';
+      }
+    }
+
+    async function misDownloadArchiveCsv(month) {
+      try {
+        const entry = await misArchiveEntry(month);
+        const blob = new Blob(['﻿' + entry.csv], { type: 'text/csv;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'padel-bielstein-buchungsliste-' + month.slice(0, 7) + (entry.sample ? '-muster' : '') + '.csv';
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+      } catch (err) {
+        console.error(err);
+        misSetStatus(err.message || 'CSV konnte nicht erstellt werden.', true);
+      }
+    }
+
 </script>
 
     <!-- ── NUTZERVERWALTUNG ── -->

@@ -206,7 +206,7 @@
     const dailyDetail = []; for (let d = S30; d <= E30; d++) { const x = dayVals(d); x.hw = lostDay(d); dailyDetail.push(x); }
 
     const fs = raw.finance_sample || null;
-    return { sample, testMode: !!raw.test_mode, hasWeather, TODAY, END, S30, E30, S12, W, MONTHS, M, today, days30, todayV, days30v, aggDays,
+    return { sample, archiveLabel: opts.archiveLabel || null, testMode: !!raw.test_mode, hasWeather, TODAY, END, S30, E30, S12, W, MONTHS, M, today, days30, todayV, days30v, aggDays,
       cc, cp, fy, fm, F, Fv, FY, FYv, FM, rapEnd: rapAt(mend(fy, fm)), rapBeg: rapAt(mstart(fy, fm) - 1), courts, cnt, wdn, dailyDetail, fs };
   }
 
@@ -291,11 +291,12 @@
     const lab30 = `${dd(md.S30)}–${dd(md.E30, true)}`, lab30s = `${dd(md.S30)}–${dd(md.E30)}`;
     const lab12 = `${dd(md.S12, true)} – ${dd(md.END, true)}`;
     const fd = (n) => { const [y, m, d] = ymd(n); return `${WD_DE[wdMon(n)]}, ${p2(d)}.${p2(m)}.`; };
-    const badge = md.sample ? '<span class="demo">MUSTERBERICHT · erfundene Zahlen</span>'
-      : md.testMode ? '<span class="demo">TESTBETRIEB · Testdaten</span>' : '';
+    const badge = (md.archiveLabel ? `<span class="demo">ARCHIV · ${esc(md.archiveLabel)}</span>` : '')
+      + (md.sample ? '<span class="demo">MUSTERBERICHT · erfundene Zahlen</span>'
+      : md.testMode ? '<span class="demo">TESTBETRIEB · Testdaten</span>' : '');
     const KEY = `<div class="key"><span><i style="background:${ABO}"></i>Abos</span><span><i style="background:${EIN}"></i>Buchungen</span><span><i style="background:${VER}"></i>Verein (ohne Umsatz)</span><span><i style="background:${WETCSS}"></i>Wetter (nicht bespielbar)</span><span><i style="background:${FREI};border:1px solid #D8D0C0"></i>frei</span></div>`;
     const head = (title, sub, today) => `<header><div class="brand"><span>PADEL</span><span class="bs">BIELSTEIN</span><span class="sep">|</span><span class="mis">Management-Information</span></div>
-<div class="meta">${badge}Stand: ${fd(md.TODAY)}${ymd(md.TODAY)[0]} · Tageswerte</div></header>
+<div class="meta">${badge}Stand: ${md.archiveLabel ? 'Monatsende ' + dd(md.END, true) : fd(md.TODAY) + ymd(md.TODAY)[0]} · Tageswerte</div></header>
 <div class="ttl"><div class="tl1"><h1>${title}</h1>${today ? `<span class="tbox">${today}</span>` : ''}${sub ? `<p>${sub}</p>` : ''}</div>
 <div class="chips"><span class="chip c30">Letzte 30 Tage<b>${lab30}</b></span><span class="chip c12">Letzte 12 Monate<b>${lab12}</b></span></div></div>`;
     const foot = (n, note) => `<footer><span>${note || 'Umsatz = nach Verkaufsdatum (was verkauft wurde) · Platzbelegung = nach Spieltag (wann gespielt wird) · 2 Plätze × 14 h (8–22 Uhr) = 28 h je Tag'}</span><span>Tennisfreunde Bielstein e. V. · vertraulich · Seite ${n} von 5</span></footer>`;
@@ -590,6 +591,48 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
   // =====================================================================
   //  Oeffentliche Schnittstelle
   // =====================================================================
+  // ---------- Monatsarchiv (Musterdaten: virtuell aus den Musterdaten erzeugt) ----------
+  const MONTH_DE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+  const isoOf = (n) => { const [y, m, d] = ymd(n); return `${y}-${p2(m)}-${p2(d)}`; };
+  const GROUP_LABEL = { tfb: 'TFB-Mitglied', bsv: 'BSV-Mitglied', par: 'Partner', ext: 'Extern' };
+  const money = (c) => (c / 100).toFixed(2).replace('.', ',');
+  function monthLabel(monthIso) { const [y, m] = monthIso.split('-').map(Number); return `${MONTH_DE[m - 1]} ${y}`; }
+  function archiveRaw(raw, monthIso) {
+    const [y, m] = monthIso.split('-').map(Number); const today = mend(y, m) + 1;
+    const sold = (d) => dn(d) < today;   // Stand: Einfrieren in der Nacht nach Monatsende
+    return {
+      ...raw, today: isoOf(today), archive_month: monthIso,
+      bookings: raw.bookings.filter((b) => sold(b[1])),   // bis Monatsende verkauft; Spieltag darf spaeter liegen
+      subs: raw.subs.filter((a) => sold(a[0])),
+      cards: raw.cards.filter((c) => sold(c[0])),
+      weather: (raw.weather || []).filter((w) => dn(w[0]) <= today),
+    };
+  }
+  function archiveCsv(raw, monthIso) {
+    const [y, m] = monthIso.split('-').map(Number); const s = mstart(y, m), e = mend(y, m);
+    const rows = [];
+    for (const b of raw.bookings) { const v = dn(b[1]); if (!b[9] && v >= s && v <= e) rows.push({ v, art: 'Buchung', d: dn(b[0]), h: b[2], c: b[4], dur: b[3], g: b[8], brutto: b[5], guth: b[6] }); }
+    for (const a of raw.subs) { const v = dn(a[0]); if (v >= s && v <= e) rows.push({ v, art: a[10] ? 'Abo (2 Jahre)' : 'Abo', d: dn(a[1]), h: a[4], c: a[6], dur: a[5], g: a[9], brutto: a[7], guth: 0 }); }
+    for (const c of raw.cards) { const v = dn(c[0]); if (v >= s && v <= e) rows.push({ v, art: 'Guthaben/Gutschein', d: null, g: c[3], brutto: c[1], guth: 0 }); }
+    rows.sort((x, z) => x.v - z.v || x.art.localeCompare(z.art));
+    let nr = 0;
+    const lines = rows.map((r) => [r.art === 'Buchung' ? `B-${y}-${p2(m)}-${String(++nr).padStart(4, '0')}` : '', dd(r.v, true), r.art,
+      r.d === null ? '' : dd(r.d, true), r.d === null ? '' : `${p2(r.h)}:00`, r.d === null ? '' : String(r.c), r.d === null ? '' : String(r.dur),
+      GROUP_LABEL[r.g] || 'Extern', money(r.brutto), money(r.guth), money(r.brutto - r.guth)].join(';'));
+    const head = 'Belegnummer;Verkaufsdatum;Art;Spieltag/Start;Uhrzeit;Platz;Stunden;Kundengruppe;Betrag brutto EUR;davon Guthaben EUR;Zahlungseingang EUR';
+    return { csv: [head, ...lines].join('\r\n'), summary: { belege: rows.length, zahlungseingang_cents: rows.reduce((t, r) => t + r.brutto - r.guth, 0) } };
+  }
+  function sampleArchiveList(raw) {
+    const today = dn(raw.today); const [ty, tm] = ymd(today); const first = Math.min(...raw.bookings.map((b) => dn(b[1])));
+    const out = [];
+    for (let k = 1; k <= 12; k++) {
+      const [y, m] = ymAdd(ty, tm, -k); if (mend(y, m) < first) break;
+      const monthIso = `${y}-${p2(m)}-01`;
+      out.push({ month: monthIso, as_of: isoOf(mend(y, m)), created_at: isoOf(mend(y, m) + 1) + 'T00:45:00', test_mode: true, sample: true, summary: archiveCsv(raw, monthIso).summary });
+    }
+    return out;
+  }
+
   const PATTERN = '<svg width="0" height="0" style="position:absolute"><defs><pattern id="wh" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)"><rect width="5" height="5" fill="#E6E0D5"/><rect width="2" height="5" fill="#C2BAAD"/></pattern></defs></svg>';
 
   window.PBMIS = {
@@ -604,5 +647,6 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
     },
     /** 4 KPI-Kacheln fuer den Admin-Tab: which = 'cur' (aktuell), 'prev' (Vorjahr, gleicher Zeitraum), 'dev' (Abweichung) */
     tilesHtml(md, which) { return renderTiles(md, which || 'cur'); },
+    monthLabel, archiveRaw, archiveCsv, sampleArchiveList,
   };
 })();
