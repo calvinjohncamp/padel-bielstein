@@ -5533,11 +5533,11 @@ main {
       <button class="admin-tab" type="button" id="atab-prices" data-admin-tab="prices" onclick="setAdminTab('prices')"><span aria-hidden="true">💰</span><span class="admin-tab-label">Preise</span></button>
       <button class="admin-tab" type="button" id="atab-internal" data-admin-tab="internal" onclick="setAdminTab('internal')"><span aria-hidden="true">📋</span><span class="admin-tab-label">Interne Buchungen</span></button>
       <button class="admin-tab" type="button" id="atab-bookings" data-admin-tab="bookings" onclick="setAdminTab('bookings')"><span aria-hidden="true">📅</span><span class="admin-tab-label">Buchungsübersicht</span></button>
-      <button class="admin-tab" type="button" id="atab-archive" data-admin-tab="archive" onclick="setAdminTab('archive')"><span aria-hidden="true">🗄</span><span class="admin-tab-label">Belegarchiv</span></button>
+      <button class="admin-tab" type="button" id="atab-archive" data-admin-tab="archive" onclick="setAdminTab('archive')"><span aria-hidden="true">🗄</span><span class="admin-tab-label">System &amp; Datenschutz</span></button>
       <button class="admin-tab" type="button" id="atab-kiosk" data-admin-tab="kiosk" onclick="setAdminTab('kiosk')"><span aria-hidden="true">🥤</span><span class="admin-tab-label">Kiosk</span></button>
       <button class="admin-tab" type="button" id="atab-aktionen" data-admin-tab="aktionen" onclick="setAdminTab('aktionen')"><span aria-hidden="true">🎯</span><span class="admin-tab-label">Aktionen</span></button>
       <button class="admin-tab" type="button" id="atab-sponsors" data-admin-tab="sponsors" onclick="setAdminTab('sponsors')"><span aria-hidden="true">🤝</span><span class="admin-tab-label">Sponsoren</span></button>
-      <button class="admin-tab" type="button" id="atab-mis" data-admin-tab="mis" onclick="setAdminTab('mis')"><span aria-hidden="true">📊</span><span class="admin-tab-label">MIS</span></button>
+      <button class="admin-tab" type="button" id="atab-mis" data-admin-tab="mis" onclick="setAdminTab('mis')"><span aria-hidden="true">📊</span><span class="admin-tab-label">MIS &amp; Finanzen</span></button>
       <button class="admin-tab" type="button" id="atab-users" data-admin-tab="users" onclick="setAdminTab('users')"><span aria-hidden="true">👤</span><span class="admin-tab-label">Nutzer</span></button>
       <button class="admin-tab" type="button" id="atab-infomails" data-admin-tab="infomails" onclick="setAdminTab('infomails')"><span aria-hidden="true">✉</span><span class="admin-tab-label">Info E-Mails</span></button>
       <button class="admin-tab" type="button" id="atab-infos" data-admin-tab="infos" onclick="setAdminTab('infos')"><span aria-hidden="true">📝</span><span class="admin-tab-label">Infotexte</span></button>
@@ -6153,12 +6153,12 @@ main {
     <!-- ── BELEGARCHIV ── -->
     <div id="adminArchive" style="display:none;">
       <div class="admin-section">
-        <div class="admin-section-title">Löschfristen · Probelauf</div>
+        <div class="admin-section-title">Aufbewahrungsprüfung</div>
         <div class="archive-note">Diese Prüfung zählt ausschließlich Datensätze, deren vorgesehene Frist abgelaufen wäre. Sie löscht, verändert und anonymisiert nichts. Finanzielle Nachweise bleiben bis zur gesonderten steuerlichen Freigabe gesperrt.</div>
         <div class="admin-card archive-filter-grid">
           <div><label class="admin-label" for="retentionAsOf">Stichtag</label><input class="admin-input" type="date" id="retentionAsOf"></div>
           <div class="archive-filter-actions">
-            <button class="admin-save-btn" type="button" id="retentionDryRunBtn" onclick="loadRetentionDryRun()">Probelauf starten</button>
+            <button class="admin-save-btn" type="button" id="retentionDryRunBtn" onclick="loadRetentionDryRun()">Aufbewahrungsfristen prüfen</button>
           </div>
         </div>
         <div id="retentionDryRunStatus" class="archive-status">Noch kein Probelauf ausgeführt.</div>
@@ -6166,30 +6166,6 @@ main {
           <table class="admin-table">
             <thead><tr><th>Datenklasse</th><th>Frist</th><th>Stichtag</th><th>Betroffen</th><th>Ältester Eintrag</th><th>Vorgesehener Schritt</th></tr></thead>
             <tbody id="retentionDryRunTbody"><tr><td colspan="6" style="text-align:center;padding:24px;">Der Probelauf wartet auf deine ausdrückliche Ausführung.</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="admin-section">
-        <div class="admin-section-title">Belegarchiv · eingeschränkter Zugriff</div>
-        <div class="admin-card archive-filter-grid">
-          <div><label class="admin-label" for="archiveFrom">Von</label><input class="admin-input" type="date" id="archiveFrom"></div>
-          <div><label class="admin-label" for="archiveTo">Bis</label><input class="admin-input" type="date" id="archiveTo"></div>
-          <div><label class="admin-label" for="archiveKind">Vorgangsart</label><select class="admin-input" id="archiveKind">
-            <option value="all">Alle Vorgänge</option><option value="booking">Buchungen</option><option value="subscription">Abos</option>
-            <option value="payment">Zahlungen</option><option value="card">Wertkarten</option><option value="credit">Guthaben</option><option value="punch_card">Stundenkarten</option><option value="kiosk">Kiosk</option>
-          </select></div>
-          <div class="archive-search"><label class="admin-label" for="archiveSearch">Beleg- oder Stripe-Kennung</label><input class="admin-input" type="search" id="archiveSearch" placeholder="Kennung eingeben"></div>
-          <div class="archive-filter-actions">
-            <button class="admin-save-btn" type="button" onclick="loadAdminArchive('view')">Anzeigen</button>
-            <button class="admin-save-btn gold" type="button" id="archiveExportBtn" onclick="exportAdminArchive()" disabled>CSV exportieren</button>
-          </div>
-        </div>
-        <div class="archive-note">Das Archiv zeigt nur abrechnungsrelevante Angaben. Gelöschte Konten bleiben „anonymisiert“ und werden bei einer Neuregistrierung nicht wieder verbunden. Abrufe und Exporte werden protokolliert.</div>
-        <div id="archiveStatus" class="archive-status"></div>
-        <div class="archive-table-wrap">
-          <table class="admin-table">
-            <thead><tr><th>Datum</th><th>Art</th><th>Status</th><th>Beschreibung</th><th>Referenz</th><th>Konto</th><th>Betrag</th></tr></thead>
-            <tbody id="archiveTbody"><tr><td colspan="7" style="text-align:center;padding:24px;">Zeitraum wählen und Archiv laden.</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -6761,10 +6737,18 @@ main {
         #adminMis .mis-switch button.active{background:var(--blue);color:#fff;font-weight:700;}
         #adminMis .mis-open{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;border:none;background:var(--blue);color:#fff;font-size:0.85rem;font-family:inherit;cursor:pointer;font-weight:700;}
         #adminMis .mis-note{font-size:0.74rem;opacity:.7;margin-top:10px;line-height:1.5;}
+        #adminMis .mis-nav{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:16px;}
+        #adminMis .mis-nav button{border:0;border-radius:4px;padding:9px 12px;background:transparent;color:inherit;font:inherit;cursor:pointer;}
+        #adminMis .mis-nav button.active{background:var(--blue);color:#fff;}
       </style>
-      <div class="mis-bar">
+      <div class="mis-nav" role="tablist" aria-label="MIS und Finanzen" onkeydown="misNavigateTabs(event)">
+        <button type="button" role="tab" data-mis-tab="management" aria-selected="true" onclick="misSetView('management')">Management</button>
+        <button type="button" role="tab" data-mis-tab="months" tabindex="-1" aria-selected="false" onclick="misSetView('months')">Monatsabschlüsse</button>
+        <button type="button" role="tab" data-mis-tab="records" tabindex="-1" aria-selected="false" onclick="misSetView('records')">Belege &amp; Vorgänge</button>
+      </div>
+      <div class="mis-bar" id="misControls">
         <div>
-          <div class="mis-title">Management-Information</div>
+          <div class="mis-title" id="misTitle">Management-Information</div>
           <div class="mis-status" id="misStatus">–</div>
         </div>
         <div class="mis-actions">
@@ -6772,11 +6756,34 @@ main {
             <button type="button" id="misModeSample" onclick="misSetMode('sample')">Musterdaten</button>
             <button type="button" id="misModeLive" onclick="misSetMode('live')">Echtdaten</button>
           </div>
-          <button type="button" class="mis-open" onclick="misOpenReport()">MIS-Bericht öffnen (5 Seiten)</button>
+          <button type="button" id="misReportButton" class="mis-open" onclick="misOpenReport()">MIS-Bericht öffnen (5 Seiten)</button>
         </div>
       </div>
       <div id="misTilesHost"></div>
-      <div class="mis-note">Der Bericht öffnet sich in einem neuen Fenster und lässt sich dort drucken oder als PDF speichern. Musterdaten bleiben eingestellt, bis auf Echtdaten umgeschaltet wird. Monatsberichte und Buchungslisten (CSV) für Kassierer/Steuerberater stehen im Monatsarchiv unter den Kacheln.</div>
+      <div id="misRecords" class="admin-section" style="display:none;">
+        <div class="admin-section-title">Belege &amp; Vorgänge · Padel</div>
+        <div class="admin-card archive-filter-grid">
+          <div><label class="admin-label" for="archiveFrom">Von</label><input class="admin-input" type="date" id="archiveFrom"></div>
+          <div><label class="admin-label" for="archiveTo">Bis</label><input class="admin-input" type="date" id="archiveTo"></div>
+          <div><label class="admin-label" for="archiveKind">Vorgangsart</label><select class="admin-input" id="archiveKind">
+            <option value="booking">Buchungen</option><option value="subscription">Abos</option>
+            <option value="payment">Zahlungen</option><option value="card">Wertkarten</option><option value="credit">Guthaben</option><option value="punch_card">Stundenkarten</option>
+          </select></div>
+          <div class="archive-search"><label class="admin-label" for="archiveSearch">Beleg- oder Stripe-Kennung</label><input class="admin-input" type="search" id="archiveSearch" placeholder="Kennung eingeben"></div>
+          <div class="archive-filter-actions">
+            <button class="admin-save-btn" type="button" onclick="loadAdminArchive('view')">Anzeigen</button>
+            <button class="admin-save-btn gold" type="button" id="archiveExportBtn" onclick="exportAdminArchive()" disabled>CSV exportieren</button>
+          </div>
+        </div>
+        <div class="archive-note">App-Daten · Abrufe und Exporte werden protokolliert. Gelöschte Konten bleiben anonymisiert.</div>
+        <div id="archiveStatus" class="archive-status"></div>
+        <div class="archive-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Datum</th><th>Art</th><th>Status</th><th>Beschreibung</th><th>Referenz</th><th>Konto</th><th>Betrag</th></tr></thead>
+            <tbody id="archiveTbody"><tr><td colspan="7" style="text-align:center;padding:24px;">Zeitraum wählen und Archiv laden.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
 
     </div><!-- /adminMis -->
 
@@ -6787,8 +6794,43 @@ main {
     // Datenquelle: Musterdaten (assets/mis/mis-musterdaten.json) oder Echtdaten über
     // sb.rpc('admin_mis_report_data') – nur lesend, nur für Admins.
     // Definitionen und Regeln: 00 START HIER/MIS_PROJEKTGEDAECHTNIS.md
-    const MIS_ASSET_VERSION = 'v22-8';
-    const misState = { mode: null, model: null, raw: null, css: null, loading: null };
+    const MIS_ASSET_VERSION = 'v22-9';
+    const misState = { mode: null, model: null, raw: null, css: null, loading: null, view: 'management' };
+
+    function misSetView(view) {
+      if (!['management', 'months', 'records'].includes(view)) return;
+      misState.view = view;
+      document.querySelectorAll('[data-mis-tab]').forEach(button => {
+        const selected = button.dataset.misTab === view;
+        button.classList.toggle('active', selected);
+        button.setAttribute('aria-selected', String(selected));
+        button.tabIndex = selected ? 0 : -1;
+      });
+      document.getElementById('misRecords').style.display = view === 'records' ? 'block' : 'none';
+      document.getElementById('misTilesHost').style.display = view === 'records' ? 'none' : 'block';
+      document.getElementById('misControls').style.display = view === 'records' ? 'none' : 'flex';
+      document.getElementById('misReportButton').style.display = view === 'management' ? '' : 'none';
+      document.getElementById('misTitle').textContent = view === 'months' ? 'Monatsabschlüsse' : 'Management-Information';
+      const root = document.getElementById('misTilesHost').shadowRoot;
+      if (root) root.querySelectorAll('[data-mis-panel]').forEach(panel => {
+        panel.hidden = panel.dataset.misPanel !== view;
+      });
+      if (view === 'records' && !adminTabLoaded.archive) {
+        initAdminArchive();
+        adminTabLoaded.archive = true;
+      }
+    }
+
+    function misNavigateTabs(event) {
+      const buttons = [...document.querySelectorAll('[data-mis-tab]')];
+      const index = buttons.indexOf(event.target);
+      if (index < 0 || !['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1
+        : (index + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
+      misSetView(buttons[next].dataset.misTab);
+      buttons[next].focus();
+    }
 
     function misAssetUrl(path) {
       return new URL(path + '?v=' + MIS_ASSET_VERSION, document.baseURI).href;
@@ -6887,7 +6929,7 @@ main {
         const root = host.shadowRoot || host.attachShadow({ mode: 'open' });
         root.innerHTML = '<style>' + misState.css.replace(/:root\b/g, ':host')
           + ':host{display:block;font-family:Manrope,Arial,sans-serif;font-size:10.5px;color:#1C1A17}'
-          + '.mis-wrap{background:#fff;border-radius:12px;padding:14px}'
+          + '.mis-wrap{background:#fff;border-radius:8px;padding:14px;min-width:0}.archive-scroll{max-width:100%;overflow-x:auto}'
           + '.dts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}'
           + '@media (max-width:1000px){.dts{grid-template-columns:repeat(2,minmax(0,1fr))}}'
           + '@media (max-width:560px){.dts{grid-template-columns:minmax(0,1fr)}}'
@@ -6895,17 +6937,19 @@ main {
           + '.mrow:first-child{margin-top:0}.ph.pdev{background:#1C1A17;color:#F6F1E7}'
           + 'table.arch{width:100%;border-collapse:collapse;font-size:11px}table.arch th{font-size:8.4px;text-transform:uppercase;letter-spacing:.05em;color:#7A7368;text-align:left;padding:4px 8px;border-bottom:1.5px solid #1C1A17}'
           + 'table.arch td{padding:6px 8px;border-bottom:1px solid #EFE9DC}table.arch .n{text-align:right}table.arch td.m{font-weight:800;font-family:"Space Grotesk"}'
+          + '@media(max-width:560px){table.arch thead{display:none}table.arch tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-bottom:1px solid #E2DACB;padding:8px 0}table.arch td{border:0;text-align:left;min-width:0}table.arch td::before{content:attr(data-label);display:block;font-size:9px;color:#7A7368;font-weight:700;margin-bottom:3px}table.arch td:last-child{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}table.arch td:last-child::before{display:none}table.arch .ab-btn{margin-left:0}}'
           + '.ab-btn{border:1px solid #1C1A17;background:#fff;color:#1C1A17;border-radius:6px;padding:4px 10px;font:700 10.5px Manrope,Arial,sans-serif;cursor:pointer;margin-left:6px}.ab-btn.pri{background:#FF5A36;border-color:#FF5A36;color:#fff}.ab-btn.del{border-color:#B83428;color:#B83428}'
           + '.tag{display:inline-block;font-size:8px;font-weight:800;letter-spacing:.05em;padding:1px 6px;border-radius:3px;background:#FFE0D7;color:#C2381A;margin-left:6px}.arch-note{font-size:10px;color:#7A7368;padding:6px 2px}'
           + '.dt.dev table.kt td{font-size:11.5px}.dt.dev table.kt td.kl{font-size:8.4px}.dt.dev table.kt tr.sg td.kl{font-size:9px;padding-left:2px}.dt.dev table.kt td .dn,.dt.dev table.kt td .up,.dt.dev table.kt td .down{font-weight:700}'
           + '</style><div class="mis-wrap">'
-          + '<div class="mrow">Aktueller Zeitraum</div><div class="dts">' + window.PBMIS.tilesHtml(model, 'cur') + '</div>'
+          + '<div data-mis-panel="management"><div class="mrow">Aktueller Zeitraum</div><div class="dts">' + window.PBMIS.tilesHtml(model, 'cur') + '</div>'
           + '<div class="mrow">Vorjahr · exakt derselbe Zeitraum ein Jahr früher</div><div class="dts">' + window.PBMIS.tilesHtml(model, 'prev') + '</div>'
-          + '<div class="mrow">Abweichung zum Vorjahr</div><div class="dts">' + window.PBMIS.tilesHtml(model, 'dev') + '</div>'
-          + '<div class="mrow">Monatsarchiv · automatisch zum Monatsende eingefroren</div><div id="misArchive"><div class="arch-note">Archiv wird geladen …</div></div>'
+          + '<div class="mrow">Abweichung zum Vorjahr</div><div class="dts">' + window.PBMIS.tilesHtml(model, 'dev') + '</div></div>'
+          + '<div data-mis-panel="months" hidden><div class="mrow">Monatsabschlüsse · gespeicherte Monatsdaten</div><div id="misArchive"><div class="arch-note">Archiv wird geladen …</div></div></div>'
           + '</div>';
         misBindArchive(root);
         misRenderArchive(root);
+        misSetView(misState.view);
         const label = model.sample ? 'Musterdaten (erfundene Zahlen für die Präsentation)'
           : (model.testMode ? 'Echtdaten aus der App · Testbetrieb' : 'Echtdaten aus der App');
         misSetStatus(label);
@@ -6969,17 +7013,17 @@ main {
           return;
         }
         const live = misMode() === 'live';
-        box.innerHTML = '<table class="arch"><thead><tr><th>Monat</th><th class="n">Umsatz (Zahlungseingang)</th><th class="n">Belege</th><th>Eingefroren am</th><th class="n">Abruf</th></tr></thead><tbody>'
-          + list.map((a) => '<tr><td class="m">' + misEsc(window.PBMIS.monthLabel(a.month))
+        box.innerHTML = '<div class="archive-scroll" tabindex="0" role="region" aria-label="Monatsarchiv"><table class="arch"><thead><tr><th>Monat</th><th class="n">Umsatz (Zahlungseingang)</th><th class="n">Belege</th><th>Eingefroren am</th><th class="n">Abruf</th></tr></thead><tbody>'
+          + list.map((a) => '<tr><td class="m" data-label="Monat">' + misEsc(window.PBMIS.monthLabel(a.month))
             + (a.sample ? '<span class="tag">MUSTER</span>' : a.test_mode ? '<span class="tag">TESTBETRIEB</span>' : '') + '</td>'
-            + '<td class="n">' + misEur(a.summary.zahlungseingang_cents || 0) + '</td><td class="n">' + (a.summary.belege || 0) + '</td>'
-            + '<td>' + misDe(a.created_at) + '</td><td class="n">'
+            + '<td class="n" data-label="Zahlungseingang">' + misEur(a.summary.zahlungseingang_cents || 0) + '</td><td class="n" data-label="Belege">' + (a.summary.belege || 0) + '</td>'
+            + '<td data-label="Archiviert am">' + misDe(a.created_at) + '</td><td class="n">'
             + '<button type="button" class="ab-btn pri" data-arch="report" data-month="' + misEsc(a.month) + '">Bericht</button>'
             + '<button type="button" class="ab-btn" data-arch="csv" data-month="' + misEsc(a.month) + '">CSV</button>'
             + (!a.sample ? '<button type="button" class="ab-btn" data-arch="weather-csv" data-month="' + misEsc(a.month) + '">Reklamationen CSV</button>' : '')
             + (live && a.test_mode ? '<button type="button" class="ab-btn del" data-arch="delete" data-month="' + misEsc(a.month) + '">Testmonat löschen</button>' : '')
             + '</td></tr>').join('')
-          + '</tbody></table><div class="arch-note">Bericht = 5-Seiten-MIS zum Monatsende · CSV = Buchungsliste des Monats für Kassierer/Steuerberater (Buchungen, Abos, Guthaben mit Belegnummer, Kundengruppe, Betrag, Guthabenanteil, Zahlungseingang).</div>';
+          + '</tbody></table></div><div class="arch-note">Archivierte Monatsdaten · noch kein bestätigter Bankabgleich.</div>';
       } catch (err) {
         console.error(err);
         box.innerHTML = '<div class="arch-note" style="color:#B83428">' + misEsc(err.message || 'Archiv konnte nicht geladen werden.') + '</div>';
@@ -13473,11 +13517,14 @@ function setAdminTab(tab) {
   if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
   if (tab==='internal' && !adminTabLoaded.internal) { loadInternalBookings(); adminTabLoaded.internal=true; }
   if (tab==='bookings' && !adminTabLoaded.bookings) { loadAdminBookings(); loadAdminAbos(); loadAdminStats(); adminTabLoaded.bookings=true; }
-  if (tab==='archive'  && !adminTabLoaded.archive)  { initAdminArchive(); adminTabLoaded.archive=true; }
+  if (tab==='archive' && !document.getElementById('retentionAsOf').value) {
+    document.getElementById('retentionAsOf').value = localISODate(new Date());
+  }
   if (tab==='mis'      && !adminTabLoaded.mis)      {
     adminTabLoaded.mis=true;
     if (typeof initMisAdmin === 'function') initMisAdmin();
   }
+  if (tab==='mis' && typeof misSetView === 'function') misSetView(misState.view);
   if (tab==='users'    && !adminTabLoaded.users)    { loadAdminUsers();   adminTabLoaded.users=true; }
   if (tab==='infomails'&& !adminTabLoaded.infomails){ initInfoMailsAdmin(); adminTabLoaded.infomails=true; }
   if (tab==='infos'    && !adminTabLoaded.infos)    { if(typeof initInfosEditor==='function') initInfosEditor(); adminTabLoaded.infos=true; }
@@ -13488,8 +13535,8 @@ function setAdminTab(tab) {
 // ============================================================
 const ADMIN_MENU_DEFAULTS = Object.freeze({
   freibad: 'Freibad & Padel-Anlage', meetups: 'Verabreden', prices: 'Preise',
-  internal: 'Interne Buchungen', bookings: 'Buchungsübersicht', archive: 'Belegarchiv',
-  kiosk: 'Kiosk', aktionen: 'Aktionen', sponsors: 'Sponsoren', mis: 'MIS', users: 'Nutzer',
+  internal: 'Interne Buchungen', bookings: 'Buchungsübersicht', archive: 'System & Datenschutz',
+  kiosk: 'Kiosk', aktionen: 'Aktionen', sponsors: 'Sponsoren', mis: 'MIS & Finanzen', users: 'Nutzer',
   infomails: 'Info E-Mails', infos: 'Infotexte', weather: 'Wetterausfälle'
 });
 const ADMIN_MENU_DEFAULT_ORDER = Object.freeze(Object.keys(ADMIN_MENU_DEFAULTS));
@@ -13506,7 +13553,8 @@ function normalizeAdminMenuConfig(config) {
   const labels = {};
   order.forEach(key => {
     const candidate = typeof config?.labels?.[key] === 'string' ? config.labels[key].trim() : '';
-    labels[key] = candidate && candidate.length <= 40 ? candidate : ADMIN_MENU_DEFAULTS[key];
+    const oldDefault = key === 'archive' && candidate === 'Belegarchiv' || key === 'mis' && candidate === 'MIS';
+    labels[key] = candidate && candidate.length <= 40 && !oldDefault ? candidate : ADMIN_MENU_DEFAULTS[key];
   });
   return { order, labels };
 }
@@ -14568,7 +14616,6 @@ let adminArchiveRows = [];
 function initAdminArchive() {
   const to = new Date();
   const from = new Date(to.getFullYear(), 0, 1, 12);
-  document.getElementById('retentionAsOf').value = localISODate(to);
   document.getElementById('archiveFrom').value = localISODate(from);
   document.getElementById('archiveTo').value = localISODate(to);
   loadAdminArchive('view');

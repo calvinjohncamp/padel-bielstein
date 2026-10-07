@@ -582,17 +582,16 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
     const kv = (v, unit) => (v ? de(v) + unit : '–');
     const ag = md.aggDays;
     const prevYear = which === 'prev';
-    const T = prevYear ? md.TODAY - 365 : md.TODAY;
+    const T = prevYear ? md.todayV.d : md.TODAY;
     const sets = prevYear
       ? [ag([md.todayV]), ag([md.days30v[0]]), ag(md.days30v.slice(0, 7)), ag(md.days30v)]
       : [ag([md.today]), ag([md.days30[0]]), ag(md.days30.slice(0, 7)), ag(md.days30)];
     const D30 = prevYear ? md.days30v : md.days30;
-    const vj = '';
     const heads = [
-      `<span class="ph ${prevYear ? 'pv' : 'pd'} s">Heute${vj} · ${fd(T, prevYear)}</span>`,
-      `<span class="ph ${prevYear ? 'pv' : 'pd2'} s">Gestern${vj} · ${fd(D30[0].d, prevYear)}</span>`,
-      `<span class="ph ${prevYear ? 'pv' : 'p7'} s">Letzte 7 Tage${vj} · ${dd(D30[6].d)}–${dd(D30[0].d, prevYear)}</span>`,
-      `<span class="ph ${prevYear ? 'pv' : 'p30'} s">Letzte 30 Tage${vj} · ${dd(D30[29].d)}–${dd(D30[0].d, prevYear)}</span>`,
+      `<span class="ph ${prevYear ? 'pv' : 'pd'} s">${prevYear ? '' : 'Heute · '}${fd(T, prevYear)}</span>`,
+      `<span class="ph ${prevYear ? 'pv' : 'pd2'} s">${prevYear ? '' : 'Gestern · '}${fd(D30[0].d, prevYear)}</span>`,
+      `<span class="ph ${prevYear ? 'pv' : 'p7'} s">${prevYear ? '' : 'Letzte 7 Tage · '}${dd(D30[6].d)}–${dd(D30[0].d, prevYear)}</span>`,
+      `<span class="ph ${prevYear ? 'pv' : 'p30'} s">${prevYear ? '' : 'Letzte 30 Tage · '}${dd(D30[29].d)}–${dd(D30[0].d, prevYear)}</span>`,
     ];
     if (which === 'dev') {
       const cur = [ag([md.today]), ag([md.days30[0]]), ag(md.days30.slice(0, 7)), ag(md.days30)];
