@@ -688,7 +688,7 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
     const sum = (positions, i) => {
       const total = positions.reduce((n, r) => n + cents(r[i]), 0);
       if (!Number.isSafeInteger(total)) throw new Error('Monatssumme zu groß.');
-      return money(total);
+      return de(total / 100, 2);
     };
     const footer = (label, positions, effect = '') => {
       const r = Array(width).fill('');

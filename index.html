@@ -6735,11 +6735,16 @@ main {
         #adminMis .mis-switch{display:inline-flex;border:1px solid rgba(127,127,127,.4);border-radius:9px;overflow:hidden;}
         #adminMis .mis-switch button{border:0;background:transparent;color:inherit;font:inherit;font-size:0.8rem;padding:8px 12px;cursor:pointer;}
         #adminMis .mis-switch button.active{background:var(--blue);color:#fff;font-weight:700;}
-        #adminMis .mis-open{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;border:none;background:var(--blue);color:#fff;font-size:0.85rem;font-family:inherit;cursor:pointer;font-weight:700;}
+        #adminMis .mis-open{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:6px;border:none;background:#1C1A17;color:#fff;font-size:0.85rem;font-family:inherit;cursor:pointer;font-weight:700;}
         #adminMis .mis-note{font-size:0.74rem;opacity:.7;margin-top:10px;line-height:1.5;}
-        #adminMis .mis-nav{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:16px;}
-        #adminMis .mis-nav button{border:0;border-radius:4px;padding:9px 12px;background:transparent;color:inherit;font:inherit;cursor:pointer;}
-        #adminMis .mis-nav button.active{background:var(--blue);color:#fff;}
+        #adminMis .mis-nav{display:flex;flex-wrap:wrap;gap:12px;border-bottom:1px solid #ccc;padding:4px 4px 14px;margin-bottom:16px;}
+        #adminMis .mis-nav button{min-height:42px;border:0;border-radius:6px;padding:10px 16px;color:#fff;font-family:inherit;font-size:0.85rem;font-weight:700;cursor:pointer;}
+        #adminMis .mis-nav [data-mis-tab="management"]{background:#FF5A36;}
+        #adminMis .mis-nav [data-mis-tab="months"]{background:#1C1A17;}
+        #adminMis .mis-nav [data-mis-tab="records"]{background:#77716A;}
+        #adminMis .mis-nav button.active{outline:2px solid #FF5A36;outline-offset:3px;}
+        #adminMis .mis-nav [data-mis-tab="management"].active{outline-color:#1C1A17;}
+        #adminMis .mis-nav button:focus-visible,#adminMis .mis-open:focus-visible{outline:2px solid #1C1A17;outline-offset:3px;}
       </style>
       <div class="mis-nav" role="tablist" aria-label="MIS und Finanzen" onkeydown="misNavigateTabs(event)">
         <button type="button" role="tab" data-mis-tab="management" aria-selected="true" onclick="misSetView('management')">Management</button>
@@ -6794,7 +6799,7 @@ main {
     // Datenquelle: Musterdaten (assets/mis/mis-musterdaten.json) oder Echtdaten über
     // sb.rpc('admin_mis_report_data') – nur lesend, nur für Admins.
     // Definitionen und Regeln: 00 START HIER/MIS_PROJEKTGEDAECHTNIS.md
-    const MIS_ASSET_VERSION = 'v22-9';
+    const MIS_ASSET_VERSION = 'v22-10';
     const misState = { mode: null, model: null, raw: null, css: null, loading: null, view: 'management' };
 
     function misSetView(view) {
