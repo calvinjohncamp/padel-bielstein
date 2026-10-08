@@ -5542,7 +5542,7 @@ main {
       <button class="admin-tab" type="button" id="atab-infomails" data-admin-tab="infomails" onclick="setAdminTab('infomails')"><span aria-hidden="true">✉</span><span class="admin-tab-label">Info E-Mails</span></button>
       <button class="admin-tab" type="button" id="atab-infos" data-admin-tab="infos" onclick="setAdminTab('infos')"><span aria-hidden="true">📝</span><span class="admin-tab-label">Infotexte</span></button>
       <button class="admin-tab" type="button" id="atab-weather" data-admin-tab="weather" onclick="setAdminTab('weather')"><span aria-hidden="true">🌧</span><span class="admin-tab-label">Wetterausfälle</span></button>
-      <button class="admin-tab" type="button" id="atab-wipe" data-admin-tab="wipe" onclick="setAdminTab('wipe')" style="display:none;"><span aria-hidden="true">🧹</span><span class="admin-tab-label">Platte putzen</span></button>
+      <button class="admin-tab" type="button" id="atab-wipe" data-admin-tab="wipe" hidden disabled style="display:none;"><span class="admin-tab-label">Wartung</span></button>
     </div>
 
     <!-- ── VERABREDEN ── -->
@@ -6981,7 +6981,7 @@ main {
     }
 
     // ── MIS-Monatsarchiv ──
-    // Echtdaten: sb.rpc('admin_mis_archive_list' | 'admin_mis_archive_get' | 'admin_mis_archive_delete_test').
+    // Echtdaten: sb.rpc('admin_mis_archive_list' | 'admin_mis_archive_get').
     // Musterdaten: virtuelles Archiv der letzten 12 Monate aus den Musterdaten.
     function misEsc(v) { return String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
     function misEur(cents) { return (Math.round(cents / 100)).toLocaleString('de-DE') + ' €'; }
@@ -7024,7 +7024,6 @@ main {
             + '<button type="button" class="ab-btn" data-arch="excel" data-month="' + misEsc(a.month) + '">Excel</button>'
             + '<button type="button" class="ab-btn" data-arch="csv" data-month="' + misEsc(a.month) + '">CSV</button>'
             + (!a.sample ? '<button type="button" class="ab-btn" data-arch="weather-csv" data-month="' + misEsc(a.month) + '">Reklamationen CSV</button>' : '')
-            + (live && a.test_mode ? '<button type="button" class="ab-btn del" data-arch="delete" data-month="' + misEsc(a.month) + '">Testmonat löschen</button>' : '')
             + '</td></tr>').join('')
           + '</tbody></table></div><div class="arch-note">Archivierte Monatsdaten · noch kein bestätigter Bankabgleich.</div>';
       } catch (err) {
@@ -7046,12 +7045,6 @@ main {
         if (action === 'excel') return misExportArchiveFinance(month, 'xlsx');
         if (action === 'csv') return misDownloadArchiveCsv(month);
         if (action === 'weather-csv') return misDownloadArchiveCsv(month, true);
-        if (action === 'delete') {
-          if (!confirm('Testbetriebs-Monat ' + window.PBMIS.monthLabel(month) + ' aus dem Archiv löschen?')) return;
-          const { error } = await sb.rpc('admin_mis_archive_delete_test', { p_month: month });
-          if (error) { misSetStatus('Löschen fehlgeschlagen: ' + (error.message || error), true); return; }
-          misRenderArchive(root);
-        }
       });
     }
 
@@ -7299,44 +7292,7 @@ main {
       </div>
     </div><!-- /adminInfos -->
 
-    <!-- Nur während der Testphase sichtbar. Steuert app_settings.test_mode;
-         steht der auf false, blendet die App den Bereich aus UND die
-         Datenbank verweigert die Ausführung. -->
-    <div id="adminWipe" style="display:none;">
-      <div class="admin-section">
-        <div class="admin-section-title">🧹 Platte putzen (nur Testphase)</div>
-        <div class="admin-card">
-          <div class="wipe-warn">
-            Löscht Testdaten unwiderruflich. Es gibt kein Zurück und keine Sicherung.
-            Preise, Rabattregeln, Mitgliederliste und Öffnungszeiten bleiben unberührt.
-          </div>
-
-          <label class="wipe-opt">
-            <input type="checkbox" id="wipeBookings">
-            <span><strong>Sämtliche Buchungen</strong><br>
-              <small>Buchungen, Abos, Guthaben-Kontobuch, Wertkarten, Zahlungen,
-              Treuestunden, Türprotokoll</small></span>
-          </label>
-
-          <label class="wipe-opt">
-            <input type="checkbox" id="wipeAccounts">
-            <span><strong>Sämtliche Nutzerkonten</strong><br>
-              <small>Alle Konten außer Admin-Konten. Schließt die Buchungsdaten
-              zwingend mit ein.</small></span>
-          </label>
-
-          <div class="wipe-confirm">
-            <label for="wipeWord">Zum Bestätigen <strong>PUTZEN</strong> eintippen:</label>
-            <!-- Kein Platzhalter "PUTZEN": Der graue Text saehe aus, als stuende
-                 bereits etwas im Feld. Genau das hat zur Verwirrung gefuehrt. -->
-            <input type="text" id="wipeWord" autocomplete="off" spellcheck="false">
-          </div>
-
-          <button class="admin-btn wipe-btn" id="wipeBtn" onclick="doAdminWipe()">Jetzt löschen</button>
-          <div class="wipe-result" id="wipeResult"></div>
-        </div>
-      </div>
-    </div>
+    <div id="adminWipe" hidden style="display:none;"></div>
 
   </div><!-- /modeAdmin -->
 
@@ -11612,89 +11568,18 @@ function hideToast() {
 let adminTabLoaded = { freibad: false, prices: false, internal: false, bookings: false, archive: false, mis: false, users: false, infomails: false };
 
 // ============================================================
-//  PLATTE PUTZEN (nur Testphase)
-//
-//  Der Reiter erscheint nur, solange app_settings.test_mode = true ist.
-//  Das ist reine Anzeige-Logik - die eigentliche Sperre sitzt in der
-//  Datenbank (admin_wipe prueft Rolle UND Testmodus selbst). Wer den
-//  Aufruf von Hand absetzt, kommt damit trotzdem nicht durch.
+//  Reset is a separately approved maintenance task, not an App admin action.
 // ============================================================
 async function initWipeTab() {
   const tabEl = document.getElementById('atab-wipe');
-  if (!tabEl || !isAdmin()) return;
-  try {
-    const { data, error } = await sb.from('app_settings').select('test_mode').maybeSingle();
-    if (error || !data) return;                 // Tabelle fehlt -> Reiter bleibt verborgen
-    if (data.test_mode === true) tabEl.style.display = '';
-  } catch(e) { /* im Zweifel nicht anzeigen */ }
+  if (!tabEl) return;
+  tabEl.hidden = true;
+  tabEl.disabled = true;
+  tabEl.style.display = 'none';
 }
 
 async function doAdminWipe() {
-  const wantBookings = document.getElementById('wipeBookings').checked;
-  const wantAccounts = document.getElementById('wipeAccounts').checked;
-  const word   = (document.getElementById('wipeWord').value || '').trim();
-  const outEl  = document.getElementById('wipeResult');
-  const btn    = document.getElementById('wipeBtn');
-
-  const show = (msg, kind) => {
-    outEl.className = 'wipe-result ' + (kind || '');
-    outEl.textContent = msg;
-  };
-
-  if (!wantBookings && !wantAccounts) { show('Bitte mindestens eine Auswahl treffen.', 'warn'); return; }
-  // Gross-/Kleinschreibung egal: Das Feld stellt den Text ohnehin in
-  // Grossbuchstaben dar. Wer "putzen" tippt, sieht "PUTZEN" - eine
-  // Ablehnung waere fuer den Nutzer nicht nachvollziehbar.
-  if (word.toUpperCase() !== 'PUTZEN') { show('Bitte das Wort PUTZEN eintippen, um zu bestätigen.', 'warn'); return; }
-
-  // Konten ohne Buchungsdaten zu loeschen hinterliesse verwaiste Buchungen.
-  if (wantAccounts && !wantBookings) {
-    document.getElementById('wipeBookings').checked = true;
-    show('Hinweis: Beim Löschen der Konten werden die Buchungsdaten zwingend mitgelöscht.', 'warn');
-  }
-
-  const was = [wantBookings ? 'alle Buchungsdaten' : null,
-               wantAccounts ? 'alle Nutzerkonten (außer Admins)' : null]
-              .filter(Boolean).join(' und ');
-  if (!confirm(`Wirklich ${was} unwiderruflich löschen?\n\nEs gibt kein Zurück.`)) {
-    show('Abgebrochen. Es wurde nichts gelöscht.');
-    return;
-  }
-
-  btn.disabled = true;
-  show('Wird gelöscht …');
-  try {
-    const { data, error } = await sb.rpc('admin_wipe', {
-      p_bookings: wantBookings || wantAccounts,
-      p_accounts: wantAccounts,
-    });
-    if (error) { show('Fehler: ' + error.message, 'warn'); return; }
-
-    const labels = {
-      buchungen: 'Buchungen', abos: 'Abos', kontobuch: 'Guthaben-Bewegungen',
-      wertkarten: 'Wertkarten', zahlungen: 'Zahlungen', treuestunden: 'Treuestunden',
-      tuerprotokoll: 'Türprotokoll', mitgliedsmeldungen: 'Mitgliedsmeldungen',
-      konten: 'Nutzerkonten',
-    };
-    const zeilen = Object.entries(data || {})
-      .map(([k, v]) => `${labels[k] || k}: ${v}`)
-      .join('   ·   ');
-    show('Gelöscht — ' + (zeilen || 'nichts vorhanden'), 'ok');
-
-    document.getElementById('wipeWord').value = '';
-    document.getElementById('wipeBookings').checked = false;
-    document.getElementById('wipeAccounts').checked = false;
-
-    // Angezeigte Daten sofort auffrischen, damit nichts Gelöschtes stehen bleibt.
-    try {
-      await loadBookings(selDate); renderSlots();
-      if (typeof renderCreditOverview === 'function') await renderCreditOverview();
-    } catch(e) {}
-  } catch(e) {
-    show('Fehler: ' + (e.message || e), 'warn');
-  } finally {
-    btn.disabled = false;
-  }
+  showToast('Zurücksetzen ist nur als gesondert freigegebene Wartung möglich.');
 }
 
 // ============================================================
@@ -13501,6 +13386,7 @@ async function sendInfoMail(testOnly) {
 }
 
 function setAdminTab(tab) {
+  if (tab === 'wipe') tab = 'freibad';
   document.getElementById('adminFreibad').style.display   = tab==='freibad'  ? 'block' : 'none';
   document.getElementById('adminMeetups').style.display   = tab==='meetups'  ? 'block' : 'none';
   document.getElementById('adminPrices').style.display    = tab==='prices'   ? 'block' : 'none';
