@@ -17929,9 +17929,9 @@ function balanceCardHTML(card) {
   return `<div class="loyalty-card value-card">
     <div class="value-badge">€</div>
     <div class="rw-tagline">${tagline}</div>
-    <div class="rw-number">${remaining} €</div>
+    <div class="rw-number">${fmt(remaining)}</div>
     <div class="rw-headline">${headline}</div>
-    <div class="rw-subtitle">von ursprünglich <strong>${original} €</strong></div>
+    <div class="rw-subtitle">von ursprünglich <strong>${fmt(original)}</strong></div>
     <div class="rw-divider"></div>
     <div class="rw-name">${name}</div>
     <div class="rw-email">${email}</div>
@@ -17940,8 +17940,8 @@ function balanceCardHTML(card) {
     <div class="value-meter">
       <div class="value-meter-track"><div class="value-meter-fill" style="width:${usedPercent(original, remaining)}%;"></div></div>
       <div class="value-meter-legend">
-        <span>${Math.round((original - remaining) * 100) / 100} € verbraucht</span>
-        <span>${remaining} € übrig</span>
+        <span>${fmt(Math.round((original - remaining) * 100) / 100)} verbraucht</span>
+        <span>${fmt(remaining)} übrig</span>
       </div>
     </div>
     <div class="rw-legend">Dein Guthaben wird automatisch mit der nächsten Buchung verrechnet — <strong>orange</strong> zeigt, wie viel du bereits verbraucht hast.</div>
@@ -18879,8 +18879,8 @@ function updateBalanceMeter() {
   box.hidden = false;
   const used = Math.round((orig - rest) * 100) / 100;
   document.getElementById('wkBalanceMeterFill').style.width = usedPercent(orig, rest) + '%';
-  document.getElementById('wkMeterUsed').textContent = `${used} € verbraucht`;
-  document.getElementById('wkMeterLeft').textContent = `${Math.round(rest * 100) / 100} € übrig`;
+  document.getElementById('wkMeterUsed').textContent = `${fmt(used)} verbraucht`;
+  document.getElementById('wkMeterLeft').textContent = `${fmt(Math.round(rest * 100) / 100)} übrig`;
 }
 
 function renderCardSizeGrid() {
