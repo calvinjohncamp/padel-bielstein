@@ -6925,7 +6925,7 @@ main {
     // Datenquelle: Musterdaten (assets/mis/mis-musterdaten.json) oder Echtdaten über
     // sb.rpc('admin_mis_report_data') – nur lesend, nur für Admins.
     // Definitionen und Regeln: 00 START HIER/MIS_PROJEKTGEDAECHTNIS.md
-    const MIS_ASSET_VERSION = 'test-finance-20261010-2';
+    const MIS_ASSET_VERSION = 'test-finance-20261010-3';
     const MIS_VERIFIED_REPORTS_ENABLED = true;
     const misState = { mode: null, model: null, raw: null, css: null, loading: null, view: 'management' };
     const financeReviewState = { initialized: false, loading: false, cursor: null, rows: [] };
@@ -11624,7 +11624,7 @@ function getCheckoutEmailTheme() {
 const PREPARED_SINGLE_DIALOG_ENABLED = true;
 const PREPARED_SALE_DIALOG_ENABLED = true;
 const PREPARED_RETURN_POLL_ENABLED = true;
-const PREPARED_MAIL_NOTICE_ENABLED = false;
+const PREPARED_MAIL_NOTICE_ENABLED = true;
 const PREPARED_SALE_KEY_PREFIX = 'pb_prepared_sale_v1:';
 
 async function waitForPreparedCompletion({enabled=false,result,read,isCurrent,pending,
