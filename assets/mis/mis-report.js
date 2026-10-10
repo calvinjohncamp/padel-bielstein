@@ -66,6 +66,28 @@
     const END = TODAY - 1;
     const Y1 = 365;
     const calendarMonth = opts.calendarMonth || null;
+    const finance = opts.finance || null;
+    if (raw.financial_source && !finance) throw new Error('Verifizierte Finanzquelle wurde nicht geprüft.');
+    const moneyNumber = cents => {
+      if (cents > BigInt(Number.MAX_SAFE_INTEGER) || cents < -BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('Berichtsbetrag zu groß für die Diagrammansicht.');
+      return Number(cents) / 100;
+    };
+    const eventSlots = raw.event_slots || [];
+    const aboExclusions = new Set((raw.abo_exclusions || []).map(v => dn(v[0]) + '-' + v[1] + '-' + v[2]));
+    function financeRange(s, e) {
+      const cash = finance.cash.filter(row => dn(row.day) >= s && dn(row.day) <= e && row.currency === 'eur');
+      const sales = finance.sales.filter(row => row.verified && dn(row.day) >= s && dn(row.day) <= e);
+      const sum = (rows, key) => rows.reduce((n, row) => n + row[key], 0n);
+      const payments = cash.filter(row => row.scope === 'padel' && row.kind === 'payment');
+      return { booking: moneyNumber(sum(payments.filter(row => row.category === 'booking'), 'amount')),
+        abo: moneyNumber(sum(payments.filter(row => ['subscription','earlybird_subscription'].includes(row.category)), 'amount')),
+        cards: moneyNumber(sum(payments.filter(row => row.category === 'card'), 'amount')),
+        total: moneyNumber(sum(payments, 'amount')), credit: moneyNumber(sum(sales, 'credit')),
+        refund: moneyNumber(sum(cash.filter(row => row.scope === 'padel' && row.kind === 'refund'), 'amount')),
+        fee: moneyNumber(sum(cash.filter(row => row.scope === 'provider' && row.kind === 'fee'), 'amount')),
+        payout: moneyNumber(sum(cash.filter(row => row.scope === 'provider' && row.kind === 'payout'), 'amount')),
+        sales, buyers: new Set(sales.filter(row => row.cash > 0n).map(row => row.person)) };
+    }
     if (calendarMonth && (!/^\d{4}-\d{2}-01$/.test(calendarMonth) || calendarMonth.slice(0, 7) !== isoOf(END).slice(0, 7)
       || END !== mend(Number(calendarMonth.slice(0, 4)), Number(calendarMonth.slice(5, 7))))) {
       throw new Error('Archivmonat und Datenstand stimmen nicht überein.');
@@ -85,14 +107,28 @@
     const hasWeather = weatherArchive || Array.isArray(raw.weather) && raw.weather.length > 0;
     const wlost = new Map(), rainh = new Map();
     for (const w of raw.weather || []) { const d = dn(w[0]); wlost.set(d, [w[1], w[2]]); rainh.set(d, w[3]); }
-    const weatherSlots = new Map((raw.weather_hours || []).map(w => [dn(w[0]) + '-' + w[1], w]));
+    const weatherSlots = new Map();
+    for (const w of raw.weather_hours || []) {
+      if (!Array.isArray(w) || typeof w[0] !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(w[0])
+        || !Number.isFinite(dn(w[0])) || isoOf(dn(w[0])) !== w[0]
+        || !Number.isInteger(w[1]) || !HOURS.includes(w[1])
+        || w[2] != null && (typeof w[2] !== 'number' || !Number.isFinite(w[2]) || w[2] < 0)) {
+        throw new Error('Ungültiger archivierter Wetter-Stundenwert.');
+      }
+      const key = dn(w[0]) + '-' + w[1];
+      if (weatherSlots.has(key)) throw new Error('Doppelter archivierter Wetter-Stundenwert.');
+      weatherSlots.set(key, w);
+    }
     const weatherDayCache = new Map();
     function weatherDay(d) {
       if (weatherDayCache.has(d)) return weatherDayCache.get(d);
       const occupied = [new Set(), new Set()];
       const add = b => { if (b.court === 1 || b.court === 2) for (let h = b.h; h < b.h + b.dur; h++) occupied[b.court - 1].add(h); };
       for (const b of [...live, ...verein]) if (b.date === d) add(b);
-      for (const a of abos) if (a.start <= d && d <= a.end && a.wd === wdMon(d)) add(a);
+      for (const a of abos) if (a.start <= d && d <= a.end && a.wd === wdMon(d)) {
+        for (let h = a.h; h < a.h + a.dur; h++) if (!aboExclusions.has(d + '-' + a.court + '-' + h)) occupied[a.court - 1].add(h);
+      }
+      for (const v of eventSlots) if (dn(v[0]) === d) occupied[v[1] - 1].add(v[2]);
       const v = { wet: [0, 0], unknown: [0, 0], known: 0 };
       for (const h of HOURS) {
         const w = weatherSlots.get(d + '-' + h);
@@ -116,8 +152,10 @@
       if (court && a.court !== court) return 0;
       const s2 = Math.max(s, a.start), e2 = Math.min(e, a.end);
       if (s2 > e2) return 0;
-      let n = 0; for (let d = s2; d <= e2; d++) if (wdMon(d) === a.wd) n++;
-      return n * a.dur;
+      let n = 0; for (let d = s2; d <= e2; d++) if (wdMon(d) === a.wd) {
+        for (let h = a.h; h < a.h + a.dur; h++) if (!aboExclusions.has(d + '-' + a.court + '-' + h)) n++;
+      }
+      return n;
     }
 
     function K(s, e) {
@@ -146,6 +184,16 @@
       r.abo_act = act.length; r.abo_wk = act.reduce((t, a) => t + a.dur, 0);
       r.abo_1 = act.filter((a) => a.dur === 1).length; r.abo_2 = act.filter((a) => a.dur === 2).length;
       r.p_buy = buy.size;
+      r.h_ein += eventSlots.filter(v => dn(v[0]) >= s && dn(v[0]) <= e).length;
+      r.h_bel = r.h_ein + r.h_abo + r.h_ver;
+      r.h_frei = r.cap - r.h_bel - r.h_wet - r.h_unknown;
+      r.ausl = r.h_bel / r.cap * 100;
+      if (finance) {
+        const f = financeRange(s,e);
+        Object.assign(r,{ u_bu:f.booking,u_abo:f.abo,u_gut:f.cards,u_cred:f.credit,u_ein:f.booking+f.cards,u:f.total,p_buy:f.buyers.size,
+          n_abo:f.sales.filter(row => ['subscription','earlybird_subscription'].includes(row.kind)).length,
+          n_abo_h:f.sales.filter(row => ['subscription','earlybird_subscription'].includes(row.kind)).reduce((n,row) => n + (row.terms.duration || 0),0) });
+      }
       return r;
     }
 
@@ -161,18 +209,26 @@
     // Tageswerte (Seite 1)
     function dayVals(d) {
       let ha = 0, he = 0, hv = 0, ua = 0, ub = 0; const pers = new Set();
-      for (const a of abos) { if (a.start <= d && d <= a.end && a.wd === wdMon(d)) ha += a.dur; if (a.sale === d) { ua += a.priceC; pers.add(pkey(a.holder)); } }
+      let financeTotal=null;
+      for (const a of abos) { if (a.start <= d && d <= a.end && a.wd === wdMon(d)) ha += aboHours(a,d,d); if (a.sale === d) { ua += a.priceC; pers.add(pkey(a.holder)); } }
       for (const b of live) { if (b.date === d) he += b.dur; if (b.sale === d) { ub += b.directC; if (b.directC > 0) pers.add(pkey(b.person)); } }
       for (const c of cards) if (c.sale === d) { ub += c.amountC; pers.add(pkey(c.person)); }
       ua /= 100; ub /= 100;
       for (const v of verein) if (v.date === d) hv += v.dur;
+      he += eventSlots.filter(v => dn(v[0]) === d).length;
+      if (finance) { const f = financeRange(d,d);ua=f.abo;ub=f.booking+f.cards;financeTotal=f.total;pers.clear();f.buyers.forEach(p => pers.add(p)); }
       const rh = weatherArchive ? (weatherDay(d).known === 14 ? lostDay(d) : null) : hasWeather ? 2 * (rainh.get(d) || 0) : null;
-      return { d, ha, he, hv, rh, bel: ha + he + hv, ua, ub, uv: 0, u: Math.round((ua + ub) * 100) / 100, pers };
+      return { d, ha, he, hv, rh, bel: ha + he + hv, ua, ub, uv: 0, u: financeTotal ?? Math.round((ua + ub) * 100) / 100, pers };
     }
     function aggDays(rows) {
       const r = { ha: 0, he: 0, hv: 0, rh: 0, bel: 0, ua: 0, ub: 0, uv: 0, u: 0 };
       const pers = new Set();
       for (const x of rows) { for (const k of Object.keys(r)) r[k] += x[k] || 0; x.pers.forEach((p) => pers.add(p)); }
+      if (finance) for (const key of ['ua','ub','uv','u']) {
+        const cents=rows.reduce((sum,row)=>sum+BigInt(Math.round(row[key]*100)),0n);
+        if (cents>BigInt(Number.MAX_SAFE_INTEGER) || cents<-BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('Berichtsbetrag zu groß.');
+        r[key]=Number(cents)/100;
+      }
       r.pers = pers; r.n = rows.length; r.ausl = rows.length ? r.bel / (28 * rows.length) * 100 : 0;
       if (!hasWeather || rows.some(x => x.rh === null)) r.rh = null;
       return r;
@@ -186,6 +242,14 @@
     // Kumuliert (taggenau)
     function cumulDaily(s) {
       const out = new Array(365).fill(0); const idx = (d) => d - s;
+      if (finance) {
+        const cents = new Array(365).fill(0n);
+        for (const row of finance.cash) if (row.currency === 'eur' && row.scope === 'padel' && row.kind === 'payment') {
+          const i=idx(dn(row.day));if(i>=0 && i<365) cents[i]+=row.amount;
+        }
+        for(let i=1;i<365;i++) cents[i]+=cents[i-1];
+        return cents.map(moneyNumber);
+      }
       for (const b of live) { const i = idx(b.sale); if (i >= 0 && i < 365) out[i] += b.directC; }
       for (const c of cards) { const i = idx(c.sale); if (i >= 0 && i < 365) out[i] += c.amountC; }
       for (const a of abos) { const i = idx(a.sale); if (i >= 0 && i < 365) out[i] += a.priceC; }
@@ -200,6 +264,12 @@
     const FMONTHS = []; for (let k = 0; k < 12; k++) FMONTHS.push(ymAdd(fy, fm, k - 11));
     function fin(s, e) {
       const r = K(s, e);
+      if (finance) {
+        const f=financeRange(s,e), groups={tfb:0n,bsv:0n,par:0n,ext:0n};
+        for(const sale of f.sales) if(['booking','event'].includes(sale.kind) && sale.group in groups) groups[sale.group]+=sale.cash;
+        return {r,used:f.credit,cards:f.cards,z:f.total,earned:null,g_tfb:moneyNumber(groups.tfb),g_bsv:moneyNumber(groups.bsv),
+          g_par:moneyNumber(groups.par),g_ext:moneyNumber(groups.ext),fee:f.fee,refund:f.refund,payout:f.payout};
+      }
       let earned = 0;
       for (const a of abos) { const tot = a.end - a.start + 1; const s2 = Math.max(s, a.start), e2 = Math.min(e, a.end); if (s2 <= e2) earned += a.price * (e2 - s2 + 1) / tot; }
       const g = { tfb: 0, bsv: 0, par: 0, ext: 0 };
@@ -226,6 +296,7 @@
       let ha = 0, he = 0, hv = 0, hw = 0;
       for (const a of abos) ha += aboHours(a, s, e, c);
       for (const b of live) if (b.court === c && b.date >= s && b.date <= e) he += b.dur;
+      he += eventSlots.filter(v => v[1] === c && dn(v[0]) >= s && dn(v[0]) <= e).length;
       for (const v of verein) if (v.court === c && v.date >= s && v.date <= e) hv += v.dur;
       for (let d = s; d <= e; d++) hw += lostDay(d, c);
       let hu = 0; for (let d = s; d <= e; d++) hu += unknownDay(d, c);
@@ -235,17 +306,22 @@
     for (let d = s3; d <= END; d++) wdn[wdMon(d)]++;
     const addCnt = (wd, h, dur) => { for (let k = 0; k < dur; k++) { const key = wd + '-' + (h + k); cnt[key] = (cnt[key] || 0) + 1; } };
     for (const b of live) if (b.date >= s3 && b.date <= END) addCnt(wdMon(b.date), b.h, b.dur);
-    for (const a of abos) for (let d = Math.max(s3, a.start); d <= Math.min(END, a.end); d++) if (wdMon(d) === a.wd) addCnt(a.wd, a.h, a.dur);
+    for (const a of abos) for (let d = Math.max(s3, a.start); d <= Math.min(END, a.end); d++) if (wdMon(d) === a.wd) {
+      for(let h=a.h;h<a.h+a.dur;h++) if(!aboExclusions.has(d+'-'+a.court+'-'+h)) addCnt(a.wd,h,1);
+    }
+    for(const v of eventSlots) if(dn(v[0])>=s3 && dn(v[0])<=END) addCnt(wdMon(dn(v[0])),v[2],1);
     for (const v of verein) if (v.date >= s3 && v.date <= END) addCnt(wdMon(v.date), v.h, v.dur);
     const dailyDetail = []; for (let d = S30; d <= E30; d++) { const x = dayVals(d); x.hw = lostDay(d); x.hu = unknownDay(d); dailyDetail.push(x); }
 
     const fs = raw.finance_sample || null;
     const weatherClaimHours = (raw.weather_claims || []).filter(w => dn(w[0]) >= S30 && dn(w[0]) <= END).reduce((sum, w) => sum + w[3] * w[4] / 100, 0);
-    const rainRows = (raw.weather_hours || []).filter(w => dn(w[0]) >= S30 && dn(w[0]) <= END);
-    const observedRainMm = rainRows.reduce((sum, w) => sum + Number(w[2] || 0), 0);
-    const observedRainHours = rainRows.filter(w => Number(w[2]) > 0).length;
+    const rainRows = [...weatherSlots.values()].filter(w => dn(w[0]) >= S30 && dn(w[0]) <= END);
+    const measuredRainRows = rainRows.filter(w => typeof w[2] === 'number' && Number.isFinite(w[2]));
+    const observedRainKnownHours = measuredRainRows.length;
+    const observedRainMm = observedRainKnownHours ? measuredRainRows.reduce((sum, w) => sum + w[2], 0) : null;
+    const observedRainHours = observedRainKnownHours ? measuredRainRows.filter(w => w[2] > 0).length : null;
     const weatherAccounting = raw.weather_accounting_month || raw.weather_accounting || { open: [], events: [] };
-    return { sample, calendarMonth, archiveLabel: opts.archiveLabel || null, testMode: !!raw.test_mode, hasWeather, weatherArchive, weatherClaimHours, observedRainMm, observedRainHours, weatherAccounting, TODAY, END, S30, E30, S12, W, MONTHS, M, today, days30, todayV, days30v, aggDays,
+    return { sample, finance, creditSource:opts.credit || null, calendarMonth, archiveLabel: opts.archiveLabel || null, testMode: !!raw.test_mode, hasWeather, weatherArchive, weatherClaimHours, observedRainMm, observedRainHours, observedRainKnownHours, weatherAccounting, TODAY, END, S30, E30, S12, W, MONTHS, M, today, days30, todayV, days30v, aggDays,
       cc, cp, fy, fm, F, Fv, FY, FYv, FM, rapEnd: rapAt(mend(fy, fm)), rapBeg: rapAt(mstart(fy, fm) - 1), courts, cnt, wdn, dailyDetail, fs };
   }
 
@@ -471,7 +547,7 @@ ${row(weatherLabel, WET, r.h_wet)}${md.weatherArchive ? row('Wetterdaten fehlen'
 <div class="panel"><h2>Verfügbare Stunden <small>2 Plätze × 14 Stunden = 28 Stunden pro Tag</small></h2><div class="b2">${belegBlock('30', '30v', P30)}${belegBlock('12', '12v', P12)}</div>
 <div class="abo-line">Abos heute: <b>${w30.abo_act} aktive Abos</b> belegen <b>${w30.abo_wk} Stunden pro Woche</b> (${w30.abo_1} × 1 Std., ${w30.abo_2} × 2 Std.) · Verein = Training, Kurse und Veranstaltungen ohne Umsatz · ${md.weatherArchive ? 'Regen = Niederschlag > 0 mm, unbelegt; keine automatische Unbespielbarkeit. Wetter offen = fehlende Messwerte.' : 'Wetter (nicht bespielbar) = laut Wetter-App und nicht belegt' + noWx}</div></div>
 <div class="panel"><h2>Platzbelegung je Monat <small>Ø Stunden pro Tag · jeder Balken = 28 Stunden · links die letzten 12 Monate (neuester zuerst), rechts Vorjahr</small>${KEYB}</h2>${bChart}</div>
-${foot(3, md.weatherArchive ? `DWD/Bright Sky 8–22 Uhr · 30 Tage: ${w30.weather_known}/${w30.days * 14} Messwerte, ${de(md.observedRainMm, 1)} mm, ${md.observedRainHours} Regenstunden (auch belegt) · Reklamationen: ${de(md.weatherClaimHours, 1)} h bestätigt; ${md.weatherAccounting.open.length} offen · Umsätze unverändert durch Wetter` : 'Platzbelegung = am Spieltag gezählt · Auslastung = belegte Stunden ÷ verfügbare Stunden · gezählt wird, was gebucht ist')}</section>`;
+${foot(3, md.weatherArchive ? `DWD/Bright Sky 8–22 Uhr · 30 Tage: ${w30.weather_known}/${w30.days * 14} Messwerte, ${md.observedRainKnownHours ? `${de(md.observedRainMm, 1)} mm erfasst, ${md.observedRainHours} Regenstunden (auch belegt)` : 'Regenmessung unbekannt'} · Reklamationen: ${de(md.weatherClaimHours, 1)} h bestätigt; ${md.weatherAccounting.open.length} offen · Umsätze unverändert durch Wetter` : 'Platzbelegung = am Spieltag gezählt · Auslastung = belegte Stunden ÷ verfügbare Stunden · gezählt wird, was gebucht ist')}</section>`;
 
     // ---------- Seite 4: Details ----------
     const courtBar = (x) => {
@@ -543,8 +619,8 @@ ${foot(4)}</section>`;
       fr('<b class="abc">B</b>Guthaben / Gutscheine verkauft', (x) => x.r.u_gut),
       fr('<b class="abc">C</b>Abos (Verkauf)', (x) => x.r.u_abo),
       fr('= Umsatz gesamt (A + B + C) <span class="sm2">= Zahlungseingang, wie Seite 2</span>', (x) => x.r.u, 'sum'),
-      fr('− Rückzahlungen', (x) => x.refund, '', -1, !!fs),
-      fr('− Stripe-Gebühren', (x) => x.fee, '', -1, !!fs),
+      fr('− Rückzahlungen', (x) => x.refund, '', -1, !!fs || !!md.finance),
+      fr('− Stripe-Gebühren', (x) => x.fee, '', -1, !!fs || !!md.finance),
       fr('Nachrichtlich: mit Guthaben bezahlte Buchungen (kein zusätzlicher Umsatz)', (x) => x.used, 'info'),
     ].join('');
     let flow, gEnd = null, gBeg = null, checks;
@@ -554,13 +630,25 @@ ${foot(4)}</section>`;
       gBeg = fs.credit_open_cents / 100; gEnd = gBeg + F.cards + fs.credit_storno_cents / 100 - F.used;
       flow = `<div class="flow"><div><span>Bestand 01.${p2(fm)}.</span><b>${eur(ob)}</b></div><div class="op">+</div><div><span>Zahlungseingang</span><b>${eur(F.z)}</b></div><div class="op">−</div><div><span>Rückzahlungen + Gebühren</span><b>${eur(F.refund + F.fee)}</b></div><div class="op">−</div><div class="hl"><span>Aufs Vereinskonto überwiesen</span><b>${eur(payout)}</b></div><div class="op">=</div><div><span>Bestand ${mLast}.${p2(fm)}.</span><b>${eur(cb)}</b></div></div>`;
       checks = [['ok', 'Jede Zahlung einer Buchung, einem Abo oder einer Wertkarte zugeordnet'], ['ok', 'Stripe = App: Differenz 0,00 €'], ['ok', `Überweisungen von Stripe auf dem Vereinskonto gefunden (${eur(payout)})`], ['ok', 'Belegnummern lückenlos'], ['warn', '1 Rückzahlung noch zu prüfen (24 €)'], ['todo', 'Freigabe durch Kassierer']];
+    } else if (md.finance) {
+      flow = `<p class="note">Nachgewiesene Stripe-Auszahlungen: ${eur(F.payout)}. Stripe- und Bankbestände bleiben bis zur externen Abstimmung offen.</p>`;
+      const c=md.finance.controls;
+      checks=[['warn',`${c.unlinked_payment_count} Zahlungen ohne vollständige Belegzuordnung; ${c.unverified_sale_count} Belegnachweise ungeklärt`],
+        ['warn',`${c.unknown_group_count} historische Gruppen ungeklärt; ${c.unsupported_currency_count} Fremdwährungsbewegungen`],
+        ['todo','Vollständigkeit der Stripe-Historie und Bankabgleich noch nicht freigegeben'],['todo','Fachliche Freigabe durch Kassierer']];
+      if(BigInt(md.weatherAccounting.legacy_unknown_count || '0')>0n) checks.splice(2,0,['warn',`${md.weatherAccounting.legacy_unknown_count} alte Regenreklamationen ohne vollständigen Nachweis`]);
+      if(md.creditSource?.proven) {
+        const values=[md.creditSource.opening,md.creditSource.closing,md.creditSource.gifts];
+        if(values.some(v=>v>BigInt(Number.MAX_SAFE_INTEGER) || v<-BigInt(Number.MAX_SAFE_INTEGER))) throw new Error('Guthabenbestand zu groß für Bericht.');
+        gBeg=Number(values[0])/100;gEnd=Number(values[1])/100;
+      }
     } else {
       flow = '<p class="note">Stripe-Bestände, Gebühren, Rückzahlungen und Überweisungen werden angebunden, sobald der Kassierer die Anforderungen festgelegt hat (siehe MIS-Projektgedächtnis, Schritt 3).</p>';
       checks = [['todo', 'Zuordnung aller Stripe-Zahlungen – Anbindung folgt'], ['todo', 'Abgleich Stripe = App – Anbindung folgt'], ['todo', 'Überweisungen / Bankabgleich – Anbindung folgt'], ['todo', 'Belegnummern für Abos und Guthaben – folgt'], ['todo', 'Freigabe durch Kassierer']];
     }
     const chk = checks.map(([k, t]) => `<tr><td class="ic ${k}">${k === 'ok' ? '✓' : k === 'warn' ? '!' : '○'}</td><td>${t}</td></tr>`).join('');
-    const mrows = md.FM.map(({ y, m, f }) => `<tr><td>${MON[m - 1]} ${y}</td><td class="n">${eur(f.r.u_ein)}</td><td class="n">${eur(f.r.u_abo)}</td><td class="n b">${eur(f.r.u)}</td><td class="n">${eur(f.earned)}</td><td class="n">${eur(f.r.u_gut)}</td></tr>`).join('');
-    const fbNote = fs && fs.freibad_ytd_cents ? `Im Umsatz aus Buchungen enthalten: Freibad-Aufschlag ${eur(fs.freibad_ytd_cents / 100)} (Jan–${mName} ${fy}), gesondert abzurechnen. ` : 'Freibad-Aufschlag wird noch nicht gesondert ausgewiesen. ';
+    const mrows = md.FM.map(({ y, m, f }) => `<tr><td>${MON[m - 1]} ${y}</td><td class="n">${eur(f.r.u_ein)}</td><td class="n">${eur(f.r.u_abo)}</td><td class="n b">${eur(f.r.u)}</td><td class="n">${f.earned===null ? '–' : eur(f.earned)}</td><td class="n">${eur(f.r.u_gut)}</td></tr>`).join('');
+    const fbNote = fs && fs.freibad_ytd_cents ? `Im Umsatz aus Buchungen enthalten: Freibad-Aufschlag ${eur(fs.freibad_ytd_cents / 100)} (Jan–${mName} ${fy}), gesondert abzurechnen. ` : 'Freibadtickets sind im Buchungspreis enthalten; keine zusätzliche Umsatzbeteiligung in der App. ';
     const pg5 = `<section class="page">${head('Finanzen – für Kassierer und Steuerberater', `Monatsabschluss ${['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'][fm - 1]} ${fy}: vom Umsatz zum Geld auf dem Vereinskonto${fs ? '' : ' · ENTWURF'}`)}
 <div class="g21b">
  <div class="panel"><h2>Vom Umsatz zum Zahlungseingang</h2>
@@ -571,13 +659,13 @@ ${foot(4)}</section>`;
  </div>
  <div class="panel"><h2>Für den Jahresabschluss</h2>
   <table class="cmp"><tbody>
-   <tr><td>Abo-Umsatz periodengerecht (${mName})<em>auf ${['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'][fm - 1]} entfallender Anteil aller laufenden Abos</em></td><td class="n b">${eur(F.earned)}</td></tr>
-   <tr><td>Abo-Vorauszahlungen ${mLast}.${p2(fm)}.<em>bezahlt, Leistung noch offen (Vormonat ${eur(md.rapBeg)})</em></td><td class="n b">${eur(md.rapEnd)}</td></tr>
-   <tr><td>Spielguthaben-Bestand ${mLast}.${p2(fm)}.<em>Verpflichtung gegenüber Kunden${gBeg !== null ? ` (Vormonat ${eur(gBeg)})` : ' – Anbindung folgt'}</em></td><td class="n b">${gEnd !== null ? eur(gEnd) : '–'}</td></tr>
+   <tr><td>Abo-Umsatz periodengerecht (${mName})<em>${md.finance ? 'Verteilung nach Laufzeit durch die Buchhaltung festzulegen' : 'auf '+['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'][fm - 1]+' entfallender Anteil aller laufenden Abos'}</em></td><td class="n b">${F.earned===null ? '–' : eur(F.earned)}</td></tr>
+   <tr><td>Abo-Vorauszahlungen ${mLast}.${p2(fm)}.<em>${md.finance ? 'Laufzeiten und bezahlte Beträge in der Abo-Beleganlage' : 'bezahlt, Leistung noch offen (Vormonat '+eur(md.rapBeg)+')'}</em></td><td class="n b">${md.finance ? '–' : eur(md.rapEnd)}</td></tr>
+   <tr><td>Spielguthaben-Bestand ${mLast}.${p2(fm)}.<em>Verpflichtung gegenüber Kunden${gBeg !== null ? ` (Vormonat ${eur(gBeg)})` : ' – Nachweise fehlen'}${md.creditSource?.gifts != null ? `; unbeanspruchte Geschenke separat ${eur(Number(md.creditSource.gifts)/100)}` : ''}</em></td><td class="n b">${gEnd !== null ? eur(gEnd) : '–'}</td></tr>
   </tbody></table>
   <h2 class="mt">Abschluss-Prüfung</h2><table class="chk">${chk}</table>
   <h2 class="mt">Monatswerte – letzte 12 Monate</h2><table class="mt12"><thead><tr><th>Monat</th><th class="n">Buchungen*</th><th class="n">Abos</th><th class="n">Umsatz</th><th class="n">Abo period.</th><th class="n">davon Guthaben</th></tr></thead><tbody>${mrows}</tbody></table>
-  <div class="export">Für den Steuerberater: Buchungsliste (CSV, DATEV-fähig) · Belegliste · Stripe-Auszug · Kennzahlen (Excel). Werte getrennt nach Kundengruppe (TFB, BSV, Partner, Externe) und A/B/C; Konten und Umsatzsteuer legt der Steuerberater fest.</div>
+  <div class="export">Für den Steuerberater: Buchungsliste (CSV/Excel) · Belegliste · Stripe-Auszug · Kennzahlen. Werte getrennt nach Kundengruppe (TFB, BSV, Partner, Externe) und A/B/C; Konten und Umsatzsteuer legt der Steuerberater fest.</div>
  </div>
 </div>
 ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkaufte Guthaben/Gutscheine · mit Guthaben bezahlte Buchungen zählen nicht doppelt')}</section>`;
@@ -715,12 +803,12 @@ ${foot(5, 'Umsatz = Zahlungseingang: Abos + direkt bezahlte Buchungen + verkauft
       footer('SUMME abgelehnte Meldungen', rows.filter(r => r[4] === 'rejected'), 'Keine Buchung'),
       footer('SUMME offen am Monatsende', rows.filter(r => r[4] === 'open_at_cutoff'), 'Nur beantragt, keine Buchung'),
     ] : [
-      footer('ZWISCHENSUMME Buchungen', rows.filter(r => r[2] === 'Buchung')),
+      footer('ZWISCHENSUMME Buchungen', rows.filter(r => ['Buchung','Event'].includes(r[2]))),
       footer('ZWISCHENSUMME Abos', rows.filter(r => ['Abo', 'Abo (2 Jahre)'].includes(r[2]))),
-      footer('ZWISCHENSUMME Guthaben/Gutscheine', rows.filter(r => r[2] === 'Guthaben/Gutschein')),
+      footer('ZWISCHENSUMME Guthaben/Gutscheine', rows.filter(r => ['Guthaben/Gutschein','Historische Stundenkarte'].includes(r[2]))),
       footer('MONATSSUMME', rows),
     ];
-    if (rows.some(r => !(weather ? ['reported','credit_granted','rejected','open_at_cutoff'] : ['Buchung','Abo','Abo (2 Jahre)','Guthaben/Gutschein']).includes(r[weather ? 4 : 2]))) {
+    if (rows.some(r => !(weather ? ['reported','credit_granted','rejected','open_at_cutoff','credit_unverified'] : ['Buchung','Event','Abo','Abo (2 Jahre)','Guthaben/Gutschein','Historische Stundenkarte']).includes(r[weather ? 4 : 2]))) {
       throw new Error('Unbekannte Vorgangsart im Monatsarchiv.');
     }
     const cell = value => /[;"\r\n]/.test(value) ? '"' + value.replace(/"/g, '""') + '"' : value;
