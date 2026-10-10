@@ -6925,7 +6925,7 @@ main {
     // Datenquelle: Musterdaten (assets/mis/mis-musterdaten.json) oder Echtdaten über
     // sb.rpc('admin_mis_report_data') – nur lesend, nur für Admins.
     // Definitionen und Regeln: 00 START HIER/MIS_PROJEKTGEDAECHTNIS.md
-    const MIS_ASSET_VERSION = 'test-finance-20261010-1';
+    const MIS_ASSET_VERSION = 'test-finance-20261010-2';
     const MIS_VERIFIED_REPORTS_ENABLED = true;
     const misState = { mode: null, model: null, raw: null, css: null, loading: null, view: 'management' };
     const financeReviewState = { initialized: false, loading: false, cursor: null, rows: [] };
@@ -12120,7 +12120,7 @@ function shouldInterceptPreparedSingleReturn(params) {
 async function handlePreparedSingleReturn(params=null) {
   if(params && await handlePreparedSaleReturn(params)) return true;
   const route = parsePreparedSingleReturn(params);
-  if (route.kind === 'unmarked' && !shouldInterceptPreparedSingleReturn(params)) return false;
+  if (params && route.kind === 'unmarked' && !shouldInterceptPreparedSingleReturn(params)) return false;
   if (route.kind !== 'single') {
     showToast('Die Rückkehr vom Bezahlen konnte nicht eindeutig zugeordnet werden. Bitte den offenen Vorgang prüfen.');
     return true;

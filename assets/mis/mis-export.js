@@ -40,10 +40,11 @@
   function title(entry, weather) {
     return (weather ? 'Reklamationen' : 'Buchungsliste') + ' ' + window.PBMIS.monthLabel(entry.month);
   }
-  function status(entry) { return entry.sample ? 'MUSTERDATEN' : entry.test_mode ? 'TESTBETRIEB' : 'Archivierte App-Daten'; }
+  function status(entry) { return (entry.sample ? 'MUSTERDATEN' : entry.test_mode ? 'TESTBETRIEB' : 'Archivierte App-Daten')
+    +(entry.version?' · Version '+entry.version:''); }
   function filename(entry, weather, ext) {
     return 'padel-bielstein-' + (weather ? 'reklamationen-' : 'buchungsliste-') + entry.month.slice(0, 7)
-      + (entry.sample ? '-muster' : entry.test_mode ? '-testbetrieb' : '') + '.' + ext;
+      + (entry.sample ? '-muster' : entry.test_mode ? '-testbetrieb' : '')+(entry.version?'-v'+entry.version:'') + '.' + ext;
   }
   function download(blob, name) {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
@@ -155,6 +156,27 @@
         pdf.text('Seite ' + hook.pageNumber, 289, 203, { align: 'right' });
       }
     });
+    if(entry.finance && !weather) {
+      const cents=n=>{
+        if(n>BigInt(Number.MAX_SAFE_INTEGER) || n<-BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('Finanzbetrag zu groß für PDF.');
+        return money(Number(n)/100);
+      };
+      pdf.addPage();pdf.setFont('Manrope','bold');pdf.setFontSize(13);pdf.text('Finanzabstimmung '+window.PBMIS.monthLabel(entry.month),8,13);
+      const f=entry.finance,c=entry.credit;
+      pdf.autoTable({startY:23,margin:{left:8,right:8},styles:{font:'Manrope',fontSize:9,cellPadding:2},
+        head:[['Nachweis','EUR / Anzahl']],body:[
+          ['Zahlungseingänge Padel',cents(f.totals.payments_cents)],['Tatsächliche Kartenrückzahlungen',cents(f.totals.refunds_cents)],
+          ['Cash nach Kartenrückzahlungen',cents(f.netCash)],['Providergebühren (kein weiterer Umsatz)',cents(f.totals.fees_cents)],
+          ['Providerauszahlungen (Bankabgleich offen)',cents(f.totals.payouts_cents)],['Beleg-Cash-Zuordnungsdifferenz',cents(f.difference)],
+          ['Spielguthaben Anfang',c.opening===null?'Unbekannt':cents(c.opening)],['Spielguthaben Ende',c.closing===null?'Unbekannt':cents(c.closing)],
+          ['Geschenkkarten noch nicht beansprucht',c.gifts===null?'Unbekannt':cents(c.gifts)],
+          ['Offene Regenreklamationen zum Monatsende',String(entry.weather_accounting.open.length)],
+          ['Alte Regenreklamationen ohne vollständigen Nachweis',String(entry.weather_accounting.legacy_unknown_count)],
+          ['Guthabennachweise / Historienlücken',c.gapCount.toString()],['Ungeklärte Zahlungszuordnungen',f.controls.unlinked_payment_count.toString()]],
+        headStyles:{fillColor:'#1C1A17'},columnStyles:{1:{halign:'right'}}});
+      pdf.setFont('Manrope','normal');pdf.setFontSize(8);
+      pdf.text('Kein bestätigter Bankabgleich oder steuerlicher Abschluss. Vereinsausgaben und Kiosk nicht enthalten.',8,pdf.lastAutoTable.finalY+8);
+    }
     return pdf.output('blob');
   }
   async function financeWorkbook(entry, matrix, weather, parse) {
@@ -197,11 +219,90 @@
       const label = sheet.getCell(row, 3).value;
       sheet.getCell(row, 3).value = null; sheet.mergeCells(row, 1, row, 8); sheet.getCell(row, 1).value = label;
     }
-    // Totals remain fixed snapshot values, exactly like the signed source archive.
+    // Totals remain fixed snapshot values, exactly like the immutable source archive.
     if (data.rows.length) sheet.autoFilter = { from: { row: 5, column: 1 }, to: { row: lastDetail, column: count } };
     sheet.pageSetup.printArea = 'A1:' + sheet.getCell(sheet.rowCount, count).address;
+    if(entry.finance && !weather) {
+      const numeric=s=>{const n=Number(String(s).replace(',','.'));if(!Number.isFinite(n) || Math.abs(n*100)>Number.MAX_SAFE_INTEGER) throw new Error('Excel-Betrag zu groß.');return n;};
+      const add=(name,matrix,amountColumns=[])=>{
+        const tab=book.addWorksheet(name,{views:[{state:'frozen',ySplit:1}],pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:'1:1'}});
+        tab.columns=matrix[0].map(()=>({width:22}));
+        matrix.forEach((row,i)=>tab.addRow(row.map((v,c)=>i>0 && amountColumns.includes(c) && /^-?\d+,\d{2}$/.test(String(v))?numeric(v):v)));
+        tab.eachRow((row)=>row.eachCell(cell=>{cell.font={name:'Arial',size:10,bold:row.number===1};cell.alignment={wrapText:true,vertical:'middle'};
+          if(typeof cell.value==='number') cell.numFmt='#,##0.00';}));
+        tab.getRow(1).height=32;tab.pageSetup.printArea='A1:'+tab.getCell(tab.rowCount,matrix[0].length).address;
+      };
+      add('Cash-Nachweise',entry.cash_matrix,[6,7]);add('Guthaben-Nachweise',entry.credit_matrix,[4]);
+      add('Reklamationen',parse(entry.report_data.weather_accounting_csv),[5]);
+      add('Abo-Laufzeiten',[['Beleg','Verkaufstag','Start','Ende (exklusiv)','Laufzeit Monate','Bezahlt EUR'],
+        ...entry.finance.sales.filter(s=>['subscription','earlybird_subscription'].includes(s.kind)).map(s=>[s.receipt,s.day,s.terms.starts_on,s.terms.ends_on,s.terms.term_months,money(Number(s.cash)/100).replace(/\./g,'')])],[5]);
+      add('Abschlusskontrolle',[['Merkmal','Wert'],['Archivversion',entry.version],['Archiv-Prüfsumme',entry.sha256],
+        ['Vollständigkeit Stripe-Historie','Nicht freigegeben'],['Bankabgleich','Offen'],['Vereinsausgaben / Kiosk','Nicht enthalten'],
+        ['Cash-Zuordnungsdifferenz EUR',Number(entry.finance.difference)/100],['Offene Wetteransprüche',entry.weather_accounting.open.length],
+        ['Alte Regenreklamationen ohne vollständigen Nachweis',entry.weather_accounting.legacy_unknown_count]]);
+    }
     const buffer = await book.xlsx.writeBuffer();
     return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   }
-  window.PBMISExport = { financeData, financePdf, financeWorkbook, managementPdf, showPdf, download, filename };
+  function yearMatrix(summary) {
+    const amount=n=>{if(n>BigInt(Number.MAX_SAFE_INTEGER) || n<-BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('Jahresbetrag zu groß für Export.');return Number(n)/100;};
+    const row=(label,t)=>[label,amount(t.payments_cents),amount(t.refunds_cents),amount(t.payments_cents-t.refunds_cents),
+      amount(t.credit_used_cents),amount(t.fees_cents),amount(t.payouts_cents)];
+    return [['Monat','Zahlungseingänge EUR','Kartenrückzahlungen EUR','Cash danach EUR','Guthaben genutzt EUR','Providergebühren EUR','Auszahlungen EUR'],
+      ...summary.rows.map(r=>r.available?row(r.month,r.totals):[r.month,'Fehlt','Fehlt','Fehlt','Fehlt','Fehlt','Fehlt']),row('JAHRESSUMME vorhandene Monate',summary.totals)];
+  }
+  function yearCreditMatrix(summary) {
+    const value=n=>{
+      if(n===null || n===undefined) return 'Unbekannt';
+      if(n>BigInt(Number.MAX_SAFE_INTEGER) || n<-BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('Guthabenbetrag zu groß für Export.');
+      return Number(n)/100;
+    };
+    return [['Monat','Guthaben gewährt EUR','Guthaben genutzt EUR','Endbestand EUR','Unbeanspruchte Geschenke EUR','Offene Regenansprüche'],
+      ...(summary.creditRows || []).map(r=>r.available?[r.month,value(r.granted),value(r.used),value(r.closing),value(r.gifts),r.openClaims]:[r.month,...Array(5).fill('Fehlt')]),
+      ['Jahresbewegung / Stand 31.12.',value(summary.creditTotals?.granted),value(summary.creditTotals?.used),value(summary.creditTotals?.closing),value(summary.creditTotals?.gifts),summary.creditTotals?.openClaims ?? 'Unbekannt']];
+  }
+  async function yearPdf(summary) {
+    const matrix=yearMatrix(summary),PDF=await pdfLibrary(),pdf=new PDF({orientation:'landscape',unit:'mm',format:'a4'});
+    for(const [weight,style] of [['400','normal'],['700','bold']]) {pdf.addFileToVFS('Manrope-'+weight+'.ttf',await font(weight));pdf.addFont('Manrope-'+weight+'.ttf','Manrope',style);}
+    pdf.setFont('Manrope','bold');pdf.setFontSize(14);pdf.text('PADEL BIELSTEIN · Jahresübersicht '+summary.year,8,13);
+    pdf.setFont('Manrope','normal');pdf.setFontSize(9);pdf.text(summary.sample?'MUSTERDATEN':summary.testMode?'TESTBETRIEB':'Archivierte App-Daten',8,20);
+    pdf.autoTable({head:[matrix[0]],body:matrix.slice(1).map(r=>r.map(v=>typeof v==='number'?money(v):v)),startY:27,tableWidth:281,
+      margin:{left:8,right:8},styles:{font:'Manrope',fontSize:8.5,cellPadding:2,overflow:'linebreak'},headStyles:{fillColor:'#1C1A17'},
+      columnStyles:{0:{cellWidth:59},1:{cellWidth:37},2:{cellWidth:37},3:{cellWidth:37},4:{cellWidth:37},5:{cellWidth:37},6:{cellWidth:37}}});
+    const y=pdf.lastAutoTable.finalY+9;pdf.text('Vorhanden: '+summary.rows.filter(r=>r.available).length+'/12 Monate. Fehlende Monate sind keine Nullumsätze.',8,y);
+    pdf.text('App-Zahlungsübersicht, kein steuerlicher Jahresabschluss. Vereinsausgaben, Kiosk und Bankabgleich nicht enthalten.',8,y+6);
+    if(summary.archiveVersions?.length) pdf.text(pdf.splitTextToSize('Archivstände: '+summary.archiveVersions.map(v=>v.month.slice(0,7)+' v'+v.version).join(' · '),281),8,y+12);
+    if(summary.creditRows?.length) {
+      pdf.addPage();pdf.setFont('Manrope','bold');pdf.setFontSize(13);pdf.text('Guthaben und offene Ansprüche '+summary.year,8,13);
+      const credit=yearCreditMatrix(summary);
+      pdf.autoTable({head:[credit[0]],body:credit.slice(1).map(r=>r.map((v,i)=>typeof v==='number' && i<5?money(v):v)),startY:24,
+        margin:{left:8,right:8},tableWidth:281,styles:{font:'Manrope',fontSize:8.5,cellPadding:2},headStyles:{fillColor:'#1C1A17'}});
+      const cy=pdf.lastAutoTable.finalY+9;pdf.setFont('Manrope','normal');pdf.setFontSize(9);
+      pdf.text('Nur bestätigte Guthabenbewegungen. Keine zusätzlichen Zahlungseingänge.',8,cy);
+      pdf.text('Bestände und offene Ansprüche werden nicht summiert. Der Jahresendstand benötigt einen Dezemberabschluss.',8,cy+6);
+    }
+    return pdf.output('blob');
+  }
+  async function yearWorkbook(summary) {
+    await script('assets/vendor/exceljs/exceljs-4.4.0.min.js');const book=new window.ExcelJS.Workbook();book.creator='Padel Bielstein';
+    const tab=book.addWorksheet('Jahr '+summary.year,{views:[{state:'frozen',ySplit:1}],pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:1}});
+    tab.columns=[{width:40},...Array.from({length:6},()=>({width:23}))];
+    yearMatrix(summary).forEach(r=>tab.addRow(r));
+    tab.addRow([summary.sample?'MUSTERDATEN':summary.testMode?'TESTBETRIEB':'Archivierte App-Daten']);
+    tab.addRow(['App-Zahlungsübersicht. Kein steuerlicher Jahresabschluss. Vereinsausgaben und Kiosk nicht enthalten.']);
+    tab.eachRow(row=>{row.height=30;row.eachCell(cell=>{cell.font={name:'Arial',size:10,bold:row.number===1 || row.number===14};cell.alignment={wrapText:true};if(typeof cell.value==='number')cell.numFmt='#,##0.00';});});
+    const refs=book.addWorksheet('Archivstände');refs.addRow(['Monat','Version','Archivkennung','Prüfsumme']);
+    (summary.archiveVersions || []).forEach(v=>refs.addRow([v.month,v.version,v.id,v.sha256]));refs.columns=[{width:16},{width:12},{width:40},{width:68}];
+    if(summary.creditRows?.length) {
+      const credits=book.addWorksheet('Guthaben und Ansprüche',{pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:1}});
+      credits.columns=[{width:40},...Array.from({length:5},()=>({width:24}))];
+      yearCreditMatrix(summary).forEach(row=>credits.addRow(row));
+      credits.addRow(['Bestände und offene Ansprüche nicht summieren. Jahresendstand nur aus Dezemberabschluss.']);
+      credits.eachRow(row=>{row.height=30;row.eachCell((cell,i)=>{cell.font={name:'Arial',size:10,bold:row.number===1 || row.number===14};cell.alignment={wrapText:true};if(i>1 && i<6 && typeof cell.value==='number')cell.numFmt='#,##0.00';});});
+      credits.pageSetup.printArea='A1:F15';
+    }
+    tab.pageSetup.printArea='A1:G16';tab.pageSetup.printTitlesRow='1:1';
+    return new Blob([await book.xlsx.writeBuffer()],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
+  window.PBMISExport = { financeData, financePdf, financeWorkbook, managementPdf, showPdf, download, filename, yearMatrix,yearCreditMatrix,yearPdf,yearWorkbook };
 })();
