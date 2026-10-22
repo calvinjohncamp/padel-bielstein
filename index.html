@@ -9174,7 +9174,7 @@ const MINUTE_BOOKING_UI_ENABLED = true;
 let minuteSingleDuration=60,minuteAboDuration=90,minuteCalendar=null,minuteAboCalendar=null;
 let minuteCalendarError=false,minuteAboGeneration=0,minuteSingleLoading=false,minuteAboLoading=false;
 const minuteLoyaltyCache=new Map();
-const minutePickerState={single:{key:null,start:null},abo:{key:null,start:null}};
+const minutePickerState={single:{key:null,start:null,preferredCourt:null},abo:{key:null,start:null,preferredCourt:null}};
 function minuteBookingMode(){return MINUTE_BOOKING_UI_ENABLED;}
 function minuteEarlybird(){const e=window.__earlybird||{};return !!e.active&&(!e.appliesTo||['abo','both'].includes(e.appliesTo))&&actionIsEligibleForCurrentUser(e);}
 function minuteDiscount(kind){
@@ -9275,7 +9275,7 @@ function minutePickerOffers(abo=false){return abo?(minuteAboCalendar?.offers||[]
 function renderMinutePicker(abo=false,loading=false,error=false){
   const shell=minuteBookingShell(abo);if(!shell)return;
   const state=minutePickerState[abo?'abo':'single'],duration=abo?minuteAboDuration:minuteSingleDuration;
-  const key=abo?`${aboWd}:${duration}:${minuteEarlybird()}`:`${selDate}:${duration}`;
+  const key=abo?`${aboWd}:${minuteEarlybird()}`:`${selDate}`;
   if(state.key!==key){state.key=key;state.start=null;}
   const ready=!loading&&!error&&(abo?minuteAboCalendar?.weekday===aboWd&&minuteAboCalendar?.duration_minutes===duration:minuteCalendar?.day===selDate&&isBookingDateReleased(selDate));
   const writes=abo?minuteAboCalendar?.writes_enabled:minuteCalendar?.writes_enabled;
@@ -9286,9 +9286,15 @@ function renderMinutePicker(abo=false,loading=false,error=false){
   let selection=abo?aboSlot:selSlot;
   if(!loading&&selection&&!offers.some(o=>o.court===selection.court&&o.start_minute===selection.start_minute)){if(abo)aboSlot=null;else selSlot=null;selection=null;}
   if(ready&&selection&&offers.some(o=>o.court===selection.court&&o.start_minute===selection.start_minute))state.start=selection.start_minute;
+  // Select only a currently validated offer; a fallback never overwrites a manual preference.
+  if(ready&&writes&&state.start!==null){
+    const matching=offers.filter(o=>o.start_minute===state.start).sort((a,b)=>a.court-b.court);
+    const offer=matching.find(o=>o.court===state.preferredCourt)||matching[0];
+    if(offer){selection={time_version:2,court:offer.court,start_minute:offer.start_minute,duration_minutes:duration};if(abo)aboSlot=selection;else selSlot=selection;}
+  }
   const status=shell.querySelector('.minute-picker-status');status.replaceChildren();
   const hint=document.createElement('span');
-  hint.textContent=loading?'Verfügbarkeit wird geprüft.':error?'Verfügbarkeit derzeit nicht prüfbar. Bitte erneut laden.':abo&&aboWd===null?'Wähle zuerst einen Wochentag.':!abo&&minuteDayIsPast()?'Dieser Spieltag ist vorbei. Wähle einen kommenden Tag.':ready&&!writes?'Buchungen sind derzeit pausiert.':candidates.length&&!offers.length?'Preise derzeit nicht prüfbar. Bitte erneut laden.':!offers.length?`Keine freien Startzeiten für ${duration} Minuten. Wähle eine andere Dauer oder ein anderes Datum.`:`${duration} Minuten · ${abo?'Preise je Termin':'Gesamtpreise'} inklusive deiner Rabatte. Startzeit wählen, dann Court wählen.`;
+  hint.textContent=loading?'Verfügbarkeit wird geprüft.':error?'Verfügbarkeit derzeit nicht prüfbar. Bitte erneut laden.':abo&&aboWd===null?'Wähle zuerst einen Wochentag.':!abo&&minuteDayIsPast()?'Dieser Spieltag ist vorbei. Wähle einen kommenden Tag.':ready&&!writes?'Buchungen sind derzeit pausiert.':candidates.length&&!offers.length?'Preise derzeit nicht prüfbar. Bitte erneut laden.':!offers.length?`Keine freien Startzeiten für ${duration} Minuten. Wähle eine andere Dauer oder ein anderes Datum.`:`${duration} Minuten · ${abo?'Preise je Termin':'Gesamtpreise'} inklusive deiner Rabatte. Startzeit wählen – ein verfügbarer Court wird vorausgewählt.`;
   status.appendChild(hint);
   if(ready&&!abo&&minuteDayIsPast()){
     const next=document.createElement('button');next.type='button';next.className='minute-next-day';next.textContent='Morgen ansehen';
@@ -9322,7 +9328,7 @@ function renderMinutePicker(abo=false,loading=false,error=false){
     const location=document.createElement('span');location.className='minute-choice-note';location.textContent=document.getElementById((abo?'aboSlots':'slots')+offer.court).closest('.court-col').querySelector('.court-sub')?.textContent||'';button.title=location.textContent;
     const terms=document.createElement('span');terms.className='minute-choice-note';terms.textContent=`${duration} Minuten · Gesamtpreis${abo?' je Termin':''}`;if(abo)button.appendChild(terms);
     if(abo){const period=document.createElement('span');period.className='minute-choice-note';period.textContent=minuteAboPeriod(offer.starts_on,offer.ends_on)+(offer.abo_delayed?' · späterer Start wegen bestehender Buchungen':'');button.appendChild(period);}
-    button.onclick=()=>{const row={time_version:2,court:offer.court,start_minute:offer.start_minute,duration_minutes:duration};if(abo){aboSlot=chosen?null:row;renderMinuteAboSlots();}else{selSlot=chosen?null:row;renderMinuteSlots();}document.querySelector(`#${abo?'aboSlots':'slots'}Picker .minute-court-choice[data-court="${offer.court}"]`)?.focus({preventScroll:true});};courts.appendChild(button);
+    button.onclick=()=>{const row={time_version:2,court:offer.court,start_minute:offer.start_minute,duration_minutes:duration};state.preferredCourt=offer.court;if(abo){aboSlot=row;renderMinuteAboSlots();}else{selSlot=row;renderMinuteSlots();}document.querySelector(`#${abo?'aboSlots':'slots'}Picker .minute-court-choice[data-court="${offer.court}"]`)?.focus({preventScroll:true});};courts.appendChild(button);
   }
 }
 function minuteGridBase(root){
@@ -13604,8 +13610,8 @@ async function setWd(d) {
 
 function setAboDur(d) {
   if(typeof minuteBookingMode==='function'&&minuteBookingMode()){const duration=[1,2].includes(d)?d*60:d;if(![60,90,120].includes(duration))return;
-    minuteAboDuration=duration;aboSlot=null;minuteAboCalendar=null;renderMinuteAboSlots();
-    if(aboWd!==null)void loadAboBookings(aboWd).then(()=>renderAboSlots());return;
+    minuteAboDuration=duration;aboSlot=null;minuteAboCalendar=null;
+    if(aboWd!==null)void loadAboBookings(aboWd).then(()=>renderAboSlots());else renderMinuteAboSlots();return;
   }
   aboDur = d;
   aboSlot = null;
