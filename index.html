@@ -9296,6 +9296,9 @@ function renderMinutePicker(abo=false,loading=false,error=false){
     const button=document.createElement('button');button.type='button';button.className='minute-time';button.dataset.start=String(start);button.textContent=PBMinuteDomain.minuteClock(start);
     const available=offers.some(o=>o.start_minute===start);button.disabled=!available;button.classList.toggle('selected',state.start===start);button.setAttribute('aria-pressed',String(state.start===start));
     button.title=loading?'Verfügbarkeit wird geprüft':!abo&&minuteStartIsPast(start)?'Diese Startzeit liegt in der Vergangenheit':!available&&candidates.some(o=>o.start_minute===start)?'Preis derzeit nicht prüfbar':available?`${PBMinuteDomain.minuteClock(start)} bis ${PBMinuteDomain.minuteClock(start+duration)} · ${duration} Minuten`:`Für ${duration} Minuten nicht verfügbar`;
+    const continuation=state.start!==null&&start>state.start&&start<state.start+duration;
+    button.classList.toggle('minute-time-continuation',continuation);
+    if(continuation){const label=`${PBMinuteDomain.minuteClock(start)} · Teil deiner gewählten Spielzeit ${PBMinuteDomain.minuteClock(state.start)} bis ${PBMinuteDomain.minuteClock(state.start+duration)}`;button.setAttribute('aria-label',label);button.title=label+(available?' · als neue Startzeit wählen':'');}
     button.onclick=()=>{state.start=start;if(abo)aboSlot=null;else selSlot=null;abo?renderMinuteAboSlots():renderMinuteSlots();document.querySelector(`#${abo?'aboSlots':'slots'}Picker .minute-time[data-start="${start}"]`)?.focus({preventScroll:true});};times.appendChild(button);
   }
   const courtTitle=shell.querySelector('.minute-court-title');courtTitle.textContent=state.start===null?'Dein Court':`${PBMinuteDomain.minuteClock(state.start)} – ${PBMinuteDomain.minuteClock(state.start+duration)} · Court wählen`;
@@ -23707,6 +23710,7 @@ body.bielstein-theme .minute-picker-status {font-size:12px;color:#7A7368;line-he
 body.bielstein-theme .minute-time-options {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;}
 body.bielstein-theme .minute-time {min-height:48px;padding:8px 4px;border:1px solid #E2DACB;border-radius:9px;background:#F9F6F0;color:#1C1A17;font:700 15px "Space Grotesk",Arial,sans-serif;cursor:pointer;}
 body.bielstein-theme .minute-time:disabled {color:#AAA49A;background:#FBFAF7;border-color:#EEEAE3;text-decoration:line-through;cursor:default;}
+body.bielstein-theme .minute-time.minute-time-continuation {background:#FFF0E9;color:#A83B20;border-color:#FFB59F;text-decoration:none;}
 body.bielstein-theme .minute-time.selected {background:#1C1A17;color:white;border-color:#1C1A17;}
 body.bielstein-theme .minute-time:focus-visible,body.bielstein-theme .minute-court-choice:focus-visible,body.bielstein-theme .minute-overview summary:focus-visible {outline:2px solid #FF5A36;outline-offset:3px;}
 body.bielstein-theme .minute-court-options {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
