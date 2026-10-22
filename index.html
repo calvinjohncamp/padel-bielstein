@@ -9234,11 +9234,12 @@ async function loadMinuteBookings(date,generation){
   }}
   if(generation===bookingsLoadGeneration){minuteSingleLoading=false;minuteDurationButtons();}
 }
-function minuteRow(parent,start,end,label,price,onClick,selected=false){
-  const row=document.createElement('div');row.className='slot '+(onClick?(selected?'selected':'free'):'booked');
+function minuteRow(parent,start,end,label,price,onClick,selected=false,note='',abo=false){
+  const row=document.createElement('div');row.className='slot '+(onClick?(selected?'selected':'free'):(abo?'abo-booked':'booked'));
   const time=document.createElement('span');time.className='slot-time';time.textContent=`${PBMinuteDomain.minuteClock(start)} – ${PBMinuteDomain.minuteClock(end)}`;row.appendChild(time);
   const value=document.createElement('span');value.className='slot-price';value.textContent=price===null?label:fmt(price/100);row.appendChild(value);
   if(onClick){row.onclick=onClick;row.setAttribute('role','button');row.tabIndex=0;row.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onClick();}};}
+  if(note){const detail=document.createElement('small');detail.className='minute-slot-note';detail.textContent=note;row.appendChild(detail);}
   parent.appendChild(row);
 }
 function renderMinuteSlots(){
@@ -9253,7 +9254,7 @@ function renderMinuteSlots(){
     if(minuteCalendarError||minuteCalendar?.day!==selDate){root.textContent='Belegung derzeit nicht verfügbar. Bitte erneut laden.';continue;}
     const c=minuteCalendar.courts.find(c=>c.court===ct),rows=[...c.occupied.map(b=>({...b,busy:true})),
       ...c.offers.filter(o=>o.duration_minutes===minuteSingleDuration).map(o=>({...o,end_minute:o.start_minute+o.duration_minutes}))].sort((a,b)=>a.start_minute-b.start_minute);
-    for(const r of rows){if(r.busy){minuteRow(root,r.start_minute,r.end_minute,r.source==='subscription'||r.source==='abo_hold'?'Abo':'Belegt',null,null);continue;}
+    for(const r of rows){if(r.busy){minuteRow(root,r.start_minute,r.end_minute,r.source==='subscription'||r.source==='abo_hold'?'Abo':'Belegt',null,null,false,'',r.source==='subscription'||r.source==='abo_hold');continue;}
       let price;try{price=minutePrice(ct,r.start_minute,minuteSingleDuration).netCents;}catch{continue;}
       minuteRow(root,r.start_minute,r.end_minute,'',price,minuteCalendar.writes_enabled?()=>{
         selSlot=selSlot?.court===ct&&selSlot?.start_minute===r.start_minute?null:{time_version:2,court:ct,start_minute:r.start_minute,duration_minutes:minuteSingleDuration};renderMinuteSlots();}:null,
@@ -9297,7 +9298,8 @@ async function loadMinuteAboBookings(weekday){
   minuteAboLoading=true;renderMinuteAboSlots();
   try{const {data,error}=await sb.rpc('booking_minute_abo_calendar',{p_weekday:weekday,p_minutes:minuteAboDuration,p_kind:kind});
     if(generation!==minuteAboGeneration)return;
-    if(error||!data?.pricing||!Array.isArray(data.pricing.price_rows)||data?.time_version!==2||data.weekday!==weekday||data.duration_minutes!==minuteAboDuration||data.kind!==kind||!Array.isArray(data.offers))throw Error('abo_calendar');
+    if(error||!data?.pricing||!Array.isArray(data.pricing.price_rows)||data?.time_version!==2||data.weekday!==weekday||data.duration_minutes!==minuteAboDuration||data.kind!==kind||!Array.isArray(data.offers)||!Array.isArray(data.occupied))throw Error('abo_calendar');
+    for(const b of data.occupied){if(![1,2].includes(b.court)||!['subscription','abo_hold'].includes(b.source)||!bookingReleaseDate(b.starts_on)||!bookingReleaseDate(b.ends_on)||b.starts_on>=b.ends_on)throw Error('abo_calendar');PBMinuteDomain.bookingMinuteInterval({time_version:2,start_minute:b.start_minute,duration_minutes:b.end_minute-b.start_minute});}
     minuteAboCalendar=data;
   }catch{if(generation===minuteAboGeneration){minuteAboCalendar=null;aboSlot=null;}}
   if(generation===minuteAboGeneration){minuteAboLoading=false;minuteDurationButtons(true);}
@@ -9308,14 +9310,24 @@ function renderMinuteAboSlots(){
   minuteDurationButtons(true);
   for(const ct of [1,2]){const root=document.getElementById('aboSlots'+ct);root.replaceChildren();
     if(!minuteAboCalendar){root.textContent='Verfügbarkeit wird geprüft. Bitte einen Wochentag wählen.';continue;}
-    for(const o of minuteAboCalendar.offers.filter(o=>o.court===ct)){
+    const rows=[...minuteAboCalendar.occupied.filter(o=>o.court===ct).map(o=>({...o,busy:true})),
+      ...minuteAboCalendar.offers.filter(o=>o.court===ct)].sort((a,b)=>a.start_minute-b.start_minute);
+    for(const o of rows){
+      if(o.busy){minuteRow(root,o.start_minute,o.end_minute,o.source==='abo_hold'?'Reserviert':'Abo',null,null,false,
+        minuteAboPeriod(o.starts_on,o.ends_on),true);continue;}
       let p;try{p=minutePrice(ct,o.start_minute,minuteAboDuration,'subscription');}catch{continue;}
       minuteRow(root,o.start_minute,o.start_minute+minuteAboDuration,'',p.netCents,minuteAboCalendar.writes_enabled?()=>{
         aboSlot={time_version:2,court:ct,start_minute:o.start_minute,duration_minutes:minuteAboDuration};renderMinuteAboSlots();}:null,
-        aboSlot?.court===ct&&aboSlot?.start_minute===o.start_minute);
+        aboSlot?.court===ct&&aboSlot?.start_minute===o.start_minute,
+        o.abo_delayed?`Abo erst ab ${minuteDateLabel(o.starts_on)} möglich`:'');
     }
   }
   updateMinuteAboSummary();
+}
+function minuteDateLabel(day){return bookingReleaseDate(day).toLocaleDateString('de-DE',{timeZone:'UTC',day:'2-digit',month:'2-digit',year:'numeric'});}
+function minuteAboPeriod(start,end){
+  const last=bookingReleaseDate(end);last.setUTCDate(last.getUTCDate()-1);
+  return `Laufzeit ${minuteDateLabel(start)} bis ${minuteDateLabel(last.toISOString().slice(0,10))}`;
 }
 function updateMinuteAboSummary(){
   const card=document.getElementById('aboSummary');if(!aboSlot){card.classList.remove('visible');return;}
@@ -9331,6 +9343,7 @@ function updateMinuteAboSummary(){
   for(const [id,value]of Object.entries(values)){const e=document.getElementById(id);if(e)e.textContent=value;}
   const occurrence=minuteAboCalendar.offers.find(o=>o.court===aboSlot.court&&o.start_minute===aboSlot.start_minute);
   const terms={...aboSlot,weekday:aboWd,starts_on:occurrence.starts_on,ends_on:occurrence.ends_on};
+  document.getElementById('as-52').textContent=`${minuteAboPeriod(occurrence.starts_on,occurrence.ends_on)}. Jährlich 52 Wochen reserviert – du zahlst davon 30 Wochen.${occurrence.abo_delayed?' Der spätere Start berücksichtigt bestehende Einzelbuchungen.':''}`;
   const title=card.querySelector('.abo-sum-title');if(title)title.textContent=early?'Dein Frühbucher-Abo':'Dein Jahresabo';
   const cta=card.querySelector('.abo-cta');if(cta)cta.textContent=early?'Frühbucher-Abo sichern':'Jahresabo sichern';
   const bonus=document.getElementById('as-bonus');if(bonus)bonus.style.display=p.snapshot.parts.some(part=>part.surchargeRateCents>0)?'':'none';
@@ -23563,6 +23576,10 @@ body.bielstein-theme.install-guide-open {
 /* ── LEGENDE ── */
 body.bielstein-theme .legend-item { font-size: 12px !important; color: #7A7368 !important; gap: 6px; }
 body.bielstein-theme .ldot { width: 10px !important; height: 10px !important; border-radius: 50% !important; }
+
+/* Dates must stay visible on occupied and delayed minute Abo rows. */
+body.bielstein-theme .slot:has(.minute-slot-note) { flex-wrap: wrap; }
+body.bielstein-theme .minute-slot-note { flex-basis: 100%; font-size: 11px; line-height: 1.4; }
 
 /* ══ ÜBRIGE TABS · 1:1 nach Vorlage ══ */
 
