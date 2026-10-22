@@ -3603,17 +3603,16 @@ main {
         day.setDate(todayStart.getDate() + offset);
         const dateISO = localDateKey(day);
         if (row.starts_on &amp;&amp; dateISO &lt; row.starts_on) continue;
-        if (row.ends_on &amp;&amp; dateISO &gt; row.ends_on) return &quot;&quot;;
+        if (row.ends_on &amp;&amp; dateISO &gt;= row.ends_on) return &quot;&quot;;
         if (Number(row.weekday) !== day.getDay()) continue;
-        const start = new Date(`${dateISO}T${String(Number(row.hour_start || 0)).padStart(2, &quot;0&quot;)}:00:00`);
+        const start = appFn(&quot;bookingDateAt&quot;)({...row,date:dateISO});
         if (start &gt; now) return dateISO;
       }
       return &quot;&quot;;
     }
     function sourceFromBooking(row) {
       const parts = dateParts(row.date);
-      const start = Number(row.hour_start || 0);
-      const duration = Number(row.duration || 1);
+      const t = appFn(&quot;bookingReadTime&quot;)(row);
       return {
         id: `booking-${row.id}`,
         type: &quot;booking&quot;,
@@ -3621,18 +3620,17 @@ main {
         day: parts.day,
         date: parts.date,
         dateISO: row.date,
-        time: `${String(start).padStart(2, &quot;0&quot;)}:00`,
-        end: `${String(start + duration).padStart(2, &quot;0&quot;)}:00`,
+        time: t.from,
+        end: t.to,
         court: appFn(&quot;courtLabelShort&quot;) ? appFn(&quot;courtLabelShort&quot;)(row.court) : `Court ${row.court}`,
         courtNum: Number(row.court || 1),
-        duration: `${duration}h`,
+        duration: `${t.minutes} Min`,
         paidBy: &quot;Einzelbuchung&quot;
       };
     }
     function sourceFromAbo(row, dateISO) {
       const parts = dateParts(dateISO);
-      const start = Number(row.hour_start || 0);
-      const duration = Number(row.duration || 1);
+      const t = appFn(&quot;bookingReadTime&quot;)(row);
       return {
         id: `abo-${row.id}-${dateISO}`,
         type: &quot;abo&quot;,
@@ -3640,11 +3638,11 @@ main {
         day: parts.day,
         date: parts.date,
         dateISO,
-        time: `${String(start).padStart(2, &quot;0&quot;)}:00`,
-        end: `${String(start + duration).padStart(2, &quot;0&quot;)}:00`,
+        time: t.from,
+        end: t.to,
         court: appFn(&quot;courtLabelShort&quot;) ? appFn(&quot;courtLabelShort&quot;)(row.court) : `Court ${row.court}`,
         courtNum: Number(row.court || 1),
-        duration: `${duration}h`,
+        duration: `${t.minutes} Min`,
         paidBy: &quot;Abo&quot;
       };
     }
@@ -3754,7 +3752,7 @@ main {
     }
     function sourceFromMeetup(row) {
       const parts = dateParts(row.scheduled_date);
-      const durationHours = Math.max(1, Math.round(Number(row.duration_minutes || 60) / 60));
+      const t = window.parent.PBMinuteDomain.meetupReadTime(row);
       return {
         id: row.booking_id ? `booking-${row.booking_id}` : `abo-${row.subscription_id}-${row.scheduled_date}`,
         type: row.source_type === &quot;abo&quot; ? &quot;abo&quot; : &quot;booking&quot;,
@@ -3764,11 +3762,11 @@ main {
         day: parts.day,
         date: parts.date,
         dateISO: row.scheduled_date,
-        time: `${String(Number(row.hour_start || 0)).padStart(2, &quot;0&quot;)}:00`,
-        end: `${String(Number(row.hour_start || 0) + durationHours).padStart(2, &quot;0&quot;)}:00`,
+        time: t.from,
+        end: t.to,
         court: appFn(&quot;courtLabelShort&quot;) ? appFn(&quot;courtLabelShort&quot;)(row.court) : `Court ${row.court}`,
         courtNum: Number(row.court || 1),
-        duration: `${durationHours}h`,
+        duration: `${t.minutes} Min`,
         paidBy: row.source_type === &quot;abo&quot; ? &quot;Abo&quot; : &quot;Einzelbuchung&quot;,
         costCoveredByOrganizer: row.cost_covered_by_organizer === true
       };
@@ -3873,7 +3871,7 @@ main {
             .map(sourceFromBooking)
             .filter(item =&gt; isWithinNextMonth(item, now));
           const nextAbos = [];
-          (aboRows || []).filter(row =&gt; [&quot;paid&quot;, &quot;active&quot;, &quot;pending&quot;].includes(String(row.status || &quot;&quot;))).forEach(row =&gt; {
+          (aboRows || []).filter(row =&gt; [&quot;active&quot;].includes(String(row.status || &quot;&quot;))).forEach(row =&gt; {
             const dateISO = nextAboDateForMeetup(row, now);
             if (dateISO) nextAbos.push(sourceFromAbo(row, dateISO));
           });
@@ -6930,7 +6928,7 @@ main {
     // Datenquelle: Musterdaten (assets/mis/mis-musterdaten.json) oder Echtdaten über
     // sb.rpc('admin_mis_report_data') – nur lesend, nur für Admins.
     // Definitionen und Regeln: 00 START HIER/MIS_PROJEKTGEDAECHTNIS.md
-    const MIS_ASSET_VERSION = 'test-finance-20261010-3';
+    const MIS_ASSET_VERSION = 'minutes-test-20261022-1';
     const MIS_VERIFIED_REPORTS_ENABLED = true;
     const misState = { mode: null, model: null, raw: null, css: null, loading: null, view: 'management' };
     const financeReviewState = { initialized: false, loading: false, cursor: null, rows: [] };
@@ -7136,7 +7134,7 @@ main {
           const tr = document.createElement('tr');
           const columns = [
             [row.quote_id, row.session_id, row.account_id ? (row.livemode ? 'LIVE · ' : 'TEST · ') + row.account_id : 'Kontozuordnung noch nicht nachgewiesen', financeDate(row.captured_at)],
-            [row.day + ' · ' + row.hour_start + ':00 Uhr · Platz ' + row.court, 'Stripe-Anteil: ' + financeAmount(row.cash_cents, 'eur'),
+            [row.day + ' · ' + (row.time_version===2 ? PBMinuteDomain.bookingReadTime(row).range : row.hour_start+':00') + ' Uhr · Platz ' + row.court, 'Stripe-Anteil: ' + financeAmount(row.cash_cents, 'eur'),
               row.credit_cents && row.credit_cents !== '0' ? 'Spielguthabenanteil: ' + financeAmount(row.credit_cents, 'eur') : '',
               row.hold_state === 'held' ? 'Reservierung geschützt' : row.hold_state === 'consumed' ? 'Reservierung verbraucht' : 'Reservierung freigegeben'],
             [row.money_confirmed ? 'Geldeingang im Journal bestätigt: ' + financeAmount(row.amount_cents, 'eur') : row.cash_cents === '0' ? 'Keine Stripe-Zahlung erforderlich' : 'Geldeingang im Journal noch nicht bestätigt',
@@ -8261,6 +8259,7 @@ let bookingsLoadGeneration = 0;
 async function loadBookings(date) {
   if (!date) return;
   const myGen = ++bookingsLoadGeneration;
+  if(typeof minuteBookingMode==='function'&&minuteBookingMode())return loadMinuteBookings(date,myGen);
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8000);
@@ -8333,6 +8332,7 @@ setInterval(() => {
 }, 4 * 60 * 1000);
 
 async function loadAboBookings(weekday) {
+  if(typeof minuteBookingMode==='function'&&minuteBookingMode())return weekday===null?null:loadMinuteAboBookings(weekday);
   try {
     const { data, error } = await sb
       .from('abo_availability')
@@ -8562,6 +8562,7 @@ function cheapestAboWeek(dur) {
 }
 // Beschriftung der beiden Abo-Dauer-Buttons auf den echten günstigsten Preis setzen.
 function updateAboDurPrices() {
+  if(typeof minuteBookingMode==='function'&&minuteBookingMode())return minuteDurationButtons(true);
   const b1 = document.querySelector('#adur1 .dprice');
   const b2 = document.querySelector('#adur2 .dprice');
   if (b1) b1.textContent = `ab ${fmt(aboP(cheapestAboWeek(1)))}/Woche`;
@@ -8775,6 +8776,566 @@ async function addSupabaseAboBlocksForDate(dateStr) {
 }
 
 // ============================================================
+// GENERATED by tools/build-booking-minute-domain.mjs; edit shared domain sources.
+(()=>{const modules={};
+// booking-discount-ratio SHA256 8e5c2608829d18cc593c3399b894fdd7e819e4364a1e87bc879f304c2617711c
+modules["booking-discount-ratio"]=(()=>{
+// Preserve the existing numeric percentage range, including fractional admin
+// discounts. Integer-cent arithmetic must not round the PERCENTAGE to an integer.
+function bookingDiscountFactor(pct) {
+  if(!Number.isFinite(pct)||pct<0||pct>100)throw Error('invalid_discount_percentage');
+  const [mantissa,exp='0']=String(pct).split('e');
+  const [whole,fraction='']=mantissa.split('.');
+  let numerator=BigInt(whole+fraction);
+  const power=fraction.length-Number(exp);
+  const scale=power>=0?10n**BigInt(power):1n;
+  if(power<0)numerator*=10n**BigInt(-power);
+  return {numerator:100n*scale-numerator,denominator:100n*scale};
+}
+
+return {bookingDiscountFactor};})();
+// booking-tariff-parts SHA256 74583b790256854e795bf80d1ca16114525dfcc4fcc51150e4c14d190c54436c
+modules["booking-tariff-parts"]=(()=>{
+const {bookingDiscountFactor}=modules["booking-discount-ratio"];
+// Draft arithmetic for the existing hourly matrix. No database writes, no
+// eligibility decisions and no loyalty/credit consumption. Not a final quote.
+const validDate = value => typeof value==='string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+  && Number.isFinite(Date.parse(value+'T12:00:00Z'))
+  && new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value;
+const money = value => Number.isSafeInteger(value) && value>=0;
+const rounded = (numerator,denominator) => {
+  const result=Number((2n*numerator+denominator)/(2n*denominator));
+  if(!money(result))throw new Error('amount_overflow');
+  return result;
+};
+function splitBookingByTariffHour(startMinute,durationMinutes) {
+  if(!Number.isSafeInteger(startMinute) || startMinute<0 || startMinute%30!==0
+    || ![60,90,120].includes(durationMinutes) || startMinute+durationMinutes>1440)
+    throw new Error('invalid_booking_interval');
+  const parts=[];
+  for(let start=startMinute;start<startMinute+durationMinutes;) {
+    const hour=Math.floor(start/60);
+    const end=Math.min((hour+1)*60,startMinute+durationMinutes);
+    parts.push({hour,startMinute:start,endMinute:end,minutes:end-start});
+    start=end;
+  }
+  return parts;
+}
+
+function calculateTariffSubtotal({startMinute,durationMinutes,pricingDate,
+  dayType,priceRows,surchargeRates={},discountPct=0,kind}) {
+  if(!validDate(pricingDate) || !['weekday','weekend'].includes(dayType)
+    || !Array.isArray(priceRows) || !['single','subscription'].includes(kind)
+    || !Number.isFinite(discountPct) || discountPct<0 || discountPct>100)
+    throw new Error('invalid_tariff_context');
+  const discountFactor=bookingDiscountFactor(discountPct);
+  const parts=splitBookingByTariffHour(startMinute,durationMinutes).map(interval=>{
+    // Keep existing precedence: most recent applicable valid_from, inclusive dates.
+    const rows=priceRows.filter(row=>row && row.hour===interval.hour && row.day_type===dayType
+      && (row.valid_from==null || validDate(row.valid_from) && row.valid_from<=pricingDate)
+      && (row.valid_until==null || validDate(row.valid_until) && row.valid_until>=pricingDate))
+      .sort((a,b)=>String(b.valid_from??'').localeCompare(String(a.valid_from??'')));
+    const row=rows[0];
+    if(!row || !money(row.price_cents))throw new Error(`missing_hourly_tariff:${interval.hour}`);
+    if(rows.some(other=>other.valid_from===row.valid_from && other.price_cents!==row.price_cents))
+      throw new Error(`ambiguous_hourly_tariff:${interval.hour}`);
+    const surchargeRateCents=surchargeRates[interval.hour]??0;
+    if(!money(surchargeRateCents))throw new Error('invalid_surcharge');
+    const baseRateCents=row.price_cents;
+    const grossCents=rounded((BigInt(baseRateCents)+BigInt(surchargeRateCents))*BigInt(interval.minutes),60n);
+    const baseCents=rounded(BigInt(baseRateCents)*BigInt(interval.minutes),60n);
+    return {...interval,dayType,baseRateCents,surchargeRateCents,baseCents,
+      surchargeCents:grossCents-baseCents,grossCents,
+      validFrom:row.valid_from??null,validUntil:row.valid_until??null};
+  });
+  const sum=key=>{
+    const total=parts.reduce((value,part)=>value+BigInt(part[key]),0n);
+    if(total>BigInt(Number.MAX_SAFE_INTEGER))throw new Error('amount_overflow');
+    return Number(total);
+  };
+  const grossCents=sum('grossCents');
+  // Preserve existing scope: single discounts each price hour; regular Abo
+  // discounts the complete weekly price. Earlybird multi-year scaling is separate.
+  let netBeforeLoyaltyCents;
+  if(kind==='single') {
+    for(const part of parts) part.netBeforeLoyaltyCents=rounded(BigInt(part.grossCents)*discountFactor.numerator,discountFactor.denominator);
+    netBeforeLoyaltyCents=sum('netBeforeLoyaltyCents');
+  } else netBeforeLoyaltyCents=rounded(BigInt(grossCents)*discountFactor.numerator,discountFactor.denominator);
+  return {parts,grossCents,discountPct,discountCents:grossCents-netBeforeLoyaltyCents,
+    netBeforeLoyaltyCents,rounding:'half_up_per_tariff_hour',kind};
+}
+
+return {splitBookingByTariffHour,calculateTariffSubtotal};})();
+// booking-time-policy SHA256 00ddcbf7ddf070e56ccc38538b352024d599d2980303cc48f65f4176295525b7
+modules["booking-time-policy"]=(()=>{
+// Pure minute-based policy for the forthcoming 60/90/120 system.
+// Not connected to the active booking endpoints yet. Intervals are [start,end).
+function bookingTimeDecision({start, duration, windowStart, windowEnd,
+  kind, nowMs, windowStartMs}) {
+  const minutes = [start, duration, windowStart, windowEnd];
+  if (!minutes.every(Number.isSafeInteger)
+    || !minutes.every(n => n % 30 === 0)
+    || windowStart < 0 || windowEnd > 1440 || windowStart >= windowEnd
+    || ![60,90,120].includes(duration) || !['single','subscription'].includes(kind)
+    || !Number.isSafeInteger(nowMs) || !Number.isSafeInteger(windowStartMs))
+    return {allowed:false,reason:'invalid_input'};
+  const startMs = windowStartMs + (start - windowStart) * 60000;
+  if (start < windowStart || start + duration > windowEnd)
+    return {allowed:false,reason:'outside_free_window'};
+  if (startMs <= nowMs) return {allowed:false,reason:'start_not_future'};
+  const before = start - windowStart;
+  const after = windowEnd - start - duration;
+  // An elapsed leading half-hour can no longer be sold as a 60-minute game.
+  // Derive this from the trusted clock, never from a browser-supplied override.
+  const leadingGap = before === 30 && nowMs < windowStartMs;
+  const trailingGap = after === 30;
+  if (!leadingGap && !trailingGap) return {allowed:true,reason:'regular'};
+  // Exactly 48h before the ORIGINAL free window begins; not before the
+  // selected alternative's start. Never applies to recurring subscriptions.
+  const untilWindow = windowStartMs - nowMs;
+  if (kind === 'single' && duration === 60 && windowEnd - windowStart === 90
+    && (start === windowStart || start + duration === windowEnd)
+    && untilWindow <= 48 * 3600000)
+    return {allowed:true,reason:'short_notice_90_window'};
+  return {allowed:false,reason:'isolated_30_minutes'};
+}
+
+return {bookingTimeDecision};})();
+// booking-availability SHA256 331cdc9ee59453857f3ebd9dcc164bf4f94b61506022c49f1afa89a133f23b38
+modules["booking-availability"]=(()=>{
+const {bookingTimeDecision}=modules["booking-time-policy"];
+
+const minute = value => Number.isSafeInteger(value) && value >= 0 && value <= 1440 && value % 30 === 0;
+
+// Inputs must contain every blocking source for ONE court/day, including holds.
+// Merge overlapping/adjacent blockers; never treat a hole on another court as free.
+function freeBookingWindows({open, close, occupied}) {
+  if (!minute(open) || !minute(close) || open >= close || !Array.isArray(occupied))
+    throw new Error('invalid_calendar');
+  const busy = occupied.map(block => {
+    if (!block || !minute(block.start) || !minute(block.end) || block.start >= block.end)
+      throw new Error('invalid_blocker');
+    return {start:Math.max(open,block.start),end:Math.min(close,block.end)};
+  }).filter(block => block.start < block.end).sort((a,b) => a.start-b.start || a.end-b.end);
+  const windows=[];
+  let cursor=open;
+  for(const block of busy) {
+    if(block.start > cursor) windows.push({start:cursor,end:block.start});
+    cursor=Math.max(cursor,block.end);
+  }
+  if(cursor < close) windows.push({start:cursor,end:close});
+  return windows;
+}
+
+// opensAtMs is the actual Berlin opening instant, NOT UTC midnight. The court
+// operating period must not straddle a DST transition (current hours 08–22).
+function availableBookingStarts({open,close,occupied,opensAtMs,nowMs,duration,kind}) {
+  if(!Number.isSafeInteger(opensAtMs) || !Number.isSafeInteger(nowMs)
+    || ![60,90,120].includes(duration) || !['single','subscription'].includes(kind))
+    throw new Error('invalid_availability_request');
+  const result=[];
+  for(const window of freeBookingWindows({open,close,occupied})) {
+    const windowStartMs=opensAtMs+(window.start-open)*60000;
+    for(let start=window.start;start+duration<=window.end;start+=30) {
+      const decision=bookingTimeDecision({start,duration,windowStart:window.start,
+        windowEnd:window.end,windowStartMs,nowMs,kind});
+      if(decision.allowed)result.push({start,end:start+duration,duration,reason:decision.reason});
+    }
+  }
+  return result;
+}
+
+// A recurring offer is the intersection of eligible starts across EVERY sold
+// occurrence, not the availability of a sample week. Never use the 48h exception.
+function availableSubscriptionStarts({occurrences,nowMs,duration}) {
+  if(!Array.isArray(occurrences) || occurrences.length===0) throw new Error('empty_subscription');
+  let common;
+  for(const occurrence of occurrences) {
+    const starts=availableBookingStarts({...occurrence,nowMs,duration,kind:'subscription'});
+    const keys=new Set(starts.map(row=>row.start));
+    common=common===undefined ? starts : common.filter(row=>keys.has(row.start));
+  }
+  return common.map(({start,end,duration})=>({start,end,duration,occurrences:occurrences.length}));
+}
+
+return {freeBookingWindows,availableBookingStarts,availableSubscriptionStarts};})();
+// booking-calendar-input SHA256 24673264e121c4304c3173b9acce37773902fc9c2a4b455a06206ea9715f0fee
+modules["booking-calendar-input"]=(()=>{
+// Boundary adapter for the forthcoming minute calendar. Never interpret a
+// legacy duration as minutes or silently coerce fractional legacy hours.
+const isoDate = value => typeof value==='string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+  && Number.isFinite(Date.parse(value+'T12:00:00Z'))
+  && new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value;
+
+function bookingMinuteInterval(row) {
+  if(!row || ![undefined,1,2].includes(row.time_version)) throw new Error('unsupported_time_version');
+  let start,duration;
+  if(row.time_version===2) {
+    start=row.start_minute;duration=row.duration_minutes;
+    // If a migration dual-writes legacy fields, both representations must agree.
+    if(row.hour_start!=null && (!Number.isInteger(row.hour_start)||row.hour_start*60!==start)
+      || row.duration!=null && (!Number.isInteger(row.duration)||row.duration*60!==duration))
+      throw new Error('contradictory_time_units');
+  } else {
+    if(!Number.isInteger(row.hour_start)||!Number.isInteger(row.duration))throw new Error('invalid_legacy_hours');
+    start=row.hour_start*60;duration=row.duration*60;
+    if((row.start_minute!=null||row.duration_minutes!=null)
+      && (row.time_version!==1||row.start_minute!==start||row.duration_minutes!==duration))
+      throw new Error('contradictory_time_units');
+  }
+  if(!Number.isSafeInteger(start)||!Number.isSafeInteger(duration)||start<0||duration<=0
+    ||start%30!==0||duration%30!==0||start+duration>1440)throw new Error('invalid_calendar_interval');
+  return {start,end:start+duration};
+}
+
+function occupiedBookingIntervals({day,court,bookings,subscriptions,eventHours,singleHolds,aboHolds}) {
+  if(!isoDate(day)||![1,2].includes(court)
+    || ![bookings,subscriptions,eventHours,singleHolds,aboHolds].every(Array.isArray))
+    throw new Error('incomplete_calendar_sources');
+  const weekday=new Date(day+'T12:00:00Z').getUTCDay();
+  const blocks=[];
+  const courtMatches=row=>{
+    if(!row||![1,2].includes(row.court))throw new Error('invalid_calendar_court');
+    return row.court===court;
+  };
+  const appliesSeries=row=>{
+    if(!isoDate(row.starts_on)||!isoDate(row.ends_on)||row.starts_on>=row.ends_on
+      ||!Number.isInteger(row.weekday)||row.weekday<0||row.weekday>6)throw new Error('invalid_series');
+    return day>=row.starts_on&&day<row.ends_on&&weekday===row.weekday;
+  };
+  const appliesDay=(row,key)=>{
+    if(!isoDate(row[key]))throw new Error('invalid_calendar_day');
+    return row[key]===day;
+  };
+  for(const row of bookings) {
+    if(!courtMatches(row)||!['paid','active','blocked'].includes(row.status))continue;
+    if(row.recurring===true)throw new Error('recurring_block_requires_expansion');
+    if(appliesDay(row,'date'))blocks.push({...bookingMinuteInterval(row),source:'booking'});
+  }
+  for(const row of subscriptions) {
+    if(courtMatches(row)&&row.status==='active'&&appliesSeries(row))
+      blocks.push({...bookingMinuteInterval(row),source:'subscription'});
+  }
+  for(const row of eventHours) {
+    if(courtMatches(row)&&appliesDay(row,'day'))
+      blocks.push({...bookingMinuteInterval({hour_start:row.hour,duration:1}),source:'event'});
+  }
+  // Expiry alone is NOT a release: payment recovery must resolve a held slot.
+  // This matches the existing database guards and avoids late-payment collisions.
+  for(const row of singleHolds) {
+    if(courtMatches(row)&&row.state==='held'&&appliesDay(row,'day'))
+      blocks.push({...bookingMinuteInterval(row),source:'single_hold'});
+  }
+  for(const row of aboHolds) {
+    if(courtMatches(row)&&row.state==='held'&&appliesSeries(row))
+      blocks.push({...bookingMinuteInterval(row),source:'abo_hold'});
+  }
+  return blocks;
+}
+
+return {bookingMinuteInterval,occupiedBookingIntervals};})();
+// booking-minute-read SHA256 96915edf5b787dd3bdebc1d617ff1e6f3dc00e7018ea534c9f6cd3182c379e7b
+modules["booking-minute-read"]=(()=>{
+const { bookingMinuteInterval }=modules["booking-calendar-input"];
+function bookingReadTime(row) {
+  const {start,end}=bookingMinuteInterval(row);
+  const clock=n=>String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
+  return {start,end,minutes:end-start,from:clock(start),to:clock(end),range:clock(start)+'–'+clock(end)};
+}
+function meetupReadTime(row) {
+  if(row?.time_version===2) return bookingReadTime(row);
+  if(!Number.isInteger(row?.hour_start)||![60,90,120].includes(row?.duration_minutes)) throw Error('invalid_meetup_time');
+  return bookingReadTime({time_version:2,start_minute:row.hour_start*60,duration_minutes:row.duration_minutes});
+}
+// Service dates belong to Berlin even when the account is opened abroad.
+function berlinBookingDate(day,minute) {
+  if(typeof day!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(day)||!Number.isInteger(minute)||minute<0||minute>1440) throw Error('invalid_booking_date');
+  const base=Date.parse(day+'T00:00:00Z');
+  if(!Number.isFinite(base)||new Date(base).toISOString().slice(0,10)!==day) throw Error('invalid_booking_date');
+  const target=base+minute*60000;
+  let time=target;
+  const fmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+  for(let i=0;i<3;i++) {
+    const p=Object.fromEntries(fmt.formatToParts(new Date(time)).map(x=>[x.type,x.value]));
+    const represented=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second);
+    const delta=target-represented;
+    if(!delta)return new Date(time);
+    time+=delta;
+  }
+  throw Error('ambiguous_booking_date');
+}
+
+return {bookingReadTime,meetupReadTime,berlinBookingDate};})();
+// booking-minute-loyalty SHA256 662600fddd5e68884808fa53cbc47182d17e4d7a122683e6803c52e45d2e89d7
+modules["booking-minute-loyalty"]=(()=>{
+// Preserve existing loyalty pricing: percentage bonus applies AFTER the resolved
+// member/partner/action discount. A free hour removes 60 minutes of that net
+// price. No reward reservation, debit or authority is created by this pure helper.
+const {bookingDiscountFactor}=modules["booking-discount-ratio"];
+const money=n=>Number.isSafeInteger(n)&&n>=0;
+const fact=ok=>{if(!ok)throw Error('invalid_minute_loyalty_price');};
+const round=(n,d)=>Number((2n*n+d)/(2n*d));
+function applyMinuteLoyalty(snapshot,offer) {
+  fact(snapshot?.kind==='single'&&Array.isArray(snapshot.parts)&&snapshot.parts.length>0);
+  const factor=bookingDiscountFactor(snapshot.discountPct);
+  let cursor=snapshot.parts[0].startMinute,gross=0,base=0;
+  const start=cursor;
+  const parts=snapshot.parts.map(p=>{
+    fact(p&&Number.isInteger(p.startMinute)&&p.startMinute===cursor&&p.startMinute%30===0
+      &&[30,60].includes(p.minutes)&&p.endMinute===p.startMinute+p.minutes
+      &&money(p.grossCents)&&money(p.netBeforeLoyaltyCents)&&p.netBeforeLoyaltyCents<=p.grossCents
+      &&round(BigInt(p.grossCents)*factor.numerator,factor.denominator)===p.netBeforeLoyaltyCents);
+    cursor=p.endMinute;gross+=p.grossCents;base+=p.netBeforeLoyaltyCents;
+    return {...p,loyaltyDiscountCents:0,loyaltyFreeMinutes:0};
+  });
+  const duration=cursor-start;
+  fact([60,90,120].includes(duration)&&money(gross)&&money(base)&&gross===snapshot.grossCents
+    &&base===snapshot.netBeforeLoyaltyCents&&offer&&['none','percent','free_hour'].includes(offer.kind));
+  if(offer.kind==='percent') {
+    fact(Number.isInteger(offer.pct)&&offer.pct>=1&&offer.pct<=100);
+    let cumulative=0,previous=0;
+    for(const p of parts) {
+      cumulative+=p.netBeforeLoyaltyCents;
+      const discounted=round(BigInt(cumulative)*BigInt(offer.pct),100n);
+      p.loyaltyDiscountCents=discounted-previous;previous=discounted;
+    }
+  } else if(offer.kind==='free_hour') {
+    const offset=offer.start_offset_minutes;
+    fact(Number.isInteger(offset)&&offset>=0&&offset%30===0&&offer.free_minutes===60&&offset+60<=duration);
+    for(const p of parts) {
+      const a=Math.max(p.startMinute,start+offset),b=Math.min(p.endMinute,start+offset+60);
+      if(a>=b)continue;
+      // Cumulative allocation conserves an odd cent: first/second halves of
+      // a 1001-cent net hour are 501/500, never two discounted 501-cent halves.
+      const at=minute=>round(BigInt(p.netBeforeLoyaltyCents)*BigInt(minute-p.startMinute),BigInt(p.minutes));
+      p.loyaltyFreeMinutes=b-a;p.loyaltyDiscountCents=at(b)-at(a);
+    }
+    fact(parts.reduce((n,p)=>n+p.loyaltyFreeMinutes,0)===60);
+  }
+  const discount=parts.reduce((n,p)=>n+p.loyaltyDiscountCents,0);
+  fact(money(discount)&&discount<=base);
+  return Object.freeze({baseNetCents:base,loyaltyDiscountCents:discount,netCents:base-discount,
+    priceParts:Object.freeze(parts.map(p=>Object.freeze(p)))});
+}
+
+return {applyMinuteLoyalty};})();
+// booking-receipt-minutes SHA256 3848943f43ec3e12aaff65eab84b64bafadded65b21bf5da50bf2e23f00235a1
+modules["booking-receipt-minutes"]=(()=>{
+const {bookingDiscountFactor}=modules["booking-discount-ratio"];
+// Shared frozen receipt/mail presentation. No price lookup or eligibility changes.
+const {bookingMinuteInterval}=modules["booking-calendar-input"];
+const fact=ok=>{if(!ok)throw Error('invalid_minute_receipt');};
+const minuteClock=value=>{
+  fact(Number.isInteger(value)&&value>=0&&value<=1440);
+  return String(Math.floor(value/60)).padStart(2,'0')+':'+String(value%60).padStart(2,'0');
+};
+function receiptBookingTime(row) {
+  const {start,end}=bookingMinuteInterval(row),duration=end-start;
+  fact(start>=480&&end<=1320);
+  if(row.time_version===2)fact([60,90,120].includes(duration));
+  else fact(Number.isInteger(row.duration)&&row.duration>=1&&row.duration<=14);
+  return {start,end,duration,range:`${minuteClock(start)} – ${minuteClock(end)} Uhr`,
+    label:duration%60===0?`${duration/60} Stunde${duration===60?'':'n'}`:`${duration} Minuten`};
+}
+const money=n=>Number.isSafeInteger(n)&&n>=0;
+const euro=n=>(n/100).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+function minuteTariffReceiptRows(terms,snapshot) {
+  fact(terms?.time_version===2&&snapshot&&Array.isArray(snapshot.parts));
+  const time=receiptBookingTime(terms);let cursor=time.start,gross=0;
+  const rows=snapshot.parts.map(p=>{
+    fact(p&&p.startMinute===cursor&&Number.isInteger(p.endMinute)&&p.endMinute>cursor
+      &&p.endMinute<=time.end&&p.minutes===p.endMinute-p.startMinute&&[30,60].includes(p.minutes)
+      &&p.hour===Math.floor(p.startMinute/60)&&Math.floor((p.endMinute-1)/60)===p.hour
+      &&[p.grossCents,p.baseRateCents,p.surchargeRateCents].every(money));
+    fact(money(p.baseRateCents+p.surchargeRateCents));
+    const expected=Number((BigInt(p.baseRateCents+p.surchargeRateCents)*BigInt(p.minutes)*2n+60n)/120n);
+    fact(p.grossCents===expected);cursor=p.endMinute;gross+=p.grossCents;
+    return [`${minuteClock(p.startMinute)} – ${minuteClock(p.endMinute)} Uhr · ${p.minutes} Minuten`,
+      `${euro(p.grossCents)} (${euro(p.baseRateCents+p.surchargeRateCents)}/Stunde)`];
+  });
+  fact(cursor===time.end&&money(gross)&&gross===snapshot.grossCents
+    &&money(snapshot.netBeforeLoyaltyCents)&&money(snapshot.discountCents)
+    &&snapshot.netBeforeLoyaltyCents+snapshot.discountCents===gross
+    &&Number.isFinite(snapshot.discountPct)&&snapshot.discountPct>=0&&snapshot.discountPct<=100
+    &&snapshot.kind===('day' in terms?'single':'subscription'));
+  const factor=bookingDiscountFactor(snapshot.discountPct);
+  const net=cents=>Number((2n*BigInt(cents)*factor.numerator+factor.denominator)/(2n*factor.denominator));
+  const expectedNet=snapshot.kind==='single'?snapshot.parts.reduce((sum,p)=>sum+net(p.grossCents),0):net(gross);
+  fact(expectedNet===snapshot.netBeforeLoyaltyCents);
+  return rows;
+}
+
+return {minuteClock,receiptBookingTime,minuteTariffReceiptRows};})();
+globalThis.PBMinuteDomain=Object.freeze(Object.assign({},...Object.values(modules)));})();
+// Release only together with the complete minute write/read package.
+// Separate minute state: never put a fractional hour into a legacy field.
+const MINUTE_BOOKING_UI_ENABLED = true;
+let minuteSingleDuration=60,minuteAboDuration=90,minuteCalendar=null,minuteAboCalendar=null;
+let minuteCalendarError=false,minuteAboGeneration=0,minuteSingleLoading=false,minuteAboLoading=false;
+const minuteLoyaltyCache=new Map();
+function minuteBookingMode(){return MINUTE_BOOKING_UI_ENABLED;}
+function minuteEarlybird(){const e=window.__earlybird||{};return !!e.active&&(!e.appliesTo||['abo','both'].includes(e.appliesTo))&&actionIsEligibleForCurrentUser(e);}
+function minuteDiscount(kind){
+  const base=kind==='single'?Number(member?.discount||0)*100:Number(memberAboDiscount||0)*100;
+  const e=window.__earlybird||{};
+  const action=!!e.active&&(kind==='single'?['single','both'].includes(e.appliesTo):!e.appliesTo||['abo','both'].includes(e.appliesTo))&&actionIsEligibleForCurrentUser(e);
+  return kind==='subscription'&&action?Number(e.discount||0):Math.max(base,action?Number(e.discount||0):0);
+}
+function minuteDiscountLabel(kind){
+  const e=window.__earlybird||{},base=kind==='single'?Number(member?.discount||0)*100:Number(memberAboDiscount||0)*100;
+  const action=!!e.active&&(kind==='single'?['single','both'].includes(e.appliesTo):!e.appliesTo||['abo','both'].includes(e.appliesTo))&&actionIsEligibleForCurrentUser(e);
+  return action&&(kind!=='single'||Number(e.discount||0)>base)?'Aktionsrabatt':base>0?'Mitglieder-/Partnerrabatt':'Rabatt';
+}
+function minutePrice(court,start,minutes,kind='single'){
+  const dayType=kind==='single'?(isWE(selDate)?'weekend':'weekday'):([0,6].includes(aboWd)?'weekend':'weekday');
+  const publicPricing=(kind==='single'?minuteCalendar:minuteAboCalendar)?.pricing;
+  if(!publicPricing||!Array.isArray(publicPricing.price_rows)||publicPricing.day_type!==dayType)throw Error('minute_price_projection_missing');
+  const snapshot=PBMinuteDomain.calculateTariffSubtotal({startMinute:start,durationMinutes:minutes,pricingDate:publicPricing.date,
+    dayType,priceRows:publicPricing.price_rows,surchargeRates:publicPricing.surcharge_rates,discountPct:minuteDiscount(kind),kind});
+  const key=`${currentUser?.id||''}:${minutes}`,offer=kind==='single'?minuteLoyaltyCache.get(key)||{kind:'none'}:{kind:'none'};
+  const priced=kind==='single'?PBMinuteDomain.applyMinuteLoyalty(snapshot,offer):{netCents:snapshot.netBeforeLoyaltyCents,loyaltyDiscountCents:0};
+  return {snapshot,offer,discountLabel:minuteDiscountLabel(kind),...priced};
+}
+function minuteDurationButtons(abo=false){
+  const prefix=abo?'adur':'dur',middle=abo?'adur90':'dur90',state=abo?minuteAboDuration:minuteSingleDuration;
+  const first=document.getElementById(prefix+'1'),last=document.getElementById(prefix+'2');
+  if(!first||!last)return;
+  if(!document.getElementById(middle)){
+    const b=document.createElement('button');b.id=middle;b.className='dur-btn';b.type='button';
+    b.innerHTML='90 Minuten <span class="dprice"></span>';b.onclick=()=>abo?setAboDur(90):setDur(90);last.before(b);
+    first.innerHTML='60 Minuten <span class="dprice"'+(abo?'':' id="dp1"')+'></span>';
+    last.innerHTML='120 Minuten <span class="dprice"'+(abo?'':' id="dp2"')+'></span>';
+  }
+  for(const [id,duration] of [[prefix+'1',60],[middle,90],[prefix+'2',120]]){
+    const b=document.getElementById(id);b.classList.toggle('selected',state===duration);
+    const candidates=abo?(minuteAboCalendar?.offers||[]):(minuteCalendar?.courts||[]).flatMap(c=>c.offers.map(o=>({...o,court:c.court})));
+    let best=null;for(const o of candidates.filter(o=>o.duration_minutes===duration)){
+      try{const price=minutePrice(o.court,o.start_minute,duration,abo?'subscription':'single').netCents;if(best===null||price<best)best=price;}catch{}
+    }
+    b.querySelector('.dprice').textContent=best===null?(abo?'Preis nach Zeitwahl':'nicht verfügbar'):`ab ${fmt(best/100)}${abo?'/Termin':''}`;
+  }
+}
+async function loadMinuteBookings(date,generation){
+  minuteCalendarError=false;minuteSingleLoading=true;renderMinuteSlots();
+  try{
+    const {data,error}=await sb.rpc('booking_minute_calendar',{p_day:date});
+    if(generation!==bookingsLoadGeneration)return;
+    if(error||!data?.pricing||data.pricing.date!==date||!Array.isArray(data.pricing.price_rows)||data?.time_version!==2||data.day!==date||!Array.isArray(data.courts)||data.courts.length!==2||new Set(data.courts.map(c=>c.court)).size!==2)throw Error('calendar');
+    for(const c of data.courts){if(![1,2].includes(c.court)||!Array.isArray(c.occupied)||!Array.isArray(c.offers))throw Error('calendar');
+      for(const b of c.occupied)PBMinuteDomain.bookingMinuteInterval({time_version:2,start_minute:b.start_minute,duration_minutes:b.end_minute-b.start_minute});}
+    minuteCalendar=data;booked={1:new Set(),2:new Set()};blockedSlots={1:{},2:{}};
+    // Conservative compatibility for old ancillary readers; the booking UI below
+    // always reads exact intervals, never this whole-hour compatibility projection.
+    for(const c of data.courts)for(const b of c.occupied)for(let h=Math.floor(b.start_minute/60);h<Math.ceil(b.end_minute/60);h++)booked[c.court].add(`${date}-${h}`);
+  }catch{if(generation!==bookingsLoadGeneration)return;minuteCalendar=null;minuteCalendarError=true;selSlot=null;}
+  if(currentUser){const key=`${currentUser.id}:${minuteSingleDuration}`;if(!minuteLoyaltyCache.has(key)){
+    const owner=currentUser.id;const {data,error}=await sb.rpc('own_minute_loyalty_preview',{p_minutes:minuteSingleDuration});
+    if(currentUser?.id===owner&&!error&&['none','percent','free_hour'].includes(data?.kind))minuteLoyaltyCache.set(key,data);
+  }}
+  if(generation===bookingsLoadGeneration){minuteSingleLoading=false;minuteDurationButtons();}
+}
+function minuteRow(parent,start,end,label,price,onClick,selected=false){
+  const row=document.createElement('div');row.className='slot '+(onClick?(selected?'selected':'free'):'booked');
+  const time=document.createElement('span');time.className='slot-time';time.textContent=`${PBMinuteDomain.minuteClock(start)} – ${PBMinuteDomain.minuteClock(end)}`;row.appendChild(time);
+  const value=document.createElement('span');value.className='slot-price';value.textContent=price===null?label:fmt(price/100);row.appendChild(value);
+  if(onClick){row.onclick=onClick;row.setAttribute('role','button');row.tabIndex=0;row.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onClick();}};}
+  parent.appendChild(row);
+}
+function renderMinuteSlots(){
+  if(minuteSingleLoading||!selDate||!isBookingDateReleased(selDate)){
+    for(const ct of [1,2])document.getElementById('slots'+ct).textContent=minuteSingleLoading?'Verfügbarkeit wird geprüft.':'Bitte einen freigegebenen Spieltag wählen.';
+    document.getElementById('sumCard').classList.remove('visible');document.getElementById('bookBtn').classList.remove('visible');return;
+  }
+  if(selSlot&&!minuteCalendar?.courts.some(c=>c.court===selSlot.court&&c.offers.some(o=>o.start_minute===selSlot.start_minute&&o.duration_minutes===minuteSingleDuration)))selSlot=null;
+  minuteDurationButtons();
+  for(const ct of [1,2]){
+    const root=document.getElementById('slots'+ct);root.replaceChildren();
+    if(minuteCalendarError||minuteCalendar?.day!==selDate){root.textContent='Belegung derzeit nicht verfügbar. Bitte erneut laden.';continue;}
+    const c=minuteCalendar.courts.find(c=>c.court===ct),rows=[...c.occupied.map(b=>({...b,busy:true})),
+      ...c.offers.filter(o=>o.duration_minutes===minuteSingleDuration).map(o=>({...o,end_minute:o.start_minute+o.duration_minutes}))].sort((a,b)=>a.start_minute-b.start_minute);
+    for(const r of rows){if(r.busy){minuteRow(root,r.start_minute,r.end_minute,r.source==='subscription'||r.source==='abo_hold'?'Abo':'Belegt',null,null);continue;}
+      let price;try{price=minutePrice(ct,r.start_minute,minuteSingleDuration).netCents;}catch{continue;}
+      minuteRow(root,r.start_minute,r.end_minute,'',price,minuteCalendar.writes_enabled?()=>{
+        selSlot=selSlot?.court===ct&&selSlot?.start_minute===r.start_minute?null:{time_version:2,court:ct,start_minute:r.start_minute,duration_minutes:minuteSingleDuration};renderMinuteSlots();}:null,
+        selSlot?.court===ct&&selSlot?.start_minute===r.start_minute);
+    }
+  }
+  updateMinuteSummary();
+}
+function minuteCalc(root,terms,price,total=price.netCents,billing=null){
+  const heading=document.createElement('div');heading.className='abo-calc-h';heading.textContent='Transparenz – So setzt sich dein Buchungspreis zusammen';
+  const table=document.createElement('table'),body=document.createElement('tbody');table.style.minWidth='0';table.style.tableLayout='fixed';table.style.width='100%';
+  const rows=PBMinuteDomain.minuteTariffReceiptRows(terms,price.snapshot);
+  if(price.snapshot.discountPct>0)rows.push([(price.discountLabel||'Rabatt').replaceAll('/',' / '),`${String(price.snapshot.discountPct).replace('.',',')} %`]);
+  if(price.loyaltyDiscountCents>0)rows.push(['Treuebonus',fmt(price.loyaltyDiscountCents/100)]);
+  if(billing){
+    rows.push(['Preis je Termin nach Rabatt',fmt(price.netCents/100)]);
+    rows.push(['Berechnete Termine',String(30*billing.months/12)]);
+    if(billing.earlybird)rows.push(['Gesamte Preisgrundlage vor Aktionsrabatt',fmt(Math.round(price.snapshot.grossCents*30*billing.months/12)/100)]);
+  }
+  rows.push(['Dein Buchungspreis',fmt(total/100)]);
+  for(const values of rows){const tr=document.createElement('tr');for(const value of values){const td=document.createElement('td');td.textContent=value;td.style.whiteSpace='normal';td.style.overflowWrap='anywhere';td.style.width='50%';td.style.textAlign=tr.children.length?'right':'left';tr.appendChild(td);}body.appendChild(tr);}
+  table.appendChild(body);const wrap=document.createElement('div');wrap.className='abo-calc-wrap';wrap.appendChild(table);root.replaceChildren(heading,wrap);
+}
+function updateMinuteSummary(){
+  const card=document.getElementById('sumCard'),button=document.getElementById('bookBtn');
+  if(!selSlot){card.classList.remove('visible');button.classList.remove('visible');return;}
+  const p=minutePrice(selSlot.court,selSlot.start_minute,minuteSingleDuration),terms={...selSlot,day:selDate};
+  if(BOOKING_CANCELLATION_POLICY_ENABLED&&!bookingCancellationDisplayedPolicy)void refreshBookingCancellationTerms();
+  const values={sDate:new Date(selDate+'T12:00Z').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}),
+    sCourt:courtLabel(selSlot.court),sTime:PBMinuteDomain.receiptBookingTime(terms).range,sDur:`${minuteSingleDuration} Minuten`,sTotal:fmt(p.netCents/100),sPer:fmt(p.netCents/400),
+    sReg:p.netCents<p.snapshot.grossCents?`statt ${fmt(p.snapshot.grossCents/100)} regulär`:'',
+    'sb-hours':'Dein Preis enthält die unten aufgeführten Zeitanteile der bestehenden Stundentarife.',
+    'sb-rabatt':p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:''};
+  for(const [id,value]of Object.entries(values)){const e=document.getElementById(id);if(e)e.textContent=value;}
+  const save=document.getElementById('sSave');save.style.display=p.netCents<p.snapshot.grossCents?'':'none';save.textContent=`Du sparst ${fmt((p.snapshot.grossCents-p.netCents)/100)}`;
+  const bonus=document.getElementById('sb-bonus');if(bonus)bonus.style.display=p.snapshot.parts.some(part=>part.surchargeRateCents>0)?'':'none';
+  minuteCalc(document.getElementById('sb-calc'),terms,p);card.classList.add('visible');button.classList.add('visible');restoreBookingButtonVisibility();
+}
+async function loadMinuteAboBookings(weekday){
+  const generation=++minuteAboGeneration,kind=minuteEarlybird()?'earlybird_subscription':'subscription';
+  minuteAboLoading=true;renderMinuteAboSlots();
+  try{const {data,error}=await sb.rpc('booking_minute_abo_calendar',{p_weekday:weekday,p_minutes:minuteAboDuration,p_kind:kind});
+    if(generation!==minuteAboGeneration)return;
+    if(error||!data?.pricing||!Array.isArray(data.pricing.price_rows)||data?.time_version!==2||data.weekday!==weekday||data.duration_minutes!==minuteAboDuration||data.kind!==kind||!Array.isArray(data.offers))throw Error('abo_calendar');
+    minuteAboCalendar=data;
+  }catch{if(generation===minuteAboGeneration){minuteAboCalendar=null;aboSlot=null;}}
+  if(generation===minuteAboGeneration){minuteAboLoading=false;minuteDurationButtons(true);}
+}
+function renderMinuteAboSlots(){
+  if(minuteAboLoading){for(const ct of [1,2])document.getElementById('aboSlots'+ct).textContent='Alle Abo-Termine werden geprüft.';document.getElementById('aboSummary').classList.remove('visible');return;}
+  if(aboSlot&&!minuteAboCalendar?.offers.some(o=>o.court===aboSlot.court&&o.start_minute===aboSlot.start_minute))aboSlot=null;
+  minuteDurationButtons(true);
+  for(const ct of [1,2]){const root=document.getElementById('aboSlots'+ct);root.replaceChildren();
+    if(!minuteAboCalendar){root.textContent='Verfügbarkeit wird geprüft. Bitte einen Wochentag wählen.';continue;}
+    for(const o of minuteAboCalendar.offers.filter(o=>o.court===ct)){
+      let p;try{p=minutePrice(ct,o.start_minute,minuteAboDuration,'subscription');}catch{continue;}
+      minuteRow(root,o.start_minute,o.start_minute+minuteAboDuration,'',p.netCents,minuteAboCalendar.writes_enabled?()=>{
+        aboSlot={time_version:2,court:ct,start_minute:o.start_minute,duration_minutes:minuteAboDuration};renderMinuteAboSlots();}:null,
+        aboSlot?.court===ct&&aboSlot?.start_minute===o.start_minute);
+    }
+  }
+  updateMinuteAboSummary();
+}
+function updateMinuteAboSummary(){
+  const card=document.getElementById('aboSummary');if(!aboSlot){card.classList.remove('visible');return;}
+  const p=minutePrice(aboSlot.court,aboSlot.start_minute,minuteAboDuration,'subscription'),early=minuteEarlybird();
+  const months=early?Number(window.__earlybird.termMonths):12;
+  const total=early?Math.round(p.snapshot.grossCents*30*(months/12)*(1-p.snapshot.discountPct/100)):p.netCents*30;
+  const values={'as-court':courtLabel(aboSlot.court),'as-day':WDNAMES[aboWd],'as-time':PBMinuteDomain.receiptBookingTime(aboSlot).range,
+    'as-dur':`${minuteAboDuration} Minuten`,'as-total':fmt(total/100),'as-perperson':fmt(total/400),
+    'as-hours':'Dein Preis enthält die unten aufgeführten Zeitanteile der bestehenden Stundentarife.',
+    'as-rabatt':p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:'Dein Preis enthält keinen Rabatt.',
+    'as-reg':`${fmt(p.netCents/100)} je Termin`,'as-save':`${months} Monate · ${30*months/12} Wochen berechnet · ${52*months/12} Wochen reserviert`,
+    'as-52':`Jährlich 52 Wochen reserviert – du zahlst davon 30 Wochen.`};
+  for(const [id,value]of Object.entries(values)){const e=document.getElementById(id);if(e)e.textContent=value;}
+  const occurrence=minuteAboCalendar.offers.find(o=>o.court===aboSlot.court&&o.start_minute===aboSlot.start_minute);
+  const terms={...aboSlot,weekday:aboWd,starts_on:occurrence.starts_on,ends_on:occurrence.ends_on};
+  const title=card.querySelector('.abo-sum-title');if(title)title.textContent=early?'Dein Frühbucher-Abo':'Dein Jahresabo';
+  const cta=card.querySelector('.abo-cta');if(cta)cta.textContent=early?'Frühbucher-Abo sichern':'Jahresabo sichern';
+  const bonus=document.getElementById('as-bonus');if(bonus)bonus.style.display=p.snapshot.parts.some(part=>part.surchargeRateCents>0)?'':'none';
+  minuteCalc(document.getElementById('as-calc'),terms,p,total,{months,earlybird:early});card.classList.add('visible');
+}
 //  INIT
 // ============================================================
 let bookingRelease = null;
@@ -9083,6 +9644,7 @@ async function selectDate(s) {
 //  DAUER
 // ============================================================
 function updDurPrices() {
+  if(typeof minuteBookingMode==='function'&&minuteBookingMode())return minuteDurationButtons();
   if (!selDate) return;
   const dp1 = document.getElementById("dp1");
   const dp2 = document.getElementById("dp2");
@@ -9101,6 +9663,10 @@ function updDurPrices() {
 }
 
 function setDur(d) {
+  if(typeof minuteBookingMode==='function'&&minuteBookingMode()){
+    const duration=[1,2].includes(d)?d*60:d;if(![60,90,120].includes(duration))return;
+    minuteSingleDuration=duration;selSlot=null;void loadBookings(selDate).then(()=>renderSlots());renderMinuteSlots();return;
+  }
   selDur = d;
   selSlot = null;
   document.getElementById("dur1").classList.toggle("selected", d===1);
@@ -9151,6 +9717,7 @@ function cheapestBookPriceForDuration(duration) {
 }
 
 function renderSlots() {
+  if(typeof minuteBookingMode==='function'&&minuteBookingMode())return renderMinuteSlots();
   if (!selDate || !isBookingDateReleased(selDate)) return;
   // Falls die aktuelle Auswahl durch frisch geladene Daten (z.B. inzwischen
   // vergebenes Abo, Race Condition beim schnellen Umschalten) ungültig
@@ -9297,6 +9864,7 @@ function bookingPriceWithLoyalty(hour, date, duration, offer) {
 }
 
 function updateSummary() {
+  if(typeof minuteBookingMode==='function'&&minuteBookingMode())return updateMinuteSummary();
   const card = document.getElementById("sumCard");
   const btn  = document.getElementById("bookBtn");
   if (!selSlot) { card.classList.remove("visible"); btn.classList.remove("visible"); restoreBookingButtonVisibility(); return; }
@@ -9425,6 +9993,7 @@ function openVerabredungenWithSource(source) {
 }
 
 function openVerabredungenPreview() {
+  if(selSlot?.time_version===2) {openVerabredungenWithSource(null);showToast('Verabreden ist nach Abschluss der Buchung möglich.');return;}
   // Slot aus „Jetzt buchen“ nur vormerken; keine Reservierung und keine Zahlung.
   if (selSlot && selDate) {
     const day = new Date(selDate + 'T12:00:00').toLocaleDateString('de-DE', { weekday:'short' }).replace('.', '');
@@ -9585,6 +10154,16 @@ async function payMyEvent(id, button) {
 }
 function splitAboAroundEvent(abo, paidHours) {
   if (!abo) return [];
+  if(abo.time_version===2) {
+    const {start,end}=bookingReadTime(abo), result=[]; let run=null;
+    for(let minute=start;minute<end;minute+=30) {
+      const replaced=paidHours.some(h=>h.status===true && Number(h.court)===Number(abo.court) && Math.floor(minute/60)===Number(h.hour));
+      if(replaced){run=null;continue;}
+      if(!run){run={...abo,hour_start:null,duration:null,start_minute:minute,duration_minutes:30};result.push(run);}
+      else run.duration_minutes+=30;
+    }
+    return result;
+  }
   const result=[]; let run=null;
   for (let hour=Number(abo.hour_start);hour<Number(abo.hour_start)+Number(abo.duration);hour++) {
     const replaced=paidHours.some(h => h.status===true && Number(h.court)===Number(abo.court) && Number(h.hour)===hour);
@@ -9886,8 +10465,7 @@ async function checkHasAbo() {
       .from('subscriptions')
       .select('id')
       .eq('user_id', uid)
-      .eq('status', 'active')
-      .limit(1);
+      .eq('status', 'active');
     if (error) throw error;
     document.getElementById('portalBtn').style.display = (data && data.length > 0) ? 'inline-block' : 'none';
   } catch(e) {
@@ -10288,7 +10866,7 @@ async function loadTodayBookings() {
   const today = todayStr();
   const { data, error } = await sb
     .from('bookings')
-    .select('court,date,hour_start,duration,status')
+    .select(bookingReadColumns('court,date,hour_start,duration,status'))
     .eq('user_id', userId)
     .eq('date', today)
     .in('status', ['paid', 'active']);
@@ -10296,29 +10874,37 @@ async function loadTodayBookings() {
   return data || [];
 }
 
-async function loadTodayAboSlot() {
-  if (!currentUser) return null;
+async function loadTodayAboSlots() {
+  if (!currentUser) return [];
   const userId = await dataUserId();
-  if (!userId) return null;
+  if (!userId) return [];
   const today = new Date();
   const weekday = today.getDay();
   try {
     const { data, error } = await sb
       .from('subscriptions')
-      .select('court,weekday,hour_start,duration')
+      .select(bookingReadColumns('id,court,weekday,hour_start,duration,starts_on,ends_on'))
       .eq('user_id', userId)
       .eq('weekday', weekday)
-      .eq('status', 'active')
-      .limit(1);
+      .lte('starts_on', todayStr())
+      .gt('ends_on', todayStr())
+      .eq('status', 'active');
     if (error) throw error;
-    if (!data || data.length === 0) return null;
-    // Als Buchungsobjekt zurückgeben (mit heutigem Datum)
-    const s = data[0];
-    return { court: s.court, date: todayStr(), hour_start: s.hour_start, duration: s.duration, isAbo: true };
-  } catch(e) { return null; }
+    return (data || []).map(s=>({...s,date:todayStr(),isAbo:true}));
+  } catch(e) { return []; }
 }
 
 // ============================================================
+
+async function loadTodayAboSlot() { return (await loadTodayAboSlots())[0] || null; }
+// Independent read capability: retained even if new minute sales are disabled.
+const MINUTE_BOOKING_READS_ENABLED = true;
+function bookingReadColumns(legacy) {
+  return MINUTE_BOOKING_READS_ENABLED ? legacy+',time_version,start_minute,duration_minutes' : legacy;
+}
+function bookingReadTime(row) { return PBMinuteDomain.bookingReadTime(row); }
+function bookingDateAt(row) { return PBMinuteDomain.berlinBookingDate(row.date,bookingReadTime(row).start); }
+
 //  MEINE BUCHUNGEN – kommende Einzelbuchungen + aktive Abos
 // ============================================================
 async function loadUpcomingBookings() {
@@ -10328,7 +10914,7 @@ async function loadUpcomingBookings() {
   const today = todayStr();
   const { data, error } = await sb
     .from('bookings')
-    .select('id,court,date,hour_start,duration,price_paid_cents,status,stripe_session_id')
+    .select(bookingReadColumns('id,court,date,hour_start,duration,price_paid_cents,status,stripe_session_id'))
     .eq('user_id', userId)
     .gte('date', today)
     .in('status', ['pending', 'paid', 'active'])
@@ -10345,7 +10931,7 @@ async function loadActiveAbos() {
   if (!userId) return [];
   const { data, error } = await sb
     .from('subscriptions')
-    .select('id,court,weekday,hour_start,duration,starts_on,ends_on,status')
+    .select(bookingReadColumns('id,court,weekday,hour_start,duration,starts_on,ends_on,status'))
     .eq('user_id', userId)
     .in('status', ['pending', 'active'])
     .order('weekday', { ascending: true });
@@ -10370,7 +10956,7 @@ function nextAboDateAfter(abo, afterDate) {
   const delta = (Number(abo.weekday) - firstPossible.getDay() + 7) % 7;
   firstPossible.setDate(firstPossible.getDate() + delta);
   const result = localISODate(firstPossible);
-  return abo.ends_on && result > abo.ends_on ? null : result;
+  return abo.ends_on && result >= abo.ends_on ? null : result;
 }
 
 // „Spieler informieren": teilt eine gebrandete BILDKARTE im App-CI über den
@@ -10739,7 +11325,7 @@ function meetBookedButtonHtml(court, dateISO, hourStart, duration, kind, sourceI
 }
 
 function bookingStartTime(item) {
-  return new Date(`${item.date}T${String(item.hour_start).padStart(2, '0')}:00:00`);
+  return bookingDateAt(item);
 }
 
 function canCancelSingleBooking(item) {
@@ -10800,7 +11386,7 @@ async function renderMyBookingsLists() {
   let upcoming = bookings
     .filter(b => {
       if (BOOKING_CANCELLATION_POLICY_ENABLED) return true;
-      const start = new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`);
+      const start = bookingDateAt(b);
       return start.getTime() > now.getTime();
     })
     .map(b => ({ ...b, kind: 'single' }));
@@ -10808,8 +11394,7 @@ async function renderMyBookingsLists() {
   abos.forEach(a => {
     const nextDate = nextAboDateAfter(a, today);
     if (nextDate) upcoming.push({
-      id: a.id, court: a.court, date: nextDate, hour_start: a.hour_start,
-      duration: a.duration, ends_on: a.ends_on, status: a.status, kind: 'abo'
+      ...a, date: nextDate, kind: 'abo'
     });
   });
 
@@ -10841,7 +11426,7 @@ async function renderMyBookingsLists() {
     }
   }
 
-  upcoming.sort((a,b) => a.date.localeCompare(b.date) || Number(a.hour_start) - Number(b.hour_start));
+  upcoming.sort((a,b) => a.date.localeCompare(b.date) || bookingReadTime(a).start - bookingReadTime(b).start);
 
   if (!upcoming.length) {
     bookingsEl.innerHTML = `<div class="play-empty upcoming-empty"><div>Aktuell keine kommenden Termine</div></div>`;
@@ -10851,11 +11436,11 @@ async function renderMyBookingsLists() {
   bookingsEl.innerHTML = upcoming.map(item => {
     const dateStr = new Date(item.date+'T12:00:00').toLocaleDateString('de-DE',
       {weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
-    const timeStr = `${String(item.hour_start).padStart(2,'0')}:00–${String(Number(item.hour_start)+Number(item.duration)).padStart(2,'0')}:00`;
+    const timeStr = bookingReadTime(item).range;
     const isAbo = item.kind === 'abo';
     const price = !isAbo && item.price_paid_cents ? weatherFmtEUR(item.price_paid_cents) : '';
     const pending = item.status === 'pending';
-    const label = `${dateStr} um ${String(item.hour_start).padStart(2,'0')}:00 Uhr, ${courtLabel(item.court)}`;
+    const label = `${dateStr} um ${bookingReadTime(item).from} Uhr, ${courtLabel(item.court)}`;
     const cancelAction = canCancelSingleBooking(item)
       ? `<button type="button" class="booking-cancel-btn" data-cancel-booking="${item.id}"
           onclick="cancelSingleBooking('${item.id}', '${label.replace(/'/g, "\\'")}', ${Number(item.price_paid_cents || 0)})">Stornieren</button>`
@@ -10894,7 +11479,7 @@ function weatherFmtEUR(cents) {
 
 function weatherBookingLabel(b) {
   const dateStr = new Date(b.date + 'T12:00:00').toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit'});
-  return `${dateStr} · ${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start + b.duration).padStart(2,'0')}:00 Uhr · ${courtLabel(b.court)}`;
+  return `${dateStr} · ${bookingReadTime(b).range} Uhr · ${courtLabel(b.court)}`;
 }
 
 
@@ -10907,12 +11492,12 @@ function weatherShortTime(d) {
 }
 
 function weatherStartDate(b) {
-  return new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`);
+  return bookingDateAt(b);
 }
 
 function weatherEndDate(b) {
   const start = weatherStartDate(b);
-  return new Date(start.getTime() + Number(b.duration || 1) * 3600 * 1000);
+  return new Date(start.getTime() + bookingReadTime(b).minutes * 60000);
 }
 
 function weatherDeadlineDate(b) {
@@ -10924,7 +11509,7 @@ function weatherDeadlineDate(b) {
 // (Beim Cleanup am 27.07.2026 versehentlich mitentfernt, hier wiederhergestellt.)
 function weatherBookingValueCents(b) {
   if (!b) return 0;
-  if (!b.weather_preview_slot && Number(b.price_paid_cents || 0) > 0) {
+  if (!b.weather_preview_slot && (b.time_version===2 || Number(b.price_paid_cents || 0) > 0)) {
     return Number(b.price_paid_cents);
   }
   const start = Number(b.hour_start || 0);
@@ -10937,7 +11522,7 @@ function renderWeatherDoorEvidence(b) {
   const start = weatherStartDate(b);
   const end = weatherEndDate(b);
   const hours = getFreibadHours(b.date);
-  const doorIsB = !b.weather_preview_slot && Number(b.hour_start) >= Number(hours.open || 0) && Number(b.hour_start) < Number(hours.close || 0);
+  const doorIsB = !b.weather_preview_slot && bookingReadTime(b).start >= Number(hours.open || 0)*60 && bookingReadTime(b).start < Number(hours.close || 0)*60;
   const door = doorIsB ? 'Tür B' : 'Tür A';
   const side = doorIsB ? 'Freibadseite' : 'Parkplatzseite';
   const enter = new Date(start.getTime() - 3 * 60000);
@@ -11010,7 +11595,7 @@ async function renderWeatherReportCard() {
   try {
     let query = sb
       .from('bookings')
-      .select('id,court,date,hour_start,duration,price_paid_cents,status')
+      .select(bookingReadColumns('id,court,date,hour_start,duration,price_paid_cents,status'))
       .eq('user_id', userId)
       .in('status', ['paid', 'active'])
       .order('date', { ascending: false })
@@ -11028,7 +11613,7 @@ async function renderWeatherReportCard() {
   const eligible = bookings.filter(b => {
     if (!b.price_paid_cents) return false;
     if (weatherTestMode) return true;
-    const start = new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`);
+    const start = bookingDateAt(b);
     return now >= start && now <= weatherDeadlineDate(b);
   });
   if (!eligible.length) return;
@@ -11232,7 +11817,7 @@ async function renderMyHistory(reset) {
   try {
     const { data, error } = await sb
       .from('bookings')
-      .select('id,court,date,hour_start,duration,price_paid_cents,status')
+      .select(bookingReadColumns('id,court,date,hour_start,duration,price_paid_cents,status'))
       .eq('user_id', userId)
       .gte('date', personalHistoryStartDate())
       .lte('date', todayStr())
@@ -11246,7 +11831,7 @@ async function renderMyHistory(reset) {
 
   const now = new Date();
   const done = rows.filter(b => {
-    const end = new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`).getTime() + b.duration * 3600 * 1000;
+    const end = bookingDateAt(b).getTime() + bookingReadTime(b).minutes * 60000;
     // Die ersten 24 Stunden nach Spielende gehören zur farblich
     // hervorgehobenen Karte „Letzte Buchung", nicht ins graue Archiv.
     return end + 24 * 3600 * 1000 <= now.getTime();
@@ -11266,7 +11851,7 @@ async function renderMyHistory(reset) {
 
   const html = done.map(b => {
     const dateStr = new Date(b.date + 'T12:00:00').toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', year:'2-digit'});
-    const timeStr = `${String(b.hour_start).padStart(2,'0')}:00–${String(b.hour_start + b.duration).padStart(2,'0')}:00`;
+    const timeStr = `${bookingReadTime(b).range}`;
     const price = b.price_paid_cents ? weatherFmtEUR(b.price_paid_cents) : '';
     const r = reportsByBooking[b.id];
     let badge;
@@ -11347,10 +11932,10 @@ async function sendGiftCredit() {
 // Prüft ob eine Buchung gerade aktiv ist (±15 Min)
 function getActiveBooking(bookings) {
   const now = new Date();
-  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const nowMin = now.getTime()/60000;
   for (const b of bookings) {
-    const startMin = b.hour_start * 60;
-    const endMin   = (b.hour_start + b.duration) * 60;
+    const startMin = bookingDateAt(b).getTime()/60000;
+    const endMin   = startMin + bookingReadTime(b).minutes;
     if (nowMin >= startMin - 15 && nowMin < endMin) return b;
   }
   return null;
@@ -11358,9 +11943,9 @@ function getActiveBooking(bookings) {
 
 function getBookingStatus(b) {
   const now = new Date();
-  const nowMin = now.getHours() * 60 + now.getMinutes();
-  const startMin = b.hour_start * 60;
-  const endMin   = (b.hour_start + b.duration) * 60;
+  const nowMin = now.getTime()/60000;
+  const startMin = bookingDateAt(b).getTime()/60000;
+  const endMin   = startMin + bookingReadTime(b).minutes;
   if (nowMin < startMin - 15) return 'soon';
   if (nowMin >= endMin) return 'past';
   return 'now';
@@ -11384,18 +11969,23 @@ async function renderPlaySection() {
   notLoggedIn.style.display = 'none';
   loggedIn.style.display    = 'block';
 
-  const [regularBookings, aboSlot] = await Promise.all([loadTodayBookings(), loadTodayAboSlot()]);
+  // Remove any previous access state before asynchronous account reads.
+  const oldDoors=document.getElementById('doorButtons');
+  if(oldDoors) oldDoors.style.display='none';
+  const viewer=currentUser.id;
+  const [regularBookings, aboSlots] = await Promise.all([loadTodayBookings(), loadTodayAboSlots()]);
+  if(currentUser?.id!==viewer)return;
   const eventData = await loadMyEvents();
   let allBookings = [...regularBookings];
-  if (aboSlot && !eventData.unavailable) {
-    const exists = allBookings.some(b => b.hour_start === aboSlot.hour_start && b.court === aboSlot.court);
+  for(const aboSlot of eventData.unavailable ? [] : aboSlots) {
+    const exists = allBookings.some(b => bookingReadTime(b).start === bookingReadTime(aboSlot).start && b.court === aboSlot.court);
     if (!exists) allBookings.push(...splitAboAroundEvent(aboSlot,eventData.paidHours));
   }
   for (const event of eventData.events.filter(e => e.state==='paid' && e.day===todayStr())) {
     for (const h of event.hours) allBookings.push({court:h.court,date:event.day,hour_start:h.hour,duration:1,isEvent:true});
   }
 
-  allBookings.sort((a,b) => a.hour_start - b.hour_start);
+  allBookings.sort((a,b) => bookingReadTime(a).start - bookingReadTime(b).start);
 
   const listEl = document.getElementById('playBookingsList');
 
@@ -11407,8 +11997,8 @@ async function renderPlaySection() {
   } else {
   listEl.innerHTML = allBookings.map(b => {
     const status = getBookingStatus(b);
-    const h1 = `${String(b.hour_start).padStart(2,'0')}:00`;
-    const h2 = `${String(b.hour_start + b.duration).padStart(2,'0')}:00`;
+    const h1 = bookingReadTime(b).from;
+    const h2 = bookingReadTime(b).to;
     const aboTag  = b.isAbo  ? ' <span style="font-size:0.65rem;color:#888;font-weight:400;">(Abo)</span>'
       : b.isEvent ? ' <span style="font-size:0.65rem;color:#888;font-weight:400;">(Event)</span>' : '';
     const badgeCls = status === 'now'  ? 'play-badge-now'  :
@@ -11451,7 +12041,7 @@ async function renderPlaySection() {
   } else {
     const next = allBookings.find(b => getBookingStatus(b) === 'soon');
     doorInfoEl.innerHTML = next
-      ? `Deine nächste Buchung startet um <strong>${String(next.hour_start).padStart(2,'0')}:00 Uhr</strong>.`
+      ? `Deine nächste Buchung startet um <strong>${bookingReadTime(next).from} Uhr</strong>.`
       : `Aktuell hast du keine laufende Buchung.`;
   }
 
@@ -11788,7 +12378,7 @@ async function confirmPreparedSalePurchase(bookingType,terms,fulfillment={}) {
   const authId=currentUser?.id;
   try {
     const expectedCents=displayedCheckoutCents(bookingType==='card'?'cardTotalPrice':'as-total');
-    const result=await runPreparedSaleDialog({enabled:PREPARED_SALE_DIALOG_ENABLED,authId,bookingType,terms,fulfillment,
+    const result=await runPreparedSaleDialog({enabled:PREPARED_SALE_DIALOG_ENABLED||(terms?.time_version===2&&typeof minuteBookingMode==='function'&&minuteBookingMode()),authId,bookingType,terms,fulfillment,
       storage:localStorage,locks:navigator.locks,request:requestPreparedSingleCheckout,newId:()=>crypto.randomUUID(),
       isCurrent:()=>currentUser?.id===authId,
       approve:async offer=>{
@@ -11811,11 +12401,15 @@ async function showPreparedSaleState(r) {
       renderCreditOverview();
       return;
     }
-    if(['subscription','earlybird_subscription'].includes(r.kind) && [1,2].includes(r.terms?.duration)
+    if(['subscription','earlybird_subscription'].includes(r.kind) && (r.terms?.time_version===2?[60,90,120].includes(r.terms.duration_minutes):[1,2].includes(r.terms?.duration))
       && Number.isInteger(r.terms.weekday) && r.terms.weekday>=0 && r.terms.weekday<=6) {
       showBookingSuccessDialog({title:r.kind==='subscription'?'Jahresabo bestätigt':'Frühbucher-Abo bestätigt',
         sub:typeof PREPARED_MAIL_NOTICE_ENABLED==='undefined' || PREPARED_MAIL_NOTICE_ENABLED ? BOOKING_SUCCESS_SUB : 'Weitere Details findest du unter „Jetzt spielen“ in der App. Der neue Mailversand ist im Testbetrieb noch ausgeschaltet.'});
-      await loadBookings(selDate);renderSlots();setMode('abo');setAboDur(r.terms.duration);setWd(r.terms.weekday);
+      await loadBookings(selDate);renderSlots();
+      if(r.terms.time_version===2 && !(typeof minuteBookingMode==='function' && minuteBookingMode())) {
+        // Sold minute contracts remain readable when new minute sales are disabled.
+        setMode('play');await renderMyBookingsLists();
+      } else {setMode('abo');setAboDur(r.terms.time_version===2?r.terms.duration_minutes:r.terms.duration);setWd(r.terms.weekday);} 
       return;
     }
   }
@@ -11852,8 +12446,10 @@ const PREPARED_SINGLE_KEY_PREFIX = 'pb_prepared_single_v1:';
 
 function validPreparedSingleTerms(t) {
   if (!t || ![1,2].includes(t.court) || !/^\d{4}-\d{2}-\d{2}$/.test(t.day || '')
-    || !Number.isInteger(t.hour_start) || t.hour_start<8 || ![1,2].includes(t.duration)
-    || t.hour_start+t.duration>22) return false;
+    || (t.time_version===2?
+      Object.keys(t).sort().join(',')!=='court,day,duration_minutes,start_minute,time_version'||!Number.isInteger(t.start_minute)||t.start_minute<480||t.start_minute%30!==0
+        ||![60,90,120].includes(t.duration_minutes)||t.start_minute+t.duration_minutes>1320
+      :t.time_version!==undefined||!Number.isInteger(t.hour_start)||t.hour_start<8||![1,2].includes(t.duration)||t.hour_start+t.duration>22)) return false;
   const date = new Date(t.day+'T12:00:00Z');
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0,10)===t.day;
 }
@@ -11922,11 +12518,11 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
       if (readPreparedSingleRequest(storage, authId)) throw new Error('Ein anderer Bezahlvorgang ist inzwischen geöffnet.');
       const t=restored.terms;
       // A restored identity only permits status/recovery/close, never fresh prepare/create.
-      record={version:1,authId,id:recoveryId,terms:{court:t.court,day:t.day,hour_start:t.hour_start,duration:t.duration},phase:'checkout_requested'};
+      record={version:1,authId,id:recoveryId,terms:{...t},phase:'checkout_requested'};
       storage.setItem(PREPARED_SINGLE_KEY_PREFIX + authId, JSON.stringify(record));
       const saved=readPreparedSingleRequest(storage,authId);
       if (!saved || saved.id!==record.id || saved.phase!==record.phase
-        || !['court','day','hour_start','duration'].every(key=>saved.terms[key]===record.terms[key])) {
+        || !(record.terms.time_version===2?Object.keys(record.terms):['court','day','hour_start','duration']).every(key=>saved.terms[key]===record.terms[key])) {
         throw new Error('Der wiederhergestellte Vorgang konnte im Browser nicht gesichert werden.');
       }
     }
@@ -11947,11 +12543,13 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
       storage.setItem(PREPARED_SINGLE_KEY_PREFIX + authId, JSON.stringify(record));
       record = readPreparedSingleRequest(storage, authId);
     }
-    if (!resumeOnly && !['court', 'day', 'hour_start', 'duration'].every(key => record.terms[key] === terms[key])) {
+    if (!resumeOnly && !(record.terms.time_version===2?Object.keys(record.terms):['court', 'day', 'hour_start', 'duration']).every(key => record.terms[key] === terms[key])) {
       throw new Error('Bitte zuerst den offenen Bezahlvorgang für den bisherigen Termin prüfen.');
     }
     const payload = {booking_type:'single', single_quote_id:record.id, use_credit:record.useCredit===true,
-      court:record.terms.court, date:record.terms.day, hour_start:record.terms.hour_start, duration:record.terms.duration};
+      court:record.terms.court,date:record.terms.day,...(record.terms.time_version===2
+        ?{time_version:2,start_minute:record.terms.start_minute,duration_minutes:record.terms.duration_minutes}
+        :{hour_start:record.terms.hour_start,duration:record.terms.duration})};
     const checked = data => {
       assertCurrent();
       if (!data || data.quote_id !== record.id) throw new Error('Der Bezahlvorgang konnte nicht eindeutig zugeordnet werden.');
@@ -11960,7 +12558,7 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
     const clearLocal = () => {
       const saved = readPreparedSingleRequest(storage, authId);
       if (!saved || saved.id !== record.id || saved.phase !== record.phase
-        || !['court','day','hour_start','duration'].every(key=>saved.terms[key] === record.terms[key])) {
+        || !(record.terms.time_version===2?Object.keys(record.terms):['court','day','hour_start','duration']).every(key=>saved.terms[key] === record.terms[key])) {
         throw new Error('Der gespeicherte Bezahlvorgang hat sich geändert. Bitte erneut prüfen.');
       }
       assertCurrent();
@@ -11971,7 +12569,7 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
     };
     const retireOffer = async () => {
       const result = checked(await request({...payload, single_checkout_action:'retire'}));
-      if (!['court','day','hour_start','duration'].every(key=>result.terms?.[key] === record.terms[key])
+      if (!(record.terms.time_version===2?Object.keys(record.terms):['court','day','hour_start','duration']).every(key=>result.terms?.[key] === record.terms[key])
         || result.booking_id !== undefined || result.receipt_number !== undefined) {
         throw new Error('Der Angebotsabschluss konnte nicht eindeutig bestätigt werden.');
       }
@@ -11988,7 +12586,7 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
       const terminal = ['booked', 'booking_cancelled', 'released', 'offer_retired'].includes(status.state);
       if (!['offer_pending', 'pending', 'paid_pending_booking', 'review_required', 'booked', 'booking_cancelled', 'released', 'offer_retired'].includes(status.state)
         || status.terminal !== terminal
-        || !['court', 'day', 'hour_start', 'duration'].every(key => status.terms?.[key] === record.terms[key])) {
+        || !(record.terms.time_version===2?Object.keys(record.terms):['court', 'day', 'hour_start', 'duration']).every(key => status.terms?.[key] === record.terms[key])) {
         throw new Error('Der Buchungsstatus konnte nicht eindeutig bestätigt werden.');
       }
       if (['booked', 'booking_cancelled'].includes(status.state)
@@ -11998,7 +12596,7 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
       if (terminal) {
         const closed = checked(await request({...payload, single_checkout_action:'close', single_expected_state:status.state}));
         if (closed.closed !== true || closed.state !== status.state || closed.terminal !== true
-          || !['court','day','hour_start','duration'].every(key=>closed.terms?.[key] === record.terms[key])
+          || !(record.terms.time_version===2?Object.keys(record.terms):['court','day','hour_start','duration']).every(key=>closed.terms?.[key] === record.terms[key])
           || closed.booking_id !== status.booking_id || closed.receipt_number !== status.receipt_number) {
           throw new Error('Der Bezahlvorgang konnte noch nicht sicher abgeschlossen werden.');
         }
@@ -12023,7 +12621,7 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
       || !Number.isSafeInteger(offer.credit_cents) || offer.credit_cents<0
       || offer.cash_cents+offer.credit_cents!==offer.net_cents
       || (offer.net_cents!==0 && (record.useCredit===true)!==(offer.credit_cents>0))
-      || !['court', 'day', 'hour_start', 'duration'].every(key => offer.terms?.[key] === record.terms[key])
+      || !(record.terms.time_version===2?Object.keys(record.terms):['court', 'day', 'hour_start', 'duration']).every(key => offer.terms?.[key] === record.terms[key])
       || typeof offer.checkout_supported !== 'boolean') throw new Error('Das gespeicherte Angebot ist unvollständig.');
     const bonus=offer.loyalty;
     if (!['none','percent','free_hour'].includes(bonus?.kind)
@@ -12048,13 +12646,13 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
     const result = checked(await request({...payload, single_checkout_action:kind==='noncash'?'complete':'create'}));
     if(kind==='noncash') {
       if(!['booked','booking_cancelled'].includes(result.state) || result.terminal!==true
-        || !['court','day','hour_start','duration'].every(key=>result.terms?.[key]===record.terms[key])
+        || !(record.terms.time_version===2?Object.keys(record.terms):['court','day','hour_start','duration']).every(key=>result.terms?.[key]===record.terms[key])
         || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(result.booking_id||'')
         || !/^B[\w/-]{1,80}$/.test(result.receipt_number||'')) throw new Error('Der Buchungsbeleg konnte nicht eindeutig bestätigt werden.');
       const closed=checked(await request({...payload,single_checkout_action:'close',single_expected_state:result.state}));
       if(closed.closed!==true || closed.terminal!==true || closed.state!==result.state
         || closed.booking_id!==result.booking_id || closed.receipt_number!==result.receipt_number
-        || !['court','day','hour_start','duration'].every(key=>closed.terms?.[key]===record.terms[key])) {
+        || !(record.terms.time_version===2?Object.keys(record.terms):['court','day','hour_start','duration']).every(key=>closed.terms?.[key]===record.terms[key])) {
         throw new Error('Der Buchungsabschluss konnte noch nicht sicher bestätigt werden.');
       }
       clearLocal();return closed;
@@ -12106,13 +12704,13 @@ async function showPreparedSingleState(result, allowRedirect) {
 
 async function confirmPreparedSingleBooking() {
   const authId = currentUser?.id;
-  const terms = {court:selSlot.court, day:selDate, hour_start:selSlot.hour, duration:selDur};
+  const terms = selSlot.time_version===2?{...selSlot,day:selDate}:{court:selSlot.court,day:selDate,hour_start:selSlot.hour,duration:selDur};
   try {
     if (!currentProfile || currentProfile.auth_id !== authId) await loadProfileBasic(authId);
     const expectedCents=displayedCheckoutCents('sTotal');
     const expectedCancellation=BOOKING_CANCELLATION_POLICY_ENABLED
       ?displayedBookingCancellationPolicy():null;
-    const result = await runPreparedSingleDialog({enabled:PREPARED_SINGLE_DIALOG_ENABLED, authId, terms,
+    const result = await runPreparedSingleDialog({enabled:PREPARED_SINGLE_DIALOG_ENABLED||(typeof minuteBookingMode==='function'&&minuteBookingMode()), authId, terms,
       discoverOwn:()=>requestPreparedSingleCheckout({booking_type:'single',single_checkout_action:'discover',use_credit:false}),
       isCurrent:()=>currentUser?.id === authId,
       storage:localStorage, locks:navigator.locks, request:requestPreparedSingleCheckout, newId:()=>crypto.randomUUID(),
@@ -12525,6 +13123,9 @@ async function confirmBooking(skipAuthCheck) {
     openModal('book');
     return;
   }
+  if (typeof minuteBookingMode==='function'&&minuteBookingMode()) {
+    await loadBookings(selDate);renderSlots();if(selSlot)await confirmPreparedSingleBooking();return;
+  }
   if (PREPARED_SINGLE_DIALOG_ENABLED) {
     await confirmPreparedSingleBooking();
     return;
@@ -12692,6 +13293,10 @@ async function submitAbo(skipAuthCheck) {
   }
   if (currentUser && (!currentProfile || currentProfile.auth_id !== currentUser.id)) {
     await loadProfile(currentUser.id);
+  }
+  if(typeof minuteBookingMode==='function'&&minuteBookingMode()){
+    const early=minuteEarlybird();await confirmPreparedSalePurchase(early?'earlybird_abo':'abo',
+      {...aboSlot,weekday:aboWd});return;
   }
   const { court, hour } = aboSlot;
   const priceMap = (aboWd===0 || aboWd===6) ? PE : PW;
@@ -12885,6 +13490,10 @@ async function setWd(d) {
 }
 
 function setAboDur(d) {
+  if(typeof minuteBookingMode==='function'&&minuteBookingMode()){const duration=[1,2].includes(d)?d*60:d;if(![60,90,120].includes(duration))return;
+    minuteAboDuration=duration;aboSlot=null;minuteAboCalendar=null;renderMinuteAboSlots();
+    if(aboWd!==null)void loadAboBookings(aboWd).then(()=>renderAboSlots());return;
+  }
   aboDur = d;
   aboSlot = null;
   document.getElementById("adur1").classList.toggle("selected", d===1);
@@ -12902,6 +13511,7 @@ function isAboRangeFree(court, hour, duration) {
 }
 
 function renderAboSlots() {
+  if(typeof minuteBookingMode==='function'&&minuteBookingMode())return renderMinuteAboSlots();
   if (aboSlot && !isAboRangeFree(aboSlot.court, aboSlot.hour, aboDur)) {
     aboSlot = null;
     showToast('⚠️ Der ausgewählte Abo-Slot ist inzwischen nicht mehr verfügbar.');
@@ -12966,6 +13576,7 @@ function pickAboSlot(ct, h) {
 }
 
 function updateAboSummary() {
+  if(typeof minuteBookingMode==='function'&&minuteBookingMode())return updateMinuteAboSummary();
   const card = document.getElementById("aboSummary");
   if (!aboSlot || aboWd===null) { card.classList.remove("visible"); return; }
   const {court:ct, hour:h} = aboSlot;
@@ -13196,7 +13807,7 @@ async function loadAdminWeather() {
   box.innerHTML = '<div style="color:#7A7368;text-align:center;padding:24px;">Wird geladen …</div>';
   let rows = [];
   try {
-    const { data, error } = await sb.rpc('admin_list_weather_reports');
+    const { data, error } = await sb.rpc(MINUTE_BOOKING_READS_ENABLED ? 'admin_list_minute_weather_reports' : 'admin_list_weather_reports');
     if (error) throw error;
     rows = data || [];
   } catch(e) {
@@ -13210,7 +13821,7 @@ async function loadAdminWeather() {
 
   box.innerHTML = rows.map(r => {
     const dateStr = formatDateDE(r.booking_date);
-    const timeStr = `${String(r.hour_start).padStart(2,'0')}:00–${String(r.hour_start + r.duration).padStart(2,'0')}:00`;
+    const timeStr = bookingReadTime(r).range;
     const credit = Math.round((r.price_paid_cents || 0) * r.percent / 100);
     const statusBadge = r.status === 'pending'
       ? '<span style="color:#B8402C;font-weight:800;">● offen</span>'
@@ -13272,7 +13883,7 @@ async function fillWeatherInfo(r) {
     const hourOf = w => w.hour == null ? Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',hour:'2-digit',hourCycle:'h23'}).format(new Date(w.timestamp))) : Number(w.hour);
     const hours = (evidence?.weather || weatherDayCache[day]?.rows || []).filter(w => {
       const h = hourOf(w);
-      return (w.day || day) === day && h >= r.hour_start && h < r.hour_start + r.duration;
+      return (w.day || day) === day && (h+1)*60 > bookingReadTime(r).start && h*60 < bookingReadTime(r).end;
     });
     if (!hours.length) {
       el.textContent = 'Für diesen Zeitraum liegen (noch) keine DWD-Stundenwerte vor – bitte selbst einschätzen.';
@@ -13288,13 +13899,13 @@ async function fillWeatherInfo(r) {
       return `${h}–${h + 1} Uhr: <strong>${mm} mm Niederschlag</strong> · Wind ${wind} km/h · ${temp} °C am Stundenende${station}`;
     });
     const totalRain = hours.reduce((s, w) => s + (w.precipitation || 0), 0);
-    const complete = hours.length === Number(r.duration) && hours.every(w=>w.precipitation != null);
+    const complete = hours.length === Math.ceil(bookingReadTime(r).end/60)-Math.floor(bookingReadTime(r).start/60) && hours.every(w=>w.precipitation != null);
     const verdict = totalRain > 0
       ? `Niederschlag an der Station erfasst (${totalRain.toLocaleString('de-DE',{maximumFractionDigits:1})} mm)`
       : complete ? 'Kein Niederschlag an der Station gemessen' : 'Niederschlagsdaten unvollständig';
     const archived = hours.filter(w=>w.archived).length;
     el.innerHTML = `<strong>${verdict}</strong>${complete?'':' · Daten fehlen'}<br>` + parts.join('<br>')
-      + `<br><span>${evidence ? 'Gespeicherter Stand zur Entscheidung' : `${archived} von ${r.duration} Spielstunden archiviert`} · Stationswerte ersetzen keine Prüfung vor Ort.</span>`;
+      + `<br><span>${evidence ? 'Gespeicherter Stand zur Entscheidung' : `${archived} betroffene Wetterstunden archiviert`} · Stationswerte ersetzen keine Prüfung vor Ort.</span>`;
   } catch(e) {
     el.textContent = 'Wetterdaten gerade nicht abrufbar (' + (e?.message || 'Fehler') + ') – bitte selbst einschätzen.';
   }
@@ -16086,7 +16697,7 @@ async function loadAdminBookings() {
     tbody.innerHTML = data.map(b => `
       <tr>
         <td>${formatDateDE(b.date)}</td>
-        <td>${String(b.hour_start).padStart(2,'0')}:00 – ${String(b.hour_start+b.duration).padStart(2,'0')}:00</td>
+        <td>${bookingReadTime(b).range}</td>
         <td>${courtLabel(b.court)}</td>
         <td style="color:#e0e0e0;">${b.full_name || '—'}</td>
         <td style="color:var(--gold);">${b.price_cents ? (b.price_cents/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })+' €' : '—'}</td>
@@ -16113,7 +16724,7 @@ async function loadAdminAbos() {
         <td style="color:#e0e0e0;">${a.full_name || '—'}</td>
         <td>${courtLabel(a.court)}</td>
         <td>${wdNames[a.weekday] || '—'}</td>
-        <td>${String(a.hour_start).padStart(2,'0')}:00 – ${String(a.hour_start+a.duration).padStart(2,'0')}:00</td>
+        <td>${bookingReadTime(a).range}</td>
         <td style="color:var(--gold);">${a.price_per_week_cents ? (a.price_per_week_cents/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })+' €' : '—'}</td>
         <td>${a.ends_on ? formatDateDE(a.ends_on) : '—'}</td>
       </tr>`).join('');
@@ -16821,7 +17432,7 @@ async function loadInternalBookings() {
       const safeReason = (b.full_name||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
       return `<tr>
         <td>${b.isRecurring ? WDNAMES[b.wd] : formatDateDE(b.date)}</td>
-        <td>${String(b.hour_start).padStart(2,'0')}:00 – ${String(b.hour_start+b.duration).padStart(2,'0')}:00</td>
+        <td>${bookingReadTime(b).range}</td>
         <td>${courtLabel(b.court)}</td>
         <td style="color:#e0e0e0;">${b.full_name||'—'}</td>
         <td style="color:${b.price_cents>0?'var(--gold)':'#555'};">${b.price_cents>0?(b.price_cents/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })+' €':'0,00 €'}</td>
@@ -17404,8 +18015,8 @@ function customerSupportRowsMarkup(rows) {
     const d=row.details || {};
     const name=row.identity_state==='linked'?esc(row.customer_name || 'Ohne Namen'):
       row.identity_state==='unlinked'?(row.kind==='cash' && d.link_state==='open'?'Zuordnung offen':'Ohne Kontozuordnung'):'Zuordnung ungeklärt';
-    const detail=[d.court?courtLabel(d.court):'',Number.isInteger(d.hour_start)?`${d.hour_start}:00`:'',
-      d.duration?`${d.duration} Std.`:'',d.ends_on?`bis ${formatDateDE(d.ends_on)}`:'',
+    const detail=[d.court?courtLabel(d.court):'',d.time_version===2?bookingReadTime(d).range:Number.isInteger(d.hour_start)?`${d.hour_start}:00`:'',
+      d.time_version===2?`${d.duration_minutes} Min`:d.duration?`${d.duration} Std.`:'',d.ends_on?`bis ${formatDateDE(d.ends_on)}`:'',
       d.credit_used_cents>0?`${money(d.credit_used_cents)} Guthaben eingesetzt`:'',
       row.kind==='punch_card'?`${d.remaining_credits} von ${d.total_credits} historischen Spieleinheiten übrig`:'',
       row.kind==='card' && d.is_gift?'Geschenkkauf':'',row.kind==='weather'?`${d.percent} % gemeldet`:'',
@@ -20090,7 +20701,7 @@ async function showAccountStatementTab(tab) {
       const data = [];
       for (let offset = 0, more = true; more; offset += 500) {
         const page = await sb.from('bookings')
-          .select('id,court,date,hour_start,duration,price_gross_cents,price_paid_cents,discount_pct,loyalty_discount_cents,loyalty_reward_threshold,status,receipt_number,stripe_session_id,cancelled_at')
+          .select(bookingReadColumns('id,court,date,hour_start,duration,price_gross_cents,price_paid_cents,discount_pct,loyalty_discount_cents,loyalty_reward_threshold,status,receipt_number,stripe_session_id,cancelled_at'))
           .eq('user_id', userId)
           .gte('date', localISODate(cutoff))
           .in('status', ['paid','active','cancelled'])
@@ -20102,13 +20713,12 @@ async function showAccountStatementTab(tab) {
         more = (page.data || []).length === 500;
       }
       list.innerHTML = data?.length ? data.map(row => {
-        const end = Number(row.hour_start) + Number(row.duration);
         const cancelled = row.status === 'cancelled';
         const loyalty = Number(row.loyalty_discount_cents || 0) > 0
           ? `<span>Treuebonus: ${row.loyalty_reward_threshold % 100 === 0 ? '100. Stunde kostenlos' : statementMoney(row.loyalty_discount_cents)}</span>` : '';
         return `<article class="statement-item${cancelled ? ' is-cancelled' : ''}">
           <div class="statement-item-head"><strong>${statementDate(row.date, false)}</strong><b>${statementMoney(row.price_paid_cents)}</b></div>
-          <div class="statement-item-main">${esc(courtLabel(row.court))} · ${String(row.hour_start).padStart(2,'0')}:00–${String(end).padStart(2,'0')}:00 Uhr · ${row.duration} Std.</div>
+          <div class="statement-item-main">${esc(courtLabel(row.court))} · ${bookingReadTime(row).range} Uhr · ${bookingReadTime(row).minutes} Min.</div>
           <div class="statement-item-meta"><span>${cancelled ? 'Storniert · als Spielguthaben gutgeschrieben' : 'Bezahlt'}</span>${loyalty}<span>${row.receipt_number ? `Beleg ${esc(row.receipt_number)}` : `Zahlungsreferenz ${esc(statementReference(row.stripe_session_id))}`}</span></div>
         </article>`;
       }).join('') : statementEmpty('Noch keine Buchungen in diesem Zeitraum.');
@@ -20453,8 +21063,8 @@ async function renderAboCard() {
 // Abo im Querformat (nur Desktop): "Dein exklusives / JAHRESABO / Wochentag",
 // Inhaber, unten links Gültigkeit, rechts der feste Termin.
 function aboWideCardHTML(a, holderName, holderMail) {
-  const from = `${String(a.hour_start).padStart(2,'0')}:00`;
-  const to   = `${String(a.hour_start + a.duration).padStart(2,'0')}:00`;
+  const from = bookingReadTime(a).from;
+  const to   = bookingReadTime(a).to;
   const day  = (WDNAMES[a.weekday] || '') + 's';
   return `<div class="abo-card">
       <div class="abo-badge">ABO</div>
@@ -20494,8 +21104,8 @@ function aboNew() {
 function aboAccountCardHTML(a) {
   const name = esc(currentProfile?.full_name) || '—';
   const mail = esc(currentProfile?.email || currentUser?.email) || '—';
-  const from = `${String(a.hour_start).padStart(2,'0')}:00`;
-  const to   = `${String(a.hour_start + a.duration).padStart(2,'0')}:00`;
+  const from = bookingReadTime(a).from;
+  const to   = bookingReadTime(a).to;
   const day  = (WDNAMES[a.weekday] || '') + 's';
   return `<div class="loyalty-card value-card abo-account-card">
     <div class="value-badge">ABO</div>
@@ -20517,15 +21127,15 @@ function aboAccountCardHTML(a) {
 // Nächste Abo-Wiederholung ab jetzt (innerhalb der Gültigkeit), oder null.
 function nextAboOccurrence(abo, now) {
   const startsOn = abo.starts_on ? new Date(abo.starts_on + 'T00:00:00') : null;
-  const endsOn   = abo.ends_on   ? new Date(abo.ends_on   + 'T23:59:59') : null;
+  const endsOn   = abo.ends_on   ? new Date(abo.ends_on   + 'T00:00:00') : null;
   for (let i = 0; i < 14; i++) {
     const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
     if (d.getDay() !== abo.weekday) continue;
-    const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), abo.hour_start, 0, 0);
+    const start = PBMinuteDomain.berlinBookingDate(localISODate(d), bookingReadTime(abo).start);
     if (start.getTime() <= now.getTime()) continue;      // heute schon vorbei
     if (startsOn && start < startsOn) continue;
-    if (endsOn && start > endsOn) return null;           // Abo endet vorher
-    return { when: start, court: abo.court, hour_start: abo.hour_start, duration: abo.duration, isAbo: true };
+    if (endsOn && start >= endsOn) return null;           // Abo endet vorher
+    return { ...abo, when: start, isAbo: true };
   }
   return null;
 }
@@ -20534,9 +21144,9 @@ function nextAboOccurrence(abo, now) {
 function computeNextMatch(bookings, abos, now) {
   const cands = [];
   (bookings || []).forEach(b => {
-    const start = new Date(`${b.date}T${String(b.hour_start).padStart(2,'0')}:00:00`);
+    const start = bookingDateAt(b);
     if (start.getTime() > now.getTime()) {
-      cands.push({ when: start, court: b.court, hour_start: b.hour_start, duration: b.duration });
+      cands.push({ ...b, when: start });
     }
   });
   (abos || []).forEach(a => { const o = nextAboOccurrence(a, now); if (o) cands.push(o); });
@@ -20905,8 +21515,8 @@ async function removeProfileAvatar() {
 }
 function matchLineHTML(m) {
   const dateStr = m.when.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
-  const timeStr = `${String(m.hour_start).padStart(2, '0')}:00`;
-  const endStr = `${String(Number(m.hour_start) + Number(m.duration || 1)).padStart(2, '0')}:00`;
+  const timeStr = bookingReadTime(m).from;
+  const endStr = bookingReadTime(m).to;
   return `Dein nächstes Match startet am <strong>${dateStr}</strong><br>um <strong>${timeStr} Uhr</strong> auf <strong>${courtLabelShort(m.court)}</strong>.<br><span>${timeStr} bis ${endStr} Uhr${m.isAbo ? ' · Jahresabo' : ''}</span>`;
 }
 
@@ -22006,8 +22616,8 @@ init();
   async function renderBookingProof(container, b){
     if(!container || !b) return;
     const dayKey = String(b.date);
-    const playStart = Number(b.hour_start || 0);
-    const playEnd = playStart + Number(b.duration || 1);
+    const playStart = bookingReadTime(b).start/60;
+    const playEnd = bookingReadTime(b).end/60;
     container.innerHTML = '<div class="wx-wx-today yesterday"><div class="pbwx-note">Wetter zum Spieltag wird geladen …</div></div>';
     let rows = null;
     try{ rows = await wxFetchBrightSkyDay(dayKey); }catch(e){ rows = null; }

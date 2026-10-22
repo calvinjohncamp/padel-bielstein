@@ -65,13 +65,22 @@ export function validateVerifiedFinanceSource(source, expected) {
     else { totals.sales_cents += total; totals.sale_cash_cents += cash; totals.credit_used_cents += credit; }
     if (group === 'unknown') unknown++;
     // Explicit fields only: private identifiers accidentally added by an RPC cannot travel onwards.
-    const terms = Object.fromEntries(['day','starts_on','ends_on','hour_start','weekday','duration','court','term_months',
+    const terms = Object.fromEntries(['time_version','start_minute','duration_minutes','day','starts_on','ends_on','hour_start','weekday','duration','court','term_months',
       'card_type','card_size','balance_cents','is_gift'].filter(key => Object.hasOwn(row.terms, key)).map(key => [key, row.terms[key]]));
     for (const key of ['day','starts_on','ends_on']) if (terms[key] != null) date(terms[key]);
     for (const [key,min,max] of [['hour_start',8,21],['weekday',0,6],['duration',1,14],['court',1,2],['term_months',1,120],['card_size',1,100000]]) {
       if (terms[key] != null && (!Number.isInteger(terms[key]) || terms[key] < min || terms[key] > max)) fail('Leistung '+key);
     }
     if (terms.hour_start != null && terms.duration != null && terms.hour_start + terms.duration > 22) fail('Leistung ausserhalb Spielzeit');
+    if(terms.time_version!=null && ![1,2].includes(terms.time_version))fail('Zeitversion');
+    if(terms.time_version===2) {
+      if(!Number.isInteger(terms.start_minute)||terms.start_minute<480||terms.start_minute%30!==0
+        ||![60,90,120].includes(terms.duration_minutes)||terms.start_minute+terms.duration_minutes>1320
+        ||terms.hour_start!=null||terms.duration!=null)fail('Minutenleistung');
+    } else if(terms.start_minute!=null||terms.duration_minutes!=null) {
+      if(terms.time_version!==1||terms.start_minute!==terms.hour_start*60||terms.duration_minutes!==terms.duration*60)fail('Widerspruechliche Zeiteinheiten');
+    }
+
     if (terms.balance_cents != null) {
       if (typeof terms.balance_cents === 'number' && Number.isSafeInteger(terms.balance_cents) && terms.balance_cents >= 0) terms.balance_cents=String(terms.balance_cents);
       integer(terms.balance_cents,'Kartenwert');
@@ -189,9 +198,9 @@ export function financeBookingMatrix(finance) {
     const t = row.terms, slots = t.slots || [];
     const label = { booking: 'Buchung', subscription: 'Abo', earlybird_subscription: 'Abo (2 Jahre)', card: t.card_type==='hours'?'Historische Stundenkarte':'Guthaben/Gutschein', event: 'Event' }[row.kind];
     return [row.receipt, row.day, label, t.day || t.starts_on || '',
-      t.hour_start == null ? slots.length ? [...new Set(slots.map(s => s.hour))].sort((a,b) => a-b).map(h => `${h}:00`).join(', ') : '' : `${t.hour_start}:00`,
+      t.time_version===2 ? String(Math.floor(t.start_minute/60)).padStart(2,'0')+':'+String(t.start_minute%60).padStart(2,'0') : t.hour_start == null ? slots.length ? [...new Set(slots.map(s => s.hour))].sort((a,b) => a-b).map(h => `${h}:00`).join(', ') : '' : `${t.hour_start}:00`,
       t.court ?? (slots.length ? [...new Set(slots.map(s => s.court))].sort().join(', ') : ''),
-      t.duration ?? (slots.length || ''), GROUP_LABELS[row.group], euroImport(row.total), euroImport(row.credit), euroImport(row.cash)];
+      t.time_version===2 ? String(t.duration_minutes/60).replace('.',',') : t.duration ?? (slots.length || ''), GROUP_LABELS[row.group], euroImport(row.total), euroImport(row.credit), euroImport(row.cash)];
   })];
 }
 export function financeCashMatrix(finance) {
