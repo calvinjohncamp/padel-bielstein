@@ -9259,11 +9259,16 @@ function minuteBookingShell(abo=false){
   const times=document.createElement('div');times.className='minute-time-options';times.setAttribute('role','group');times.setAttribute('aria-label','Startzeit wählen');shell.appendChild(times);
   const courtTitle=document.createElement('h3');courtTitle.className='minute-court-title';shell.appendChild(courtTitle);
   const courts=document.createElement('div');courts.className='minute-court-options';shell.appendChild(courts);
-  const overview=document.createElement('details');overview.className='minute-overview';overview.id=prefix+'Overview';wrap.before(overview);
-  const summary=document.createElement('summary');summary.textContent=abo?'Wochenübersicht ansehen':'Tagesübersicht ansehen';overview.appendChild(summary);
-  const note=document.createElement('p');note.textContent='Belegung beider Courts. Deine Buchung wählst du oben über die Startzeit.';overview.appendChild(note);
+  const overview=document.createElement('dialog');overview.className='minute-overview-modal';overview.id=prefix+'Overview';wrap.before(overview);
+  const header=document.createElement('div');header.className='minute-overview-header';
+  const heading=document.createElement('h3');heading.id=prefix+'OverviewTitle';heading.textContent=abo?'Wochenbelegung beider Courts':'Tagesbelegung beider Courts';overview.setAttribute('aria-labelledby',heading.id);header.appendChild(heading);
+  const close=document.createElement('button');close.type='button';close.className='minute-overview-close';close.textContent='Schließen ×';close.onclick=()=>overview.close();header.appendChild(close);overview.appendChild(header);
+  const open=document.createElement('button');open.type='button';open.className='minute-overview-open';open.textContent=abo?'Wochenbelegung ansehen':'Tagesbelegung ansehen';open.onclick=()=>overview.showModal();shell.querySelector('.minute-picker-title').after(open);
+  overview.addEventListener('click',event=>{if(event.target===overview){const r=overview.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)overview.close();}});
   if(legend)overview.appendChild(legend);overview.appendChild(wrap);
   for(const ct of [1,2])document.getElementById(prefix+ct).closest('.court-col').classList.add('minute-court-panel');
+  // Keep the existing complete price calculation directly after the selection.
+  if(!abo){const card=document.getElementById('sumCard'),pay=document.getElementById('bookBtn');if(card){overview.after(card);if(pay)card.after(pay);}}
   return shell;
 }
 function minutePickerOffers(abo=false){return abo?(minuteAboCalendar?.offers||[]):(minuteCalendar?.courts||[]).flatMap(c=>c.offers.map(o=>({...o,court:c.court})));}
@@ -9283,7 +9288,7 @@ function renderMinutePicker(abo=false,loading=false,error=false){
   if(ready&&selection&&offers.some(o=>o.court===selection.court&&o.start_minute===selection.start_minute))state.start=selection.start_minute;
   const status=shell.querySelector('.minute-picker-status');status.replaceChildren();
   const hint=document.createElement('span');
-  hint.textContent=loading?'Verfügbarkeit wird geprüft.':error?'Verfügbarkeit derzeit nicht prüfbar. Bitte erneut laden.':abo&&aboWd===null?'Wähle zuerst einen Wochentag.':!abo&&minuteDayIsPast()?'Dieser Spieltag ist vorbei. Wähle einen kommenden Tag.':ready&&!writes?'Buchungen sind derzeit pausiert.':candidates.length&&!offers.length?'Preise derzeit nicht prüfbar. Bitte erneut laden.':!offers.length?`Keine freien Startzeiten für ${duration} Minuten. Wähle eine andere Dauer oder ein anderes Datum.`:`${duration} Minuten · Wähle eine Startzeit. Danach siehst du die passenden Courts und den Gesamtpreis${abo?' je Termin':''}.`;
+  hint.textContent=loading?'Verfügbarkeit wird geprüft.':error?'Verfügbarkeit derzeit nicht prüfbar. Bitte erneut laden.':abo&&aboWd===null?'Wähle zuerst einen Wochentag.':!abo&&minuteDayIsPast()?'Dieser Spieltag ist vorbei. Wähle einen kommenden Tag.':ready&&!writes?'Buchungen sind derzeit pausiert.':candidates.length&&!offers.length?'Preise derzeit nicht prüfbar. Bitte erneut laden.':!offers.length?`Keine freien Startzeiten für ${duration} Minuten. Wähle eine andere Dauer oder ein anderes Datum.`:`${duration} Minuten · ${abo?'Preise je Termin':'Gesamtpreise'} inklusive deiner Rabatte. Startzeit wählen, dann Court wählen.`;
   status.appendChild(hint);
   if(ready&&!abo&&minuteDayIsPast()){
     const next=document.createElement('button');next.type='button';next.className='minute-next-day';next.textContent='Morgen ansehen';
@@ -9299,6 +9304,10 @@ function renderMinutePicker(abo=false,loading=false,error=false){
     const continuation=state.start!==null&&start>state.start&&start<state.start+duration;
     button.classList.toggle('minute-time-continuation',continuation);
     if(continuation){const label=`${PBMinuteDomain.minuteClock(start)} · Teil deiner gewählten Spielzeit ${PBMinuteDomain.minuteClock(state.start)} bis ${PBMinuteDomain.minuteClock(state.start+duration)}`;button.setAttribute('aria-label',label);button.title=label+(available?' · als neue Startzeit wählen':'');}
+    const quote=document.createElement('span');quote.className='minute-time-price';
+    if(available){const prices=offers.filter(o=>o.start_minute===start).map(o=>minutePrice(o.court,start,duration,abo?'subscription':'single').netCents);const min=Math.min(...prices);quote.textContent=(new Set(prices).size>1?'ab ':'')+fmt(min/100);button.setAttribute('aria-label',`${PBMinuteDomain.minuteClock(start)} · ${duration} Minuten · ${quote.textContent}${abo?' je Termin':''}${continuation?' · Teil deiner gewählten Spielzeit':''}`);}
+    if(continuation)quote.textContent='Spielzeit';
+    if(quote.textContent)button.appendChild(quote);
     button.onclick=()=>{state.start=start;if(abo)aboSlot=null;else selSlot=null;abo?renderMinuteAboSlots():renderMinuteSlots();document.querySelector(`#${abo?'aboSlots':'slots'}Picker .minute-time[data-start="${start}"]`)?.focus({preventScroll:true});};times.appendChild(button);
   }
   const courtTitle=shell.querySelector('.minute-court-title');courtTitle.textContent=state.start===null?'Dein Court':`${PBMinuteDomain.minuteClock(state.start)} – ${PBMinuteDomain.minuteClock(state.start+duration)} · Court wählen`;
@@ -9310,8 +9319,8 @@ function renderMinutePicker(abo=false,loading=false,error=false){
     const chosen=selection?.court===offer.court&&selection?.start_minute===offer.start_minute;button.classList.toggle('selected',chosen);button.setAttribute('aria-pressed',String(chosen));
     const name=document.createElement('strong');name.textContent=courtLabel(offer.court);button.appendChild(name);
     const value=document.createElement('strong');value.className='minute-choice-price';value.textContent=fmt(price.netCents/100);button.appendChild(value);
-    const location=document.createElement('span');location.className='minute-choice-note';location.textContent=document.getElementById((abo?'aboSlots':'slots')+offer.court).closest('.court-col').querySelector('.court-sub')?.textContent||'';button.appendChild(location);
-    const terms=document.createElement('span');terms.className='minute-choice-note';terms.textContent=`${duration} Minuten · Gesamtpreis${abo?' je Termin':''}`;button.appendChild(terms);
+    const location=document.createElement('span');location.className='minute-choice-note';location.textContent=document.getElementById((abo?'aboSlots':'slots')+offer.court).closest('.court-col').querySelector('.court-sub')?.textContent||'';button.title=location.textContent;
+    const terms=document.createElement('span');terms.className='minute-choice-note';terms.textContent=`${duration} Minuten · Gesamtpreis${abo?' je Termin':''}`;if(abo)button.appendChild(terms);
     if(abo){const period=document.createElement('span');period.className='minute-choice-note';period.textContent=minuteAboPeriod(offer.starts_on,offer.ends_on)+(offer.abo_delayed?' · späterer Start wegen bestehender Buchungen':'');button.appendChild(period);}
     button.onclick=()=>{const row={time_version:2,court:offer.court,start_minute:offer.start_minute,duration_minutes:duration};if(abo){aboSlot=chosen?null:row;renderMinuteAboSlots();}else{selSlot=chosen?null:row;renderMinuteSlots();}document.querySelector(`#${abo?'aboSlots':'slots'}Picker .minute-court-choice[data-court="${offer.court}"]`)?.focus({preventScroll:true});};courts.appendChild(button);
   }
@@ -23727,6 +23736,34 @@ body.bielstein-theme .minute-overview-message {grid-column:2;grid-row:1 / span 3
 body.bielstein-theme .minute-next-day {display:block;margin-top:10px;border:1px solid #1C1A17;border-radius:8px;background:white;padding:8px 12px;color:#1C1A17;font:inherit;font-weight:700;cursor:pointer;}
 @media(max-width:620px){body.bielstein-theme .minute-time-options {grid-template-columns:repeat(5,minmax(0,1fr));}body.bielstein-theme .minute-court-options {grid-template-columns:1fr;}body.bielstein-theme .minute-picker {padding:14px;}}
 @media(max-width:350px){body.bielstein-theme .minute-time-options {grid-template-columns:repeat(4,minmax(0,1fr));}}
+
+/* Player booking: compact controls, immediate prices, optional modal occupancy. */
+body.bielstein-theme .minute-time.minute-time-continuation {background:#1C1A17;color:#FFF;border-color:#1C1A17;text-decoration:none;}
+body.bielstein-theme .minute-time {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;}
+body.bielstein-theme .minute-time-price {font-size:11px;font-weight:500;white-space:nowrap;}
+body.bielstein-theme .minute-picker {padding:12px;}
+body.bielstein-theme .minute-picker-title {display:inline;font-size:17px;}
+body.bielstein-theme .minute-picker-status {margin:8px 0 10px;font-size:12px;}
+body.bielstein-theme .minute-overview-open {float:right;border:0;background:transparent;color:#625B50;text-decoration:underline;font:inherit;font-size:12px;padding:4px;cursor:pointer;}
+body.bielstein-theme .minute-court-choice {padding:12px;gap:4px;}
+body.bielstein-theme .minute-court-title {font-size:16px;margin:14px 0 8px;}
+body.bielstein-theme .minute-overview-modal {box-sizing:border-box;width:min(960px,calc(100% - 24px));max-height:calc(100dvh - 32px);padding:16px;border:1px solid #E2DACB;border-radius:16px;background:#F6F1E7;color:#1C1A17;overflow:auto;overscroll-behavior:contain;}
+body.bielstein-theme .minute-overview-modal::backdrop {background:rgba(20,18,15,.65);}
+body.bielstein-theme .minute-overview-header {position:sticky;top:-16px;z-index:2;background:#F6F1E7;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;margin-bottom:12px;}
+body.bielstein-theme .minute-overview-header h3 {margin:0;font-size:17px;}
+body.bielstein-theme .minute-overview-close {min-height:44px;border:1px solid #1C1A17;border-radius:8px;background:#1C1A17;color:white;padding:8px 12px;cursor:pointer;white-space:nowrap;}
+body.bielstein-theme #modeBook .gap,body.bielstein-theme #modeAbo .gap {margin-bottom:14px;}
+body.bielstein-theme #modeBook .step-row,body.bielstein-theme #modeAbo .step-row {margin-bottom:8px;}
+body.bielstein-theme #modeBook .date-chip {padding:6px 8px;min-width:48px;}
+body.bielstein-theme #modeBook .date-chip .dnum {font-size:22px;}
+body.bielstein-theme #modeBook .dur-btn,body.bielstein-theme #modeAbo .dur-btn {padding:9px 10px;min-height:48px;font-size:14px;}
+body.bielstein-theme #modeBook .dur-btn .dprice,body.bielstein-theme #modeAbo .dur-btn .dprice {font-size:11px;}
+@media(max-width:620px){body.bielstein-theme .minute-picker-title {display:block;}body.bielstein-theme .minute-overview-open {float:none;padding:4px 0;}body.bielstein-theme .minute-time-options {gap:6px;}body.bielstein-theme .minute-overview-modal .courts-wrap {grid-template-columns:1fr 1fr!important;gap:10px!important;}body.bielstein-theme .minute-overview-modal .court-sub {display:none;}body.bielstein-theme .minute-overview-modal .slot {padding:4px;font-size:11px;}body.bielstein-theme .minute-overview-modal .minute-day-grid {grid-template-columns:36px minmax(0,1fr);}}
+body.bielstein-theme #modeBook .dur-row,body.bielstein-theme #modeAbo .dur-row {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+body.bielstein-theme .minute-overview-modal .minute-day-grid {grid-template-rows:repeat(28,28px) 20px;}
+body.bielstein-theme .minute-overview-modal .minute-court-panel .court-hdr {min-height:32px;}
+body.bielstein-theme .minute-overview-modal .minute-day-grid .slot-time {font-size:11px!important;white-space:normal;}
+body.bielstein-theme .minute-overview-modal .minute-tick {padding-top:3px;font-size:10px;}
 
 /* ══ ÜBRIGE TABS · 1:1 nach Vorlage ══ */
 
