@@ -9263,7 +9263,7 @@ function minuteBookingShell(abo=false){
   const header=document.createElement('div');header.className='minute-overview-header';
   const heading=document.createElement('h3');heading.id=prefix+'OverviewTitle';heading.textContent=abo?'Wochenbelegung beider Courts':'Tagesbelegung beider Courts';overview.setAttribute('aria-labelledby',heading.id);header.appendChild(heading);
   const close=document.createElement('button');close.type='button';close.className='minute-overview-close';close.textContent='Schließen ×';close.onclick=()=>overview.close();header.appendChild(close);overview.appendChild(header);
-  const open=document.createElement('button');open.type='button';open.className='minute-overview-open';open.textContent=abo?'Wochenbelegung ansehen':'Tagesbelegung ansehen';open.onclick=()=>overview.showModal();shell.querySelector('.minute-picker-title').after(open);
+  const open=document.createElement('button');open.type='button';open.className='minute-overview-open';open.textContent=abo?'Wochenübersicht':'Tagesübersicht';open.onclick=()=>overview.showModal();shell.querySelector('.minute-picker-title').after(open);
   overview.addEventListener('click',event=>{if(event.target===overview){const r=overview.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)overview.close();}});
   if(legend)overview.appendChild(legend);overview.appendChild(wrap);
   for(const ct of [1,2])document.getElementById(prefix+ct).closest('.court-col').classList.add('minute-court-panel');
