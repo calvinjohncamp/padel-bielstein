@@ -23658,6 +23658,11 @@ body.bielstein-theme .minute-grid-help {flex-basis:100%;font-size:11px;color:#7A
  body.bielstein-theme .minute-day-grid {grid-template-columns:42px minmax(0,1fr);padding:6px !important;}
  body.bielstein-theme .minute-day-grid .slot {padding:4px 6px !important;}
 }
+/* Keep the existing sign-in dialog reachable on short landscape screens. */
+body.bielstein-theme #authModal .modal {
+  max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);
+  overflow-y:auto;overscroll-behavior:contain;
+}
 
 /* ══ ÜBRIGE TABS · 1:1 nach Vorlage ══ */
 
