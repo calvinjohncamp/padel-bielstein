@@ -2529,6 +2529,10 @@ main {
 
   <!-- BOOK MODE -->
   <div id="modeBook">
+    <div id="bookingCompletionStatus" class="summary-card visible" hidden role="status" aria-live="polite">
+      <p id="bookingCompletionMessage" style="margin:0 0 10px;"></p>
+      <button id="bookingCompletionRetry" type="button" onclick="handlePreparedSingleReturn(new URLSearchParams(window.location.search))">Status erneut prüfen</button>
+    </div>
     <div class="step-row booking-date-heading"><div class="step-num">1</div><div class="step-lbl">Datum wählen</div><input type="date" id="bookingDatePicker" class="booking-date-picker" aria-label="Spieltag wählen" title="Spieltag wählen" onchange="jumpToBookingDate(this.value)" hidden disabled></div>
     <div class="date-scroll-wrap gap">
       <button class="scroll-btn left" onclick="document.getElementById('dateScroll').scrollBy({left:-200,behavior:'smooth'})">‹</button>
@@ -8823,6 +8827,9 @@ async function init() {
   // Freibad-Config parallel laden
   loadFreibadConfig();
 
+  // Prices and initial calendar must load even while return reconciliation waits.
+  Promise.all([loadPrices(), loadFreibadPricing(), loadFreibadConfig()]).then(() => { updDurPrices(); updateAboDurPrices(); renderSlots(); });
+  loadBookings(selDate).then(() => renderSlots());
   const params = new URLSearchParams(window.location.search);
   if (shouldInterceptPreparedSingleReturn(params)) {
     await handlePreparedSingleReturn(params);
@@ -8915,7 +8922,6 @@ async function init() {
   } else {
     loadBookings(selDate).then(() => renderSlots());
   }
-  Promise.all([loadPrices(), loadFreibadPricing(), loadFreibadConfig()]).then(() => { updDurPrices(); updateAboDurPrices(); renderSlots(); });
 }
 
 // Verabreden-iframe: keine zweite Scrollflaeche, sondern dynamische Hoehe.
@@ -11632,15 +11638,42 @@ const PREPARED_MAIL_NOTICE_ENABLED = true;
 const PREPARED_SALE_KEY_PREFIX = 'pb_prepared_sale_v1:';
 
 async function waitForPreparedCompletion({enabled=false,result,read,isCurrent,pending,
-  wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),attempts=20}) {
+  wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),attempts=20,onProgress=()=>{}}) {
   if (!enabled) return result;
+  onProgress(result);
   for (let attempt=0;attempt<attempts && pending.includes(result?.state);attempt++) {
     if (!isCurrent()) throw new Error('Bitte mit dem ursprünglichen Konto erneut anmelden.');
     await wait(4000);
     if (!isCurrent()) throw new Error('Bitte mit dem ursprünglichen Konto erneut anmelden.');
     result=await read();
+    if (!isCurrent()) throw new Error('Bitte mit dem ursprünglichen Konto erneut anmelden.');
+    onProgress(result);
   }
   return result;
+}
+
+const PREPARED_SINGLE_PENDING_STATES = ['pending','paid_pending_journal','paid_pending_booking'];
+let preparedSingleReturnInFlight = null;
+function paintPreparedSingleProgress(result, checking=false) {
+  const panel=document.getElementById('bookingCompletionStatus');
+  if (!panel) return;
+  const pending=PREPARED_SINGLE_PENDING_STATES.includes(result?.state);
+  panel.hidden=!pending;
+  if (!pending) return;
+  document.getElementById('bookingCompletionMessage').textContent=checking
+    ? 'Dein Bezahlvorgang wird mit der Buchung abgeglichen. Das kann einige Minuten dauern. Die Ansicht aktualisiert sich automatisch. Bitte nicht erneut bezahlen.'
+    : 'Der Buchungsabschluss ist noch in Bearbeitung. Bitte nicht erneut bezahlen. Du kannst den Status hier erneut prüfen.';
+  const retry=document.getElementById('bookingCompletionRetry');
+  retry.hidden=checking;retry.disabled=checking;
+}
+async function refreshPreparedSingleBookingViews() {
+  const tasks=[async()=>{await loadBookings(selDate);renderSlots();}];
+  if(typeof renderMyBookingsLists==='function') tasks.push(()=>renderMyBookingsLists());
+  if(typeof renderCreditOverview==='function') tasks.push(()=>renderCreditOverview());
+  if(typeof refreshVerabredungenFrame==='function') tasks.push(()=>refreshVerabredungenFrame());
+  const results=await Promise.allSettled(tasks.map(task=>Promise.resolve().then(task)));
+  if(results.some(result=>result.status==='rejected'))
+    showToast('Die Buchung ist gespeichert. Eine Ansicht konnte nicht aktualisiert werden; bitte die Seite neu laden.');
 }
 
 function displayedCheckoutCents(id) {
@@ -12043,12 +12076,13 @@ async function requestPreparedSingleCheckout(payload) {
 }
 
 async function showPreparedSingleState(result, allowRedirect) {
+  paintPreparedSingleProgress(result);
   if (result?.state === 'open' && allowRedirect) { redirectToExternalCheckout(result.url); return; }
   if(result?.state==='booked' && /^B-\d{4}-\d{2}-\d{6}$/.test(result.receipt_number||'')) {
     showBookingSuccessDialog({title:'Buchung bestätigt',
       sub:typeof PREPARED_MAIL_NOTICE_ENABLED==='undefined' || PREPARED_MAIL_NOTICE_ENABLED ? BOOKING_SUCCESS_SUB : 'Weitere Details findest du unter „Jetzt spielen“ in der App. Der neue Mailversand ist im Testbetrieb noch ausgeschaltet.'});
-    selSlot=null;clearLoyaltyPreviewCache();await loadBookings(selDate);renderSlots();
-    renderCreditOverview();await loadMyBookings();return;
+    selSlot=null;clearLoyaltyPreviewCache();
+    await refreshPreparedSingleBookingViews();return;
   }
   const messages = {
     request_changed:'Der gespeicherte Bezahlvorgang hat sich geändert. Bitte den gewünschten Termin erneut aufrufen.',
@@ -12124,6 +12158,12 @@ function shouldInterceptPreparedSingleReturn(params) {
 }
 
 async function handlePreparedSingleReturn(params=null) {
+  if(preparedSingleReturnInFlight) return preparedSingleReturnInFlight;
+  preparedSingleReturnInFlight=processPreparedSingleReturn(params);
+  try { return await preparedSingleReturnInFlight; }
+  finally { preparedSingleReturnInFlight=null; }
+}
+async function processPreparedSingleReturn(params=null) {
   if(params && await handlePreparedSaleReturn(params)) return true;
   const route = parsePreparedSingleReturn(params);
   if (params && route.kind === 'unmarked' && !shouldInterceptPreparedSingleReturn(params)) return false;
@@ -12141,15 +12181,19 @@ async function handlePreparedSingleReturn(params=null) {
       isCurrent:()=>currentUser?.id === authId,
       storage:localStorage, locks:navigator.locks, request:requestPreparedSingleCheckout, newId:()=>crypto.randomUUID()});
     let result=await read();
-    if(PREPARED_RETURN_POLL_ENABLED && ['pending','paid_pending_booking'].includes(result?.state))
+    if(PREPARED_RETURN_POLL_ENABLED && PREPARED_SINGLE_PENDING_STATES.includes(result?.state))
       showToast('Die Zahlung wird mit der Buchung abgeglichen …');
     result=await waitForPreparedCompletion({enabled:PREPARED_RETURN_POLL_ENABLED,result,read,
-      isCurrent:()=>currentUser?.id===authId,pending:['pending','paid_pending_booking']});
+      isCurrent:()=>currentUser?.id===authId,pending:PREPARED_SINGLE_PENDING_STATES,attempts:60,
+      onProgress:value=>paintPreparedSingleProgress(value,true)});
     if (!result) { showToast('Der Zahlungsstand muss noch zugeordnet und geprüft werden.'); return true; }
     if(currentUser?.id!==authId) throw new Error('Bitte erneut anmelden.');
     await showPreparedSingleState(result, false);
     if (result.closed) window.history?.replaceState({}, '', '/');
-  } catch (error) { showToast('Der offene Bezahlvorgang muss noch geprüft werden.'); }
+  } catch (error) {
+    paintPreparedSingleProgress({state:'pending'});
+    showToast('Der offene Bezahlvorgang muss noch geprüft werden. Bitte nicht erneut bezahlen.');
+  }
   return true;
 }
 
