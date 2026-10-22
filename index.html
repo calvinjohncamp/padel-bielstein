@@ -6153,9 +6153,10 @@ main {
       </section>
       <div class="admin-stat-grid">
         <div class="admin-stat"><div class="admin-stat-val" id="statBookings">—</div><div class="admin-stat-lbl">Offene Buchungen</div></div>
-        <div class="admin-stat"><div class="admin-stat-val" id="statRevenue">—</div><div class="admin-stat-lbl">Erwarteter Umsatz (€)</div></div>
+        <div class="admin-stat"><div class="admin-stat-val" id="statRevenue">—</div><div class="admin-stat-lbl">Buchungs- und Abo-Gesamtwerte (€)</div></div>
         <div class="admin-stat"><div class="admin-stat-val" id="statAbos">—</div><div class="admin-stat-lbl">Aktive Abos</div></div>
       </div>
+      <p>Die Gesamtwerte umfassen kommende bezahlte Einzelbuchungen und den gesamten gespeicherten Vertragspreis der aktiven Abos. Sie sind kein Monatsumsatz und keine offenen Forderungen. Diese Übersicht zeigt keine vollständige Historie. Finanzielle Nachweise findest du im Belegarchiv.</p>
       <div class="admin-section">
         <div class="admin-section-title">Kommende Buchungen (ab heute, nach Datum)</div>
         <div style="overflow-x:auto;">
@@ -6168,10 +6169,10 @@ main {
         </div>
       </div>
       <div class="admin-section">
-        <div class="admin-section-title">Aktive Jahresabos</div>
+        <div class="admin-section-title">Aktive Jahresabos – einschließlich künftig beginnender Verträge</div>
         <div style="overflow-x:auto;">
           <table class="admin-table">
-            <thead><tr><th>Name</th><th>Court</th><th>Tag</th><th>Zeit</th><th>€/Wo</th><th>Läuft bis</th></tr></thead>
+            <thead><tr><th>Name</th><th>Court</th><th>Tag</th><th>Zeit</th><th>Gesamtpreis der Laufzeit</th><th>Gültig ab</th><th>Gültig bis einschließlich</th></tr></thead>
             <tbody id="abosTbody">
               <tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Wird geladen …</td></tr>
             </tbody>
@@ -10917,6 +10918,20 @@ function bookingReadColumns(legacy) {
 }
 function bookingReadTime(row) { return PBMinuteDomain.bookingReadTime(row); }
 function bookingDateAt(row) { return PBMinuteDomain.berlinBookingDate(row.date,bookingReadTime(row).start); }
+// Contract ends_on is exclusive. Display dates only; never rewrite stored terms.
+function subscriptionDisplayPeriod(row) {
+  const valid=day=>typeof day==='string' && /^\d{4}-\d{2}-\d{2}$/.test(day)
+    && Number.isFinite(Date.parse(day+'T12:00:00Z'))
+    && new Date(day+'T12:00:00Z').toISOString().slice(0,10)===day;
+  if(!valid(row.starts_on)||!valid(row.ends_on)||row.starts_on>=row.ends_on)return null;
+  const end=new Date(row.ends_on+'T12:00:00Z');end.setUTCDate(end.getUTCDate()-1);
+  return {from:row.starts_on,through:end.toISOString().slice(0,10)};
+}
+function subscriptionDisplayPeriodText(row) {
+  const period=subscriptionDisplayPeriod(row);
+  return period?`Gültig vom ${formatDateDE(period.from)} bis ${formatDateDE(period.through)}`:'Laufzeit nicht verfügbar';
+}
+
 
 //  MEINE BUCHUNGEN – kommende Einzelbuchungen + aktive Abos
 // ============================================================
@@ -16673,75 +16688,60 @@ function renderExceptionList() {
 // ============================================================
 //  ADMIN – Buchungsübersicht
 // ============================================================
+// Use immutable stored amounts, including legitimate zero-price bookings.
+function adminStoredCents(row,primary,legacy) {
+  const value=row[primary]??row[legacy];
+  return typeof value==='number'&&Number.isSafeInteger(value)&&value>=0?value:null;
+}
+function adminStoredMoney(cents) { return cents===null?'Nicht verfügbar':fmt(cents/100); }
+async function loadAdminOverviewRows(kind) {
+  const headers=await authHeaders(),rows=[];
+  const query=kind==='bookings'
+    ?`bookings?select=*,customer:users!bookings_user_id_fkey(full_name)&status=eq.paid&date=gte.${todayStr()}&order=date.asc,start_minute.asc,id.asc`
+    :'subscriptions?select=*&status=eq.active&order=created_at.desc,id.asc';
+  for(let offset=0;;offset+=1000){
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/${query}`,{headers:{...headers,Range:`${offset}-${offset+999}`,'Range-Unit':'items'}});
+    if(!res.ok)throw Error('admin_overview_unavailable');
+    const page=await res.json();if(!Array.isArray(page))throw Error('admin_overview_invalid');
+    rows.push(...page);if(page.length<1000)return rows;
+  }
+}
 async function loadAdminStats() {
-  const __authH = await authHeaders();
-  const today = todayStr();
   try {
-    const [bRes, aRes] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/bookings?select=price_cents&status=eq.paid&date=gte.${today}`,
-        { headers: __authH }),
-      fetch(`${SUPABASE_URL}/rest/v1/subscriptions?select=total_price_cents&status=eq.active`,
-        { headers: __authH }),
-    ]);
-    const bookings = bRes.ok ? await bRes.json() : [];
-    const abos     = aRes.ok ? await aRes.json() : [];
-    const revenue  = bookings.reduce((s,b) => s + (b.price_cents||0), 0)
-                   + abos.reduce((s,a) => s + (a.total_price_cents||0), 0);
-    document.getElementById('statBookings').textContent = bookings.length;
-    document.getElementById('statRevenue').textContent  = (revenue/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('statAbos').textContent     = abos.length;
-  } catch(e) { console.warn('Stats Fehler:', e); }
+    const [bookings,abos]=await Promise.all([loadAdminOverviewRows('bookings'),loadAdminOverviewRows('subscriptions')]);
+    const amounts=[...bookings.map(b=>adminStoredCents(b,'price_paid_cents','price_cents')),
+      ...abos.map(a=>adminStoredCents(a,'price_total_cents','total_price_cents'))];
+    document.getElementById('statBookings').textContent=bookings.length;
+    document.getElementById('statAbos').textContent=abos.length;
+    document.getElementById('statRevenue').textContent=amounts.some(v=>v===null)?'Nicht verfügbar':
+      (amounts.reduce((sum,v)=>sum+v,0)/100).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }catch(e){for(const id of ['statBookings','statAbos','statRevenue'])document.getElementById(id).textContent='Nicht verfügbar';console.warn('Stats Fehler:',e);}
 }
-
 async function loadAdminBookings() {
-  const __authH = await authHeaders();
-  const today = todayStr();
+  const tbody=document.getElementById('bookingsTbody');
   try {
-    const res  = await fetch(
-      `${SUPABASE_URL}/rest/v1/bookings?select=*&status=eq.paid&date=gte.${today}&order=date.asc,hour_start.asc&limit=200`,
-      { headers: __authH }
-    );
-    const data = res.ok ? await res.json() : [];
-    const tbody = document.getElementById('bookingsTbody');
-    if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center;padding:24px;">Keine kommenden Buchungen</td></tr>';
-      return;
-    }
-    tbody.innerHTML = data.map(b => `
-      <tr>
-        <td>${formatDateDE(b.date)}</td>
-        <td>${bookingReadTime(b).range}</td>
-        <td>${courtLabel(b.court)}</td>
-        <td style="color:#e0e0e0;">${b.full_name || '—'}</td>
-        <td style="color:var(--gold);">${b.price_cents ? (b.price_cents/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })+' €' : '—'}</td>
-      </tr>`).join('');
-  } catch(e) { console.warn('Buchungen Admin Fehler:', e); }
+    const data=await loadAdminOverviewRows('bookings');
+    if(!data.length){tbody.innerHTML='<tr><td colspan="5">Keine kommenden Buchungen</td></tr>';return;}
+    tbody.innerHTML=data.map(b=>`<tr>
+      <td>${formatDateDE(b.date)}</td><td>${bookingReadTime(b).range}</td><td>${courtLabel(b.court)}</td>
+      <td>${esc(b.full_name?.trim()||b.customer?.full_name?.trim()||'Name nicht verfügbar')}</td>
+      <td>${adminStoredMoney(adminStoredCents(b,'price_paid_cents','price_cents'))}</td>
+    </tr>`).join('');
+  }catch(e){tbody.innerHTML='<tr><td colspan="5">Buchungen derzeit nicht verfügbar. Bitte erneut laden.</td></tr>';console.warn('Buchungen Admin Fehler:',e);}
 }
-
 async function loadAdminAbos() {
-  const __authH = await authHeaders();
+  const tbody=document.getElementById('abosTbody');
   try {
-    const res  = await fetch(
-      `${SUPABASE_URL}/rest/v1/subscriptions?select=*&status=eq.active&order=created_at.desc`,
-      { headers: __authH }
-    );
-    const data = res.ok ? await res.json() : [];
-    const wdNames = ['So','Mo','Di','Mi','Do','Fr','Sa'];
-    const tbody = document.getElementById('abosTbody');
-    if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center;padding:24px;">Keine aktiven Abos</td></tr>';
-      return;
-    }
-    tbody.innerHTML = data.map(a => `
-      <tr>
-        <td style="color:#e0e0e0;">${a.full_name || '—'}</td>
-        <td>${courtLabel(a.court)}</td>
-        <td>${wdNames[a.weekday] || '—'}</td>
-        <td>${bookingReadTime(a).range}</td>
-        <td style="color:var(--gold);">${a.price_per_week_cents ? (a.price_per_week_cents/100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })+' €' : '—'}</td>
-        <td>${a.ends_on ? formatDateDE(a.ends_on) : '—'}</td>
-      </tr>`).join('');
-  } catch(e) { console.warn('Abos Admin Fehler:', e); }
+    const data=await loadAdminOverviewRows('subscriptions');
+    if(!data.length){tbody.innerHTML='<tr><td colspan="7">Keine aktiven Abos</td></tr>';return;}
+    const wdNames=['So','Mo','Di','Mi','Do','Fr','Sa'];
+    tbody.innerHTML=data.map(a=>{const period=subscriptionDisplayPeriod(a);return `<tr>
+      <td>${esc(a.full_name||'Name nicht verfügbar')}</td><td>${courtLabel(a.court)}</td>
+      <td>${wdNames[a.weekday]||'—'}</td><td>${bookingReadTime(a).range}</td>
+      <td>${adminStoredMoney(adminStoredCents(a,'price_total_cents','total_price_cents'))}</td>
+      <td>${period?formatDateDE(period.from):'Nicht verfügbar'}</td><td>${period?formatDateDE(period.through):'Nicht verfügbar'}</td>
+    </tr>`;}).join('');
+  }catch(e){tbody.innerHTML='<tr><td colspan="7">Abos derzeit nicht verfügbar. Bitte erneut laden.</td></tr>';console.warn('Abos Admin Fehler:',e);}
 }
 
 // ============================================================
@@ -21090,8 +21090,8 @@ function aboWideCardHTML(a, holderName, holderMail) {
       </div>
       <div class="abo-cols">
         <div class="abo-col">
-          <div class="abo-col-label">Eingeloggt bis zum</div>
-          <div class="abo-col-value">${formatDateDE(a.ends_on)}</div>
+          <div class="abo-col-label">Deine Laufzeit</div>
+          <div class="abo-col-value">${subscriptionDisplayPeriodText(a)}</div>
         </div>
         <div class="abo-col abo-col-right">
           <div class="abo-col-label">Dein fester Termin</div>
@@ -21131,7 +21131,7 @@ function aboAccountCardHTML(a) {
     <div class="rw-email">${mail}</div>
     <div class="value-card-note">
       <div>Dein fester Slot – Woche für Woche für dich reserviert.</div>
-      <div>Gültig bis <strong>${formatDateDE(a.ends_on)}</strong></div>
+      <div><strong>${subscriptionDisplayPeriodText(a)}</strong></div>
     </div>
     <button type="button" class="acct-inline-action" onclick="goToAbo()">Zum Abo</button>
   </div>`;
