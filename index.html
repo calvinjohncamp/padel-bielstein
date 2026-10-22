@@ -9265,15 +9265,31 @@ function minuteBookingShell(abo=false){
   const close=document.createElement('button');close.type='button';close.className='minute-overview-close';close.textContent='Schließen ×';close.onclick=()=>overview.close();header.appendChild(close);overview.appendChild(header);
   const open=document.createElement('button');open.type='button';open.className='minute-overview-open';open.textContent=abo?'Wochenübersicht':'Tagesübersicht';open.onclick=()=>overview.showModal();shell.querySelector('.minute-picker-title').after(open);
   overview.addEventListener('click',event=>{if(event.target===overview){const r=overview.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)overview.close();}});
+  const note=document.createElement('p');note.className='minute-overview-context';overview.appendChild(note);
   if(legend)overview.appendChild(legend);overview.appendChild(wrap);
   for(const ct of [1,2])document.getElementById(prefix+ct).closest('.court-col').classList.add('minute-court-panel');
   // Keep the existing complete price calculation directly after the selection.
   if(!abo){const card=document.getElementById('sumCard'),pay=document.getElementById('bookBtn');if(card){overview.after(card);if(pay)card.after(pay);}}
   return shell;
 }
+function minuteOverviewContext(abo=false){
+  const prefix=abo?'aboSlots':'slots',overview=document.getElementById(prefix+'Overview'),shell=document.getElementById(prefix+'Picker');if(!overview||!shell)return;
+  const open=shell.querySelector('.minute-overview-open'),title=document.getElementById(prefix+'OverviewTitle'),note=overview.querySelector('.minute-overview-context');
+  if(abo){
+    const weekday=Number.isInteger(aboWd)&&aboWd>=0&&aboWd<=6?WDNAMES[aboWd]:null;
+    open.textContent=weekday?`Abo-Belegung am ${weekday}`:'Abo-Belegung';open.disabled=!weekday;
+    title.textContent=weekday?`${weekday} · Abo-Belegung beider Courts`:'Abo-Belegung beider Courts';
+    note.textContent='Bestehende Abos und Abo-Reservierungen am gewählten Wochentag, jeweils mit Laufzeit. Einzelbuchungen können den Start eines neuen Abos zusätzlich beeinflussen.';
+  }else{
+    open.textContent='Tagesübersicht';
+    const day=bookingReleaseDate(selDate);const date=day&&!Number.isNaN(day.getTime())?day.toLocaleDateString('de-DE',{timeZone:'UTC',weekday:'long',day:'2-digit',month:'long',year:'numeric'}):null;
+    title.textContent=date?`${date} · Tagesübersicht beider Courts`:'Tagesübersicht beider Courts';
+    note.textContent='Belegung am gewählten Datum: Abos sind dunkel markiert, Einzelbuchungen und Reservierungen hell.';
+  }
+}
 function minutePickerOffers(abo=false){return abo?(minuteAboCalendar?.offers||[]):(minuteCalendar?.courts||[]).flatMap(c=>c.offers.map(o=>({...o,court:c.court})));}
 function renderMinutePicker(abo=false,loading=false,error=false){
-  const shell=minuteBookingShell(abo);if(!shell)return;
+  const shell=minuteBookingShell(abo);if(!shell)return;minuteOverviewContext(abo);
   const state=minutePickerState[abo?'abo':'single'],duration=abo?minuteAboDuration:minuteSingleDuration;
   const key=abo?`${aboWd}:${minuteEarlybird()}`:`${selDate}`;
   if(state.key!==key){state.key=key;state.start=null;}
@@ -23770,6 +23786,10 @@ body.bielstein-theme .minute-overview-modal .minute-day-grid {grid-template-rows
 body.bielstein-theme .minute-overview-modal .minute-court-panel .court-hdr {min-height:32px;}
 body.bielstein-theme .minute-overview-modal .minute-day-grid .slot-time {font-size:11px!important;white-space:normal;}
 body.bielstein-theme .minute-overview-modal .minute-tick {padding-top:3px;font-size:10px;}
+
+body.bielstein-theme .minute-overview-context {font-size:12px;line-height:1.5;margin:0 0 12px;color:#625B50;}
+body.bielstein-theme #aboSlotsOverview .minute-day-grid {grid-template-rows:repeat(28,48px) 20px;}
+body.bielstein-theme #aboSlotsOverview .minute-day-grid .minute-slot-note {font-size:10px;line-height:1.25;}
 
 /* ══ ÜBRIGE TABS · 1:1 nach Vorlage ══ */
 
