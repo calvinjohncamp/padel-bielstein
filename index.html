@@ -9241,26 +9241,71 @@ function minuteRow(parent,start,end,label,price,onClick,selected=false,note='',a
   const value=document.createElement('span');value.className='slot-price';value.textContent=price===null?label:fmt(price/100);row.appendChild(value);
   if(onClick){row.onclick=onClick;row.setAttribute('role','button');row.tabIndex=0;row.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onClick();}};}
   if(note){const detail=document.createElement('small');detail.className='minute-slot-note';detail.textContent=note;row.appendChild(detail);}
-  parent.appendChild(row);
+  parent.appendChild(row);return row;
+}
+// Every court keeps the same28 half-hour rows. Availability never changes time geometry.
+function minuteCourtNavigation(abo=false){
+  const prefix=abo?'aboSlots':'slots',first=document.getElementById(prefix+'1');if(!first)return;
+  const wrap=first.closest('.courts-wrap');if(!wrap)return;
+  for(const ct of [1,2]){const panel=document.getElementById(prefix+ct).closest('.court-col');panel.id=prefix+'Panel'+ct;panel.tabIndex=-1;panel.classList.add('minute-court-panel');}
+  let nav=document.getElementById(prefix+'Navigation');
+  if(!nav){nav=document.createElement('nav');nav.id=prefix+'Navigation';nav.className='minute-court-nav';nav.setAttribute('aria-label','Zum Court springen');
+    for(const ct of [1,2]){const button=document.createElement('button');button.type='button';button.textContent=`Zu ${courtLabel(ct)} ↓`;button.onclick=()=>{
+      const target=document.getElementById(prefix+'Panel'+ct);target.scrollIntoView({block:'start',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});target.focus({preventScroll:true});};nav.appendChild(button);}
+    const hint=document.createElement('span');hint.className='minute-grid-help';nav.appendChild(hint);wrap.before(nav);
+  }
+  const duration=abo?minuteAboDuration:minuteSingleDuration;
+  nav.querySelector('.minute-grid-help').textContent=`30-Minuten-Raster · Preise für ${duration} Minuten gesamt${abo?' je Abo-Termin':''}. Helle Zeilen ohne Preis sind kein buchbarer Start.`;
+}
+function minuteGridBase(root){
+  root.replaceChildren();root.classList.add('minute-day-grid');
+  for(let start=480;start<1320;start+=30){const tick=document.createElement('span');tick.className='minute-tick'+(start%60===0?' minute-tick-hour':'');tick.textContent=PBMinuteDomain.minuteClock(start);tick.style.gridRow=String((start-480)/30+1);root.appendChild(tick);}
+  const end=document.createElement('span');end.className='minute-grid-end';end.textContent='22:00 · Ende';root.appendChild(end);
+}
+function minuteUnavailableRow(root,start,text){
+  const row=document.createElement('div');row.className='minute-start-unavailable';row.style.gridRow=String((start-480)/30+1);row.textContent=text;root.appendChild(row);
+}
+function minuteWaitingGrid(root,message){minuteGridBase(root);for(let start=480;start<1320;start+=30)minuteUnavailableRow(root,start,start===480?message:'—');}
+function renderMinuteDayGrid(root,court,occupied,offers,duration,selection,onPick,abo=false,writes=true){
+  minuteGridBase(root);
+  const selected=selection?.court===court?offers.find(o=>o.start_minute===selection.start_minute&&o.duration_minutes===duration):null;
+  const covered=start=>occupied.some(b=>b.start_minute<=start&&b.end_minute>start);
+  for(let start=480;start<1320;start+=30){
+    if(covered(start)||selected&&start>selected.start_minute&&start<selected.start_minute+duration)continue;
+    const offer=offers.find(o=>o.start_minute===start&&o.duration_minutes===duration);
+    if(!offer||!writes){minuteUnavailableRow(root,start,`Kein ${duration}-Min.-Start`);continue;}
+    let price;try{price=minutePrice(court,start,duration,abo?'subscription':'single').netCents;}catch{minuteUnavailableRow(root,start,'Preis nicht verfügbar');continue;}
+    const chosen=!!selected&&start===selected.start_minute;
+    const note=offer.abo_delayed?`Abo erst ab ${minuteDateLabel(offer.starts_on)} möglich`:'';
+    const row=minuteRow(root,start,start+duration,'',price,()=>onPick(offer),chosen,
+      chosen?`${duration} Minuten · Gesamtpreis${note?' · '+note:''}`:note);
+    row.classList.add('minute-grid-offer');row.style.gridRow=`${(start-480)/30+1} / span ${chosen?duration/30:1}`;
+    row.setAttribute('aria-label',`${courtLabel(court)}, ${PBMinuteDomain.minuteClock(start)} bis ${PBMinuteDomain.minuteClock(start+duration)}, ${duration} Minuten, Gesamtpreis ${fmt(price/100)}${note?', '+note:''}`);
+    row.setAttribute('aria-pressed',String(chosen));
+  }
+  for(const b of occupied){
+    const isAbo=['subscription','abo_hold'].includes(b.source),label=isAbo?(b.source==='abo_hold'?'Reserviert':'Abo'):'Belegt';
+    const minutes=b.end_minute-b.start_minute;
+    const note=`${minutes} Minuten${abo&&b.starts_on&&b.ends_on?' · '+minuteAboPeriod(b.starts_on,b.ends_on):''}`;
+    const row=minuteRow(root,b.start_minute,b.end_minute,label,null,null,false,note,isAbo);
+    row.classList.add('minute-grid-occupied');row.style.gridRow=`${(b.start_minute-480)/30+1} / span ${minutes/30}`;
+  }
 }
 function renderMinuteSlots(){
+  minuteCourtNavigation();
   if(minuteSingleLoading||!selDate||!isBookingDateReleased(selDate)){
-    for(const ct of [1,2])document.getElementById('slots'+ct).textContent=minuteSingleLoading?'Verfügbarkeit wird geprüft.':'Bitte einen freigegebenen Spieltag wählen.';
+    for(const ct of [1,2])minuteWaitingGrid(document.getElementById('slots'+ct),minuteSingleLoading?'Verfügbarkeit wird geprüft.':'Bitte einen freigegebenen Spieltag wählen.');
     document.getElementById('sumCard').classList.remove('visible');document.getElementById('bookBtn').classList.remove('visible');return;
   }
   if(selSlot&&!minuteCalendar?.courts.some(c=>c.court===selSlot.court&&c.offers.some(o=>o.start_minute===selSlot.start_minute&&o.duration_minutes===minuteSingleDuration)))selSlot=null;
   minuteDurationButtons();
   for(const ct of [1,2]){
-    const root=document.getElementById('slots'+ct);root.replaceChildren();
-    if(minuteCalendarError||minuteCalendar?.day!==selDate){root.textContent='Belegung derzeit nicht verfügbar. Bitte erneut laden.';continue;}
-    const c=minuteCalendar.courts.find(c=>c.court===ct),rows=[...c.occupied.map(b=>({...b,busy:true})),
-      ...c.offers.filter(o=>o.duration_minutes===minuteSingleDuration).map(o=>({...o,end_minute:o.start_minute+o.duration_minutes}))].sort((a,b)=>a.start_minute-b.start_minute);
-    for(const r of rows){if(r.busy){minuteRow(root,r.start_minute,r.end_minute,r.source==='subscription'||r.source==='abo_hold'?'Abo':'Belegt',null,null,false,'',r.source==='subscription'||r.source==='abo_hold');continue;}
-      let price;try{price=minutePrice(ct,r.start_minute,minuteSingleDuration).netCents;}catch{continue;}
-      minuteRow(root,r.start_minute,r.end_minute,'',price,minuteCalendar.writes_enabled?()=>{
-        selSlot=selSlot?.court===ct&&selSlot?.start_minute===r.start_minute?null:{time_version:2,court:ct,start_minute:r.start_minute,duration_minutes:minuteSingleDuration};renderMinuteSlots();}:null,
-        selSlot?.court===ct&&selSlot?.start_minute===r.start_minute);
-    }
+    const root=document.getElementById('slots'+ct);
+    if(minuteCalendarError||minuteCalendar?.day!==selDate){minuteWaitingGrid(root,'Belegung derzeit nicht verfügbar. Bitte erneut laden.');continue;}
+    const c=minuteCalendar.courts.find(c=>c.court===ct);
+    renderMinuteDayGrid(root,ct,c.occupied,c.offers,minuteSingleDuration,selSlot,offer=>{
+      selSlot=selSlot?.court===ct&&selSlot?.start_minute===offer.start_minute?null:{time_version:2,court:ct,start_minute:offer.start_minute,duration_minutes:minuteSingleDuration};renderMinuteSlots();
+    },false,minuteCalendar.writes_enabled);
   }
   updateMinuteSummary();
 }
@@ -9306,22 +9351,15 @@ async function loadMinuteAboBookings(weekday){
   if(generation===minuteAboGeneration){minuteAboLoading=false;minuteDurationButtons(true);}
 }
 function renderMinuteAboSlots(){
-  if(minuteAboLoading){for(const ct of [1,2])document.getElementById('aboSlots'+ct).textContent='Alle Abo-Termine werden geprüft.';document.getElementById('aboSummary').classList.remove('visible');return;}
-  if(aboSlot&&!minuteAboCalendar?.offers.some(o=>o.court===aboSlot.court&&o.start_minute===aboSlot.start_minute))aboSlot=null;
+  minuteCourtNavigation(true);
+  if(minuteAboLoading){for(const ct of [1,2])minuteWaitingGrid(document.getElementById('aboSlots'+ct),'Alle Abo-Termine werden geprüft.');document.getElementById('aboSummary').classList.remove('visible');return;}
+  if(aboSlot&&!minuteAboCalendar?.offers.some(o=>o.court===aboSlot.court&&o.start_minute===aboSlot.start_minute&&o.duration_minutes===minuteAboDuration))aboSlot=null;
   minuteDurationButtons(true);
-  for(const ct of [1,2]){const root=document.getElementById('aboSlots'+ct);root.replaceChildren();
-    if(!minuteAboCalendar){root.textContent='Verfügbarkeit wird geprüft. Bitte einen Wochentag wählen.';continue;}
-    const rows=[...minuteAboCalendar.occupied.filter(o=>o.court===ct).map(o=>({...o,busy:true})),
-      ...minuteAboCalendar.offers.filter(o=>o.court===ct)].sort((a,b)=>a.start_minute-b.start_minute);
-    for(const o of rows){
-      if(o.busy){minuteRow(root,o.start_minute,o.end_minute,o.source==='abo_hold'?'Reserviert':'Abo',null,null,false,
-        minuteAboPeriod(o.starts_on,o.ends_on),true);continue;}
-      let p;try{p=minutePrice(ct,o.start_minute,minuteAboDuration,'subscription');}catch{continue;}
-      minuteRow(root,o.start_minute,o.start_minute+minuteAboDuration,'',p.netCents,minuteAboCalendar.writes_enabled?()=>{
-        aboSlot={time_version:2,court:ct,start_minute:o.start_minute,duration_minutes:minuteAboDuration};renderMinuteAboSlots();}:null,
-        aboSlot?.court===ct&&aboSlot?.start_minute===o.start_minute,
-        o.abo_delayed?`Abo erst ab ${minuteDateLabel(o.starts_on)} möglich`:'');
-    }
+  for(const ct of [1,2]){const root=document.getElementById('aboSlots'+ct);
+    if(!minuteAboCalendar){minuteWaitingGrid(root,'Bitte einen Wochentag wählen oder erneut laden.');continue;}
+    renderMinuteDayGrid(root,ct,minuteAboCalendar.occupied.filter(o=>o.court===ct),minuteAboCalendar.offers.filter(o=>o.court===ct),minuteAboDuration,aboSlot,offer=>{
+      aboSlot=aboSlot?.court===ct&&aboSlot?.start_minute===offer.start_minute?null:{time_version:2,court:ct,start_minute:offer.start_minute,duration_minutes:minuteAboDuration};renderMinuteAboSlots();
+    },true,minuteAboCalendar.writes_enabled);
   }
   updateMinuteAboSummary();
 }
@@ -23580,6 +23618,46 @@ body.bielstein-theme .ldot { width: 10px !important; height: 10px !important; bo
 /* Dates must stay visible on occupied and delayed minute Abo rows. */
 body.bielstein-theme .slot:has(.minute-slot-note) { flex-wrap: wrap; }
 body.bielstein-theme .minute-slot-note { flex-basis: 100%; font-size: 11px; line-height: 1.4; }
+
+/* Fixed time geometry for both Courts and every selected booking duration. */
+body.bielstein-theme .minute-day-grid {
+  display:grid !important; grid-template-columns:48px minmax(0,1fr); grid-template-rows:repeat(28,44px) 24px;
+  gap:0 !important; padding:8px !important; align-items:stretch;
+}
+body.bielstein-theme .minute-tick {
+  grid-column:1; font-size:11px; color:#7A7368; border-top:1px solid #E2DACB;
+  padding-top:6px; font-variant-numeric:tabular-nums;
+}
+body.bielstein-theme .minute-tick-hour {font-weight:700;color:#1C1A17;border-top-color:#B8B0A2;}
+body.bielstein-theme .minute-grid-end {grid-column:1 / -1;grid-row:29;font-size:11px;color:#7A7368;padding-top:5px;}
+body.bielstein-theme .minute-day-grid .slot {
+  grid-column:2; box-sizing:border-box; min-width:0; min-height:0; margin:2px 0 !important;
+  padding:4px 8px !important; gap:0 6px; border-radius:6px !important; transform:none !important;
+  align-content:center; overflow:hidden;
+}
+body.bielstein-theme .minute-day-grid .slot-time {font-size:13px !important;letter-spacing:0 !important;white-space:nowrap;}
+body.bielstein-theme .minute-day-grid .slot-price {font-size:13px !important;white-space:nowrap;}
+body.bielstein-theme .minute-day-grid .minute-slot-note {font-size:10px;line-height:1.3;overflow-wrap:anywhere;}
+body.bielstein-theme .minute-start-unavailable {
+  grid-column:2; display:flex;align-items:center;box-sizing:border-box;min-width:0;
+  color:#7A7368;background:rgba(226,218,203,.18);border-top:1px solid #E2DACB;padding:4px 8px;font-size:10px;
+}
+body.bielstein-theme .minute-court-panel {scroll-margin-top:184px;}
+body.bielstein-theme .minute-court-panel .court-hdr {min-height:64px;box-sizing:border-box;}
+body.bielstein-theme .minute-court-panel:focus-visible {outline:2px solid #FF5A36;outline-offset:3px;}
+body.bielstein-theme .minute-court-nav {
+  position:sticky;top:76px;z-index:12;display:flex;gap:8px;flex-wrap:wrap;
+  background:#F6F1E7;padding:8px 0;margin-bottom:10px;border-bottom:1px solid #E2DACB;
+}
+body.bielstein-theme .minute-court-nav button {
+  min-height:44px;padding:8px 14px;border:1px solid #1C1A17;border-radius:8px;
+  background:white;color:#1C1A17;font:inherit;font-size:13px;font-weight:700;cursor:pointer;
+}
+body.bielstein-theme .minute-grid-help {flex-basis:100%;font-size:11px;color:#7A7368;line-height:1.4;}
+@media(max-width:380px){
+ body.bielstein-theme .minute-day-grid {grid-template-columns:42px minmax(0,1fr);padding:6px !important;}
+ body.bielstein-theme .minute-day-grid .slot {padding:4px 6px !important;}
+}
 
 /* ══ ÜBRIGE TABS · 1:1 nach Vorlage ══ */
 
