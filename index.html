@@ -12405,6 +12405,28 @@ async function waitForPreparedCompletion({enabled=false,result,read,isCurrent,pe
   return result;
 }
 
+// Shared return handling for single bookings and subscriptions. A temporary
+// transport failure may delay a proof, but never becomes proof of success.
+async function reconcilePreparedBookingReturn({read,initialState,pending,isCurrent,onProgress=()=>{},wait,attempts=60}) {
+  let last={state:initialState};
+  const retryableRead=async()=>{
+    try {last=await read();return last;}
+    catch(error) {if(error?.retryable!==true)throw error;return last;}
+  };
+  return waitForPreparedCompletion({enabled:PREPARED_RETURN_POLL_ENABLED,result:await retryableRead(),
+    read:retryableRead,isCurrent,pending,onProgress,attempts,...(wait?{wait}:{})});
+}
+
+const presentedBookingReceipts=new Set();
+function presentConfirmedBookingOnce(receiptNumber,options) {
+  if(!currentUser?.id || !/^[AB]-\d{4}-\d{2}-\d{6}$/.test(receiptNumber||''))
+    throw new Error('Der Buchungsbeleg konnte nicht eindeutig bestätigt werden.');
+  const key=currentUser.id+':'+receiptNumber;
+  if(presentedBookingReceipts.has(key))return;
+  showBookingSuccessDialog(options);
+  presentedBookingReceipts.add(key);
+}
+
 const PREPARED_SINGLE_PENDING_STATES = ['pending','paid_pending_journal','paid_pending_booking'];
 let preparedSingleReturnInFlight = null;
 function preparedResultIsDifferentSelection(result) {
@@ -12526,7 +12548,10 @@ async function runPreparedSaleDialog({enabled=false,authId,bookingType,terms,ful
       || record.phase==='offer_pending' && JSON.stringify(record.fulfillment)!==JSON.stringify(fulfillment)))
       throw new Error('Es gibt noch einen anderen offenen Kauf. Bitte diesen zuerst pruefen.');
     if(status.state==='expired') return finish(await call('retire'));
-    if(resumeOnly || record.phase==='restored') return finish(await call('recover'));
+    if(resumeOnly || record.phase==='restored') {
+      try {return finish(await call('recover'));}
+      catch(error) {return finish(await call('status'));}
+    }
     if(record.phase==='offer_pending') {
       const offer=await call('prepare');
       if(offer.state==='expired') return finish(await call('retire'));
@@ -12576,7 +12601,7 @@ async function showPreparedSaleState(r) {
     }
     if(['subscription','earlybird_subscription'].includes(r.kind) && (r.terms?.time_version===2?[60,90,120].includes(r.terms.duration_minutes):[1,2].includes(r.terms?.duration))
       && Number.isInteger(r.terms.weekday) && r.terms.weekday>=0 && r.terms.weekday<=6) {
-      showBookingSuccessDialog({title:r.kind==='subscription'?'Jahresabo bestätigt':'Frühbucher-Abo bestätigt',
+      presentConfirmedBookingOnce(r.receipt_number,{title:r.kind==='subscription'?'Jahresabo bestätigt':'Frühbucher-Abo bestätigt',
         sub:typeof PREPARED_MAIL_NOTICE_ENABLED==='undefined' || PREPARED_MAIL_NOTICE_ENABLED ? BOOKING_SUCCESS_SUB : 'Weitere Details findest du unter „Jetzt spielen“ in der App. Der neue Mailversand ist im Testbetrieb noch ausgeschaltet.'});
       await refreshPreparedSingleBookingViews();
       if(r.terms.time_version===2 && !(typeof minuteBookingMode==='function' && minuteBookingMode())) {
@@ -12589,6 +12614,7 @@ async function showPreparedSaleState(r) {
   const messages={completed:'Kauf bestaetigt. Der Beleg ist gespeichert.',released:'Der unbezahlte Kauf ist abgeschlossen.',
     payment_reported:'Die Zahlung wird noch mit dem Kaufbeleg abgeglichen.',payment_pending:'Der Zahlungsabschluss wird noch geprueft.',
     offer_pending:'Das Angebot bleibt gespeichert. Es wurde keine Zahlung gestartet.',review_required:'Der Kauf muss geprueft werden. Bitte keine weitere Zahlung starten.'};
+  if(['payment_reported','payment_pending'].includes(r?.state)&&typeof document!=='undefined'&&document.getElementById('bookingCompletionStatus'))return;
   showToast(messages[r?.state]||'Der Kauf ist noch nicht eindeutig abgeschlossen.');
 }
 async function handlePreparedSaleReturn(params) {
@@ -12604,11 +12630,10 @@ async function handlePreparedSaleReturn(params) {
     const read=()=>runPreparedSaleDialog({enabled:true,authId,resumeOnly:true,returnId:params.get('pb_quote'),
       storage:localStorage,locks:navigator.locks,request:requestPreparedSingleCheckout,newId:()=>{throw new Error('Kein neuer Kauf bei Rueckkehr.');},
       isCurrent:()=>currentUser?.id===authId});
-    let r=await read();
-    if(PREPARED_RETURN_POLL_ENABLED && ['payment_reported','payment_pending'].includes(r?.state))
-      showToast('Die Zahlung wird mit dem Kaufbeleg abgeglichen …');
-    r=await waitForPreparedCompletion({enabled:PREPARED_RETURN_POLL_ENABLED,result:r,read,
-      isCurrent:()=>currentUser?.id===authId,pending:['payment_reported','payment_pending']});
+    const r=await reconcilePreparedBookingReturn({read,initialState:'payment_pending',
+      isCurrent:()=>currentUser?.id===authId,pending:['payment_reported','payment_pending'],
+      onProgress:value=>paintPreparedSingleProgress({...value,state:['payment_reported','payment_pending'].includes(value?.state)?'pending':value?.state},true)});
+    paintPreparedSingleProgress({state:['payment_reported','payment_pending'].includes(r?.state)?'pending':'booked'});
     if(currentUser?.id!==authId) throw new Error('Bitte erneut anmelden.');
     await showPreparedSaleState(r);
     if(['completed','released'].includes(r.state)) window.history?.replaceState({},'','/');
@@ -12848,12 +12873,14 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
 }
 
 async function requestPreparedSingleCheckout(payload) {
-  const response = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
-    method:'POST', headers:await checkoutHeaders(), body:JSON.stringify(payload),
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error('Der Bezahlvorgang ist noch nicht bestätigt. Bitte denselben Vorgang erneut prüfen.');
-  return data;
+  const headers=await checkoutHeaders();
+  const failure=retryable=>Object.assign(new Error('Der Bezahlvorgang ist noch nicht bestätigt. Bitte denselben Vorgang erneut prüfen.'),{retryable});
+  let response;
+  try {response=await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
+    method:'POST',headers,body:JSON.stringify(payload),
+  });} catch {throw failure(true);}
+  if(!response.ok)throw failure(response.status===408||response.status===429||response.status>=500);
+  try {return await response.json();}catch {throw failure(true);}
 }
 
 function paintPreviousSingleRequest(result, scroll=true) {
@@ -12885,7 +12912,7 @@ async function showPreparedSingleState(result, allowRedirect) {
   paintPreparedSingleProgress(result);
   if (result?.state === 'open' && allowRedirect) { redirectToExternalCheckout(result.url); return; }
   if(result?.state==='booked' && /^B-\d{4}-\d{2}-\d{6}$/.test(result.receipt_number||'')) {
-    showBookingSuccessDialog({title:'Buchung bestätigt',
+    presentConfirmedBookingOnce(result.receipt_number,{title:'Buchung bestätigt',
       sub:typeof PREPARED_MAIL_NOTICE_ENABLED==='undefined' || PREPARED_MAIL_NOTICE_ENABLED ? BOOKING_SUCCESS_SUB : 'Weitere Details findest du unter „Jetzt spielen“ in der App. Der neue Mailversand ist im Testbetrieb noch ausgeschaltet.'});
     selSlot=null;clearLoyaltyPreviewCache();
     await refreshPreparedSingleBookingViews();return;
@@ -12907,6 +12934,7 @@ async function showPreparedSingleState(result, allowRedirect) {
     offer_retired:'Das abgelaufene Angebot ist abgeschlossen. Du kannst jetzt neu buchen.',
     unsupported:'Diese Zahlungsart ist im neuen Ablauf noch nicht freigegeben.',
   };
+  if(PREPARED_SINGLE_PENDING_STATES.includes(result?.state)&&typeof document!=='undefined'&&document.getElementById('bookingCompletionStatus'))return;
   showToast(messages[result?.state] || 'Der Bezahlvorgang konnte nicht eindeutig geprüft werden.');
 }
 
@@ -12988,9 +13016,8 @@ async function processPreparedSingleReturn(params=null) {
       isCurrent:()=>currentUser?.id === authId,
       storage:localStorage, locks:navigator.locks, request:requestPreparedSingleCheckout, newId:()=>crypto.randomUUID()});
       return value?{...value,terms:value.terms||savedTerms}:value;};
-    let result=await read();
-    result=await waitForPreparedCompletion({enabled:PREPARED_RETURN_POLL_ENABLED,result,read,
-      isCurrent:()=>currentUser?.id===authId,pending:PREPARED_SINGLE_PENDING_STATES,attempts:60,
+    const result=await reconcilePreparedBookingReturn({read,initialState:'pending',
+      isCurrent:()=>currentUser?.id===authId,pending:PREPARED_SINGLE_PENDING_STATES,
       onProgress:value=>paintPreparedSingleProgress(value,true)});
     if (!result) { showToast('Der Zahlungsstand muss noch zugeordnet und geprüft werden.'); return true; }
     if(currentUser?.id!==authId) throw new Error('Bitte erneut anmelden.');
