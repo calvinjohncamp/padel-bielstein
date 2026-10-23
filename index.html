@@ -1778,6 +1778,54 @@ body.bielstein-theme #bookBtn.visible{display:flex!important}
 .admin-price-matrix.is-comparison{width:100%;min-width:0}
 #newRuleCodeRow[hidden]{display:none!important}
 .pricing-offer-proof{font-size:.78rem;line-height:1.5;color:#7a7368}
+
+/* Price admin: compact settings, a single tariff overview and saved offers. */
+#adminPrices{max-width:1180px;margin:0 auto}
+.admin-prices-intro{margin:22px 0}
+.admin-prices-intro h2{font-size:1.4rem;margin:0 0 8px}
+.admin-prices-intro p{font-size:.88rem;color:#756e63;line-height:1.6;max-width:760px}
+.admin-prices-settings{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:18px;align-items:start}
+#adminPrices .admin-section{min-width:0}
+.admin-prices-settings .admin-section-title{min-height:2.5em;margin-bottom:12px}
+.admin-prices-settings .admin-card{padding:20px}
+.admin-prices-settings .admin-row{flex-wrap:wrap;gap:10px}
+.admin-prices-settings .admin-label{min-width:0;flex-basis:100%}
+.admin-prices-settings .admin-input{flex:0 1 auto;width:100px!important}
+.admin-prices-settings .abo-factor-controls .admin-input{max-width:100px}
+.admin-prices-settings .admin-price-help{font-size:.8rem}
+#adminPrices .admin-price-overview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px}
+.admin-price-overview h3{font-size:1rem;margin:8px 0 12px}
+#adminPrices .admin-price-matrix.is-overview{width:100%;min-width:0;font-size:.9rem;table-layout:fixed}
+#adminPrices .is-overview th,#adminPrices .is-overview td{font-size:.9rem;padding:9px 6px;white-space:normal}
+#adminPrices .is-overview th:first-child{width:58px}
+#adminPrices .is-overview td{white-space:nowrap;font-weight:600}
+#adminPrices .is-overview thead th{font-size:.78rem;line-height:1.3;vertical-align:bottom}
+.admin-prices-calculators{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+#adminPrices .admin-price-example{grid-template-columns:repeat(2,minmax(0,1fr))}
+#adminPrices .admin-price-base-grid{gap:12px}
+.admin-offer-editor{margin-top:12px}
+.admin-offer-editor summary{font-size:.95rem;font-weight:700;cursor:pointer;list-style-position:inside}
+.admin-offer-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px;padding-top:20px}
+#adminPrices .admin-offer-form .admin-row{display:flex;flex-direction:column;align-items:stretch;gap:6px;margin:0;min-width:0}
+#adminPrices .admin-offer-form .admin-row:has(input[type=checkbox]){flex-direction:row;align-items:center}
+#adminPrices .admin-offer-form .admin-label{width:auto;min-width:0;font-size:.8rem}
+#adminPrices .admin-offer-form .admin-input{width:100%;box-sizing:border-box;min-width:0}
+.admin-offer-form .admin-price-help,.admin-offer-form .admin-ok,.admin-offer-form .admin-err{grid-column:1/-1;margin:0}
+.admin-offer-form>.admin-save-btn{justify-self:start}
+.admin-offer-form [hidden]{display:none!important}
+.admin-offer-open{flex:1;min-width:0;display:flex;flex-direction:column;text-align:left;gap:6px;background:none;border:0;padding:0;cursor:pointer;color:inherit;font:inherit}
+.admin-offer-open strong{text-decoration:underline;text-underline-offset:3px;text-decoration-color:#d4caba}
+.admin-offer-open span{font-size:.8rem;line-height:1.6;color:#756e63;white-space:pre-line;overflow-wrap:anywhere}
+.admin-offer-toggle{display:flex;gap:7px;align-items:center;font-size:.8rem;white-space:nowrap;cursor:pointer}
+.admin-offer-toggle input{appearance:none;width:34px;height:20px;border-radius:20px;background:#b8b1a6;position:relative;cursor:pointer;flex-shrink:0}
+.admin-offer-toggle input:before{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:white;transition:transform .15s}
+.admin-offer-toggle input:checked{background:#ff5934}
+.admin-offer-toggle input:checked:before{transform:translateX(14px)}
+.admin-offer-toggle input:focus-visible{outline:2px solid #1c1a17;outline-offset:3px}
+.admin-offer-delete{background:none;border:1px solid #d8cdbd;border-radius:7px;padding:8px 10px;font:inherit;font-size:.8rem;cursor:pointer;color:#9a3a2a}
+.admin-offer-item:has(:disabled){opacity:.7}
+@media(max-width:1050px){.admin-prices-settings{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-prices-settings>.admin-section:last-child{grid-column:1/-1}.admin-prices-calculators{grid-template-columns:1fr}.admin-prices-calculators>.admin-section{max-width:760px;width:100%}}
+@media(max-width:720px){.admin-prices-settings{grid-template-columns:1fr;gap:0}.admin-prices-settings .admin-section-title{min-height:0}#adminPrices .admin-price-overview{grid-template-columns:1fr;gap:24px}.admin-offer-form{grid-template-columns:1fr}.admin-offer-item{display:grid;grid-template-columns:1fr auto}.admin-offer-open{grid-column:1/-1}.admin-offer-delete{justify-self:end}#adminPrices .admin-card{padding:16px}#adminPrices .admin-price-base-grid{grid-template-columns:1fr}#adminPrices .is-overview th,#adminPrices .is-overview td{padding:9px 3px;font-size:.83rem}#adminPrices .is-overview th:first-child{width:47px}}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -6058,16 +6106,15 @@ main {
 
     <!-- ── PREISE ── -->
     <div id="adminPrices" style="display:none;">
-
-      <!-- Mitglieder-/Partnerrabatt -->
+      <div class="admin-prices-intro"><h2>Preise verwalten</h2><p>Werte ändern und im jeweiligen Bereich speichern. Die Preisübersicht und der Simulator zeigen deine Eingaben sofort als Vorschau.</p></div>
+      <div class="admin-prices-settings">
       <div class="admin-section">
         <div class="admin-section-title">Mitglieder-/Partnerrabatt</div>
         <div class="admin-card">
           <div class="admin-row">
-            <span class="admin-label">Rabatt Mitglieder/Partner</span>
+            <label for="priceDiscount" class="admin-label">Gemeinsamer Rabatt (%)</label>
             <input class="admin-input" type="number" id="priceDiscount" min="0" max="50" step="0.01" value="" disabled style="max-width:80px;"> %
             <span style="font-size:0.75rem;color:#666;margin-left:8px;">Gemeinsam für Mitglieder und Partner, Einzelbuchungen und Abos.</span>
-            <button type="button" class="admin-save-btn" onclick="loadAdminMemberDiscount()">Neu laden</button>
           </div>
           <div class="admin-row">
             <button class="admin-save-btn" onclick="saveDiscount()">Rabatt speichern</button>
@@ -6078,53 +6125,24 @@ main {
       </div>
 
       <div class="admin-section">
-        <div class="admin-section-title">Zeitangebote und Aktionscodes</div>
-        <div class="admin-card">
-          <div id="pricingOfferList" class="admin-offer-list"></div>
-          <button type="button" class="admin-save-btn" onclick="editPricingOffer()">+ Neues Angebot</button>
-          <button type="button" class="admin-save-btn" onclick="loadDiscountRules()">Angebote neu laden</button>
-        </div>
-        <div class="admin-card" style="margin-top:10px;">
-          <div class="admin-section-title" id="pricingOfferEditorTitle">Neues Angebot</div>
-          <div class="admin-row"><label for="newRuleLabel" class="admin-label">Bezeichnung</label><input class="admin-input" type="text" id="newRuleLabel" maxlength="120" placeholder="z. B. Black Friday Week"></div>
-          <div class="admin-row"><label for="newRulePct" class="admin-label">Rabatt (%)</label><input class="admin-input" type="number" id="newRulePct" min="0.01" max="100" step="0.01"></div>
-          <div class="admin-row"><label for="newRuleType" class="admin-label">Anwendung</label><select id="newRuleType" class="admin-input" onchange="updatePricingOfferMode()"><option value="automatic">Automatisch im Zeitraum</option><option value="code">Mit Aktionscode im Zeitraum</option></select></div>
-          <div class="admin-row"><label for="newRuleApplies" class="admin-label">Gilt für</label><select id="newRuleApplies" class="admin-input"><option value="single">Einzelbuchungen</option><option value="abo">Abos</option><option value="both">Einzelbuchungen und Abos</option></select></div>
-          <div class="admin-row"><label for="newRuleAudience" class="admin-label">Zielgruppe</label><select id="newRuleAudience" class="admin-input"><option value="all">Alle</option><option value="members_partners">Mitglieder und Partner</option></select></div>
-          <div class="admin-row" id="newRuleCodeRow" hidden><label for="newRuleCode" class="admin-label">Aktionscode</label><input id="newRuleCode" class="admin-input" maxlength="32" placeholder="z. B. HALLOWEEN"></div>
-          <div class="admin-row"><label for="newRuleFrom" class="admin-label">Beginn (deutsche Ortszeit)</label><input id="newRuleFrom" class="admin-input" type="datetime-local"></div>
-          <div class="admin-row"><label for="newRuleUntil" class="admin-label">Ende (inklusive Minute)</label><input id="newRuleUntil" class="admin-input" type="datetime-local"></div>
-          <label class="admin-row"><input id="newRuleActive" type="checkbox" checked> Angebot aktiv</label>
-          <p class="admin-price-help">Der Zeitraum gilt für den Buchungs- bzw. Kaufzeitpunkt. Mitglieder und Partner erhalten denselben Standardrabatt. Passende Preisangebote werden nicht addiert; es gilt der höhere Rabatt. Bestehende Buchungen und Kaufangebote bleiben unverändert. Mehrjährige Frühbucher-Abos werden weiterhin unter „Aktionen“ gepflegt.</p>
-          <button type="button" class="admin-save-btn" onclick="createDiscountRule()">Angebot speichern</button>
-          <div id="newRuleOk" class="admin-ok" role="status"></div><div id="newRuleErr" class="admin-err" role="alert"></div>
-        </div>
-      </div>
-
-      <div class="admin-section">
         <div class="admin-section-title">Abo-Kalkulation</div>
         <div class="admin-card">
           <label for="aboPricingFactor" class="admin-label">Abo-Faktor pro Laufzeitjahr</label>
           <div class="abo-factor-controls">
             <input id="aboPricingFactor" class="admin-input" type="number" min="1" max="52" step="1" inputmode="numeric" disabled oninput="renderAdminPricePreview()">
             <button id="aboPricingSave" type="button" class="admin-save-btn" disabled onclick="saveAdminAboPricing()">Faktor speichern</button>
-            <button type="button" class="admin-save-btn" onclick="loadAdminAboPricing()">Neu laden</button>
           </div>
-          <p class="admin-price-help">Preis eines wöchentlichen Spieltermins × Faktor × Laufzeit in Jahren. Der Faktor gilt für neue Angebote. Bestehende Abos und bereits erstellte Kaufangebote behalten ihren vereinbarten Preis und Faktor. Die vollständige Laufzeit und die wöchentlichen Spieltermine bleiben erhalten.</p>
+          <p class="admin-price-help">Preis je Termin × Faktor × Laufzeit in Jahren. Gilt für neue Kaufangebote; bestehende Preise und volle Laufzeiten bleiben erhalten.</p>
           <div id="aboPricingState" class="admin-price-help" role="status"></div>
           <div id="aboPricingError" class="admin-err" role="alert"></div>
         </div>
       </div>
-      <!-- Preis-Aufschlag (Freibad-Beteiligung) -->
       <div class="admin-section">
         <div class="admin-section-title">Preis-Aufschlag (Freibad-Beteiligung)</div>
         <div class="admin-card">
           <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
-            Bei Einzelbuchungen kommt der volle Aufschlag nur dann pro Court-Stunde hinzu, wenn das
-            Freibad an diesem Datum und zu dieser Uhrzeit tatsächlich geöffnet ist. Beim Abo wird der
-            kleinere Aufschlag als Mischkalkulation pauschal auf jede gebuchte Court-Stunde gerechnet –
-            unabhängig davon, ob das Freibad an einzelnen Terminen geöffnet ist. Die Grundtarife bleiben unverändert. Die 5-%-Umsatzbeteiligung ans Freibad läuft separat über die
-            Buchhaltung.
+            Einzelbuchung: Aufschlag nur während der tatsächlichen Freibadöffnung.
+            Abo: kleinerer Aufschlag ganzjährig auf jede Court-Stunde.
           </div>
           <label class="admin-row" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;">
             <input type="checkbox" id="fbEnabled" onchange="renderAdminPriceMatrix()">
@@ -6141,47 +6159,66 @@ main {
             </div>
           </div>
           <div style="font-size:0.72rem;color:#888;margin-top:12px;line-height:1.5;">
-            Saison, Öffnungszeiten, Schließtage und Ausnahmetage steuern ausschließlich den Aufschlag
-            bei Einzelbuchungen. Der Abo-Aufschlag ist davon bewusst unabhängig.
+            Saison und Öffnungszeiten stehen unter „Freibad &amp; Padel-Anlage“. Die 5-%-Umsatzbeteiligung läuft separat über die Buchhaltung.
           </div>
           <div class="admin-row" style="margin-top:16px;">
             <button class="admin-save-btn gold" onclick="saveFreibadPricing()">Aufschlag speichern</button>
-            <button type="button" class="admin-save-btn" onclick="loadFreibadPricingAdmin()">Neu laden</button>
           </div>
           <div class="admin-ok"  id="fbOk"></div>
           <div class="admin-err" id="fbErr"></div>
         </div>
       </div>
 
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Zeitangebote und Aktionscodes</div>
+        <div class="admin-card">
+          <div id="pricingOfferList" class="admin-offer-list"></div><div id="pricingOfferListMessage" role="status" class="admin-price-help"></div>
+        </div>
+        <details id="pricingOfferEditor" class="admin-card admin-offer-editor" open>
+          <summary id="pricingOfferEditorTitle">Angebot anlegen</summary><div class="admin-offer-form">
+          <div class="admin-row"><label for="newRuleLabel" class="admin-label">Bezeichnung</label><input class="admin-input" type="text" id="newRuleLabel" maxlength="120" placeholder="z. B. Black Friday Week"></div>
+          <div class="admin-row"><label for="newRulePct" class="admin-label">Rabatt (%)</label><input class="admin-input" type="number" id="newRulePct" min="0.01" max="100" step="0.01"></div>
+          <div class="admin-row"><label for="newRuleType" class="admin-label">Anwendung</label><select id="newRuleType" class="admin-input" onchange="updatePricingOfferMode()"><option value="automatic">Automatisch im Zeitraum</option><option value="code">Mit Aktionscode im Zeitraum</option></select></div>
+          <div class="admin-row"><label for="newRuleApplies" class="admin-label">Gilt für</label><select id="newRuleApplies" class="admin-input"><option value="single">Einzelbuchungen</option><option value="abo">Abos</option><option value="both">Einzelbuchungen und Abos</option></select></div>
+          <div class="admin-row"><label for="newRuleAudience" class="admin-label">Zielgruppe</label><select id="newRuleAudience" class="admin-input"><option value="all">Alle</option><option value="members_partners">Mitglieder und Partner</option></select></div>
+          <div class="admin-row" id="newRuleCodeRow" hidden><label for="newRuleCode" class="admin-label">Aktionscode</label><input id="newRuleCode" class="admin-input" maxlength="32" placeholder="z. B. HALLOWEEN"></div>
+          <div class="admin-row"><label for="newRuleFrom" class="admin-label">Beginn (deutsche Ortszeit)</label><input id="newRuleFrom" class="admin-input" type="datetime-local"></div>
+          <div class="admin-row"><label for="newRuleUntil" class="admin-label">Ende (inklusive Minute)</label><input id="newRuleUntil" class="admin-input" type="datetime-local"></div>
+          <label class="admin-row"><input id="newRuleActive" type="checkbox" checked> Angebot aktiv</label>
+          <p class="admin-price-help">Der Zeitraum gilt für den Buchungs- bzw. Kaufzeitpunkt. Mitglieder und Partner erhalten denselben Standardrabatt. Passende Preisangebote werden nicht addiert; es gilt der höhere Rabatt. Bestehende Buchungen und Kaufangebote bleiben unverändert. Mehrjährige Frühbucher-Abos werden weiterhin unter „Aktionen“ gepflegt.</p>
+          <button type="button" class="admin-save-btn" onclick="createDiscountRule()">Angebot speichern</button>
+          <button type="button" class="admin-price-link" id="pricingOfferCancel" hidden onclick="closePricingOfferEditor()">Bearbeitung schließen</button>
+          <div id="newRuleOk" class="admin-ok" role="status"></div><div id="newRuleErr" class="admin-err" role="alert"></div>
+          </div>
+        </details>
+      </div>
+
       <div class="admin-section">
         <div class="admin-section-title">Preismatrix · € pro Court-Stunde</div>
         <div class="admin-card">
-          <div id="adminPriceViews" class="admin-price-views" role="group" aria-label="Preisansicht">
-            <button type="button" aria-pressed="true" onclick="setAdminPriceView('regular')">Regulär</button>
-            <button type="button" aria-pressed="false" onclick="setAdminPriceView('pool')">Bei geöffnetem Freibad</button>
-            <button type="button" aria-pressed="false" onclick="setAdminPriceView('abo')">Abo</button>
-          </div>
           <p id="adminPriceMatrixNote" class="admin-price-help"></p>
-          <div class="admin-price-scroll" tabindex="0" role="region" aria-label="Stundenpreise Montag bis Sonntag"><table id="adminPriceMatrix" class="admin-price-matrix"></table></div>
+          <div id="adminPriceMatrix" class="admin-price-overview"></div>
           <p class="admin-price-help">Alle Werte vor persönlichen und Aktionsrabatten. Mo–Fr haben gemeinsame Grundtarife, Sa–So ebenfalls. Änderungen an den Grundtarifen oder Aufschlägen erscheinen hier als Vorschau; wirksam werden sie nach dem jeweiligen Speichern.</p>
           <p><button type="button" class="admin-price-link" onclick="setAdminTab('freibad')">Freibad-Saison und Öffnungszeiten ansehen</button></p>
         </div>
       </div>
+      <div class="admin-prices-calculators">
       <div class="admin-section">
-        <div class="admin-section-title">Abo-Preisbeispiel</div>
+        <div class="admin-section-title">Abo-Simulator</div>
         <div class="admin-card">
           <div class="admin-price-example" oninput="renderAdminPricePreview()" onchange="updateAdminPriceExampleKind(event)">
             <label>Wochentag<select id="aboExampleDay" class="admin-input"><option value="1">Montag</option><option value="2">Dienstag</option><option value="3" selected>Mittwoch</option><option value="4">Donnerstag</option><option value="5">Freitag</option><option value="6">Samstag</option><option value="0">Sonntag</option></select></label>
             <label>Startzeit<select id="aboExampleStart" class="admin-input"></select></label>
             <label>Spieldauer<select id="aboExampleDuration" class="admin-input"><option value="60">60 Minuten</option><option value="90" selected>90 Minuten</option><option value="120">120 Minuten</option></select></label>
-            <label>Konditionen<select id="aboExampleKind" class="admin-input"><option value="regular">Regulär · 12 Monate</option><option value="action">Aktionsabo</option></select></label>
+            <label>Konditionen<select id="aboExampleKind" class="admin-input"><option value="regular">Regulär · 12 Monate</option></select></label>
             <label>Rabatt im Beispiel (%)<input id="aboExampleDiscount" class="admin-input" type="number" min="0" max="100" step="0.1" value="10"></label>
           </div>
           <p class="admin-price-help">Rechenbeispiel mit den Formularwerten, keine Buchung. Der tatsächliche Rabatt hängt von der Berechtigung und dem Buchungszeitraum ab. Ungespeicherte Änderungen gelten nur für diese Vorschau.</p>
+          <p id="aboExampleActionState" class="admin-price-help" role="status"></p>
           <div id="aboPriceExampleResult" aria-live="polite"></div>
         </div>
       </div>
-      <!-- Preismatrix -->
       <div class="admin-section">
         <div class="admin-section-title">Grundtarife bearbeiten</div>
         <div class="admin-card">
@@ -6206,6 +6243,8 @@ main {
           <div class="admin-ok"  id="pricesOk"></div>
           <div class="admin-err" id="pricesErr"></div>
         </div>
+      </div>
+
       </div>
 
     </div><!-- /adminPrices -->
@@ -17548,7 +17587,7 @@ async function loadAdminAboPricing(){
     adminAboPricingPolicy=data;field.value=data.weeks_per_year;
     document.getElementById('aboPricingState').textContent=`Gespeichert: Faktor ${data.weeks_per_year} pro Jahr. Neue Angebote verwenden diesen Wert.`;
     field.disabled=false;save.disabled=false;
-  }catch(e){error.textContent=e.message;}finally{adminAboPricingBusy=false;renderAdminPricePreview();}
+  }catch(e){error.textContent=e.message;adminPriceRetry(error,loadAdminAboPricing);}finally{adminAboPricingBusy=false;renderAdminPricePreview();}
 }
 async function saveAdminAboPricing(){
   const field=document.getElementById('aboPricingFactor'),button=document.getElementById('aboPricingSave'),error=document.getElementById('aboPricingError');error.textContent='';
@@ -17566,7 +17605,7 @@ async function saveAdminAboPricing(){
     if(typeof minuteBookingMode==='function'&&minuteBookingMode()&&aboWd!==null)await loadMinuteAboBookings(aboWd);
     if(typeof renderAboSlots==='function')renderAboSlots();
     return true;
-  }catch(e){error.textContent=e.message;document.getElementById('aboPricingState').textContent='Keine bestätigte Änderung. Gespeicherten Stand bei Bedarf neu laden.';return false;}
+  }catch(e){error.textContent=e.message;document.getElementById('aboPricingState').textContent='Keine bestätigte Änderung. Bitte den gespeicherten Stand prüfen.';adminPriceRetry(error,loadAdminAboPricing,'Gespeicherten Stand übernehmen');return false;}
   finally{adminAboPricingBusy=false;button.disabled=false;field.disabled=false;renderAdminPricePreview();}
 }
 function setAdminPriceView(view){
@@ -17590,51 +17629,61 @@ function adminPriceRows(){
   }return rows;
 }
 function renderAdminPriceMatrix(){
-  const table=document.getElementById('adminPriceMatrix');if(!table)return;
+  const root=document.getElementById('adminPriceMatrix');if(!root)return;
   const note=document.getElementById('adminPriceMatrixNote');
-  document.querySelectorAll('#adminPriceViews button').forEach((b,i)=>b.setAttribute('aria-pressed',String(['regular','pool','abo'][i]===adminPriceView)));
   try{
-    const prices=adminPriceRows(),surcharge=adminPriceSurcharge(adminPriceView);
-    note.textContent=adminPriceView==='regular'?'Regulär: Grundtarife ohne Freibad-Aufschlag.':adminPriceView==='pool'?`Bei geöffnetem Freibad: Grundtarif + ${fmt(surcharge/100)} pro Stunde. Gilt für Einzelbuchungen nur innerhalb der tatsächlichen Freibadöffnung.`:`Abo: Grundtarif + ${fmt(surcharge/100)} pro Stunde, ganzjährig. Jahresfaktor und Rabatt folgen erst in der Abo-Kalkulation.`;
-    const comparison=adminPriceView!=='regular';table.classList.toggle('is-comparison',comparison);
-    const groups=comparison?[['Mo–Fr','weekday'],['Sa–So','weekend']]:[['Mo','weekday'],['Di','weekday'],['Mi','weekday'],['Do','weekday'],['Fr','weekday'],['Sa','weekend'],['So','weekend']];
-    const head=document.createElement('thead'),tr=document.createElement('tr');
-    for(const label of ['Zeit',...groups.map(v=>v[0])]){const th=document.createElement('th');th.scope='col';th.textContent=label;tr.appendChild(th);}head.appendChild(tr);
-    const body=document.createElement('tbody'),number=c=>(c/100).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});
-    for(const hour of HOURS){const row=document.createElement('tr'),label=document.createElement('th');label.scope='row';label.textContent=String(hour).padStart(2,'0')+':00';row.appendChild(label);
-      for(const[day,group]of groups){const td=document.createElement('td'),base=prices.find(p=>p.hour===hour&&p.day_type===group).price_cents,pool=base+(comparison?adminPriceSurcharge('pool'):0);
-        const small=(value,side)=>{const span=document.createElement('span');span.className='price-compare price-compare-'+side;span.textContent='('+number(value)+')';return span;};
-        const main=document.createElement('span');main.className='price-main';main.textContent=fmt((base+surcharge)/100);
-        if(adminPriceView==='abo')td.appendChild(small(base,'left'));td.appendChild(main);
-        if(adminPriceView==='pool')td.appendChild(small(base,'right'));if(adminPriceView==='abo')td.appendChild(small(pool,'right'));
-        td.title=adminPriceView==='regular'?`Regulär ${fmt(base/100)}`:adminPriceView==='pool'?`Freibad ${fmt(pool/100)}, regulär ${fmt(base/100)}`:`Regulär ${fmt(base/100)}, Abo ${fmt((base+surcharge)/100)}, Freibad ${fmt(pool/100)}`;
-        td.setAttribute('aria-label',td.title);row.appendChild(td);
-      }body.appendChild(row);
-    }table.replaceChildren(head,body);
-  }catch(e){table.replaceChildren();note.textContent=e.message;}
+    const prices=adminPriceRows(),pool=adminPriceSurcharge('pool'),abo=adminPriceSurcharge('abo');
+    note.textContent=`Stundenpreise vor Rabatt: Freibad geöffnet + ${fmt(pool/100)}, Abo ganzjährig + ${fmt(abo/100)}. Beim Abo kommen Jahresfaktor und Laufzeit dazu.`;
+    const groups=[];
+    for(const [name,type] of [['Montag bis Freitag','weekday'],['Samstag und Sonntag','weekend']]){
+      const section=document.createElement('section'),title=document.createElement('h3'),table=document.createElement('table');title.textContent=name;table.className='admin-price-matrix is-overview';table.setAttribute('aria-label',name+' · Preise pro Court-Stunde');
+      const head=document.createElement('thead'),tr=document.createElement('tr');
+      for(const label of ['Zeit','Regulär','Freibad geöffnet','Abo']){const th=document.createElement('th');th.scope='col';th.textContent=label;tr.appendChild(th);}head.appendChild(tr);
+      const body=document.createElement('tbody');
+      for(const hour of HOURS){const row=document.createElement('tr'),th=document.createElement('th');th.scope='row';th.textContent=String(hour).padStart(2,'0')+':00';row.appendChild(th);
+        const base=prices.find(p=>p.hour===hour&&p.day_type===type).price_cents;
+        for(const cents of [base,base+pool,base+abo]){const td=document.createElement('td');td.textContent=fmt(cents/100);row.appendChild(td);}body.appendChild(row);
+      }table.append(head,body);section.append(title,table);groups.push(section);
+    }root.replaceChildren(...groups);
+  }catch(e){root.replaceChildren();note.textContent=e.message;}
   renderAdminPricePreview();
 }
+let adminSimulatorActions=[];
+async function loadAdminSimulatorActions(){
+  const state=document.getElementById('aboExampleActionState'),select=document.getElementById('aboExampleKind'),previous=select.value;
+  try{
+    const {data,error}=await sb.rpc('admin_list_marketing_actions');if(error||!Array.isArray(data))throw Error('Aktionsabos konnten nicht geladen werden.');
+    adminSimulatorActions=data.filter(a=>a.id&&a.name&&['abo','both'].includes(a.config?.earlybird_applies_to)&&Number.isInteger(Number(a.config.earlybird_term_months))&&Number(a.config.earlybird_term_months)>0&&Number.isFinite(Number(a.config.earlybird_discount_pct))&&Number(a.config.earlybird_discount_pct)>=0&&Number(a.config.earlybird_discount_pct)<100);
+    const regular=document.createElement('option');regular.value='regular';regular.textContent='Regulär · 12 Monate';select.replaceChildren(regular);
+    for(const a of adminSimulatorActions){const o=document.createElement('option');o.value='action:'+a.id;o.textContent=`${a.name} · ${a.config.earlybird_term_months} Monate`;select.appendChild(o);}
+    if([...select.options].some(o=>o.value===previous))select.value=previous;
+    state.textContent=adminSimulatorActions.length?'Aktionsabos verwenden die gespeicherten Konditionen aus „Aktionen“.':'Keine gespeicherte Abo-Aktion vorhanden. Reguläre Abos laufen 12 Monate.';
+    updateAdminPriceExampleKind({target:{id:'aboExampleKind'}});
+  }catch(e){adminSimulatorActions=[];select.value='regular';state.textContent=e.message+' Das reguläre Beispiel bleibt verfügbar.';renderAdminPricePreview();}
+}
+function adminSimulatorAction(){return adminSimulatorActions.find(a=>'action:'+a.id===document.getElementById('aboExampleKind').value)||null;}
 function updateAdminPriceExampleKind(event){
-  if(event?.target?.id==='aboExampleKind'){
-    const action=document.getElementById('aboExampleKind').value==='action';
-    document.getElementById('aboExampleDiscount').value=action?Number(window.__earlybird?.discount??0):10;
-  }renderAdminPricePreview();
+  const action=adminSimulatorAction(),input=document.getElementById('aboExampleDiscount');input.readOnly=!!action;
+  if(event?.target?.id==='aboExampleKind')input.value=action?Number(action.config.earlybird_discount_pct):Number(adminMemberDiscountState?.discount_pct??0);
+  renderAdminPricePreview();
 }
 function renderAdminPricePreview(){
   const root=document.getElementById('aboPriceExampleResult');if(!root)return;
   try{
-    const factorInput=document.getElementById('aboPricingFactor'),weeks=Number(factorInput.value),start=Number(document.getElementById('aboExampleStart').value),minutes=Number(document.getElementById('aboExampleDuration').value),weekday=Number(document.getElementById('aboExampleDay').value),discountInput=document.getElementById('aboExampleDiscount'),discount=Number(discountInput.value),action=document.getElementById('aboExampleKind').value==='action';
+    const factorInput=document.getElementById('aboPricingFactor'),weeks=Number(factorInput.value),start=Number(document.getElementById('aboExampleStart').value),minutes=Number(document.getElementById('aboExampleDuration').value),weekday=Number(document.getElementById('aboExampleDay').value),discountInput=document.getElementById('aboExampleDiscount'),discount=Number(discountInput.value),action=adminSimulatorAction();
     if(!adminAboPricingPolicy)throw Error('Preisbeispiel erst nach dem Laden des gespeicherten Abo-Faktors verfügbar.');
     if(!factorInput.value.trim()||!Number.isInteger(weeks)||weeks<1||weeks>52)throw Error('Bitte einen ganzzahligen Faktor von 1 bis 52 eingeben.');
     if(!discountInput.value.trim()||!Number.isFinite(discount)||discount<0||discount>100)throw Error('Bitte einen Rabatt zwischen 0 und 100 eingeben.');
     if(start+minutes>1320)throw Error('Diese Spieldauer reicht über 22:00 Uhr hinaus. Bitte eine frühere Startzeit wählen.');
-    const months=action?Number(window.__earlybird?.termMonths):12;if(!Number.isInteger(months)||months<1)throw Error('Aktionslaufzeit noch nicht geladen.');
+    const months=action?Number(action.config.earlybird_term_months):12;if(!Number.isInteger(months)||months<1)throw Error('Aktionslaufzeit noch nicht geladen.');
     const surcharge=adminPriceSurcharge('abo'),snapshot=PBMinuteDomain.calculateTariffSubtotal({startMinute:start,durationMinutes:minutes,pricingDate:new Date().toISOString().slice(0,10),dayType:[0,6].includes(weekday)?'weekend':'weekday',priceRows:adminPriceRows(),surchargeRates:Object.fromEntries(HOURS.map(h=>[h,surcharge])),discountPct:discount,kind:'subscription'});
-    const total=action?Math.round(snapshot.grossCents*weeks*months/12*(1-discount/100)):snapshot.netBeforeLoyaltyCents*weeks;
+    const effectiveDiscount=action?Number(action.config.earlybird_discount_pct):discount;
+    if(action&&discount!==effectiveDiscount)throw Error('Die Aktionskonditionen haben sich geändert. Bitte die Aktion erneut auswählen.');
+    const total=action?Math.round(snapshot.grossCents*weeks*months/12*(1-effectiveDiscount/100)):snapshot.netBeforeLoyaltyCents*weeks;
     const rows=[['Preis je Termin vor Rabatt',fmt(snapshot.grossCents/100)],['Rabatt im Beispiel',String(discount).replace('.',',')+' %'],['Preis je Termin nach Rabatt',fmt(snapshot.netBeforeLoyaltyCents/100)],['Faktor pro Jahr',String(weeks)],['Laufzeit',`${months} Monate`],['Berechnete Termine über die Laufzeit',String(weeks*months/12)],['Gesamtpreis',fmt(total/100)]];
     const list=document.createElement('dl');list.className='admin-price-breakdown';for(const [label,value]of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;list.append(dt,dd);}
     root.replaceChildren(list);
-    if(action){const p=document.createElement('p');p.className='admin-price-help';p.textContent=window.__earlybird?.active?'Aktionskonditionen: Berechtigung wird beim tatsächlichen Kauf geprüft.':'Rechenbeispiel der Aktion. Die Aktion ist heute nicht preislich gültig; daraus entsteht kein buchbares Aktionsangebot.';root.appendChild(p);}
+    if(action){const p=document.createElement('p');p.className='admin-price-help';p.textContent=`${action.name} · ${action.action_enabled?'Eingeschaltet':'Ausgeschaltet'} · Kaufzeitraum ${adminOfferDate(action.config.earlybird_start)} bis ${adminOfferDate(action.config.earlybird_end)}. Rechenbeispiel; Berechtigung und Zeitraum werden beim Kauf geprüft.`;root.appendChild(p);}
   }catch(e){root.textContent=e.message;}
 }
 function initAdminPriceExample(){
@@ -17667,13 +17716,13 @@ async function loadAdminPrices() {
   } catch(e) {
     document.getElementById('priceGridWeekday').replaceChildren();
     document.getElementById('priceGridWeekend').replaceChildren();
-    showAdminMsg('pricesErr',e.message||'Grundtarife konnten nicht geladen werden.');
+    showAdminMsg('pricesErr',e.message||'Grundtarife konnten nicht geladen werden.');adminPriceRetry('pricesErr',loadAdminPrices);
   }
 
   await loadAdminMemberDiscount();
   await loadDiscountRules();
   initAdminPriceExample();
-  await Promise.all([loadAdminAboPricing(),loadFreibadPricingAdmin()]);
+  await Promise.all([loadAdminAboPricing(),loadFreibadPricingAdmin(),loadAdminSimulatorActions()]);
   renderAdminPriceMatrix();
 }
 
@@ -17686,7 +17735,7 @@ async function loadAdminMemberDiscount(){
  try{const{data,error}=await sb.rpc('admin_member_discount_state');if(error)throw error;
  if(!data||!Number.isFinite(Number(data.discount_pct))||typeof data.token!=='string')throw Error('Gemeinsamer Rabatt nicht bestätigt.');
  adminMemberDiscountState=data;input.value=Number(data.discount_pct);input.disabled=false;
- }catch(e){showAdminMsg('discountErr',e.message||'Gemeinsamer Rabatt konnte nicht geladen werden.');}
+ }catch(e){showAdminMsg('discountErr',e.message||'Gemeinsamer Rabatt konnte nicht geladen werden.');adminPriceRetry('discountErr',loadAdminMemberDiscount);}
 }
 async function saveDiscount(){
  document.getElementById('discountOk').textContent='';document.getElementById('discountErr').textContent='';
@@ -17699,7 +17748,7 @@ async function saveDiscount(){
  member=eligible?{discount:pct/100}:null;memberAboDiscount=eligible?pct/100:0;
  if(typeof refreshPricingOffers==='function')await refreshPricingOffers();
  showAdminMsg('discountOk',`Gemeinsamer Mitglieder-/Partnerrabatt ${String(pct).replace('.',',')} % gespeichert – für Einzelbuchungen und Abos.`);return true;
- }catch(e){showAdminMsg('discountErr',e.message||'Speichern fehlgeschlagen.');return false;}
+ }catch(e){showAdminMsg('discountErr',e.message||'Speichern fehlgeschlagen.');adminPriceRetry('discountErr',loadAdminMemberDiscount,'Gespeicherten Stand übernehmen');return false;}
 }
 function adminOfferDate(value){return value?new Date(value).toLocaleString('de-DE',{timeZone:'Europe/Berlin',dateStyle:'short',timeStyle:'short'}):'—';}
 function adminOfferLocalInput(value){
@@ -17711,19 +17760,61 @@ function adminOfferIso(value){
  const d=PBMinuteDomain.berlinBookingDate(value.slice(0,10),Number(value.slice(11,13))*60+Number(value.slice(14,16)));
  if(adminOfferLocalInput(d)!==value)throw Error('Diese Ortszeit ist nicht eindeutig verfügbar.');return d.toISOString();
 }
+function renderPricingOfferList(){
+ const root=document.getElementById('pricingOfferList');root.replaceChildren();
+ if(!adminPricingOffers.length){root.textContent='Noch keine Zeitangebote. Trage dein erstes Angebot unten ein und speichere es.';return;}
+ for(const offer of adminPricingOffers){
+  const card=document.createElement('div');card.className='admin-offer-item';const copy=document.createElement('button');copy.type='button';copy.className='admin-offer-open';copy.setAttribute('aria-label',offer.name+' bearbeiten');
+  const title=document.createElement('strong'),details=document.createElement('span');title.textContent=offer.name;
+  const now=Date.now(),phase=!offer.active?'Inaktiv':now<Date.parse(offer.starts_at)?'Geplant':now>Date.parse(offer.ends_at)?'Abgelaufen':'Aktiv';
+  details.textContent=`${offer.discount_pct} % · ${offer.applies_to==='both'?'Einzelbuchungen und Abos':offer.applies_to==='abo'?'Abos':'Einzelbuchungen'} · ${offer.audience==='all'?'Alle':'Mitglieder und Partner'} · ${phase}\n${adminOfferDate(offer.starts_at)} bis ${adminOfferDate(offer.ends_at)}${offer.code?' · Code: '+offer.code:' · automatisch'}`;
+  copy.append(title,details);copy.onclick=()=>editPricingOffer(offer.id);
+  const toggle=document.createElement('label');toggle.className='admin-offer-toggle';const input=document.createElement('input');input.type='checkbox';input.checked=offer.active;input.disabled=adminPricingOfferBusy;input.setAttribute('aria-label',offer.name+' aktiv');input.onchange=()=>setPricingOfferActive(offer.id,input.checked);const status=document.createElement('span');status.textContent=offer.active?'Aktiv':'Inaktiv';toggle.append(input,status);
+  const del=document.createElement('button');del.type='button';del.className='admin-offer-delete';del.textContent='Löschen';del.disabled=adminPricingOfferBusy;del.setAttribute('aria-label',offer.name+' löschen');del.onclick=()=>deletePricingOffer(offer.id);
+  card.append(copy,toggle,del);root.appendChild(card);
+ }
+}
 async function loadDiscountRules(){
  const root=document.getElementById('pricingOfferList');root.textContent='Angebote werden geladen …';
- try{const{data,error}=await sb.rpc('admin_pricing_offers');if(error)throw error;if(!Array.isArray(data))throw Error('Angebote konnten nicht bestätigt werden.');adminPricingOffers=data;root.replaceChildren();
- if(!data.length){root.textContent='Noch keine zusätzlichen Preisangebote angelegt.';return;}
- for(const offer of data){const card=document.createElement('div');card.className='admin-offer-item';const copy=document.createElement('div'),title=document.createElement('strong'),details=document.createElement('p');title.textContent=offer.name;
- const now=Date.now(),phase=!offer.active?'Ausgeschaltet':now<Date.parse(offer.starts_at)?'Geplant':now>Date.parse(offer.ends_at)?'Abgelaufen':'Aktiv';
- details.textContent=`${offer.discount_pct} % · ${offer.applies_to==='both'?'Einzelbuchungen und Abos':offer.applies_to==='abo'?'Abos':'Einzelbuchungen'} · ${offer.audience==='all'?'Alle':'Mitglieder und Partner'} · ${phase}\n${adminOfferDate(offer.starts_at)} bis ${adminOfferDate(offer.ends_at)}${offer.code?' · Code: '+offer.code:' · automatisch'}`;
- const edit=document.createElement('button');edit.type='button';edit.className='admin-save-btn';edit.textContent='Bearbeiten';edit.onclick=()=>editPricingOffer(offer.id);copy.append(title,details);card.append(copy,edit);root.appendChild(card);}
- }catch(e){root.textContent=e.message||'Angebote konnten nicht geladen werden.';}
+ try{const{data,error}=await sb.rpc('admin_pricing_offers');if(error)throw error;if(!Array.isArray(data))throw Error('Angebote konnten nicht bestätigt werden.');adminPricingOffers=data;renderPricingOfferList();
+ if(!adminPricingOfferId&&!document.getElementById('newRuleLabel').value)document.getElementById('pricingOfferEditor').open=!data.length;
+ }catch(e){root.textContent=e.message||'Angebote konnten nicht geladen werden.';adminPriceRetry(root,loadDiscountRules);}
 }
+function pricingOfferArgs(o,active=o.active){return {p_id:o.id,p_revision:o.revision,p_name:o.name,p_pct:Number(o.discount_pct),p_applies_to:o.applies_to,p_audience:o.audience,p_start:o.starts_at,p_end:o.ends_at,p_code:o.code||null,p_active:active};}
+let adminPricingOfferBusy=false;
+async function setPricingOfferActive(id,active){
+ if(adminPricingOfferBusy)return false;const o=adminPricingOffers.find(o=>o.id===id);if(!o)return false;
+ adminPricingOfferBusy=true;renderPricingOfferList();const message=document.getElementById('pricingOfferListMessage');message.textContent='';
+ try{
+  const {data,error}=await sb.rpc('admin_save_pricing_offer',pricingOfferArgs(o,active));if(error)throw error;
+  if(data?.id!==id||data.active!==active||Number(data.revision)!==Number(o.revision)+1||data.name!==o.name||Number(data.discount_pct)!==Number(o.discount_pct)||data.applies_to!==o.applies_to||data.audience!==o.audience||data.starts_at!==o.starts_at||data.ends_at!==o.ends_at||(data.code||null)!==(o.code||null))throw Error('Änderung nicht bestätigt.');
+  adminPricingOffers=adminPricingOffers.map(v=>v.id===id?data:v);
+  if(adminPricingOfferId===id&&adminPricingOfferEditRevision===o.revision){document.getElementById('newRuleActive').checked=active;adminPricingOfferEditRevision=data.revision;}
+  message.textContent=`${o.name}: ${active?'aktiviert':'deaktiviert'}.`;if(typeof refreshPricingOffers==='function')await refreshPricingOffers();return true;
+ }catch(e){message.textContent=e.message||'Änderung fehlgeschlagen.';adminPriceRetry(message,loadDiscountRules);return false;}
+ finally{adminPricingOfferBusy=false;renderPricingOfferList();}
+}
+async function deletePricingOffer(id){
+ if(adminPricingOfferBusy)return false;const o=adminPricingOffers.find(o=>o.id===id);if(!o||!confirm(`„${o.name}“ löschen? Bestehende Buchungen und bereits erstellte Kaufangebote behalten ihren Preis.`))return false;
+ adminPricingOfferBusy=true;renderPricingOfferList();const message=document.getElementById('pricingOfferListMessage');message.textContent='';
+ try{const{data,error}=await sb.rpc('admin_delete_pricing_offer',{p_id:id,p_revision:o.revision});if(error)throw error;
+ if(data?.id!==id||data.deleted!==true||Number(data.revision)!==Number(o.revision)+1)throw Error('Löschung nicht bestätigt.');
+ adminPricingOffers=adminPricingOffers.filter(v=>v.id!==id);if(adminPricingOfferId===id)closePricingOfferEditor();message.textContent=`${o.name} gelöscht.`;
+ if(typeof refreshPricingOffers==='function')await refreshPricingOffers();return true;
+ }catch(e){message.textContent=e.message||'Löschen fehlgeschlagen.';adminPriceRetry(message,loadDiscountRules);return false;}
+ finally{adminPricingOfferBusy=false;renderPricingOfferList();}
+}
+function closePricingOfferEditor(){editPricingOffer();document.getElementById('pricingOfferEditor').open=false;}
+function adminPriceRetry(element,callback,label='Erneut versuchen'){
+ const host=typeof element==='string'?document.getElementById(element):element;if(!host)return;
+ const b=document.createElement('button');b.type='button';b.className='admin-price-link';b.textContent=label;b.onclick=()=>callback();host.append(document.createTextNode(' '),b);
+}
+let adminPricingOfferEditRevision=null;
 function editPricingOffer(id=null){
  const o=id?adminPricingOffers.find(v=>v.id===id):null;adminPricingOfferId=o?.id||null;
- document.getElementById('pricingOfferEditorTitle').textContent=o?'Angebot bearbeiten':'Neues Angebot';
+ adminPricingOfferEditRevision=o?.revision??null;
+ document.getElementById('pricingOfferEditorTitle').textContent=o?'Angebot bearbeiten: '+o.name:'Angebot anlegen';
+ document.getElementById('pricingOfferEditor').open=true;document.getElementById('pricingOfferCancel').hidden=!o;
  const set=(id,v)=>document.getElementById(id).value=v;
  set('newRuleLabel',o?.name||'');set('newRulePct',o?.discount_pct??'');set('newRuleType',o?.code?'code':'automatic');set('newRuleApplies',o?.applies_to||'single');set('newRuleAudience',o?.audience||'all');set('newRuleCode',o?.code||'');
  set('newRuleFrom',adminOfferLocalInput(o?.starts_at));set('newRuleUntil',adminOfferLocalInput(o?.ends_at));document.getElementById('newRuleActive').checked=o?.active??true;
@@ -17732,6 +17823,7 @@ function editPricingOffer(id=null){
 }
 function updatePricingOfferMode(){document.getElementById('newRuleCodeRow').hidden=document.getElementById('newRuleType').value!=='code';}
 async function createDiscountRule(){
+ if(adminPricingOfferBusy)return false;
  const get=id=>document.getElementById(id).value.trim(),name=get('newRuleLabel'),pct=Number(get('newRulePct')),start=get('newRuleFrom'),end=get('newRuleUntil'),code=get('newRuleType')==='code'?get('newRuleCode').toUpperCase():null;
  const fail=message=>{document.getElementById('newRuleErr').textContent=message;return false;};document.getElementById('newRuleOk').textContent='';document.getElementById('newRuleErr').textContent='';
  if(!name||name.length>120||!get('newRulePct')||!Number.isFinite(pct)||pct<=0||pct>100)return fail('Bitte Name und Rabatt bis 100 Prozent eingeben.');
@@ -17739,12 +17831,14 @@ async function createDiscountRule(){
  let startIso,endIso;try{startIso=adminOfferIso(start);endIso=new Date(Date.parse(adminOfferIso(end))+59999).toISOString();}catch{return fail('Bitte gültige Zeitpunkte in deutscher Ortszeit eingeben.');}
  if(Date.parse(endIso)<=Date.parse(startIso))return fail('Bitte einen gültigen Beginn und ein späteres Ende festlegen.');
  if(code!==null&&!/^[A-Z0-9_-]{3,32}$/.test(code))return fail('Bitte einen Code aus 3–32 Buchstaben, Ziffern, Bindestrichen oder Unterstrichen eingeben.');
- const previous=adminPricingOffers.find(v=>v.id===adminPricingOfferId),args={p_id:adminPricingOfferId,p_revision:previous?.revision??null,p_name:name,p_pct:pct,p_applies_to:get('newRuleApplies'),p_audience:get('newRuleAudience'),p_start:startIso,p_end:endIso,p_code:code,p_active:document.getElementById('newRuleActive').checked};
+ const args={p_id:adminPricingOfferId,p_revision:adminPricingOfferEditRevision,p_name:name,p_pct:pct,p_applies_to:get('newRuleApplies'),p_audience:get('newRuleAudience'),p_start:startIso,p_end:endIso,p_code:code,p_active:document.getElementById('newRuleActive').checked};
+ adminPricingOfferBusy=true;
  try{const{data,error}=await sb.rpc('admin_save_pricing_offer',args);if(error)throw error;
  if(!data?.id||data.name!==name||Number(data.discount_pct)!==pct||data.applies_to!==args.p_applies_to||data.audience!==args.p_audience||data.active!==args.p_active||(data.code||null)!==code||Date.parse(data.starts_at)!==Date.parse(args.p_start)||Date.parse(data.ends_at)!==Date.parse(args.p_end))throw Error('Speicherung nicht vollständig bestätigt. Bitte neu laden.');
- adminPricingOffers=adminPricingOffers.filter(o=>o.id!==data.id).concat(data);await loadDiscountRules();editPricingOffer(data.id);document.getElementById('newRuleOk').textContent='Angebot gespeichert. Bereits erstellte Kaufangebote und bestehende Buchungen behalten ihre vereinbarten Konditionen.';
+ adminPricingOffers=adminPricingOffers.filter(o=>o.id!==data.id).concat(data);renderPricingOfferList();closePricingOfferEditor();document.getElementById('pricingOfferListMessage').textContent=`${data.name} gespeichert. Zum Bearbeiten den Angebotsnamen anklicken.`;
  if(typeof refreshPricingOffers==='function')await refreshPricingOffers();return true;
- }catch(e){return fail(e.message||'Angebot konnte nicht gespeichert werden.');}
+ }catch(e){fail(e.message||'Angebot konnte nicht gespeichert werden.');if(adminPricingOfferId)adminPriceRetry('newRuleErr',async()=>{await loadDiscountRules();editPricingOffer(adminPricingOfferId);},'Gespeicherten Stand übernehmen');return false;}
+ finally{adminPricingOfferBusy=false;renderPricingOfferList();}
 }
 
 function renderPriceGrid(containerId, dayType, prices) {
@@ -17820,7 +17914,7 @@ async function loadFreibadPricingAdmin() {
     document.getElementById('fbSurcharge').value=FREIBAD_PRICE.surchargeEur;
     document.getElementById('fbAboSurcharge').value=FREIBAD_PRICE.aboSurchargeEur;
     document.getElementById('fbErr').textContent='';adminFreibadPricingLoaded=true;return true;
-  }catch(e){document.getElementById('fbErr').textContent=e.message;return false;}
+  }catch(e){document.getElementById('fbErr').textContent=e.message;adminPriceRetry('fbErr',loadFreibadPricingAdmin);return false;}
   finally{renderAdminPriceMatrix();}
 }
 
