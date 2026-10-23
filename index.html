@@ -1734,6 +1734,29 @@ body.bielstein-theme #bookBtn.visible{display:flex!important}
 #officialOpeningDialog .facility-opening-actions button {min-height:44px;font-size:13px;padding:10px 14px;}
 #officialOpeningConfirm {flex:1;background:#1C1A17;color:#FFF;border-color:#1C1A17;}
 #officialOpeningConfirm:disabled {opacity:.45;cursor:default;}
+
+/* Unified pricing: shared base tariffs, derived views and annual Abo factor. */
+.abo-factor-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:10px}
+.abo-factor-controls .admin-input{width:100px}
+.admin-price-help{font-size:.8rem;line-height:1.6;color:#777;margin:12px 0}
+.admin-price-link{border:0;background:none;padding:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}
+.admin-price-views{display:flex;flex-wrap:wrap;gap:6px}
+.admin-price-views button{border:1px solid #ddd5c7;border-radius:999px;padding:7px 12px;background:transparent;color:#57534b;font:inherit;font-size:.8rem;cursor:pointer}
+.admin-price-views button[aria-pressed="true"]{background:#1c1a17;color:#f6f1e7;border-color:#1c1a17}
+.admin-price-scroll{max-width:100%;overflow-x:auto}
+.admin-price-matrix{border-collapse:collapse;width:100%;min-width:590px;font-size:.8rem;font-variant-numeric:tabular-nums}
+.admin-price-matrix th,.admin-price-matrix td{padding:9px 7px;border-bottom:1px solid #e7dfd1;text-align:right;white-space:nowrap}
+.admin-price-matrix th:first-child{text-align:left}
+.admin-price-matrix thead{background:#f6f1e7}
+.admin-price-example{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
+.admin-price-example label{display:flex;flex-direction:column;gap:6px;font-size:.8rem;min-width:0}
+.admin-price-example .admin-input{width:100%;box-sizing:border-box}
+.admin-price-breakdown{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;font-size:.85rem}
+.admin-price-breakdown dt,.admin-price-breakdown dd{margin:0;padding:5px 0;border-bottom:1px solid #e7dfd1}
+.admin-price-breakdown dd{text-align:right;font-weight:700}
+
+.admin-price-base-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media(max-width:600px){.admin-price-base-grid{grid-template-columns:minmax(0,1fr)}.admin-price-example{grid-template-columns:minmax(0,1fr)}}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -2725,7 +2748,7 @@ main {
       </div>
       <div class="abo-calc" id="as-calc"></div>
       <div class="abo-benefits">
-        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-52">52 Wochen exklusiv für dich reserviert – du zahlst davon nur 30 Wochen.</span></div>
+        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-52">Volle vereinbarte Laufzeit mit wöchentlicher Spielzeit.</span></div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz – keine Konkurrenz um freie Slots.</div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-hours">Deine Buchung beruht auf deinem Einzelstundenpreis.</span></div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="as-rabatt">Dein Rabatt bei dieser Buchung beträgt 10 %.</span></div>
@@ -5901,43 +5924,7 @@ main {
     <!-- ── FREIBAD & ANLAGE ── -->
     <div id="adminFreibad">
 
-      <!-- Preis-Aufschlag (Freibad-Beteiligung) -->
-      <div class="admin-section">
-        <div class="admin-section-title">Preis-Aufschlag (Freibad-Beteiligung)</div>
-        <div class="admin-card">
-          <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
-            Bei Einzelbuchungen kommt der volle Aufschlag nur dann pro Court-Stunde hinzu, wenn das
-            Freibad an diesem Datum und zu dieser Uhrzeit tatsächlich geöffnet ist. Beim Abo wird der
-            kleinere Aufschlag als Mischkalkulation pauschal auf jede gebuchte Court-Stunde gerechnet –
-            unabhängig davon, ob das Freibad an einzelnen Terminen geöffnet ist. Der Basispreis unter
-            „Preise" bleibt unverändert. Die 5-%-Umsatzbeteiligung ans Freibad läuft separat über die
-            Buchhaltung.
-          </div>
-          <label class="admin-row" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;">
-            <input type="checkbox" id="fbEnabled">
-            <span style="font-size:0.9rem;">Freibad-Aufschlag aktiv</span>
-          </label>
-          <div class="admin-row" style="flex-wrap:wrap;gap:18px;">
-            <div>
-              <div style="font-size:0.72rem;color:#999;margin-bottom:6px;">Aufschlag Einzelbuchung (€ / Std.)</div>
-              <input class="admin-input" type="number" min="0" step="0.50" id="fbSurcharge" style="max-width:110px;">
-            </div>
-            <div>
-              <div style="font-size:0.72rem;color:#999;margin-bottom:6px;">Aufschlag Abo (€ / Std.)</div>
-              <input class="admin-input" type="number" min="0" step="0.50" id="fbAboSurcharge" style="max-width:110px;">
-            </div>
-          </div>
-          <div style="font-size:0.72rem;color:#888;margin-top:12px;line-height:1.5;">
-            Saison, Öffnungszeiten, Schließtage und Ausnahmetage steuern ausschließlich den Aufschlag
-            bei Einzelbuchungen. Der Abo-Aufschlag ist davon bewusst unabhängig.
-          </div>
-          <div class="admin-row" style="margin-top:16px;">
-            <button class="admin-save-btn gold" onclick="saveFreibadPricing()">Aufschlag speichern</button>
-          </div>
-          <div class="admin-ok"  id="fbOk"></div>
-          <div class="admin-err" id="fbErr"></div>
-        </div>
-      </div>
+      <p class="admin-price-help">Die Freibad-Aufschläge werden unter <button type="button" class="admin-price-link" onclick="setAdminTab('prices')">Preise</button> gepflegt. Hier legst du Saison und Öffnungszeiten fest.</p>
 
       <!-- Saison -->
       <div class="admin-section">
@@ -6072,12 +6059,12 @@ main {
       <div class="admin-section">
         <div class="admin-section-title">Rabatt-Regeln</div>
         <div class="admin-card">
-          <table class="admin-table" id="discountRulesTable">
+          <div style="max-width:100%;overflow-x:auto;"><table class="admin-table" id="discountRulesTable">
             <thead>
               <tr><th>Bezeichnung</th><th>Typ</th><th>%</th><th>Gilt für</th><th>Code</th><th>Von</th><th>Bis</th><th>Aktiv</th><th></th></tr>
             </thead>
             <tbody id="discountRulesBody"><tr><td colspan="9" style="color:#555;">Wird geladen …</td></tr></tbody>
-          </table>
+          </table></div>
           <div class="admin-ok"  id="discRuleOk"></div>
           <div class="admin-err" id="discRuleErr"></div>
         </div>
@@ -6110,23 +6097,103 @@ main {
         </div>
       </div>
 
-      <!-- Preismatrix -->
       <div class="admin-section">
-        <div class="admin-section-title">Preismatrix</div>
+        <div class="admin-section-title">Abo-Kalkulation</div>
+        <div class="admin-card">
+          <label for="aboPricingFactor" class="admin-label">Abo-Faktor pro Laufzeitjahr</label>
+          <div class="abo-factor-controls">
+            <input id="aboPricingFactor" class="admin-input" type="number" min="1" max="52" step="1" inputmode="numeric" disabled oninput="renderAdminPricePreview()">
+            <button id="aboPricingSave" type="button" class="admin-save-btn" disabled onclick="saveAdminAboPricing()">Faktor speichern</button>
+            <button type="button" class="admin-save-btn" onclick="loadAdminAboPricing()">Neu laden</button>
+          </div>
+          <p class="admin-price-help">Preis eines wöchentlichen Spieltermins × Faktor × Laufzeit in Jahren. Der Faktor gilt für neue Angebote. Bestehende Abos und bereits erstellte Kaufangebote behalten ihren vereinbarten Preis und Faktor. Die vollständige Laufzeit und die wöchentlichen Spieltermine bleiben erhalten.</p>
+          <div id="aboPricingState" class="admin-price-help" role="status"></div>
+          <div id="aboPricingError" class="admin-err" role="alert"></div>
+        </div>
+      </div>
+      <!-- Preis-Aufschlag (Freibad-Beteiligung) -->
+      <div class="admin-section">
+        <div class="admin-section-title">Preis-Aufschlag (Freibad-Beteiligung)</div>
         <div class="admin-card">
           <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
-            Preise in € pro Stunde · Änderungen gelten sofort für alle neuen Buchungen.
+            Bei Einzelbuchungen kommt der volle Aufschlag nur dann pro Court-Stunde hinzu, wenn das
+            Freibad an diesem Datum und zu dieser Uhrzeit tatsächlich geöffnet ist. Beim Abo wird der
+            kleinere Aufschlag als Mischkalkulation pauschal auf jede gebuchte Court-Stunde gerechnet –
+            unabhängig davon, ob das Freibad an einzelnen Terminen geöffnet ist. Die Grundtarife bleiben unverändert. Die 5-%-Umsatzbeteiligung ans Freibad läuft separat über die
+            Buchhaltung.
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <label class="admin-row" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;">
+            <input type="checkbox" id="fbEnabled" onchange="renderAdminPriceMatrix()">
+            <span style="font-size:0.9rem;">Freibad-Aufschlag aktiv</span>
+          </label>
+          <div class="admin-row" style="flex-wrap:wrap;gap:18px;">
+            <div>
+              <div style="font-size:0.72rem;color:#999;margin-bottom:6px;">Aufschlag Einzelbuchung (€ / Std.)</div>
+              <input class="admin-input" type="number" min="0" step="0.50" id="fbSurcharge" oninput="renderAdminPriceMatrix()" style="max-width:110px;">
+            </div>
+            <div>
+              <div style="font-size:0.72rem;color:#999;margin-bottom:6px;">Aufschlag Abo (€ / Std.)</div>
+              <input class="admin-input" type="number" min="0" step="0.50" id="fbAboSurcharge" oninput="renderAdminPriceMatrix()" style="max-width:110px;">
+            </div>
+          </div>
+          <div style="font-size:0.72rem;color:#888;margin-top:12px;line-height:1.5;">
+            Saison, Öffnungszeiten, Schließtage und Ausnahmetage steuern ausschließlich den Aufschlag
+            bei Einzelbuchungen. Der Abo-Aufschlag ist davon bewusst unabhängig.
+          </div>
+          <div class="admin-row" style="margin-top:16px;">
+            <button class="admin-save-btn gold" onclick="saveFreibadPricing()">Aufschlag speichern</button>
+            <button type="button" class="admin-save-btn" onclick="loadFreibadPricingAdmin()">Neu laden</button>
+          </div>
+          <div class="admin-ok"  id="fbOk"></div>
+          <div class="admin-err" id="fbErr"></div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Preismatrix · € pro Court-Stunde</div>
+        <div class="admin-card">
+          <div id="adminPriceViews" class="admin-price-views" role="group" aria-label="Preisansicht">
+            <button type="button" aria-pressed="true" onclick="setAdminPriceView('regular')">Regulär</button>
+            <button type="button" aria-pressed="false" onclick="setAdminPriceView('pool')">Bei geöffnetem Freibad</button>
+            <button type="button" aria-pressed="false" onclick="setAdminPriceView('abo')">Abo</button>
+          </div>
+          <p id="adminPriceMatrixNote" class="admin-price-help"></p>
+          <div class="admin-price-scroll" tabindex="0" role="region" aria-label="Stundenpreise Montag bis Sonntag"><table id="adminPriceMatrix" class="admin-price-matrix"></table></div>
+          <p class="admin-price-help">Alle Werte vor persönlichen und Aktionsrabatten. Mo–Fr haben gemeinsame Grundtarife, Sa–So ebenfalls. Änderungen an den Grundtarifen oder Aufschlägen erscheinen hier als Vorschau; wirksam werden sie nach dem jeweiligen Speichern.</p>
+          <p><button type="button" class="admin-price-link" onclick="setAdminTab('freibad')">Freibad-Saison und Öffnungszeiten ansehen</button></p>
+        </div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Abo-Preisbeispiel</div>
+        <div class="admin-card">
+          <div class="admin-price-example" oninput="renderAdminPricePreview()" onchange="updateAdminPriceExampleKind(event)">
+            <label>Wochentag<select id="aboExampleDay" class="admin-input"><option value="1">Montag</option><option value="2">Dienstag</option><option value="3" selected>Mittwoch</option><option value="4">Donnerstag</option><option value="5">Freitag</option><option value="6">Samstag</option><option value="0">Sonntag</option></select></label>
+            <label>Startzeit<select id="aboExampleStart" class="admin-input"></select></label>
+            <label>Spieldauer<select id="aboExampleDuration" class="admin-input"><option value="60">60 Minuten</option><option value="90" selected>90 Minuten</option><option value="120">120 Minuten</option></select></label>
+            <label>Konditionen<select id="aboExampleKind" class="admin-input"><option value="regular">Regulär · 12 Monate</option><option value="action">Aktionsabo</option></select></label>
+            <label>Rabatt im Beispiel (%)<input id="aboExampleDiscount" class="admin-input" type="number" min="0" max="100" step="0.1" value="10"></label>
+          </div>
+          <p class="admin-price-help">Rechenbeispiel mit den Formularwerten, keine Buchung. Der tatsächliche Rabatt hängt von der Berechtigung und dem Buchungszeitraum ab. Ungespeicherte Änderungen gelten nur für diese Vorschau.</p>
+          <div id="aboPriceExampleResult" aria-live="polite"></div>
+        </div>
+      </div>
+      <!-- Preismatrix -->
+      <div class="admin-section">
+        <div class="admin-section-title">Grundtarife bearbeiten</div>
+        <div class="admin-card">
+          <div style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.6;">
+            Basispreise in € pro Court-Stunde, ohne Aufschläge und Rabatte. Montag bis Freitag teilen einen Tarif, Samstag und Sonntag ebenfalls. Änderungen gelten für neue Buchungen und Angebote.
+          </div>
+          <div class="admin-price-base-grid">
             <!-- Wochentag -->
             <div>
               <div style="font-size:0.72rem;color:#999;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">Mo – Fr</div>
-              <div id="priceGridWeekday"></div>
+              <div id="priceGridWeekday" oninput="renderAdminPriceMatrix()"></div>
             </div>
             <!-- Wochenende -->
             <div>
               <div style="font-size:0.72rem;color:#999;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">Sa + So</div>
-              <div id="priceGridWeekend"></div>
+              <div id="priceGridWeekend" oninput="renderAdminPriceMatrix()"></div>
             </div>
           </div>
           <div class="admin-row" style="margin-top:16px;">
@@ -9301,6 +9368,11 @@ let minuteCalendarReceivedAt=0;
 const minuteLoyaltyCache=new Map();
 const minutePickerState={single:{key:null,start:null,preferredCourt:null},abo:{key:null,start:null,preferredCourt:null}};
 function minuteBookingMode(){return MINUTE_BOOKING_UI_ENABLED;}
+function minuteAboWeeksBilled(){
+  const weeks=minuteAboCalendar?.pricing?.abo_weeks_billed_per_year;
+  if(!Number.isInteger(weeks)||weeks<1||weeks>52)throw Error('abo_pricing_projection_missing');
+  return weeks;
+}
 function minuteEarlybird(){const e=window.__earlybird||{};return !!e.active&&(!e.appliesTo||['abo','both'].includes(e.appliesTo))&&actionIsEligibleForCurrentUser(e);}
 function minuteDiscount(kind){
   const base=kind==='single'?Number(member?.discount||0)*100:Number(memberAboDiscount||0)*100;
@@ -9532,8 +9604,8 @@ function minuteCalc(root,terms,price,total=price.netCents,billing=null){
   if(price.loyaltyDiscountCents>0)rows.push(['Treuebonus',fmt(price.loyaltyDiscountCents/100)]);
   if(billing){
     rows.push(['Preis je Termin nach Rabatt',fmt(price.netCents/100)]);
-    rows.push(['Berechnete Termine',String(30*billing.months/12)]);
-    if(billing.earlybird)rows.push(['Gesamte Preisgrundlage vor Aktionsrabatt',fmt(Math.round(price.snapshot.grossCents*30*billing.months/12)/100)]);
+    rows.push(['Berechnete Termine',String(billing.weeks*billing.months/12)]);
+    if(billing.earlybird)rows.push(['Gesamte Preisgrundlage vor Aktionsrabatt',fmt(Math.round(price.snapshot.grossCents*billing.weeks*billing.months/12)/100)]);
   }
   rows.push(['Dein Buchungspreis',fmt(total/100)]);
   for(const values of rows){const tr=document.createElement('tr');for(const value of values){const td=document.createElement('td');td.textContent=value;td.style.whiteSpace='normal';td.style.overflowWrap='anywhere';td.style.width='50%';td.style.textAlign=tr.children.length?'right':'left';tr.appendChild(td);}body.appendChild(tr);}
@@ -9559,7 +9631,7 @@ async function loadMinuteAboBookings(weekday){
   minuteAboLoading=true;renderMinuteAboSlots();
   try{const {data,error}=await sb.rpc('booking_minute_abo_calendar',{p_weekday:weekday,p_minutes:minuteAboDuration,p_kind:kind});
     if(generation!==minuteAboGeneration)return;
-    if(error||!data?.pricing||!Array.isArray(data.pricing.price_rows)||data?.time_version!==2||data.weekday!==weekday||data.duration_minutes!==minuteAboDuration||data.kind!==kind||!Array.isArray(data.offers)||!Array.isArray(data.occupied))throw Error('abo_calendar');
+    if(error||!data?.pricing||!Number.isInteger(data.pricing.abo_weeks_billed_per_year)||data.pricing.abo_weeks_billed_per_year<1||data.pricing.abo_weeks_billed_per_year>52||!Array.isArray(data.pricing.price_rows)||data?.time_version!==2||data.weekday!==weekday||data.duration_minutes!==minuteAboDuration||data.kind!==kind||!Array.isArray(data.offers)||!Array.isArray(data.occupied))throw Error('abo_calendar');
     for(const b of data.occupied){if(![1,2].includes(b.court)||!['subscription','abo_hold'].includes(b.source)||!bookingReleaseDate(b.starts_on)||!bookingReleaseDate(b.ends_on)||b.starts_on>=b.ends_on)throw Error('abo_calendar');PBMinuteDomain.bookingMinuteInterval({time_version:2,start_minute:b.start_minute,duration_minutes:b.end_minute-b.start_minute});}
     minuteAboCalendar=data;
   }catch{if(generation===minuteAboGeneration){minuteAboCalendar=null;aboSlot=null;}}
@@ -9583,23 +9655,23 @@ function minuteAboPeriod(start,end){
 function updateMinuteAboSummary(){
   const card=document.getElementById('aboSummary');if(!aboSlot){card.classList.remove('visible');return;}
   const p=minutePrice(aboSlot.court,aboSlot.start_minute,minuteAboDuration,'subscription'),early=minuteEarlybird();
-  const months=early?Number(window.__earlybird.termMonths):12;
-  const total=early?Math.round(p.snapshot.grossCents*30*(months/12)*(1-p.snapshot.discountPct/100)):p.netCents*30;
+  const months=early?Number(window.__earlybird.termMonths):12,weeks=minuteAboWeeksBilled();
+  const total=early?Math.round(p.snapshot.grossCents*weeks*(months/12)*(1-p.snapshot.discountPct/100)):p.netCents*weeks;
   const values={'as-court':courtLabel(aboSlot.court),'as-day':WDNAMES[aboWd],'as-time':PBMinuteDomain.receiptBookingTime(aboSlot).range,
     'as-dur':`${minuteAboDuration} Minuten`,'as-total':fmt(total/100),'as-perperson':fmt(total/400),
     'as-hours':'Dein Preis enthält die unten aufgeführten Zeitanteile der bestehenden Stundentarife.',
     'as-rabatt':p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:'Dein Preis enthält keinen Rabatt.',
-    'as-reg':`${fmt(p.netCents/100)} je Termin`,'as-save':`${months} Monate · ${30*months/12} Wochen berechnet · volle ${months} Monate Laufzeit`,
-    'as-52':`Volles Jahr ab deinem ersten Spieltag – du zahlst davon 30 Wochen.`};
+    'as-reg':`${fmt(p.netCents/100)} je Termin`,'as-save':`${months} Monate · ${weeks*months/12} Wochen berechnet · volle ${months} Monate Laufzeit`,
+    'as-52':`Volles Jahr ab deinem ersten Spieltag – du zahlst davon ${weeks} Wochen.`};
   for(const [id,value]of Object.entries(values)){const e=document.getElementById(id);if(e)e.textContent=value;}
   const occurrence=minuteAboCalendar.offers.find(o=>o.court===aboSlot.court&&o.start_minute===aboSlot.start_minute);
   const terms={...aboSlot,weekday:aboWd,starts_on:occurrence.starts_on,ends_on:occurrence.ends_on};
-  document.getElementById('as-52').textContent=`${minuteAboPeriod(occurrence.starts_on,occurrence.ends_on)}. Volles Jahr ab deinem ersten Spieltag – du zahlst davon 30 Wochen.${occurrence.abo_delayed?' Der spätere Start berücksichtigt bestehende Einzelbuchungen.':''}`;
+  document.getElementById('as-52').textContent=`${minuteAboPeriod(occurrence.starts_on,occurrence.ends_on)}. Volles Jahr ab deinem ersten Spieltag – du zahlst davon ${weeks} Wochen.${occurrence.abo_delayed?' Der spätere Start berücksichtigt bestehende Einzelbuchungen.':''}`;
   if(early&&window.__earlybird?.startMode==='official_opening') document.getElementById('as-52').textContent=(window.__earlybird.openingActual?'Offizieller Spielstart: ':'Voraussichtlicher Spielstart: ')+minuteDateLabel(occurrence.starts_on)+'. '+window.officialOpeningCustomerNote()+' Volle '+months+' Monate ab deinem persönlichen ersten Spieltag.';
   const title=card.querySelector('.abo-sum-title');if(title)title.textContent=early?'Dein Frühbucher-Abo':'Dein Jahresabo';
   const cta=card.querySelector('.abo-cta');if(cta)cta.textContent=early?'Frühbucher-Abo sichern':'Jahresabo sichern';
   const bonus=document.getElementById('as-bonus');if(bonus)bonus.style.display=p.snapshot.parts.some(part=>part.surchargeRateCents>0)?'':'none';
-  minuteCalc(document.getElementById('as-calc'),terms,p,total,{months,earlybird:early});card.classList.add('visible');
+  minuteCalc(document.getElementById('as-calc'),terms,p,total,{months,weeks,earlybird:early});card.classList.add('visible');
 }
 //  INIT
 // ============================================================
@@ -17394,6 +17466,102 @@ async function confirmAdminAccountDeletion(targetAuthId) {
 // ============================================================
 const HOURS = [8,9,10,11,12,13,14,15,16,17,18,19,20,21];
 
+let adminAboPricingPolicy=null,adminAboPricingBusy=false,adminPriceView='regular',adminFreibadPricingLoaded=false;
+function validAboPricingPolicy(p){return p&&Number.isInteger(p.weeks_per_year)&&p.weeks_per_year>=1&&p.weeks_per_year<=52&&Number.isSafeInteger(p.revision)&&p.revision>0;}
+async function loadAdminAboPricing(){
+  const field=document.getElementById('aboPricingFactor'),save=document.getElementById('aboPricingSave'),error=document.getElementById('aboPricingError');
+  if(adminAboPricingBusy)return;adminAboPricingBusy=true;field.disabled=true;save.disabled=true;error.textContent='';adminAboPricingPolicy=null;
+  try{
+    const {data,error:e}=await sb.rpc('public_abo_pricing');
+    if(e||!validAboPricingPolicy(data))throw Error('Der Abo-Faktor konnte nicht geladen werden. Bitte erneut laden.');
+    adminAboPricingPolicy=data;field.value=data.weeks_per_year;
+    document.getElementById('aboPricingState').textContent=`Gespeichert: Faktor ${data.weeks_per_year} pro Jahr. Neue Angebote verwenden diesen Wert.`;
+    field.disabled=false;save.disabled=false;
+  }catch(e){error.textContent=e.message;}finally{adminAboPricingBusy=false;renderAdminPricePreview();}
+}
+async function saveAdminAboPricing(){
+  const field=document.getElementById('aboPricingFactor'),button=document.getElementById('aboPricingSave'),error=document.getElementById('aboPricingError');error.textContent='';
+  const weeks=Number(field.value);
+  if(!adminAboPricingPolicy||adminAboPricingBusy)return false;
+  if(!field.value.trim()||!Number.isInteger(weeks)||weeks<1||weeks>52){error.textContent='Bitte einen ganzzahligen Faktor von 1 bis 52 eingeben.';return false;}
+  adminAboPricingBusy=true;button.disabled=true;field.disabled=true;
+  try{
+    const {data,error:e}=await sb.rpc('admin_save_abo_pricing',{p_weeks:weeks,p_expected_revision:adminAboPricingPolicy.revision});
+    if(e)throw Error(e.message||'Speichern fehlgeschlagen.');
+    if(!validAboPricingPolicy(data)||data.weeks_per_year!==weeks)throw Error('Speicherung nicht bestätigt. Bitte neu laden und den gespeicherten Faktor prüfen.');
+    adminAboPricingPolicy=data;field.value=data.weeks_per_year;
+    document.getElementById('aboPricingState').textContent=`Faktor ${data.weeks_per_year} gespeichert. Bestehende Abos und bereits erstellte Kaufangebote bleiben unverändert.`;
+    // Refresh the real booking projection; never substitute the editable form value.
+    if(typeof minuteBookingMode==='function'&&minuteBookingMode()&&aboWd!==null)await loadMinuteAboBookings(aboWd);
+    if(typeof renderAboSlots==='function')renderAboSlots();
+    return true;
+  }catch(e){error.textContent=e.message;document.getElementById('aboPricingState').textContent='Keine bestätigte Änderung. Gespeicherten Stand bei Bedarf neu laden.';return false;}
+  finally{adminAboPricingBusy=false;button.disabled=false;field.disabled=false;renderAdminPricePreview();}
+}
+function setAdminPriceView(view){
+  if(!['regular','pool','abo'].includes(view))return;adminPriceView=view;renderAdminPriceMatrix();
+}
+function adminPriceSurcharge(view){
+  if(view!=='regular'&&!adminFreibadPricingLoaded)throw Error('Freibad-Preisregeln noch nicht geladen. Bitte Aufschläge neu laden.');
+  const enabled=document.getElementById('fbEnabled')?.checked;
+  if(!enabled||view==='regular')return 0;
+  const input=document.getElementById(view==='abo'?'fbAboSurcharge':'fbSurcharge');
+  const value=Number(input?.value);
+  if(!input?.value?.trim()||!Number.isFinite(value)||value<0)throw Error('Bitte gültige Freibad-Aufschläge eingeben.');
+  return Math.round(value*100);
+}
+function adminPriceRows(){
+  const rows=[];
+  for(const day_type of ['weekday','weekend'])for(const hour of HOURS){
+    const input=document.getElementById(`price_${day_type}_${hour}`),value=Number(input?.value);
+    if(!input?.value?.trim()||!Number.isFinite(value)||value<0)throw Error('Bitte vollständige gültige Grundtarife laden oder eingeben.');
+    rows.push({hour,day_type,price_cents:Math.round(value*100),valid_from:null,valid_until:null});
+  }return rows;
+}
+function renderAdminPriceMatrix(){
+  const table=document.getElementById('adminPriceMatrix');if(!table)return;
+  const note=document.getElementById('adminPriceMatrixNote');
+  document.querySelectorAll('#adminPriceViews button').forEach((b,i)=>b.setAttribute('aria-pressed',String(['regular','pool','abo'][i]===adminPriceView)));
+  try{
+    const prices=adminPriceRows(),surcharge=adminPriceSurcharge(adminPriceView);
+    note.textContent=adminPriceView==='regular'?'Regulär: Grundtarife ohne Freibad-Aufschlag.':adminPriceView==='pool'?`Bei geöffnetem Freibad: Grundtarif + ${fmt(surcharge/100)} pro Stunde. Gilt für Einzelbuchungen nur innerhalb der tatsächlichen Freibadöffnung.`:`Abo: Grundtarif + ${fmt(surcharge/100)} pro Stunde, ganzjährig. Jahresfaktor und Rabatt folgen erst in der Abo-Kalkulation.`;
+    const head=document.createElement('thead'),tr=document.createElement('tr');
+    for(const label of ['Zeit','Mo','Di','Mi','Do','Fr','Sa','So']){const th=document.createElement('th');th.scope='col';th.textContent=label;tr.appendChild(th);}head.appendChild(tr);
+    const body=document.createElement('tbody');
+    for(const hour of HOURS){const row=document.createElement('tr'),label=document.createElement('th');label.scope='row';label.textContent=String(hour).padStart(2,'0')+':00';row.appendChild(label);
+      for(let day=1;day<=7;day++){const td=document.createElement('td');td.textContent=fmt((prices.find(p=>p.hour===hour&&p.day_type===(day>=6?'weekend':'weekday')).price_cents+surcharge)/100);row.appendChild(td);}body.appendChild(row);
+    }table.replaceChildren(head,body);
+  }catch(e){table.replaceChildren();note.textContent=e.message;}
+  renderAdminPricePreview();
+}
+function updateAdminPriceExampleKind(event){
+  if(event?.target?.id==='aboExampleKind'){
+    const action=document.getElementById('aboExampleKind').value==='action';
+    document.getElementById('aboExampleDiscount').value=action?Number(window.__earlybird?.discount??0):10;
+  }renderAdminPricePreview();
+}
+function renderAdminPricePreview(){
+  const root=document.getElementById('aboPriceExampleResult');if(!root)return;
+  try{
+    const factorInput=document.getElementById('aboPricingFactor'),weeks=Number(factorInput.value),start=Number(document.getElementById('aboExampleStart').value),minutes=Number(document.getElementById('aboExampleDuration').value),weekday=Number(document.getElementById('aboExampleDay').value),discountInput=document.getElementById('aboExampleDiscount'),discount=Number(discountInput.value),action=document.getElementById('aboExampleKind').value==='action';
+    if(!adminAboPricingPolicy)throw Error('Preisbeispiel erst nach dem Laden des gespeicherten Abo-Faktors verfügbar.');
+    if(!factorInput.value.trim()||!Number.isInteger(weeks)||weeks<1||weeks>52)throw Error('Bitte einen ganzzahligen Faktor von 1 bis 52 eingeben.');
+    if(!discountInput.value.trim()||!Number.isFinite(discount)||discount<0||discount>100)throw Error('Bitte einen Rabatt zwischen 0 und 100 eingeben.');
+    if(start+minutes>1320)throw Error('Diese Spieldauer reicht über 22:00 Uhr hinaus. Bitte eine frühere Startzeit wählen.');
+    const months=action?Number(window.__earlybird?.termMonths):12;if(!Number.isInteger(months)||months<1)throw Error('Aktionslaufzeit noch nicht geladen.');
+    const surcharge=adminPriceSurcharge('abo'),snapshot=PBMinuteDomain.calculateTariffSubtotal({startMinute:start,durationMinutes:minutes,pricingDate:new Date().toISOString().slice(0,10),dayType:[0,6].includes(weekday)?'weekend':'weekday',priceRows:adminPriceRows(),surchargeRates:Object.fromEntries(HOURS.map(h=>[h,surcharge])),discountPct:discount,kind:'subscription'});
+    const total=action?Math.round(snapshot.grossCents*weeks*months/12*(1-discount/100)):snapshot.netBeforeLoyaltyCents*weeks;
+    const rows=[['Preis je Termin vor Rabatt',fmt(snapshot.grossCents/100)],['Rabatt im Beispiel',String(discount).replace('.',',')+' %'],['Preis je Termin nach Rabatt',fmt(snapshot.netBeforeLoyaltyCents/100)],['Faktor pro Jahr',String(weeks)],['Laufzeit',`${months} Monate`],['Berechnete Termine über die Laufzeit',String(weeks*months/12)],['Gesamtpreis',fmt(total/100)]];
+    const list=document.createElement('dl');list.className='admin-price-breakdown';for(const [label,value]of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;list.append(dt,dd);}
+    root.replaceChildren(list);
+    if(action){const p=document.createElement('p');p.className='admin-price-help';p.textContent=window.__earlybird?.active?'Aktionskonditionen: Berechtigung wird beim tatsächlichen Kauf geprüft.':'Rechenbeispiel der Aktion. Die Aktion ist heute nicht preislich gültig; daraus entsteht kein buchbares Aktionsangebot.';root.appendChild(p);}
+  }catch(e){root.textContent=e.message;}
+}
+function initAdminPriceExample(){
+  const select=document.getElementById('aboExampleStart');if(!select||select.options.length)return;
+  for(let m=480;m<=1260;m+=30){const o=document.createElement('option');o.value=m;o.textContent=String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');o.selected=m===1080;select.appendChild(o);}
+}
+
 async function loadAdminPrices() {
   const __authH = await authHeaders();
   // Mitgliederrabatt aus users-Tabelle (discount_pct vom Typ 'member')
@@ -17403,7 +17571,9 @@ async function loadAdminPrices() {
       `${SUPABASE_URL}/rest/v1/prices?select=hour,day_type,price_cents&order=day_type,hour`,
       { headers: __authH }
     );
-    const data = res.ok ? await res.json() : [];
+    if(!res.ok)throw Error('Grundtarife konnten nicht geladen werden.');
+    const data=await res.json();
+    if(!Array.isArray(data)||['weekday','weekend'].some(type=>HOURS.some(hour=>data.filter(r=>r.day_type===type&&r.hour===hour&&Number.isSafeInteger(r.price_cents)&&r.price_cents>=0).length!==1)))throw Error('Grundtarife sind unvollständig. Bitte neu laden.');
 
     // Preise in Maps aufbauen
     const dbPW = {}, dbPE = {};
@@ -17415,8 +17585,9 @@ async function loadAdminPrices() {
     renderPriceGrid('priceGridWeekday', 'weekday', dbPW);
     renderPriceGrid('priceGridWeekend', 'weekend',  dbPE);
   } catch(e) {
-    renderPriceGrid('priceGridWeekday', 'weekday', {});
-    renderPriceGrid('priceGridWeekend', 'weekend',  {});
+    document.getElementById('priceGridWeekday').replaceChildren();
+    document.getElementById('priceGridWeekend').replaceChildren();
+    showAdminMsg('pricesErr',e.message||'Grundtarife konnten nicht geladen werden.');
   }
 
   // Mitgliederrabatt-Anzeige aus discount_rules laden (TFB, Einzelbuchung, als Referenzwert)
@@ -17432,6 +17603,9 @@ async function loadAdminPrices() {
   } catch(e) { /* Fallback 10% bleibt */ }
 
   loadDiscountRules();
+  initAdminPriceExample();
+  await Promise.all([loadAdminAboPricing(),loadFreibadPricingAdmin()]);
+  renderAdminPriceMatrix();
 }
 
 // ============================================================
@@ -17555,11 +17729,14 @@ async function savePrices() {
       method: 'POST',
       headers: {
         ...__authH,
-        'Prefer': 'resolution=merge-duplicates,return=minimal',
+        'Prefer': 'resolution=merge-duplicates,return=representation',
       },
       body: JSON.stringify(rows),
     });
     if (!res.ok) throw new Error(await res.text());
+
+    const saved=await res.json();
+    if(!Array.isArray(saved)||saved.length!==rows.length||rows.some(r=>!saved.some(v=>v.hour===r.hour&&v.day_type===r.day_type&&v.price_cents===r.price_cents)))throw Error('Speicherung der Grundtarife nicht vollständig bestätigt. Bitte neu laden.');
 
     // Lokale Preise sofort aktualisieren
     for (const r of rows) {
@@ -17568,7 +17745,10 @@ async function savePrices() {
     }
     updDurPrices();
     renderSlots();
-    showAdminMsg('pricesOk', '✓ Preise gespeichert — sofort live');
+    if(typeof minuteBookingMode==='function'&&minuteBookingMode()&&aboWd!==null)await loadMinuteAboBookings(aboWd);
+    if(typeof renderAboSlots==='function')renderAboSlots();
+    renderAdminPriceMatrix();
+    showAdminMsg('pricesOk', '✓ Grundtarife gespeichert — für neue Buchungen und Angebote');
   } catch(e) {
     showAdminMsg('pricesErr', 'Fehler: ' + e.message);
   }
@@ -17578,17 +17758,25 @@ async function savePrices() {
 //  ADMIN – Freibad-Aufschlag (Beträge + Schalter; „wann" = Freibad-Saison/Zeiten)
 // ============================================================
 async function loadFreibadPricingAdmin() {
-  await loadFreibadPricing();              // frischt die globale FREIBAD_PRICE-Config
-  const f = FREIBAD_PRICE;
-  const cb = document.getElementById('fbEnabled'); if (cb) cb.checked = !!f.enabled;
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
-  set('fbSurcharge',    f.surchargeEur);
-  set('fbAboSurcharge', f.aboSurchargeEur);
+  adminFreibadPricingLoaded=false;
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/app_flags?select=freibad_price_enabled,freibad_surcharge_cents,freibad_abo_surcharge_cents`,{headers:await authHeaders()});
+    if(!res.ok)throw Error('Freibad-Preisregeln konnten nicht geladen werden.');
+    const rows=await res.json(),r=Array.isArray(rows)?rows[0]:rows;
+    if(typeof r?.freibad_price_enabled!=='boolean'||!Number.isSafeInteger(r.freibad_surcharge_cents)||r.freibad_surcharge_cents<0||!Number.isSafeInteger(r.freibad_abo_surcharge_cents)||r.freibad_abo_surcharge_cents<0)throw Error('Freibad-Preisregeln sind unvollständig.');
+    FREIBAD_PRICE={enabled:r.freibad_price_enabled,surchargeEur:r.freibad_surcharge_cents/100,aboSurchargeEur:r.freibad_abo_surcharge_cents/100};
+    document.getElementById('fbEnabled').checked=FREIBAD_PRICE.enabled;
+    document.getElementById('fbSurcharge').value=FREIBAD_PRICE.surchargeEur;
+    document.getElementById('fbAboSurcharge').value=FREIBAD_PRICE.aboSurchargeEur;
+    document.getElementById('fbErr').textContent='';adminFreibadPricingLoaded=true;return true;
+  }catch(e){document.getElementById('fbErr').textContent=e.message;return false;}
+  finally{renderAdminPriceMatrix();}
 }
 
 async function saveFreibadPricing() {
   const okEl = document.getElementById('fbOk'), errEl = document.getElementById('fbErr');
   okEl.textContent = ''; errEl.textContent = '';
+  if(!adminFreibadPricingLoaded){errEl.textContent='Bitte die Freibad-Preisregeln zuerst neu laden.';return;}
   const enabled = document.getElementById('fbEnabled').checked;
   const surEur  = parseFloat(document.getElementById('fbSurcharge').value);
   const aboEur  = parseFloat(document.getElementById('fbAboSurcharge').value);
@@ -17608,8 +17796,11 @@ async function saveFreibadPricing() {
     });
     if (!res.ok) throw new Error(await res.text());
     // Anzeige sofort mitziehen: Beträge neu laden und Slots/Abos neu rechnen.
-    await loadFreibadPricing();
+    if(!await loadFreibadPricingAdmin()||FREIBAD_PRICE.enabled!==enabled||Math.round(FREIBAD_PRICE.surchargeEur*100)!==Math.round(surEur*100)||Math.round(FREIBAD_PRICE.aboSurchargeEur*100)!==Math.round(aboEur*100))throw Error('Speicherung der Freibad-Aufschläge nicht bestätigt. Bitte neu laden und prüfen.');
     updDurPrices(); updateAboDurPrices(); renderSlots();
+    if(typeof minuteBookingMode==='function'&&minuteBookingMode()&&aboWd!==null)await loadMinuteAboBookings(aboWd);
+    if(typeof renderAboSlots==='function')renderAboSlots();
+    renderAdminPriceMatrix();
     okEl.textContent = '✓ Gespeichert — sofort live';
   } catch(e) {
     errEl.textContent = 'Fehler: ' + e.message;
