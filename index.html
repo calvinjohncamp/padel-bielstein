@@ -1704,6 +1704,23 @@ body.bielstein-theme #bookBtn.visible{display:flex!important}
 .technical-operator-scope{font-size:13px;overflow-wrap:anywhere;margin-top:10px}
 .technical-operator-details{font-family:inherit;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;margin:18px 0 0;line-height:1.5}
 .technical-operator-status{font-size:14px;line-height:1.5;margin-top:18px;overflow-wrap:anywhere}
+
+/* Action copy editor: same typography and dark canvas as the customer card. */
+.action-rich-toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:#EFE9DC;border:1px solid #D8CEBE;border-bottom:0;border-radius:10px 10px 0 0;}
+.action-rich-toolbar button{border:1px solid #D8CEBE;border-radius:6px;background:#fff;color:#1C1A17;padding:8px 10px;font:600 12px Manrope,sans-serif;cursor:pointer;}
+.action-rich-toolbar button:hover{background:#F6F1E7;}
+.action-rich-editor{min-height:170px;padding:18px;background:#1C1A17;color:#CBC3B6;border:1px solid #D8CEBE;border-radius:0 0 10px 10px;font:500 .92rem/1.55 Manrope,Arial,sans-serif;overflow-wrap:anywhere;}
+.action-rich-editor:focus{outline:2px solid #FF5A36;outline-offset:2px;}
+.action-rich-editor p,.action-card-preview .eb-body p{margin:0 0 .75em;}
+.action-rich-editor ul,.action-rich-editor ol,.action-card-preview .eb-body ul,.action-card-preview .eb-body ol{padding-left:1.4em;margin:.6em 0;}
+.action-rich-editor strong,.action-rich-editor b{font-weight:700;color:#F6F1E7;}
+.action-preview-label{font:700 11px Manrope,sans-serif;text-transform:uppercase;letter-spacing:.08em;margin:18px 0 10px;color:#7A7368;}
+.action-card-preview .eb-banner{display:block;margin:0;overflow-wrap:anywhere;animation:none;}
+.action-extra-settings>summary{cursor:pointer;padding:12px 0;list-style-position:inside;}
+.action-extra-settings[open]>summary{margin-bottom:12px;}
+@media(max-width:600px){.action-rich-toolbar button{padding:9px;font-size:11px;}.action-card-preview .eb-meta{display:block;}.action-card-preview .eb-meta-note{margin-top:14px;}.admin-action-panel [style*="grid-template-columns"]{grid-template-columns:1fr!important;}.admin-action-panel [style*="grid-column"]{grid-column:auto!important;}}
+
+.action-appearance-fields{display:grid;gap:12px;padding:10px 0;}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -5587,6 +5604,7 @@ main {
 
     <div class="admin-tabs" id="adminTabs">
       <button class="admin-tab active" type="button" id="atab-freibad" data-admin-tab="freibad" onclick="setAdminTab('freibad')"><span aria-hidden="true">🏊</span><span class="admin-tab-label">Freibad &amp; Padel-Anlage</span></button>
+      <button class="admin-tab" type="button" id="atab-splash" data-admin-tab="splash" onclick="setAdminTab('splash')"><span aria-hidden="true">🖼</span><span class="admin-tab-label">Splash</span></button>
       <button class="admin-tab" type="button" id="atab-meetups" data-admin-tab="meetups" onclick="setAdminTab('meetups')"><span aria-hidden="true">👥</span><span class="admin-tab-label">Verabreden</span></button>
       <button class="admin-tab" type="button" id="atab-prices" data-admin-tab="prices" onclick="setAdminTab('prices')"><span aria-hidden="true">💰</span><span class="admin-tab-label">Preise</span></button>
       <button class="admin-tab" type="button" id="atab-internal" data-admin-tab="internal" onclick="setAdminTab('internal')"><span aria-hidden="true">📋</span><span class="admin-tab-label">Interne Buchungen</span></button>
@@ -6263,8 +6281,8 @@ main {
       </div>
     </div><!-- /adminWeather -->
 
-    <!-- ── AKTIONEN / SPLASH / JAHRESABO-KACHEL ── -->
-    <div id="adminAktionen" style="display:none;">
+    <!-- ── SPLASH-STARTSEITE ── -->
+    <div id="adminSplash" style="display:none;">
       <div class="admin-section">
         <div class="admin-section-title">🖼 Splash-Startseite</div>
         <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
@@ -6291,6 +6309,9 @@ main {
         </div>
       </div>
 
+    </div><!-- /adminSplash -->
+
+    <div id="adminAktionen" style="display:none;">
       <div class="admin-action-library-head">
         <div>
           <div class="admin-section-title">Aktionsbibliothek</div>
@@ -6307,7 +6328,7 @@ main {
           <button type="button" class="admin-action-back" onclick="closeMarketingActionEditor()">← Aktionsliste</button>
           <span class="admin-action-heading">
             <strong id="marketingActionEditorTitle">Aktion bearbeiten</strong>
-            <small>Alle Einstellungen dieser Aktion in einem Fenster</small>
+            <small>Aktionskachel gestalten · Konditionen festlegen · gemeinsam speichern</small>
           </span>
         </div>
         <div class="admin-action-content">
@@ -6333,7 +6354,63 @@ main {
           </div>
 
           <section class="admin-action-subsection">
-            <div class="admin-action-subtitle">Einstellungen und Wirkung</div>
+            <div class="admin-action-subtitle">1. Aktionskachel gestalten</div>
+            <div class="admin-action-description">So erscheint deine Aktion oberhalb der Buchungsauswahl. Texte direkt formatieren und die gesamte Kachel in der Vorschau prüfen.</div>
+            <div class="admin-action-panel admin-action-panel-stack">
+          <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
+            <div><label class="eb-adm-lbl">Erste Überschrift</label><input type="text" id="abKicker" class="eb-adm-inp"></div>
+
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
+            <div><label class="eb-adm-lbl">Zweite Überschrift</label><input type="text" id="abTitle" class="eb-adm-inp"></div>
+
+          </div>
+          <div>
+            <label class="eb-adm-lbl" id="abBodyLabel">Aktionstext · direkt formatieren</label>
+            <div class="action-rich-toolbar" role="toolbar" aria-label="Aktionstext formatieren">
+              <button type="button" onmousedown="event.preventDefault()" onclick="actionTextCommand('bold')" aria-label="Fett"><strong>Fett</strong></button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="actionTextCommand('italic')" aria-label="Kursiv"><em>Kursiv</em></button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="actionTextCommand('underline')">Unterstreichen</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="actionTextCommand('insertUnorderedList')">• Liste</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="actionTextCommand('insertOrderedList')">1. Liste</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="actionTextCommand('foreColor',pbPaletteColor(document.getElementById('abHiColor').value,'coral'))">Hervorheben</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="actionTextCommand('removeFormat')">Format löschen</button>
+            </div>
+            <div id="abBodyEditor" class="action-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="abBodyLabel" spellcheck="true"></div>
+            <textarea id="abBody" hidden></textarea>
+
+          </div>
+          <details class="action-extra-settings">
+            <summary class="admin-action-subtitle">Farben und weitere Darstellung</summary>
+            <div class="action-appearance-fields">
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe</label><select id="abKickerColor" class="eb-adm-inp"></select></div>
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe</label><select id="abTitleColor" class="eb-adm-inp"></select></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Text</label><select id="abBodyColor" class="eb-adm-inp"></select></div>
+              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Hervorhebung</label><select id="abHiColor" class="eb-adm-inp"></select></div>
+            </div>
+          <div style="border-top:1px solid #EFE9DC;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Start-Box – Beschriftung</label><input type="text" id="abBox1" class="eb-adm-inp" readonly></div>
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Ende-Box – Beschriftung</label><input type="text" id="abBox2" class="eb-adm-inp" readonly></div>
+          </div>
+          <div>
+            <label class="eb-adm-lbl" style="font-size:10px;">Hinweis neben den Datumsboxen</label>
+            <input type="text" id="abNote" class="eb-adm-inp">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Beschriftungen</label><select id="abLabelColor" class="eb-adm-inp"></select></div>
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Datumswerte</label><select id="abValueColor" class="eb-adm-inp"></select></div>
+          </div>
+            </div>
+          </details>
+            </div>
+            <div class="admin-action-description">Datumswerte stammen aus den Konditionen. Der Hinweis zur offiziellen Spieleröffnung wird automatisch passend zur Abo-Regel angezeigt.</div>
+            <div class="action-preview-label">Vorschau der Aktionskachel</div>
+            <div id="actionCardPreview" class="action-card-preview" aria-label="Vorschau der Aktionskachel"></div>
+          </section>
+
+          <section class="admin-action-subsection">
+            <div class="admin-action-subtitle">2. Konditionen und Abo-Beginn</div>
             <div class="admin-action-panel">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div><label class="eb-adm-lbl">Start der Aktion</label><input type="datetime-local" id="ebAdmStart" class="eb-adm-inp"></div>
@@ -6378,8 +6455,8 @@ main {
             </div>
           </section>
 
-          <section class="admin-action-subsection">
-            <div class="admin-action-subtitle">Splash-PNG und Aktionsfenster</div>
+          <details class="admin-action-subsection action-extra-settings">
+            <summary class="admin-action-subtitle">3. Splash-Auftritt dieser Aktion</summary>
             <div class="admin-action-description">Das PNG führt zur oben gewählten Buchungsseite. Optional kann davor ein frei beschriftbares Infofenster erscheinen.</div>
             <div class="admin-action-panel admin-action-panel-stack">
           <div>
@@ -6432,42 +6509,9 @@ main {
             </div>
           </div>
             </div>
-          </section>
+          </details>
 
-          <section class="admin-action-subsection">
-            <div class="admin-action-subtitle">Aktionskopf auf der gewählten Buchungsseite</div>
-            <div class="admin-action-description">Dieser Kopf erscheint oberhalb von „Datum wählen“ beziehungsweise „Wochentag wählen“. Alle Texte sind einzeln editierbar.</div>
-            <div class="admin-action-panel admin-action-panel-stack">
-          <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
-            <div><label class="eb-adm-lbl">Erste Überschrift</label><input type="text" id="abKicker" class="eb-adm-inp"></div>
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe</label><select id="abKickerColor" class="eb-adm-inp"></select></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:end;">
-            <div><label class="eb-adm-lbl">Zweite Überschrift</label><input type="text" id="abTitle" class="eb-adm-inp"></div>
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe</label><select id="abTitleColor" class="eb-adm-inp"></select></div>
-          </div>
-          <div>
-            <label class="eb-adm-lbl" style="font-size:10px;">Fließtext &nbsp;·&nbsp; Hervorhebung mit *Sternchen*, Leerzeile = neuer Absatz</label>
-            <textarea id="abBody" rows="4" class="eb-adm-inp" style="resize:vertical;line-height:1.5;"></textarea>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
-              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Text</label><select id="abBodyColor" class="eb-adm-inp"></select></div>
-              <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Hervorhebung</label><select id="abHiColor" class="eb-adm-inp"></select></div>
-            </div>
-          </div>
-          <div style="border-top:1px solid #EFE9DC;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Start-Box – Beschriftung</label><input type="text" id="abBox1" class="eb-adm-inp" readonly></div>
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Ende-Box – Beschriftung</label><input type="text" id="abBox2" class="eb-adm-inp" readonly></div>
-          </div>
-          <div>
-            <label class="eb-adm-lbl" style="font-size:10px;">Hinweis neben den Datumsboxen</label>
-            <input type="text" id="abNote" class="eb-adm-inp">
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Beschriftungen</label><select id="abLabelColor" class="eb-adm-inp"></select></div>
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Datumswerte</label><select id="abValueColor" class="eb-adm-inp"></select></div>
-          </div>
-            </div>
-          </section>
+
 
           <div class="admin-action-footer">
             <button type="button" class="admin-action-delete" id="deleteMarketingActionBtn" onclick="deleteMarketingAction()">Aktion löschen</button>
@@ -15876,6 +15920,7 @@ function setAdminTab(tab) {
   document.getElementById('adminBookings').style.display  = tab==='bookings' ? 'block' : 'none';
   document.getElementById('adminArchive').style.display   = tab==='archive'  ? 'block' : 'none';
   document.getElementById('adminKiosk').style.display     = tab==='kiosk'    ? 'block' : 'none';
+  document.getElementById('adminSplash').style.display = tab==='splash' ? 'block' : 'none';
   document.getElementById('adminAktionen').style.display  = tab==='aktionen' ? 'block' : 'none';
   document.getElementById('adminWeather').style.display   = tab==='weather'  ? 'block' : 'none';
   document.getElementById('adminSponsors').style.display  = tab==='sponsors' ? 'block' : 'none';
@@ -15884,14 +15929,15 @@ function setAdminTab(tab) {
   document.getElementById('adminInfoMails').style.display = tab==='infomails'? 'block' : 'none';
   document.getElementById('adminInfos').style.display     = tab==='infos'    ? 'block' : 'none';
   document.getElementById('adminWipe').style.display      = tab==='wipe'     ? 'block' : 'none';
-  ['freibad','meetups','prices','internal','bookings','archive','kiosk','aktionen','weather','sponsors','mis','users','infomails','infos','wipe'].forEach(t =>
+  ['freibad','splash','meetups','prices','internal','bookings','archive','kiosk','aktionen','weather','sponsors','mis','users','infomails','infos','wipe'].forEach(t =>
     document.getElementById('atab-'+t).classList.toggle('active', t===tab)
   );
   if (tab==='meetups') {
     if (typeof loadOpenInvitesEnabled === 'function') loadOpenInvitesEnabled();
     if (typeof loadShareCardTheme === 'function') loadShareCardTheme();
   }
-  // Aktionen: globale Splash-Texte und die wiederverwendbare Bibliothek laden.
+  if (tab==='splash' && typeof loadSplash==='function') loadSplash();
+  // Aktionen: nur die wiederverwendbare Aktionsbibliothek laden.
   if (tab==='aktionen') {
     Promise.all([
       typeof loadEarlybird==='function' ? loadEarlybird() : null,
@@ -15962,6 +16008,7 @@ function applyAdminMenuConfig(config) {
     const label = tab?.querySelector('.admin-tab-label');
     if (label) label.textContent = normalized.labels[key];
     if (tab) tabs.appendChild(tab);
+    if (key === 'freibad') { const splash=document.getElementById('atab-splash'); if(splash) tabs.appendChild(splash); }
   });
   const wipe = document.getElementById('atab-wipe');
   if (wipe) tabs.appendChild(wipe);
@@ -26539,6 +26586,78 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     }catch(e){ alert('Speichern fehlgeschlagen: '+(e&&e.message?e.message:'Unbekannter Fehler')); }
   };
 
+  // Rich text stays in the existing ab_body text field; unedited legacy copy is retained verbatim.
+  var actionRichPrefix='<!--pb-action-rich-v1-->';
+  window.cleanActionHtml=function(raw){
+    var template=document.createElement('template');template.innerHTML=String(raw||'');
+    var allowed=['P','DIV','BR','STRONG','B','EM','I','U','UL','OL','LI','SPAN','FONT'];
+    function copy(node,parent){
+      if(node.nodeType===3){parent.appendChild(document.createTextNode(node.textContent));return;}
+      if(node.nodeType!==1)return;
+      if(['SCRIPT','STYLE','IFRAME','OBJECT','SVG','MATH','IMG','VIDEO','AUDIO','TEMPLATE'].indexOf(node.tagName)>=0)return;
+      if(allowed.indexOf(node.tagName)<0){Array.from(node.childNodes).forEach(function(n){copy(n,parent);});return;}
+      var el=document.createElement(node.tagName==='FONT'?'span':node.tagName.toLowerCase());
+      var color=node.style.color||node.getAttribute('color')||'';
+      if(/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\))$/i.test(color))el.style.color=color;
+      // WebKit and Chrome use styled spans for some native editing commands.
+      if(/^(bold|[7-9]00)$/.test(node.style.fontWeight))el.style.fontWeight='700';
+      if(node.style.fontStyle==='italic')el.style.fontStyle='italic';
+      if(node.style.textDecorationLine==='underline')el.style.textDecoration='underline';
+      Array.from(node.childNodes).forEach(function(n){copy(n,el);});parent.appendChild(el);
+    }
+    var out=document.createElement('div');Array.from(template.content.childNodes).forEach(function(n){copy(n,out);});return out.innerHTML;
+  };
+  window.renderActionBody=function(raw,hiColor){
+    raw=String(raw||'');return raw.indexOf(actionRichPrefix)===0
+      ?window.cleanActionHtml(raw.slice(actionRichPrefix.length))
+      :window.pbRenderMarked(raw,hiColor,'').replace(/\n/g,'<br>');
+  };
+  window.syncActionRichText=function(){
+    var ed=document.getElementById('abBodyEditor'),field=document.getElementById('abBody');if(!ed||!field)return;
+    var html=window.cleanActionHtml(ed.innerHTML);
+    field.value=html===ed.dataset.originalHtml?ed.dataset.originalValue:actionRichPrefix+html;
+    window.previewActionCard();
+  };
+  window.actionTextCommand=function(command,value){
+    var ed=document.getElementById('abBodyEditor');if(!ed)return;ed.focus();
+    document.execCommand(command,false,value||null);window.syncActionRichText();
+  };
+  window.previewActionCard=function(){
+    var host=document.getElementById('actionCardPreview'),source=document.getElementById('earlybirdBanner');if(!host||!source)return;
+    var g=function(id){return document.getElementById(id)?.value||'';};
+    var richEditor=document.getElementById('abBodyEditor');if(richEditor)richEditor.style.color=window.pbPaletteColor(g('abBodyColor'),'#CBC3B6');
+    var clone=source.cloneNode(true);clone.removeAttribute('id');clone.querySelectorAll('[id]').forEach(function(el){el.removeAttribute('id');});clone.classList.add('show');
+    var color=function(id,fallback){return window.pbPaletteColor(g(id),window.__splashPalette[fallback]);};
+    var kicker=clone.querySelector('.eb-kicker'),title=clone.querySelector('.eb-title'),body=clone.querySelector('.eb-body');
+    kicker.textContent=g('abKicker');kicker.style.color=color('abKickerColor','coral');
+    title.textContent=g('abTitle');title.style.color=color('abTitleColor','cream');
+    body.innerHTML=window.renderActionBody(g('abBody'),color('abHiColor','coral'));body.style.color=color('abBodyColor','stone');
+    var second=clone.querySelector('.eb-body-2');if(second)second.style.display='none';
+    var values=[g('ebAdmStart'),g('ebAdmEnd'),g('ebAdmAboStart')];
+    clone.querySelectorAll('.eb-meta-val').forEach(function(el,i){el.textContent=window.ebFmtDate(values[i]);el.style.color=color('abValueColor','cream');});
+    var selected=window.marketingActionById?.(window.__selectedMarketingActionId),actual=selected?.opening_finalization?.actual_date;
+    var labels=['Start der Aktion','Ende der Aktion',g('ebAdmStartMode')==='official_opening'?'Voraussichtliche Spieleröffnung':'Abo-Start'];
+    if(actual)labels[2]='Offizielle Spieleröffnung';
+    clone.querySelectorAll('.eb-meta-lbl').forEach(function(el,i){el.textContent=labels[i];el.style.color=color('abLabelColor','ash');});
+    var note=clone.querySelector('.eb-meta-note');note.style.color=color('abLabelColor','ash');
+    note.textContent=g('ebAdmStartMode')==='official_opening'
+      ?(actual?'Der offizielle Spielstart steht fest. Dein erster Spieltermin richtet sich nach deinem gebuchten Wochentag.':'Der Eröffnungstermin ist voraussichtlich und kann sich noch ändern. Dein Abo läuft ab der tatsächlichen offiziellen Spieleröffnung für die volle vereinbarte Laufzeit. Deinen ersten Spieltermin bestätigen wir dir rechtzeitig separat per E-Mail. Court und wöchentliche Spielzeit bleiben reserviert.')
+      :g('abNote');
+    host.replaceChildren(clone);
+  };
+  (function(){
+    var ed=document.getElementById('abBodyEditor'),editor=document.getElementById('marketingActionEditor');if(!ed||!editor)return;
+    ed.addEventListener('input',window.syncActionRichText);
+    ed.addEventListener('paste',function(e){
+      e.preventDefault();var data=e.clipboardData;if(!data)return;
+      var html=data.getData('text/html')||pbEsc(data.getData('text/plain')).replace(/\n/g,'<br>');
+      document.execCommand('insertHTML',false,window.cleanActionHtml(html));window.syncActionRichText();
+    });
+    ed.addEventListener('drop',function(e){e.preventDefault();});
+    editor.addEventListener('input',function(e){if(e.target!==ed&&!ed.contains(e.target))window.previewActionCard();});
+    editor.addEventListener('change',window.previewActionCard);
+  })();
+
   /* Editierbare Texte der großen „Jahresabo sichern"-Kachel (#earlybirdBanner)
      aus app_flags lesen und einsetzen. Datumswerte bleiben dynamisch (loadEarlybird).
      Defensiv: fehlt Skript 43, bleibt der fest verdrahtete Text stehen. */
@@ -26561,7 +26680,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(b1){
         var bc = col(d.ab_body_color,'stone'); var hc = col(d.ab_hi_color,'coral');
         b1.style.color = bc;
-        b1.innerHTML = window.pbRenderMarked(d.ab_body, hc, '').replace(/\n/g,'<br>');
+        b1.innerHTML = window.renderActionBody(d.ab_body, hc);
       }
       if(b2){ b2.style.display='none'; }   // 2. Absatz steckt jetzt im Fließtext-Feld
       var lbls = document.querySelectorAll('#earlybirdBanner .eb-meta-item .eb-meta-lbl');
@@ -26610,6 +26729,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     setv('abHiColor', d.ab_hi_color || 'coral');
     setv('abLabelColor', d.ab_label_color || 'ash');
     setv('abValueColor', d.ab_value_color || 'cream');
+    var ed=document.getElementById('abBodyEditor');
+    if(ed){
+      ed.innerHTML=window.renderActionBody(d.ab_body,window.pbPaletteColor(d.ab_hi_color,'#FF5A36'));
+      ed.dataset.originalHtml=window.cleanActionHtml(ed.innerHTML);
+      ed.dataset.originalValue=d.ab_body||'';
+      ed.style.color=window.pbPaletteColor(d.ab_body_color,'#CBC3B6');
+    }
+    window.previewActionCard();
   };
   window.saveAboBanner = async function(){
     try{
@@ -26704,6 +26831,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   };
   window.collectMarketingActionConfig=function(){
     var g=function(id){ var el=document.getElementById(id); return el?el.value:''; };
+    window.syncActionRichText();
     var sv=g('ebAdmStart'),ev=g('ebAdmEnd');
     return {
       earlybird_start:sv?new Date(sv).toISOString():null,earlybird_end:ev?new Date(ev).toISOString():null,
@@ -26730,7 +26858,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var url=await uploadSponsorLogo(file,'splash-action'); var urlEl=document.getElementById('spActionImageUrl'); if(urlEl) urlEl.value=url;
       }
       var name=(document.getElementById('marketingActionName')?.value||'').trim();
-      var config=window.collectMarketingActionConfig();
+      var config=Object.assign({},window.marketingActionById(id)?.config||{},window.collectMarketingActionConfig());
       if(!config.earlybird_abo_start) throw new Error('Bitte ein festes Startdatum eingeben.');
       if(!config.earlybird_abo_start && window.__ebAdmEnabled) throw new Error('Der Eröffnungstermin ist noch offen. Bitte die Aktion ausschalten, bevor du diesen Beginn speicherst.');
       var r=await sb.rpc('admin_save_marketing_action_with_start',{p_id:id,p_name:name,p_config:config,p_action_enabled:!!window.__ebAdmEnabled,p_splash_enabled:!!window.__splashAdmEnabled}); if(r.error) throw r.error;
