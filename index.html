@@ -3105,6 +3105,7 @@ main {
     body.embedded{background:transparent}
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
+    @media(max-width:600px){.matchplan-section-head{scroll-margin-top:105px}}
   &lt;/style&gt;
 &lt;/head&gt;
 &lt;body class=&quot;embedded&quot;&gt;
@@ -4800,6 +4801,7 @@ main {
       }
     }
     function renderEditor() {
+      syncMeetupMobileOrder();
       const source = selectedSource();
       if (!source) {
         $(&quot;#editorHeadline&quot;).textContent = &quot;Mitspieler einladen&quot;;
@@ -4889,6 +4891,20 @@ main {
         else go(-1);
       }, { passive: true });
     }
+    const meetupPhoneLayout = window.matchMedia(&quot;(max-width:600px)&quot;);
+    function syncMeetupMobileOrder() {
+      const incoming = $(&quot;#incomingInvites&quot;)?.closest(&quot;.pick-card&quot;);
+      const grid = $(&quot;.top-grid&quot;), editor = $(&quot;#editor&quot;);
+      if (!incoming || !grid || !editor) return;
+      if (meetupPhoneLayout.matches &amp;&amp; bookings.length) {
+        if (incoming.previousElementSibling !== editor) editor.after(incoming);
+      } else if (incoming.parentElement !== grid) grid.appendChild(incoming);
+      sendMeetHeight();
+    }
+    meetupPhoneLayout.addEventListener(&quot;change&quot;, syncMeetupMobileOrder);
+    function focusMeetupMobileEditor() {
+      if (meetupPhoneLayout.matches) requestAnimationFrame(() =&gt; $(&quot;#editorHeadline&quot;).closest(&quot;.matchplan-section-head&quot;).scrollIntoView({behavior:&quot;smooth&quot;,block:&quot;start&quot;}));
+    }
     function selectBooking(id) {
       state.selectedType = &quot;booking&quot;;
       state.selectedId = id;
@@ -4896,12 +4912,14 @@ main {
       if (existing?.groupId) state.selectedGroupId = existing.groupId;
       renderPickLists();
       renderEditor();
+      focusMeetupMobileEditor();
     }
     function selectInvite(id) {
       state.selectedType = &quot;invite&quot;;
       state.selectedId = id;
       renderPickLists();
       renderEditor();
+      focusMeetupMobileEditor();
     }
     function collectEmails() {
       enforceUniqueVisibleEmails(focusedEmailInput);
