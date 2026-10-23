@@ -12753,6 +12753,7 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
       return result;
     };
     if (record.phase === 'checkout_requested' || resumeOnly || previousRequest) {
+      const inspectAndClose = async () => {
       const status = checked(await request({...payload, single_checkout_action:'status'}));
       if (status.state==='identity_review_required' && status.terminal===false) return previousResult(status);
       const terminal = ['booked', 'booking_cancelled', 'released', 'offer_retired'].includes(status.state);
@@ -12777,8 +12778,17 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
       }
       if (status.state === 'offer_pending') return previousResult(await retireOffer());
       if (previousRequest) return previousResult(status);
-      if (status.state !== 'pending') return status;
-      const result = checked(await request({...payload, single_checkout_action:'recover'}));
+      return status;
+      };
+      const status = await inspectAndClose();
+      if (status.state !== 'pending' || status.previous_request) return status;
+      let result;
+      try { result = checked(await request({...payload, single_checkout_action:'recover'})); }
+      catch (error) {
+        // The worker can commit after status=pending but before recovery reads
+        // the held reservation. Re-read authoritative status before reporting failure.
+        return await inspectAndClose();
+      }
       if (!['open', 'pending', 'paid_pending_journal', 'expired_unpaid'].includes(result.state)) {
         throw new Error('Der Zahlungsstand ist noch nicht eindeutig bestätigt.');
       }
