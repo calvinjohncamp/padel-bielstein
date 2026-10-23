@@ -1826,6 +1826,10 @@ body.bielstein-theme #bookBtn.visible{display:flex!important}
 .admin-offer-item:has(:disabled){opacity:.7}
 @media(max-width:1050px){.admin-prices-settings{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-prices-settings>.admin-section:last-child{grid-column:1/-1}.admin-prices-calculators{grid-template-columns:1fr}.admin-prices-calculators>.admin-section{max-width:760px;width:100%}}
 @media(max-width:720px){.admin-prices-settings{grid-template-columns:1fr;gap:0}.admin-prices-settings .admin-section-title{min-height:0}#adminPrices .admin-price-overview{grid-template-columns:1fr;gap:24px}.admin-offer-form{grid-template-columns:1fr}.admin-offer-item{display:grid;grid-template-columns:1fr auto}.admin-offer-open{grid-column:1/-1}.admin-offer-delete{justify-self:end}#adminPrices .admin-card{padding:16px}#adminPrices .admin-price-base-grid{grid-template-columns:1fr}#adminPrices .is-overview th,#adminPrices .is-overview td{padding:9px 3px;font-size:.83rem}#adminPrices .is-overview th:first-child{width:47px}}
+
+/* Emphasize time and base tariff; keep seasonal and Abo comparisons quiet. */
+#adminPrices .is-overview thead th,#adminPrices .is-overview td{font-weight:400}
+#adminPrices .is-overview th:first-child,#adminPrices .is-overview th:nth-child(2),#adminPrices .is-overview td:first-of-type{font-weight:700}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -16183,6 +16187,7 @@ function setAdminTab(tab) {
   if (tab==='sponsors') { loadAdminSponsors(); if(typeof loadPartnerFlag==='function') loadPartnerFlag(); if(typeof fillSponsorsEnabledAdmin==='function') fillSponsorsEnabledAdmin(); if(typeof loadActionLogoSlideshowSettings==='function') loadActionLogoSlideshowSettings(); }
   if (tab==='freibad'  && !adminTabLoaded.freibad)  { loadAdminFreibad();  adminTabLoaded.freibad=true; }
   if (tab==='prices'   && !adminTabLoaded.prices)   { loadAdminPrices();   adminTabLoaded.prices=true; }
+  else if(tab==='prices')loadAdminPricePoolHours();
   if (tab==='internal' && !adminTabLoaded.internal) { loadInternalBookings(); adminTabLoaded.internal=true; }
   if (tab==='bookings') loadBookingCancellationSettings();
   if (tab==='bookings' && !adminTabLoaded.bookings) { loadAdminBookings(); loadAdminAbos(); loadAdminStats(); adminTabLoaded.bookings=true; }
@@ -17628,24 +17633,38 @@ function adminPriceRows(){
     rows.push({hour,day_type,price_cents:Math.round(value*100),valid_from:null,valid_until:null});
   }return rows;
 }
+let adminPricePoolHours=null;
+async function loadAdminPricePoolHours(){
+  adminPricePoolHours=null;
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/freibad_config?id=eq.1&select=open_hour,close_hour,season_active&limit=1`,{headers:await authHeaders()});
+    if(!res.ok)throw Error('Freibadzeiten konnten nicht geladen werden.');
+    const rows=await res.json(),c=Array.isArray(rows)&&rows.length===1?rows[0]:null;
+    if(!c||!Number.isInteger(c.open_hour)||!Number.isInteger(c.close_hour)||c.open_hour<0||c.close_hour>24||c.close_hour<=c.open_hour||typeof c.season_active!=='boolean')throw Error('Gespeicherte Freibadzeiten sind unvollständig.');
+    adminPricePoolHours={...c};
+  }catch(e){const note=document.getElementById('adminPriceMatrixNote');note.textContent=e.message;adminPriceRetry(note,loadAdminPricePoolHours);document.getElementById('adminPriceMatrix').replaceChildren();return false;}
+  renderAdminPriceMatrix();return true;
+}
 function renderAdminPriceMatrix(){
   const root=document.getElementById('adminPriceMatrix');if(!root)return;
   const note=document.getElementById('adminPriceMatrixNote');
   try{
+    if(!adminPricePoolHours)throw Error('Freibadpreise erst nach dem Laden der gespeicherten Freibadzeiten verfügbar.');
     const prices=adminPriceRows(),pool=adminPriceSurcharge('pool'),abo=adminPriceSurcharge('abo');
-    note.textContent=`Stundenpreise vor Rabatt: Freibad geöffnet + ${fmt(pool/100)}, Abo ganzjährig + ${fmt(abo/100)}. Beim Abo kommen Jahresfaktor und Laufzeit dazu.`;
+    note.textContent=`Freibadpreise nach regulären Saisonzeiten${adminPricePoolHours.season_active?'':' (Saison deaktiviert)'}. Konkrete Spieltage berücksichtigen zusätzlich Saison, Schließtage und Ausnahmen. Abo ganzjährig + ${fmt(abo/100)} vor Rabatt, Jahresfaktor und Laufzeit.`;
     const groups=[];
     for(const [name,type] of [['Montag bis Freitag','weekday'],['Samstag und Sonntag','weekend']]){
       const section=document.createElement('section'),title=document.createElement('h3'),table=document.createElement('table');title.textContent=name;table.className='admin-price-matrix is-overview';table.setAttribute('aria-label',name+' · Preise pro Court-Stunde');
       const head=document.createElement('thead'),tr=document.createElement('tr');
-      for(const label of ['Zeit','Regulär','Freibad geöffnet','Abo']){const th=document.createElement('th');th.scope='col';th.textContent=label;tr.appendChild(th);}head.appendChild(tr);
+      for(const label of ['Zeit','Regulär','Freibadpreise','Abo']){const th=document.createElement('th');th.scope='col';th.textContent=label;tr.appendChild(th);}head.appendChild(tr);
       const body=document.createElement('tbody');
       for(const hour of HOURS){const row=document.createElement('tr'),th=document.createElement('th');th.scope='row';th.textContent=String(hour).padStart(2,'0')+':00';row.appendChild(th);
         const base=prices.find(p=>p.hour===hour&&p.day_type===type).price_cents;
-        for(const cents of [base,base+pool,base+abo]){const td=document.createElement('td');td.textContent=fmt(cents/100);row.appendChild(td);}body.appendChild(row);
+        const poolOpen=adminPricePoolHours.season_active&&hour>=adminPricePoolHours.open_hour&&hour<adminPricePoolHours.close_hour;
+        for(const cents of [base,base+(poolOpen?pool:0),base+abo]){const td=document.createElement('td');td.textContent=fmt(cents/100);row.appendChild(td);}body.appendChild(row);
       }table.append(head,body);section.append(title,table);groups.push(section);
     }root.replaceChildren(...groups);
-  }catch(e){root.replaceChildren();note.textContent=e.message;}
+  }catch(e){root.replaceChildren();note.textContent=e.message;if(!adminPricePoolHours)adminPriceRetry(note,loadAdminPricePoolHours);}
   renderAdminPricePreview();
 }
 let adminSimulatorActions=[];
@@ -17722,7 +17741,7 @@ async function loadAdminPrices() {
   await loadAdminMemberDiscount();
   await loadDiscountRules();
   initAdminPriceExample();
-  await Promise.all([loadAdminAboPricing(),loadFreibadPricingAdmin(),loadAdminSimulatorActions()]);
+  await Promise.all([loadAdminAboPricing(),loadFreibadPricingAdmin(),loadAdminSimulatorActions(),loadAdminPricePoolHours()]);
   renderAdminPriceMatrix();
 }
 
