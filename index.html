@@ -12389,7 +12389,7 @@ function paintPreparedSingleProgress(result, checking=false) {
     ? 'Dein Bezahlvorgang wird mit der Buchung abgeglichen. Das kann einige Minuten dauern. Die Ansicht aktualisiert sich automatisch. Bitte nicht erneut bezahlen.'
     : 'Der Buchungsabschluss ist noch in Bearbeitung. Bitte nicht erneut bezahlen. Du kannst den Status hier erneut prüfen.';
   const retry=document.getElementById('bookingCompletionRetry');
-  retry.hidden=checking;retry.disabled=checking;
+  retry.hidden=checking;retry.disabled=checking;retry.textContent='Status erneut prüfen';retry.onclick=()=>handlePreparedSingleReturn(new URLSearchParams(window.location.search));
 }
 async function refreshPreparedSingleBookingViews() {
   const tasks=[async()=>{await loadBookings(selDate);renderSlots();}];
@@ -12678,9 +12678,8 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
       storage.setItem(PREPARED_SINGLE_KEY_PREFIX + authId, JSON.stringify(record));
       record = readPreparedSingleRequest(storage, authId);
     }
-    if (!resumeOnly && !(record.terms.time_version===2?Object.keys(record.terms):['court', 'day', 'hour_start', 'duration']).every(key => record.terms[key] === terms[key])) {
-      throw new Error('Bitte zuerst den offenen Bezahlvorgang für den bisherigen Termin prüfen.');
-    }
+    const previousRequest = !resumeOnly && !(record.terms.time_version===2?Object.keys(record.terms):['court', 'day', 'hour_start', 'duration']).every(key => record.terms[key] === terms[key]);
+    const previousResult = result => previousRequest?{...result,previous_request:true,terms:record.terms}:result;
     const payload = {booking_type:'single', single_quote_id:record.id, use_credit:record.useCredit===true,
       court:record.terms.court,date:record.terms.day,...(record.terms.time_version===2
         ?{time_version:2,start_minute:record.terms.start_minute,duration_minutes:record.terms.duration_minutes}
@@ -12715,9 +12714,9 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
       clearLocal();
       return result;
     };
-    if (record.phase === 'checkout_requested' || resumeOnly) {
+    if (record.phase === 'checkout_requested' || resumeOnly || previousRequest) {
       const status = checked(await request({...payload, single_checkout_action:'status'}));
-      if (status.state==='identity_review_required' && status.terminal===false) return status;
+      if (status.state==='identity_review_required' && status.terminal===false) return previousResult(status);
       const terminal = ['booked', 'booking_cancelled', 'released', 'offer_retired'].includes(status.state);
       if (!['offer_pending', 'pending', 'paid_pending_booking', 'review_required', 'booked', 'booking_cancelled', 'released', 'offer_retired'].includes(status.state)
         || status.terminal !== terminal
@@ -12727,7 +12726,7 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
       if (['booked', 'booking_cancelled'].includes(status.state)
         && (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(status.booking_id || '')
           || !/^B[\w/-]{1,80}$/.test(status.receipt_number || ''))) throw new Error('Der Buchungsbeleg konnte nicht eindeutig bestätigt werden.');
-      if (status.state === 'offer_retired') return retireOffer();
+      if (status.state === 'offer_retired') return previousResult(await retireOffer());
       if (terminal) {
         const closed = checked(await request({...payload, single_checkout_action:'close', single_expected_state:status.state}));
         if (closed.closed !== true || closed.state !== status.state || closed.terminal !== true
@@ -12736,9 +12735,10 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
           throw new Error('Der Bezahlvorgang konnte noch nicht sicher abgeschlossen werden.');
         }
         clearLocal();
-        return closed;
+        return previousResult(closed);
       }
-      if (status.state === 'offer_pending') return retireOffer();
+      if (status.state === 'offer_pending') return previousResult(await retireOffer());
+      if (previousRequest) return previousResult(status);
       if (status.state !== 'pending') return status;
       const result = checked(await request({...payload, single_checkout_action:'recover'}));
       if (!['open', 'pending', 'paid_pending_journal', 'expired_unpaid'].includes(result.state)) {
@@ -12808,7 +12808,31 @@ async function requestPreparedSingleCheckout(payload) {
   return data;
 }
 
+function paintPreviousSingleRequest(result) {
+  const panel=document.getElementById('bookingCompletionStatus');if(!panel)return;
+  const t=result.terms||{},start=t.time_version===2?t.start_minute:Number(t.hour_start)*60,minutes=t.time_version===2?t.duration_minutes:Number(t.duration)*60;
+  const clock=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+  const detail=t.day?`${t.day.split('-').reverse().join('.')} · Court #${t.court} · ${clock(start)}–${clock(start+minutes)} Uhr`:'Bisheriger Bezahlvorgang';
+  panel.hidden=false;
+  document.getElementById('bookingCompletionMessage').textContent=result.closed
+    ?`${detail}: Der frühere Vorgang ist geprüft und abgeschlossen${result.receipt_number?' (Beleg '+result.receipt_number+')':''}. Deine neue Auswahl bleibt erhalten. Bitte klicke für die neue Buchung erneut auf „Jetzt buchen & bezahlen“.`
+    :`${detail}: Dieser frühere Bezahlvorgang muss zuerst geprüft werden. Deine neue Auswahl bleibt erhalten; dafür wurde keine neue Zahlung gestartet.`;
+  const button=document.getElementById('bookingCompletionRetry');button.hidden=!!result.closed;button.disabled=false;
+  button.textContent=result.state==='open'?'Vorherige Zahlung fortsetzen':'Bisherigen Vorgang prüfen';
+  button.onclick=async()=>{
+    if(result.state==='open'&&/^https:\/\/checkout\.stripe\.com\//.test(result.url||'')){redirectToExternalCheckout(result.url);return;}
+    button.disabled=true;
+    try{const authId=currentUser?.id;const checked=await runPreparedSingleDialog({enabled:true,authId,resumeOnly:true,expectedQuoteId:result.quote_id,
+      storage:localStorage,locks:navigator.locks,request:requestPreparedSingleCheckout,newId:()=>crypto.randomUUID(),isCurrent:()=>currentUser?.id===authId});
+      if(!checked)throw Error('Der frühere Vorgang konnte nicht zugeordnet werden.');
+      paintPreviousSingleRequest({...checked,previous_request:true,terms:checked.terms||t});
+    }catch(error){showToast(error.message||'Der frühere Vorgang muss weiter geprüft werden.');button.disabled=false;}
+  };
+  panel.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
 async function showPreparedSingleState(result, allowRedirect) {
+  if(result?.previous_request){paintPreviousSingleRequest(result);return;}
   paintPreparedSingleProgress(result);
   if (result?.state === 'open' && allowRedirect) { redirectToExternalCheckout(result.url); return; }
   if(result?.state==='booked' && /^B-\d{4}-\d{2}-\d{6}$/.test(result.receipt_number||'')) {
