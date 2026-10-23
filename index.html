@@ -1721,6 +1721,19 @@ body.bielstein-theme #bookBtn.visible{display:flex!important}
 @media(max-width:600px){.action-rich-toolbar button{padding:9px;font-size:11px;}.action-card-preview .eb-meta{display:block;}.action-card-preview .eb-meta-note{margin-top:14px;}.admin-action-panel [style*="grid-template-columns"]{grid-template-columns:1fr!important;}.admin-action-panel [style*="grid-column"]{grid-column:auto!important;}}
 
 .action-appearance-fields{display:grid;gap:12px;padding:10px 0;}
+
+/* One explicit, facility-wide opening operation. */
+#officialOpeningDialog h2 {margin:0 0 12px;font-size:23px;line-height:1.2;}
+#officialOpeningDialog p {margin:10px 0;font-size:14px;line-height:1.5;}
+#officialOpeningDialog label {display:block;margin-top:18px;font-size:13px;font-weight:700;}
+#officialOpeningDialog #officialOpeningActual {box-sizing:border-box;width:100%;min-height:44px;}
+#officialOpeningPreview {padding:14px;border:1px solid #DED5C6;border-radius:12px;background:#FFFCF7;font-size:14px;line-height:1.5;overflow-wrap:anywhere;}
+#officialOpeningPreview details {margin:12px 0;}
+#officialOpeningPreview summary {cursor:pointer;font-weight:700;}
+#officialOpeningDialog .facility-opening-actions {display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+#officialOpeningDialog .facility-opening-actions button {min-height:44px;font-size:13px;padding:10px 14px;}
+#officialOpeningConfirm {flex:1;background:#1C1A17;color:#FFF;border-color:#1C1A17;}
+#officialOpeningConfirm:disabled {opacity:.45;cursor:default;}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -2555,15 +2568,14 @@ main {
   </div>
 
   <dialog id="officialOpeningDialog" aria-labelledby="officialOpeningHeading" style="margin:auto;max-width:720px;width:calc(100% - 32px);max-height:85vh;overflow:auto;border:1px solid #D8CEBE;border-radius:18px;padding:22px;background:#F6F0E4;color:#1C1A17">
-    <h2 id="officialOpeningHeading">Offiziellen Spielstart festlegen</h2>
-    <p>Nur die zugehörigen Frühbucher-Abos werden ab diesem Tag für ihre volle Laufzeit eingeplant. Reguläre Abos und Zahlungsdaten bleiben unverändert. Die betroffenen Spieler erhalten eine separate Informationsmail.</p>
-    <label for="officialOpeningActual">Tatsächlicher offizieller Spielstart</label>
-    <input id="officialOpeningActual" type="date" class="eb-adm-inp" style="margin:10px 0" oninput="clearOfficialOpeningPreview()">
-    <button type="button" class="admin-action-edit-btn" onclick="previewOfficialOpening()">Vorschau prüfen</button>
+    <h2 id="officialOpeningHeading">Anlageneröffnung festlegen</h2>
+    <p>Lege fest, ab wann die Anlage offiziell bespielbar ist. Alle aktiven Abonnenten erhalten eine E-Mail mit dem Eröffnungstermin und ihrem persönlichen ersten Spieltermin. Die Prüfung startet automatisch nach Eingabe des Datums.</p>
+    <label for="officialOpeningActual">Offizieller Eröffnungstermin</label>
+    <input id="officialOpeningActual" type="date" class="eb-adm-inp" style="margin:10px 0" oninput="scheduleOfficialOpeningPreview()">
     <div id="officialOpeningPreview" role="status" aria-live="polite" style="margin:16px 0"></div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <button type="button" id="officialOpeningConfirm" class="admin-action-edit-btn" style="white-space:normal;text-align:left" disabled onclick="confirmOfficialOpening()">Spielstart verbindlich festlegen und Spieler informieren</button>
-      <button type="button" class="admin-action-edit-btn" onclick="document.getElementById('officialOpeningDialog').close()">Schließen</button>
+    <div class="facility-opening-actions">
+      <button type="button" id="officialOpeningConfirm" class="admin-action-edit-btn" style="white-space:normal;text-align:left" disabled onclick="confirmOfficialOpening()">Eröffnung verbindlich festlegen und alle Abonnenten informieren</button>
+      <button type="button" class="admin-action-edit-btn" onclick="closeOfficialOpeningDialog()">Schließen</button>
     </div>
   </dialog>
 
@@ -6319,6 +6331,12 @@ main {
         </div>
         <button type="button" class="admin-save-btn" id="addMarketingActionBtn" onclick="createMarketingAction()">+ Neue Aktion hinzufügen</button>
       </div>
+      <section class="admin-action-card" style="padding:16px;margin-bottom:18px" aria-labelledby="facilityOpeningAdminTitle">
+        <h3 id="facilityOpeningAdminTitle">Anlageneröffnung</h3>
+        <p>Ein gemeinsamer Eröffnungstermin für die gesamte Anlage. Alle aktiven Abonnenten werden per E-Mail informiert.</p>
+        <button type="button" class="admin-action-edit-btn" onclick="openOfficialOpeningDialog()">Eröffnungstermin festlegen</button>
+        <p id="officialOpeningAdminStatus" style="font-size:12px;line-height:1.5;margin:8px 0 0"></p>
+      </section>
       <div class="admin-action-list" id="marketingActionList" aria-live="polite">
         <div class="admin-action-empty">Aktionen werden geladen …</div>
       </div>
@@ -6390,8 +6408,9 @@ main {
               <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Hervorhebung</label><select id="abHiColor" class="eb-adm-inp"></select></div>
             </div>
           <div style="border-top:1px solid #EFE9DC;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Start-Box – Beschriftung</label><input type="text" id="abBox1" class="eb-adm-inp" readonly></div>
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Ende-Box – Beschriftung</label><input type="text" id="abBox2" class="eb-adm-inp" readonly></div>
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Start-Box – Beschriftung</label><input type="text" id="abBox1" class="eb-adm-inp" maxlength="120"></div>
+            <div><label class="eb-adm-lbl" style="font-size:10px;">Ende-Box – Beschriftung</label><input type="text" id="abBox2" class="eb-adm-inp" maxlength="120"></div>
+            <div style="grid-column:1/-1"><label class="eb-adm-lbl" for="abBox3" style="font-size:10px;">Eröffnung / Abo-Start – Beschriftung</label><input type="text" id="abBox3" class="eb-adm-inp" maxlength="120"></div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Beschriftungen</label><select id="abLabelColor" class="eb-adm-inp"></select></div>
@@ -6427,8 +6446,6 @@ main {
               <label class="eb-adm-lbl" for="ebAdmAboStart" id="ebAdmAboStartLabel" style="margin-top:10px">Festes Startdatum</label>
               <input type="date" id="ebAdmAboStart" class="eb-adm-inp">
               <p id="ebAdmAboStartHint" style="font-size:12px;line-height:1.5;margin:8px 0 0"></p>
-              <button type="button" class="admin-action-edit-btn" style="margin-top:10px" onclick="openOfficialOpeningDialog()">Offiziellen Spielstart festlegen</button>
-              <p id="officialOpeningAdminStatus" style="font-size:12px;line-height:1.5;margin:8px 0 0"></p>
             </div>
             <div>
               <label class="eb-adm-lbl">Zielgruppe</label>
@@ -9365,7 +9382,7 @@ function minuteBookingShell(abo=false){
   overview.addEventListener('click',event=>{if(event.target===overview){const r=overview.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)overview.close();}});
   const note=document.createElement('p');note.className='minute-overview-context';overview.appendChild(note);
   if(legend){
-    if(!abo){const item=legend.querySelector('.legend-item');if(item)item.lastChild.textContent=' Buchbar';}
+    if(!abo){const item=legend.querySelector('.legend-item');if(item)item.lastChild.textContent=' Nicht belegt';}
     overview.appendChild(legend);
   }overview.appendChild(wrap);
   for(const ct of [1,2])document.getElementById(prefix+ct).closest('.court-col').classList.add('minute-court-panel');
@@ -9385,7 +9402,7 @@ function minuteOverviewContext(abo=false){
     open.textContent='Tagesübersicht';
     const day=bookingReleaseDate(selDate);const date=day&&!Number.isNaN(day.getTime())?day.toLocaleDateString('de-DE',{timeZone:'UTC',weekday:'long',day:'2-digit',month:'long',year:'numeric'}):null;
     title.textContent=date?`${date} · Tagesübersicht beider Courts`:'Tagesübersicht beider Courts';
-    note.textContent=`${minuteSingleDuration} Minuten · Helle Felder ohne Zeichen: buchbarer Start. —: mit dieser Dauer kein Start möglich. Schraffiert: abgelaufen. Belegte Zeiten sind als Blöcke markiert.`;
+    note.textContent=`Belegung beider Courts · Helle Flächen sind nicht belegt; schraffierte Zeiten sind abgelaufen. Welche Startzeiten für deine Spieldauer buchbar sind, siehst du in der Startzeitauswahl.`;
   }
 }
 function minutePickerOffers(abo=false){return abo?(minuteAboCalendar?.offers||[]):(minuteCalendar?.courts||[]).flatMap(c=>c.offers.map(o=>({...o,court:c.court})));}
@@ -9463,16 +9480,15 @@ function minuteGridBase(root){
 function minuteWaitingGrid(root,message){minuteGridBase(root);const note=document.createElement('div');note.className='minute-overview-message';note.textContent=message;root.appendChild(note);}
 function renderMinuteDayGrid(root,court,occupied,offers,duration,selection,onPick,abo=false,writes=true){
   minuteGridBase(root);const selected=selection?.court===court?selection:null;
-  const starts=new Set(!abo&&writes?minutePricedOffers(offers.map(o=>({...o,court})),duration).map(o=>o.start_minute):[]);
   for(let start=480;start<1320;start+=30){
     if(occupied.some(b=>b.start_minute<=start&&b.end_minute>start)||selected&&start>=selected.start_minute&&start<selected.start_minute+duration)continue;
     const free=document.createElement('div');free.className='minute-overview-free';free.style.gridRow=String((start-480)/30+1);free.dataset.start=String(start);
     let label='nicht belegt';
     if(!abo){
-      const past=minuteStartIsPast(start),available=starts.has(start);
-      free.classList.add(past?'minute-overview-past':available?'minute-overview-start':'minute-overview-no-start');
-      free.textContent=past?'Abgelaufen':available?'':'—';
-      label=past?'Startzeit abgelaufen':available?`Start für ${duration} Minuten möglich`:`Kein Start für ${duration} Minuten möglich`;
+      const past=minuteStartIsPast(start);
+      free.classList.add(past?'minute-overview-past':'minute-overview-unoccupied');
+      free.textContent=past?'Abgelaufen':'';
+      label=past?'Startzeit abgelaufen':'nicht belegt · buchbare Startzeiten in der Startzeitauswahl prüfen';
     }
     free.setAttribute('aria-label',`${PBMinuteDomain.minuteClock(start)} · ${label}`);root.appendChild(free);
   }
@@ -9563,13 +9579,13 @@ function updateMinuteAboSummary(){
     'as-dur':`${minuteAboDuration} Minuten`,'as-total':fmt(total/100),'as-perperson':fmt(total/400),
     'as-hours':'Dein Preis enthält die unten aufgeführten Zeitanteile der bestehenden Stundentarife.',
     'as-rabatt':p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:'Dein Preis enthält keinen Rabatt.',
-    'as-reg':`${fmt(p.netCents/100)} je Termin`,'as-save':`${months} Monate · ${30*months/12} Wochen berechnet · ${52*months/12} Wochen reserviert`,
-    'as-52':`Jährlich 52 Wochen reserviert – du zahlst davon 30 Wochen.`};
+    'as-reg':`${fmt(p.netCents/100)} je Termin`,'as-save':`${months} Monate · ${30*months/12} Wochen berechnet · volle ${months} Monate Laufzeit`,
+    'as-52':`Volles Jahr ab deinem ersten Spieltag – du zahlst davon 30 Wochen.`};
   for(const [id,value]of Object.entries(values)){const e=document.getElementById(id);if(e)e.textContent=value;}
   const occurrence=minuteAboCalendar.offers.find(o=>o.court===aboSlot.court&&o.start_minute===aboSlot.start_minute);
   const terms={...aboSlot,weekday:aboWd,starts_on:occurrence.starts_on,ends_on:occurrence.ends_on};
-  document.getElementById('as-52').textContent=`${minuteAboPeriod(occurrence.starts_on,occurrence.ends_on)}. Jährlich 52 Wochen reserviert – du zahlst davon 30 Wochen.${occurrence.abo_delayed?' Der spätere Start berücksichtigt bestehende Einzelbuchungen.':''}`;
-  if(early&&window.__earlybird?.startMode==='official_opening') document.getElementById('as-52').textContent=(window.__earlybird.openingActual?'Offizieller Spielstart: ':'Voraussichtlicher Spielstart: ')+minuteDateLabel(occurrence.starts_on)+'. '+window.officialOpeningCustomerNote()+' Volle '+months+' Monate ab tatsächlichem Spielstart.';
+  document.getElementById('as-52').textContent=`${minuteAboPeriod(occurrence.starts_on,occurrence.ends_on)}. Volles Jahr ab deinem ersten Spieltag – du zahlst davon 30 Wochen.${occurrence.abo_delayed?' Der spätere Start berücksichtigt bestehende Einzelbuchungen.':''}`;
+  if(early&&window.__earlybird?.startMode==='official_opening') document.getElementById('as-52').textContent=(window.__earlybird.openingActual?'Offizieller Spielstart: ':'Voraussichtlicher Spielstart: ')+minuteDateLabel(occurrence.starts_on)+'. '+window.officialOpeningCustomerNote()+' Volle '+months+' Monate ab deinem persönlichen ersten Spieltag.';
   const title=card.querySelector('.abo-sum-title');if(title)title.textContent=early?'Dein Frühbucher-Abo':'Dein Jahresabo';
   const cta=card.querySelector('.abo-cta');if(cta)cta.textContent=early?'Frühbucher-Abo sichern':'Jahresabo sichern';
   const bonus=document.getElementById('as-bonus');if(bonus)bonus.style.display=p.snapshot.parts.some(part=>part.surchargeRateCents>0)?'':'none';
@@ -26037,7 +26053,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var ae=document.getElementById('ebActionEnd'); if(ae) ae.textContent=window.ebFmtDate(window.__earlybird.end);
         var s=document.getElementById('ebStart'); if(s) s.textContent=window.ebFmtDate(window.__earlybird.aboStart);
       }
-      var ol=document.getElementById('ebOpeningLabel');if(ol)ol.textContent=window.__earlybird.openingActual?'Offizielle Spieleröffnung':'Voraussichtliche Spieleröffnung';
+      window.__publicActionBoxLabels=opening.data?.box_labels||{};
+      window.applyPublicActionBoxLabels();
       window.refreshMarketingActionBanner();
       // Aktion 1 liefert die Datumswerte. Die Splash-PNG selbst wird separat ueber ihre URL gesteuert.
       var sp=document.getElementById('pbSplashAction');
@@ -26657,6 +26674,16 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     document.execCommand(command,false,value||null);window.syncActionRichText();
   };
   // The saved editable note is the sole source for the card and its preview.
+  window.actionDateBoxLabels=function(config,mode,actual){
+    config=config||{};
+    return [config.ab_box1_label??'Start der Aktion',config.ab_box2_label??'Ende der Aktion',
+      config.ab_box3_label??(mode==='official_opening'?(actual?'Offizieller Eröffnungstermin':'Voraussichtlicher offizieller Eröffnungstermin'):'Abo-Start')];
+  };
+  window.applyPublicActionBoxLabels=function(){
+    var eb=window.__earlybird||{},config=Object.assign({},window.__publicAboBanner||{},window.__publicActionBoxLabels||{});
+    var labels=window.actionDateBoxLabels(config,eb.startMode,eb.openingActual);
+    document.querySelectorAll('#earlybirdBanner .eb-meta-lbl').forEach(function(el,i){el.textContent=labels[i];});
+  };
   window.applyActionDateNote=function(element,value){
     if(!element)return;
     element.textContent=value==null?'':String(value);
@@ -26677,8 +26704,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var values=[g('ebAdmStart'),g('ebAdmEnd'),g('ebAdmAboStart')];
     clone.querySelectorAll('.eb-meta-val').forEach(function(el,i){el.textContent=window.ebFmtDate(values[i]);el.style.color=color('abValueColor','cream');});
     var selected=window.marketingActionById?.(window.__selectedMarketingActionId),actual=selected?.opening_finalization?.actual_date;
-    var labels=['Start der Aktion','Ende der Aktion',g('ebAdmStartMode')==='official_opening'?'Voraussichtliche Spieleröffnung':'Abo-Start'];
-    if(actual)labels[2]='Offizielle Spieleröffnung';
+    var labels=[g('abBox1'),g('abBox2'),g('abBox3')];
     clone.querySelectorAll('.eb-meta-lbl').forEach(function(el,i){el.textContent=labels[i];el.style.color=color('abLabelColor','ash');});
     var note=clone.querySelector('.eb-meta-note');note.style.color=color('abLabelColor','ash');
     window.applyActionDateNote(note,g('abNote'));
@@ -26723,13 +26749,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
       if(b2){ b2.style.display='none'; }   // 2. Absatz steckt jetzt im Fließtext-Feld
       var lbls = document.querySelectorAll('#earlybirdBanner .eb-meta-item .eb-meta-lbl');
-      var box1Label = d.ab_box1_label || 'Start der Aktion';
-      var box2Label = d.ab_box2_label || 'Ende der Aktion';
-      if(box1Label === 'Aktion läuft bis') box1Label = 'Start der Aktion';
-      box1Label='Start der Aktion'; box2Label='Ende der Aktion';
-      if(lbls[0]) lbls[0].textContent=box1Label;
-      if(lbls[1]) lbls[1].textContent=box2Label;
-      if(lbls[2]) lbls[2].textContent=window.__earlybird?.openingActual?'Offizielle Spieleröffnung':'Voraussichtliche Spieleröffnung';
+      window.applyPublicActionBoxLabels();
       var note = q('#earlybirdBanner .eb-meta-note');
       window.applyActionDateNote(note,d.ab_note);
       var lc = col(d.ab_label_color,'ash');
@@ -26754,12 +26774,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     setv('abKicker', d.ab_kicker);
     setv('abTitle', d.ab_title);
     setv('abBody', d.ab_body);
-    var box1Label = d.ab_box1_label || 'Start der Aktion';
-    var box2Label = d.ab_box2_label || 'Ende der Aktion';
-    if(box1Label === 'Aktion läuft bis') box1Label = 'Start der Aktion';
-    box1Label='Start der Aktion'; box2Label='Ende der Aktion';
-    setv('abBox1', box1Label);
-    setv('abBox2', box2Label);
+    var labels=window.actionDateBoxLabels(d,document.getElementById('ebAdmStartMode')?.value,window.marketingActionById?.(window.__selectedMarketingActionId)?.opening_finalization?.actual_date);
+    setv('abBox1',labels[0]);setv('abBox2',labels[1]);setv('abBox3',labels[2]);
     setv('abNote', d.ab_note==null?'':d.ab_note);
     setv('abKickerColor', d.ab_kicker_color || 'coral');
     setv('abTitleColor', d.ab_title_color || 'cream');
@@ -26881,7 +26897,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       splash_action_tint_color:window.pbSplashActionHexColor(g('spActionTintHex'),'#FF5A36'),splash_action_scale_pct:window.pbClampActionNumber(g('spActionScale'),100,50,220),
       splash_action_rotation_deg:window.pbClampActionNumber(g('spActionRotation'),0,-180,180),splash_action_x_pct:window.pbClampActionNumber(g('spActionX'),50,8,92),splash_action_y_pct:window.pbClampActionNumber(g('spActionY'),22,8,60),
       ab_kicker:g('abKicker'),ab_kicker_color:g('abKickerColor'),ab_title:g('abTitle'),ab_title_color:g('abTitleColor'),ab_body:g('abBody'),ab_body_color:g('abBodyColor'),ab_hi_color:g('abHiColor'),
-      ab_box1_label:g('abBox1'),ab_box2_label:g('abBox2'),ab_note:g('abNote'),ab_label_color:g('abLabelColor'),ab_value_color:g('abValueColor')
+      ab_box1_label:g('abBox1'),ab_box2_label:g('abBox2'),ab_box3_label:g('abBox3'),ab_note:g('abNote'),ab_label_color:g('abLabelColor'),ab_value_color:g('abValueColor')
     };
   };
   window.saveMarketingAction=async function(options){
@@ -26957,57 +26973,70 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var eb=window.__earlybird||{};
     if(eb.startMode!=='official_opening') return 'Dein Abo beginnt zum angegebenen Startdatum.';
     if(eb.openingActual) return 'Der offizielle Spielstart steht fest. Dein erster Spieltermin richtet sich nach deinem gebuchten Wochentag.';
-    return 'Der Eröffnungstermin ist voraussichtlich und kann sich noch ändern. Dein Abo läuft ab der tatsächlichen offiziellen Spieleröffnung für die volle vereinbarte Laufzeit. Deinen ersten Spieltermin bestätigen wir dir rechtzeitig separat per E-Mail. Court und wöchentliche Spielzeit bleiben reserviert.';
+    return 'Der Eröffnungstermin ist voraussichtlich und kann sich noch ändern. Dein Abo läuft ab deinem persönlichen ersten Spieltag nach der offiziellen Eröffnung für die volle vereinbarte Laufzeit. Deinen ersten Spieltermin bestätigen wir dir rechtzeitig separat per E-Mail. Court und wöchentliche Spielzeit bleiben reserviert.';
   };
   window.clearOfficialOpeningPreview=function(){
+    window.__openingPreviewGeneration=(window.__openingPreviewGeneration||0)+1;
+    clearTimeout(window.__openingPreviewTimer);
     window.__officialOpeningPreview=null;
     var button=document.getElementById('officialOpeningConfirm');if(button)button.disabled=true;
     var host=document.getElementById('officialOpeningPreview');if(host)host.textContent='';
   };
+  window.closeOfficialOpeningDialog=function(){window.clearOfficialOpeningPreview();document.getElementById('officialOpeningDialog').close();};
+  window.scheduleOfficialOpeningPreview=function(){
+    window.clearOfficialOpeningPreview();
+    var input=document.getElementById('officialOpeningActual'),host=document.getElementById('officialOpeningPreview');
+    if(!input.value||!input.validity.valid){host.textContent='Bitte einen gültigen Eröffnungstermin eingeben.';return;}
+    host.textContent='Termin wird geprüft …';
+    window.__openingPreviewTimer=setTimeout(window.previewOfficialOpening,350);
+  };
   window.openOfficialOpeningDialog=async function(){
     window.clearOfficialOpeningPreview();
-    var host=document.getElementById('officialOpeningPreview'),dialog=document.getElementById('officialOpeningDialog');
-    document.getElementById('officialOpeningActual').value='';dialog.showModal();
+    var generation=window.__openingPreviewGeneration,host=document.getElementById('officialOpeningPreview'),dialog=document.getElementById('officialOpeningDialog'),input=document.getElementById('officialOpeningActual');
+    input.value='';input.disabled=false;dialog.showModal();
+    host.textContent='Eröffnungstermin wird geladen …';
     try{
-      var id=window.__selectedMarketingActionId;
-      if(!id)throw new Error('Bitte zuerst eine gespeicherte Aktion auswählen.');
-      var r=await sb.rpc('admin_abo_opening_status',{p_action:id});if(r.error)throw r.error;
-      if(r.data?.finalization){host.textContent='Bereits verbindlich festgelegt: '+window.ebFmtDate(r.data.finalization.actual_date)+'. Eine zweite automatische Umstellung ist gesperrt.';}
-      else host.textContent='Bitte zuerst die Aktion mit „Beginn mit offizieller Spieleröffnung“ und einem voraussichtlichen Termin speichern. Anschließend hier den tatsächlichen Spielstart eingeben und die Vorschau prüfen.';
-    }catch(e){host.textContent=e.message||'Status konnte nicht geladen werden.';}
+      var r=await sb.rpc('admin_facility_opening_status');if(r.error)throw r.error;
+      if(generation!==window.__openingPreviewGeneration||!dialog.open)return;
+      if(r.data?.finalization){input.value=r.data.finalization.actual_date;input.disabled=true;host.textContent='Bereits verbindlich festgelegt: '+window.ebFmtDate(input.value)+'.';}
+      else host.textContent=(r.data?.active_subscriptions||0)+' aktive Abos. Gib den tatsächlichen Eröffnungstermin ein; anschließend werden Termine und Empfänger automatisch geprüft.';
+    }catch(e){if(generation===window.__openingPreviewGeneration)host.textContent=e.message||'Status konnte nicht geladen werden.';}
   };
   window.previewOfficialOpening=async function(){
     window.clearOfficialOpeningPreview();
-    var host=document.getElementById('officialOpeningPreview');host.textContent='Belegungen und Laufzeiten werden geprüft …';
+    var generation=window.__openingPreviewGeneration,host=document.getElementById('officialOpeningPreview'),date=document.getElementById('officialOpeningActual').value;
+    host.textContent='Belegungen, Abo-Termine und E-Mail-Empfänger werden geprüft …';
     try{
-      var id=window.__selectedMarketingActionId,date=document.getElementById('officialOpeningActual').value;
-      if(!date)throw new Error('Bitte den tatsächlichen Spielstart eingeben.');
-      var r=await sb.rpc('admin_preview_abo_opening',{p_action:id,p_actual:date});if(r.error)throw r.error;
+      if(!date)throw new Error('Bitte den tatsächlichen Eröffnungstermin eingeben.');
+      var r=await sb.rpc('admin_preview_facility_opening',{p_actual:date});if(r.error)throw r.error;
+      if(generation!==window.__openingPreviewGeneration||date!==document.getElementById('officialOpeningActual').value||!document.getElementById('officialOpeningDialog').open)return;
       if(r.data.finalized){host.textContent='Bereits festgelegt: '+window.ebFmtDate(r.data.actual_date);return;}
-      window.__officialOpeningPreview={action:id,date:date,token:r.data.token};
-      var rows=r.data.contracts||[];
-      host.innerHTML='<p><strong>'+rows.length+' Frühbucher-Abos · Spielstart '+pbEsc(window.ebFmtDate(date))+'</strong></p>'
-        +rows.map(function(c){return '<div style="border-top:1px solid #D8CEBE;padding:10px 0"><strong>'+pbEsc(c.name||'Frühbucher-Abo')+' · Court '+c.court+'</strong><br>'
-        +pbEsc(['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][c.weekday])+' · '+String(Math.floor(c.start_minute/60)).padStart(2,'0')+':'+String(c.start_minute%60).padStart(2,'0')+' · '+c.duration_minutes+' Minuten<br>'
-        +'Bisher: '+pbEsc(window.ebFmtDate(c.old_start))+' bis '+pbEsc(window.ebFmtDate(new Date(Date.parse(c.old_end)-86400000).toISOString().slice(0,10)))+'<br>'
-        +'Neu: volle '+c.term_months+' Monate ab '+pbEsc(window.ebFmtDate(c.new_start))+' · erster Spieltermin '+pbEsc(window.ebFmtDate(c.first_day))
-        +' · letzter Laufzeittag '+pbEsc(window.ebFmtDate(new Date(Date.parse(c.new_end)-86400000).toISOString().slice(0,10)))
-        +(c.legacy?'<br>Bereits bestehendes Frühbucher-Abo wird ausdrücklich einbezogen.':'')+'</div>';}).join('')
-        +'<p>Erst die folgende Bestätigung ändert diese Termine und beauftragt die Informationsmails. Zahlungsdaten werden nicht geändert.</p>';
+      window.__officialOpeningPreview={date:date,token:r.data.token};
+      var changed=r.data.contracts||[],unchanged=r.data.notifications||[],count=r.data.notices_planned;
+      var time=function(c){return String(Math.floor(c.start_minute/60)).padStart(2,'0')+':'+String(c.start_minute%60).padStart(2,'0');};
+      var detail=function(c,change){return '<div style="border-top:1px solid #D8CEBE;padding:10px 0"><strong>'+pbEsc(c.name||'Abonnent')+' · Court '+c.court+'</strong><br>'
+        +pbEsc(['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][c.weekday])+' · '+time(c)+' · '+c.duration_minutes+' Minuten<br>'
+        +(c.first_day?'Erster Spieltermin: '+pbEsc(window.ebFmtDate(c.first_day)):'Kein Spieltermin mehr innerhalb der vereinbarten Laufzeit nach der Eröffnung.')
+        +(change?'<br>Volle '+c.term_months+' Monate ab '+pbEsc(window.ebFmtDate(c.new_start))+' · bis einschließlich '+pbEsc(window.ebFmtDate(new Date(Date.parse(c.new_end)-86400000).toISOString().slice(0,10))):'<br>Vereinbarte Laufzeit bleibt bestehen: '+pbEsc(window.ebFmtDate(c.starts_on))+' bis '+pbEsc(window.ebFmtDate(new Date(Date.parse(c.ends_on)-86400000).toISOString().slice(0,10))))+'</div>';};
+      host.innerHTML='<p><strong>Eröffnung am '+pbEsc(window.ebFmtDate(date))+'</strong></p><p>'+count+' Abo-Informationen werden per E-Mail vorgemerkt. '+changed.length+' Abo-Laufzeiten beginnen jeweils am persönlichen ersten Spieltag.</p>'
+        +(changed.length?'<details><summary>Persönliche Spielstarts und Laufzeiten ('+changed.length+')</summary>'+changed.map(c=>detail(c,true)).join('')+'</details>':'')
+        +(unchanged.length?'<details><summary>Weitere Abonnenten und erste Spieltermine ('+unchanged.length+')</summary>'+unchanged.map(c=>detail(c,false)).join('')+'</details>':'')
+        +'<p>Erst mit deiner Bestätigung werden der Termin verbindlich gespeichert und die E-Mails zum Versand vorgemerkt. Preise und Zahlungen bleiben unverändert.</p>';
       document.getElementById('officialOpeningConfirm').disabled=false;
-    }catch(e){host.textContent=e.message||'Vorschau fehlgeschlagen.';}
+    }catch(e){if(generation===window.__openingPreviewGeneration)host.textContent=e.message||'Termin konnte nicht geprüft werden.';}
   };
   window.confirmOfficialOpening=async function(){
-    var p=window.__officialOpeningPreview,button=document.getElementById('officialOpeningConfirm'),host=document.getElementById('officialOpeningPreview');
-    if(!p||p.action!==window.__selectedMarketingActionId||p.date!==document.getElementById('officialOpeningActual').value)return;
-    button.disabled=true;
+    var p=window.__officialOpeningPreview,button=document.getElementById('officialOpeningConfirm'),host=document.getElementById('officialOpeningPreview'),input=document.getElementById('officialOpeningActual');
+    if(!p||p.date!==input.value)return;
+    button.disabled=true;input.disabled=true;
     try{
-      var r=await sb.rpc('admin_finalize_abo_opening',{p_action:p.action,p_actual:p.date,p_token:p.token});if(r.error)throw r.error;
+      var r=await sb.rpc('admin_finalize_facility_opening',{p_actual:p.date,p_token:p.token});if(r.error)throw r.error;
       window.__officialOpeningPreview=null;
-      host.textContent='Spielstart festgelegt: '+window.ebFmtDate(r.data.actual_date)+'. '+(r.data.notices_queued||0)+' Informationsmails zum Versand vorgemerkt.';
-      var refreshed=await Promise.allSettled([Promise.resolve().then(function(){return window.loadMarketingActions(p.action);}),Promise.resolve().then(function(){return window.loadEarlybird();}),Promise.resolve().then(function(){return window.loadAboBanner();}),Promise.resolve().then(function(){if(typeof refreshPreparedSingleBookingViews==='function')return refreshPreparedSingleBookingViews();})]);
-      if(refreshed.some(function(r){return r.status==='rejected';}))host.textContent+=' Die Festlegung ist gespeichert. Bitte die Ansicht neu laden.';
-    }catch(e){window.__officialOpeningPreview=null;host.textContent=(e.message||'Festlegung nicht bestätigt.')+' Bitte die Vorschau erneut prüfen.';}
+      host.textContent='Anlageneröffnung verbindlich gespeichert: '+window.ebFmtDate(r.data.actual_date)+'. '+(r.data.notices_queued||0)+' Abo-Informationen zum E-Mail-Versand vorgemerkt.';
+      var status=document.getElementById('officialOpeningAdminStatus');if(status)status.textContent=host.textContent;
+      var refreshed=await Promise.allSettled([Promise.resolve().then(function(){return window.loadMarketingActions(window.__selectedMarketingActionId);}),Promise.resolve().then(function(){return window.loadEarlybird();}),Promise.resolve().then(function(){return window.loadAboBanner();}),Promise.resolve().then(function(){if(typeof refreshPreparedSingleBookingViews==='function')return refreshPreparedSingleBookingViews();})]);
+      if(refreshed.some(function(r){return r.status==='rejected';}))host.textContent+=' Bitte die Ansicht neu laden.';
+    }catch(e){window.__officialOpeningPreview=null;input.disabled=false;host.textContent=(e.message||'Festlegung nicht bestätigt.')+' Bitte den Termin erneut eingeben und prüfen lassen.';}
   };
   window.refreshAboStartFields=function(){
     var mode=document.getElementById('ebAdmStartMode');
@@ -27018,7 +27047,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(label) label.textContent=opening?'Voraussichtlicher offizieller Eröffnungstermin':'Festes Startdatum';
     var hint=document.getElementById('ebAdmAboStartHint');
     if(hint) hint.textContent=opening
-      ?'Bitte ein Planungsdatum eingeben. Die volle Laufzeit beginnt mit der tatsächlichen Spieleröffnung. Das Ändern dieses Datums verschiebt keine verkauften Abos. Nutze dafür ausdrücklich „Offiziellen Spielstart festlegen“ mit Vorschau.'
+      ?'Bitte ein Planungsdatum eingeben. Die volle Laufzeit beginnt am persönlichen ersten Spieltag ab der tatsächlichen Spieleröffnung. Das Ändern dieses Datums verschiebt keine verkauften Abos. Der gemeinsame Eröffnungstermin wird oben unter „Anlageneröffnung“ verbindlich festgelegt.'
       :'Dieses Datum gilt für neue Aktions-Abos. Bestehende Abos behalten ihren vereinbarten Beginn. Reguläre Jahresabos sind davon unabhängig.';
   };
   window.fillEarlybirdAdmin = function(){
