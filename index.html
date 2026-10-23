@@ -6393,10 +6393,6 @@ main {
             <div><label class="eb-adm-lbl" style="font-size:10px;">Start-Box – Beschriftung</label><input type="text" id="abBox1" class="eb-adm-inp" readonly></div>
             <div><label class="eb-adm-lbl" style="font-size:10px;">Ende-Box – Beschriftung</label><input type="text" id="abBox2" class="eb-adm-inp" readonly></div>
           </div>
-          <div>
-            <label class="eb-adm-lbl" style="font-size:10px;">Hinweis neben den Datumsboxen</label>
-            <input type="text" id="abNote" class="eb-adm-inp">
-          </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Beschriftungen</label><select id="abLabelColor" class="eb-adm-inp"></select></div>
             <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Datumswerte</label><select id="abValueColor" class="eb-adm-inp"></select></div>
@@ -6404,7 +6400,12 @@ main {
             </div>
           </details>
             </div>
-            <div class="admin-action-description">Datumswerte stammen aus den Konditionen. Der Hinweis zur offiziellen Spieleröffnung wird automatisch passend zur Abo-Regel angezeigt.</div>
+            <div>
+              <label class="eb-adm-lbl" for="abNote">Hinweis neben den Datumsboxen</label>
+              <textarea id="abNote" class="eb-adm-inp" rows="4" aria-describedby="abNoteHint"></textarea>
+              <div id="abNoteHint" class="admin-action-description">Dieser Text erscheint unverändert neben den Datumsboxen – auch bei Beginn mit offizieller Spieleröffnung. Leer lassen, um den Hinweis auszublenden. Mit „Aktion speichern“ werden alle Änderungen gemeinsam gespeichert.</div>
+            </div>
+            <div class="admin-action-description">Datumswerte stammen aus den Konditionen. Die Vorschau zeigt deine noch nicht gespeicherten Änderungen.</div>
             <div class="action-preview-label">Vorschau der Aktionskachel</div>
             <div id="actionCardPreview" class="action-card-preview" aria-label="Vorschau der Aktionskachel"></div>
           </section>
@@ -9364,7 +9365,7 @@ function minuteBookingShell(abo=false){
   overview.addEventListener('click',event=>{if(event.target===overview){const r=overview.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)overview.close();}});
   const note=document.createElement('p');note.className='minute-overview-context';overview.appendChild(note);
   if(legend){
-    if(!abo){const item=legend.querySelector('.legend-item');if(item)item.lastChild.textContent=' Start möglich';}
+    if(!abo){const item=legend.querySelector('.legend-item');if(item)item.lastChild.textContent=' Buchbar';}
     overview.appendChild(legend);
   }overview.appendChild(wrap);
   for(const ct of [1,2])document.getElementById(prefix+ct).closest('.court-col').classList.add('minute-court-panel');
@@ -9384,7 +9385,7 @@ function minuteOverviewContext(abo=false){
     open.textContent='Tagesübersicht';
     const day=bookingReleaseDate(selDate);const date=day&&!Number.isNaN(day.getTime())?day.toLocaleDateString('de-DE',{timeZone:'UTC',weekday:'long',day:'2-digit',month:'long',year:'numeric'}):null;
     title.textContent=date?`${date} · Tagesübersicht beider Courts`:'Tagesübersicht beider Courts';
-    note.textContent=`${minuteSingleDuration} Minuten · Jede Zeile zeigt, ob hier eine Spielzeit starten kann. Vergangene Starts sind schraffiert. „Kein Start“ bedeutet: für diese Dauer nicht buchbar. Abos sind dunkel markiert, Einzelbuchungen und Reservierungen hell.`;
+    note.textContent=`${minuteSingleDuration} Minuten · Helle Felder ohne Zeichen: buchbarer Start. —: mit dieser Dauer kein Start möglich. Schraffiert: abgelaufen. Belegte Zeiten sind als Blöcke markiert.`;
   }
 }
 function minutePickerOffers(abo=false){return abo?(minuteAboCalendar?.offers||[]):(minuteCalendar?.courts||[]).flatMap(c=>c.offers.map(o=>({...o,court:c.court})));}
@@ -9428,13 +9429,13 @@ function renderMinutePicker(abo=false,loading=false,error=false){
     const button=document.createElement('button');button.type='button';button.className='minute-time';button.dataset.start=String(start);button.textContent=PBMinuteDomain.minuteClock(start);
     const available=offers.some(o=>o.start_minute===start);button.disabled=!available;button.classList.toggle('selected',state.start===start);button.setAttribute('aria-pressed',String(state.start===start));
     button.classList.toggle('minute-time-past',!abo&&!loading&&minuteStartIsPast(start));
-    button.title=loading?'Verfügbarkeit wird geprüft':!abo&&minuteStartIsPast(start)?'Diese Startzeit liegt in der Vergangenheit':!available&&candidates.some(o=>o.start_minute===start)?'Preis derzeit nicht prüfbar':available?`${PBMinuteDomain.minuteClock(start)} bis ${PBMinuteDomain.minuteClock(start+duration)} · ${duration} Minuten`:`Für ${duration} Minuten nicht verfügbar`;
+    button.title=loading?'Verfügbarkeit wird geprüft':!abo&&minuteStartIsPast(start)?'Diese Startzeit ist abgelaufen':!available&&candidates.some(o=>o.start_minute===start)?'Preis derzeit nicht prüfbar':available?`${PBMinuteDomain.minuteClock(start)} bis ${PBMinuteDomain.minuteClock(start+duration)} · ${duration} Minuten`:`Für ${duration} Minuten nicht verfügbar`;
     const continuation=state.start!==null&&start>state.start&&start<state.start+duration;
     button.classList.toggle('minute-time-continuation',continuation);
     if(continuation){const label=`${PBMinuteDomain.minuteClock(start)} · Teil deiner gewählten Spielzeit ${PBMinuteDomain.minuteClock(state.start)} bis ${PBMinuteDomain.minuteClock(state.start+duration)}`;button.setAttribute('aria-label',label);button.title=label+(available?' · als neue Startzeit wählen':'');}
     const quote=document.createElement('span');quote.className='minute-time-price';
     if(available){const prices=offers.filter(o=>o.start_minute===start).map(o=>minutePrice(o.court,start,duration,abo?'subscription':'single').netCents);const min=Math.min(...prices);quote.textContent=(new Set(prices).size>1?'ab ':'')+fmt(min/100);button.setAttribute('aria-label',`${PBMinuteDomain.minuteClock(start)} · ${duration} Minuten · ${quote.textContent}${abo?' je Termin':''}${continuation?' · Teil deiner gewählten Spielzeit':''}`);}
-    if(!abo&&minuteStartIsPast(start)&&!loading)quote.textContent='Vergangen';
+    if(!abo&&minuteStartIsPast(start)&&!loading)quote.textContent='Abgelaufen';
     if(continuation)quote.textContent='Spielzeit';
     if(quote.textContent)button.appendChild(quote);
     button.onclick=()=>{state.start=start;if(abo)aboSlot=null;else selSlot=null;abo?renderMinuteAboSlots():renderMinuteSlots();document.querySelector(`#${abo?'aboSlots':'slots'}Picker .minute-time[data-start="${start}"]`)?.focus({preventScroll:true});};times.appendChild(button);
@@ -9470,8 +9471,8 @@ function renderMinuteDayGrid(root,court,occupied,offers,duration,selection,onPic
     if(!abo){
       const past=minuteStartIsPast(start),available=starts.has(start);
       free.classList.add(past?'minute-overview-past':available?'minute-overview-start':'minute-overview-no-start');
-      free.textContent=past?'Vergangen':available?'Start möglich':'Kein Start';
-      label=past?'Startzeit vergangen':available?`Start für ${duration} Minuten möglich`:`Kein Start für ${duration} Minuten möglich`;
+      free.textContent=past?'Abgelaufen':available?'':'—';
+      label=past?'Startzeit abgelaufen':available?`Start für ${duration} Minuten möglich`:`Kein Start für ${duration} Minuten möglich`;
     }
     free.setAttribute('aria-label',`${PBMinuteDomain.minuteClock(start)} · ${label}`);root.appendChild(free);
   }
@@ -23958,8 +23959,7 @@ body.bielstein-theme .minute-time-price {font-size:11px;font-weight:500;white-sp
 body.bielstein-theme .minute-picker {padding:12px;}
 body.bielstein-theme .minute-picker-title {display:inline;font-size:17px;}
 body.bielstein-theme .minute-picker-status {margin:8px 0 10px;font-size:12px;}
-body.bielstein-theme .minute-overview-open {display:inline-flex;align-items:center;justify-content:center;gap:6px;float:right;min-height:36px;max-width:100%;box-sizing:border-box;border:1px solid #E84B29;border-radius:999px;background:#FFF1E9;color:#9E321A;text-decoration:none;font:inherit;font-size:12px;font-weight:700;padding:6px 13px;cursor:pointer;}
-body.bielstein-theme .minute-overview-open::after {content:'↗';font-size:15px;}
+body.bielstein-theme .minute-overview-open {display:inline-flex;align-items:center;justify-content:center;gap:0;float:right;min-height:26px;line-height:1.2;max-width:100%;box-sizing:border-box;border:1px solid #E84B29;border-radius:999px;background:transparent;color:#9E321A;text-decoration:none;font:inherit;font-size:12px;font-weight:700;padding:3px 10px;cursor:pointer;}
 body.bielstein-theme .minute-overview-open:hover {background:#FFE2D3;}
 body.bielstein-theme .minute-overview-open:focus-visible {outline:2px solid #FF5A36;outline-offset:3px;}
 body.bielstein-theme .minute-overview-open:disabled {opacity:.55;cursor:default;}
@@ -23990,10 +23990,13 @@ body.bielstein-theme #aboSlotsOverview .minute-day-grid .minute-slot-note {font-
 /* Start eligibility is distinct from physical occupancy. */
 body.bielstein-theme #slotsOverview .minute-overview-free {display:flex;align-items:center;padding:0 6px;font-size:10px;line-height:1.2;}
 body.bielstein-theme .minute-overview-start {color:#3D5945;}
-body.bielstein-theme .minute-overview-no-start {background:#EEEAE3;color:#625B50;}
+body.bielstein-theme .minute-overview-no-start {color:#625B50;justify-content:center;}
 body.bielstein-theme .minute-overview-past {background:repeating-linear-gradient(135deg,#E7E1D6 0,#E7E1D6 3px,#F3EFE6 3px,#F3EFE6 8px);color:#625B50;}
 body.bielstein-theme .minute-time:disabled.minute-time-past {text-decoration:none;}
 body.bielstein-theme .minute-time-past .minute-time-price {color:#625B50;}
+
+/* Daily overview: retain mobile width, compact the two Court columns on desktop. */
+body.bielstein-theme #slotsOverview {width:min(672px,calc(100% - 24px));margin:auto;}
 
 /* ══ ÜBRIGE TABS · 1:1 nach Vorlage ══ */
 
@@ -26035,7 +26038,6 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var s=document.getElementById('ebStart'); if(s) s.textContent=window.ebFmtDate(window.__earlybird.aboStart);
       }
       var ol=document.getElementById('ebOpeningLabel');if(ol)ol.textContent=window.__earlybird.openingActual?'Offizielle Spieleröffnung':'Voraussichtliche Spieleröffnung';
-      var on=document.querySelector('#earlybirdBanner .eb-meta-note');if(on&&window.__earlybird.startMode==='official_opening')on.textContent=window.officialOpeningCustomerNote();
       window.refreshMarketingActionBanner();
       // Aktion 1 liefert die Datumswerte. Die Splash-PNG selbst wird separat ueber ihre URL gesteuert.
       var sp=document.getElementById('pbSplashAction');
@@ -26654,6 +26656,13 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var ed=document.getElementById('abBodyEditor');if(!ed)return;ed.focus();
     document.execCommand(command,false,value||null);window.syncActionRichText();
   };
+  // The saved editable note is the sole source for the card and its preview.
+  window.applyActionDateNote=function(element,value){
+    if(!element)return;
+    element.textContent=value==null?'':String(value);
+    element.hidden=!element.textContent.trim();
+    element.style.whiteSpace='pre-wrap';element.style.overflowWrap='anywhere';
+  };
   window.previewActionCard=function(){
     var host=document.getElementById('actionCardPreview'),source=document.getElementById('earlybirdBanner');if(!host||!source)return;
     var g=function(id){return document.getElementById(id)?.value||'';};
@@ -26672,9 +26681,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     if(actual)labels[2]='Offizielle Spieleröffnung';
     clone.querySelectorAll('.eb-meta-lbl').forEach(function(el,i){el.textContent=labels[i];el.style.color=color('abLabelColor','ash');});
     var note=clone.querySelector('.eb-meta-note');note.style.color=color('abLabelColor','ash');
-    note.textContent=g('ebAdmStartMode')==='official_opening'
-      ?(actual?'Der offizielle Spielstart steht fest. Dein erster Spieltermin richtet sich nach deinem gebuchten Wochentag.':'Der Eröffnungstermin ist voraussichtlich und kann sich noch ändern. Dein Abo läuft ab der tatsächlichen offiziellen Spieleröffnung für die volle vereinbarte Laufzeit. Deinen ersten Spieltermin bestätigen wir dir rechtzeitig separat per E-Mail. Court und wöchentliche Spielzeit bleiben reserviert.')
-      :g('abNote');
+    window.applyActionDateNote(note,g('abNote'));
     host.replaceChildren(clone);
   };
   (function(){
@@ -26724,8 +26731,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       if(lbls[1]) lbls[1].textContent=box2Label;
       if(lbls[2]) lbls[2].textContent=window.__earlybird?.openingActual?'Offizielle Spieleröffnung':'Voraussichtliche Spieleröffnung';
       var note = q('#earlybirdBanner .eb-meta-note');
-      if(note && window.__earlybird?.startMode==='official_opening') note.textContent=window.officialOpeningCustomerNote();
-      else if(note && d.ab_note!=null) note.textContent=d.ab_note;
+      window.applyActionDateNote(note,d.ab_note);
       var lc = col(d.ab_label_color,'ash');
       document.querySelectorAll('#earlybirdBanner .eb-meta-lbl').forEach(function(el){ el.style.color=lc; });
       if(note) note.style.color=lc;
@@ -26754,7 +26760,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     box1Label='Start der Aktion'; box2Label='Ende der Aktion';
     setv('abBox1', box1Label);
     setv('abBox2', box2Label);
-    setv('abNote', d.ab_note);
+    setv('abNote', d.ab_note==null?'':d.ab_note);
     setv('abKickerColor', d.ab_kicker_color || 'coral');
     setv('abTitleColor', d.ab_title_color || 'cream');
     setv('abBodyColor', d.ab_body_color || 'stone');
@@ -26890,12 +26896,16 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var url=await uploadSponsorLogo(file,'splash-action'); var urlEl=document.getElementById('spActionImageUrl'); if(urlEl) urlEl.value=url;
       }
       var name=(document.getElementById('marketingActionName')?.value||'').trim();
-      var config=Object.assign({},window.marketingActionById(id)?.config||{},window.collectMarketingActionConfig());
+      var editedConfig=window.collectMarketingActionConfig();
+      var config=Object.assign({},window.marketingActionById(id)?.config||{},editedConfig);
       if(!config.earlybird_abo_start) throw new Error('Bitte ein festes Startdatum eingeben.');
       if(!config.earlybird_abo_start && window.__ebAdmEnabled) throw new Error('Der Eröffnungstermin ist noch offen. Bitte die Aktion ausschalten, bevor du diesen Beginn speicherst.');
       var r=await sb.rpc('admin_save_marketing_action_with_start',{p_id:id,p_name:name,p_config:config,p_action_enabled:!!window.__ebAdmEnabled,p_splash_enabled:!!window.__splashAdmEnabled}); if(r.error) throw r.error;
       if(fileEl) fileEl.value='';
       await window.loadMarketingActions(id);
+      var saved=window.marketingActionById(id);
+      if(!saved||Object.keys(editedConfig).some(function(key){return saved.config?.[key]!==editedConfig[key];}))
+        throw new Error('Die gespeicherten Aktionsdaten konnten nicht vollständig bestätigt werden. Bitte die Aktion erneut öffnen und prüfen.');
       if(typeof loadEarlybird==='function') await loadEarlybird();
       if(typeof window.pbPublishSplashSnapshot==='function') await window.pbPublishSplashSnapshot();
       if(typeof loadSplash==='function') await loadSplash();
