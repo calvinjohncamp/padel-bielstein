@@ -12402,6 +12402,8 @@ function paintPreparedSingleProgress(result, checking=false) {
 async function refreshPreparedSingleBookingViews() {
   const tasks=[async()=>{await loadBookings(selDate);renderSlots();}];
   if(typeof renderMyBookingsLists==='function') tasks.push(()=>renderMyBookingsLists());
+  if(typeof renderPlaySection==='function') tasks.push(()=>renderPlaySection());
+  if(typeof refreshAccountNextMatch==='function') tasks.push(()=>refreshAccountNextMatch());
   if(typeof renderCreditOverview==='function') tasks.push(()=>renderCreditOverview());
   if(typeof refreshVerabredungenFrame==='function') tasks.push(()=>refreshVerabredungenFrame());
   const results=await Promise.allSettled(tasks.map(task=>Promise.resolve().then(task)));
@@ -12548,7 +12550,7 @@ async function showPreparedSaleState(r) {
       && Number.isInteger(r.terms.weekday) && r.terms.weekday>=0 && r.terms.weekday<=6) {
       showBookingSuccessDialog({title:r.kind==='subscription'?'Jahresabo bestätigt':'Frühbucher-Abo bestätigt',
         sub:typeof PREPARED_MAIL_NOTICE_ENABLED==='undefined' || PREPARED_MAIL_NOTICE_ENABLED ? BOOKING_SUCCESS_SUB : 'Weitere Details findest du unter „Jetzt spielen“ in der App. Der neue Mailversand ist im Testbetrieb noch ausgeschaltet.'});
-      await loadBookings(selDate);renderSlots();
+      await refreshPreparedSingleBookingViews();
       if(r.terms.time_version===2 && !(typeof minuteBookingMode==='function' && minuteBookingMode())) {
         // Sold minute contracts remain readable when new minute sales are disabled.
         setMode('play');await renderMyBookingsLists();
@@ -21987,6 +21989,17 @@ document.getElementById('loyaltyModal').addEventListener('click', function(e) {
 
   host.addEventListener('touchcancel', () => { tracking = false; }, { passive: true });
 })();
+
+// Reuse established readers; refresh only the match cover, never an open profile form.
+async function refreshAccountNextMatch() {
+  if(!currentUser||!accountPages.length)return;
+  const viewer=currentUser.id;
+  const [bookings,abos]=await Promise.all([loadUpcomingBookings(),loadActiveAbos()]);
+  if(currentUser?.id!==viewer)return;
+  const cover=accountPages.find(page=>page.type==='cover');if(!cover)return;
+  cover.nextMatch=computeNextMatch(bookings,abos,new Date());
+  if(document.getElementById('loyaltyModal')?.classList.contains('open')&&accountPages[accountPageIndex]?.type==='cover')renderAccountPage(0);
+}
 
 async function buildAccountPages() {
   let hoursPlayed = 0;
