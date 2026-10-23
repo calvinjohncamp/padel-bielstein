@@ -439,6 +439,16 @@ body.bielstein-theme .abo-pb-save { color: #0F7A38 !important; background: #E4F5
 body.bielstein-theme .abo-sum-years { color: #1C1A17; }
 .abo-calc-note { padding: 4px 13px 11px; font: 500 .76rem/1.4 "Manrope","Arial",sans-serif; color: #8A8276; }
 
+/* One quiet status line while the verified checkout completes. */
+.booking-completion-status {
+  margin: 12px 0; padding: 12px 16px; border: 1px solid var(--border, #e4ddcf);
+  border-radius: 12px; background: #fff; color: var(--muted, #777167);
+  font-size: 14px; line-height: 1.45;
+}
+.booking-completion-status[hidden] { display: none; }
+.booking-completion-status p { margin: 0; }
+.booking-completion-status button:not([hidden]) { margin-top: 8px; }
+
 /* ■■ AUTH MODAL ■■ */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.2s, visibility 0s linear 0.2s; }
 .modal-overlay.open { opacity: 1; visibility: visible; pointer-events: all; transition: opacity 0.2s; }
@@ -2529,8 +2539,8 @@ main {
 
   <!-- BOOK MODE -->
   <div id="modeBook">
-    <div id="bookingCompletionStatus" class="summary-card visible" hidden role="status" aria-live="polite">
-      <p id="bookingCompletionMessage" style="margin:0 0 10px;"></p>
+    <div id="bookingCompletionStatus" class="booking-completion-status" hidden role="status" aria-live="polite">
+      <p id="bookingCompletionMessage"></p>
       <button id="bookingCompletionRetry" type="button" onclick="handlePreparedSingleReturn(new URLSearchParams(window.location.search))">Status erneut prüfen</button>
     </div>
     <div class="step-row booking-date-heading"><div class="step-num">1</div><div class="step-lbl">Datum wählen</div><input type="date" id="bookingDatePicker" class="booking-date-picker" aria-label="Spieltag wählen" title="Spieltag wählen" onchange="jumpToBookingDate(this.value)" hidden disabled></div>
@@ -12412,7 +12422,7 @@ function paintPreparedSingleProgress(result, checking=false) {
   panel.hidden=!pending;
   if (!pending) return;
   document.getElementById('bookingCompletionMessage').textContent=checking
-    ? 'Dein Bezahlvorgang wird mit der Buchung abgeglichen. Das kann einige Minuten dauern. Die Ansicht aktualisiert sich automatisch. Bitte nicht erneut bezahlen.'
+    ? 'Deine Buchung wird abgeschlossen. Diese Ansicht aktualisiert sich automatisch.'
     : 'Der Buchungsabschluss ist noch in Bearbeitung. Bitte nicht erneut bezahlen. Du kannst den Status hier erneut prüfen.';
   const retry=document.getElementById('bookingCompletionRetry');
   retry.hidden=checking;retry.disabled=checking;retry.textContent='Status erneut prüfen';retry.onclick=()=>handlePreparedSingleReturn(new URLSearchParams(window.location.search));
@@ -12969,8 +12979,6 @@ async function processPreparedSingleReturn(params=null) {
       storage:localStorage, locks:navigator.locks, request:requestPreparedSingleCheckout, newId:()=>crypto.randomUUID()});
       return value?{...value,terms:value.terms||savedTerms}:value;};
     let result=await read();
-    if(PREPARED_RETURN_POLL_ENABLED && PREPARED_SINGLE_PENDING_STATES.includes(result?.state))
-      showToast('Die Zahlung wird mit der Buchung abgeglichen …');
     result=await waitForPreparedCompletion({enabled:PREPARED_RETURN_POLL_ENABLED,result,read,
       isCurrent:()=>currentUser?.id===authId,pending:PREPARED_SINGLE_PENDING_STATES,attempts:60,
       onProgress:value=>paintPreparedSingleProgress(value,true)});
