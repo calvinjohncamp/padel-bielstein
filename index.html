@@ -6407,11 +6407,6 @@ main {
               <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Text</label><select id="abBodyColor" class="eb-adm-inp"></select></div>
               <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Hervorhebung</label><select id="abHiColor" class="eb-adm-inp"></select></div>
             </div>
-          <div style="border-top:1px solid #EFE9DC;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Start-Box – Beschriftung</label><input type="text" id="abBox1" class="eb-adm-inp" maxlength="120"></div>
-            <div><label class="eb-adm-lbl" style="font-size:10px;">Ende-Box – Beschriftung</label><input type="text" id="abBox2" class="eb-adm-inp" maxlength="120"></div>
-            <div style="grid-column:1/-1"><label class="eb-adm-lbl" for="abBox3" style="font-size:10px;">Eröffnung / Abo-Start – Beschriftung</label><input type="text" id="abBox3" class="eb-adm-inp" maxlength="120"></div>
-          </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Beschriftungen</label><select id="abLabelColor" class="eb-adm-inp"></select></div>
             <div><label class="eb-adm-lbl" style="font-size:10px;">Farbe Datumswerte</label><select id="abValueColor" class="eb-adm-inp"></select></div>
@@ -6431,10 +6426,21 @@ main {
 
           <section class="admin-action-subsection">
             <div class="admin-action-subtitle">2. Konditionen und Abo-Beginn</div>
+            <p id="actionDateLabelsHint" class="admin-action-description">Die Überschriften über den drei Datumsboxen bestimmst du hier selbst. Überschrift und Datum stehen jeweils zusammen. Änderungen erscheinen sofort in der Kachelvorschau und werden mit „Aktion speichern“ gemeinsam übernommen.</p>
             <div class="admin-action-panel">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div><label class="eb-adm-lbl">Start der Aktion</label><input type="datetime-local" id="ebAdmStart" class="eb-adm-inp"></div>
-            <div><label class="eb-adm-lbl">Ende der Aktion</label><input type="datetime-local" id="ebAdmEnd" class="eb-adm-inp"></div>
+            <div class="action-date-field">
+              <label class="eb-adm-lbl" for="abBox1">Überschrift der ersten Datumsbox</label>
+              <input type="text" id="abBox1" class="eb-adm-inp" maxlength="120" aria-describedby="actionDateLabelsHint">
+              <label class="eb-adm-lbl" for="ebAdmStart" style="margin-top:10px">Datum und Uhrzeit</label>
+              <input type="datetime-local" id="ebAdmStart" class="eb-adm-inp">
+            </div>
+            <div class="action-date-field">
+              <label class="eb-adm-lbl" for="abBox2">Überschrift der zweiten Datumsbox</label>
+              <input type="text" id="abBox2" class="eb-adm-inp" maxlength="120" aria-describedby="actionDateLabelsHint">
+              <label class="eb-adm-lbl" for="ebAdmEnd" style="margin-top:10px">Datum und Uhrzeit</label>
+              <input type="datetime-local" id="ebAdmEnd" class="eb-adm-inp">
+            </div>
             <div><label class="eb-adm-lbl">Sonder-Rabatt (%)</label><input type="number" id="ebAdmDiscount" min="0" max="100" step="1" class="eb-adm-inp"></div>
             <div><label class="eb-adm-lbl">Laufzeit (Monate)</label><input type="number" id="ebAdmTerm" min="1" step="1" class="eb-adm-inp"></div>
             <div style="grid-column:1/-1">
@@ -6443,8 +6449,12 @@ main {
                 <option value="fixed_date">Festes Startdatum</option>
                 <option value="official_opening">Beginn mit offizieller Spieleröffnung (Termin voraussichtlich)</option>
               </select>
-              <label class="eb-adm-lbl" for="ebAdmAboStart" id="ebAdmAboStartLabel" style="margin-top:10px">Festes Startdatum</label>
-              <input type="date" id="ebAdmAboStart" class="eb-adm-inp">
+              <div class="action-date-field" style="margin-top:14px">
+                <label class="eb-adm-lbl" for="abBox3">Überschrift der dritten Datumsbox</label>
+                <input type="text" id="abBox3" class="eb-adm-inp" maxlength="120" aria-describedby="actionDateLabelsHint">
+                <label class="eb-adm-lbl" for="ebAdmAboStart" id="ebAdmAboStartLabel" style="margin-top:10px">Datum</label>
+                <input type="date" id="ebAdmAboStart" class="eb-adm-inp">
+              </div>
               <p id="ebAdmAboStartHint" style="font-size:12px;line-height:1.5;margin:8px 0 0"></p>
             </div>
             <div>
@@ -27044,7 +27054,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var date=document.getElementById('ebAdmAboStart');
     if(date) date.required=true;
     var label=document.getElementById('ebAdmAboStartLabel');
-    if(label) label.textContent=opening?'Voraussichtlicher offizieller Eröffnungstermin':'Festes Startdatum';
+    if(label) label.textContent='Datum';
     var hint=document.getElementById('ebAdmAboStartHint');
     if(hint) hint.textContent=opening
       ?'Bitte ein Planungsdatum eingeben. Die volle Laufzeit beginnt am persönlichen ersten Spieltag ab der tatsächlichen Spieleröffnung. Das Ändern dieses Datums verschiebt keine verkauften Abos. Der gemeinsame Eröffnungstermin wird oben unter „Anlageneröffnung“ verbindlich festgelegt.'
