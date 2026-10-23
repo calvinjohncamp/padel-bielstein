@@ -10964,17 +10964,21 @@ let freibadConfig = {
 let freibadClosures   = [];   // [{date:'2027-07-04', note:'Wartung'}]
 let freibadExceptions = [];   // [{date:'2027-06-15', open_hour:10, close_hour:18}]
 
-async function loadFreibadConfig() {
+async function loadFreibadConfig(options = {}) {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/freibad_config?select=*&limit=1`,
+      `${SUPABASE_URL}/rest/v1/freibad_config?id=eq.1&select=*&limit=1`,
       { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
     );
-    if (!res.ok) return;
+    if (!res.ok) throw new Error('Freibad-Einstellungen konnten nicht geladen werden.');
     const data = await res.json();
-    if (data && data.length > 0) {
+    if (!Array.isArray(data) || data.length !== 1) throw new Error('Freibad-Einstellungen fehlen oder sind mehrdeutig.');
+    if (data.length === 1) {
       const d = data[0];
       freibadConfig = {
+        season_start_date: d.season_start_date || null,
+        season_end_date: d.season_end_date || null,
+        updated_at: d.updated_at || null,
         season_start_md: d.season_start_md || '05-01',
         season_end_md:   d.season_end_md   || '09-30',
         open_hour:       d.open_hour  ?? 8,
@@ -10982,7 +10986,7 @@ async function loadFreibadConfig() {
         season_active:   d.season_active !== false,
       };
     }
-  } catch(e) { console.warn('freibad_config Fallback aktiv:', e.message); }
+  } catch(e) { if(options.strict) throw e;console.warn('freibad_config Fallback aktiv:', e.message); }
 
   try {
     const res = await fetch(
@@ -11014,7 +11018,9 @@ function isFreibadOpen(dateStr, hourOverride) {
 
   // Ist es Saison? (Vergleich via MM-DD)
   const mdStr = dStr.slice(5); // "MM-DD"
-  if (mdStr < freibadConfig.season_start_md || mdStr > freibadConfig.season_end_md) return false;
+  if (freibadConfig.season_start_date) {
+    if (dStr < freibadConfig.season_start_date || dStr > freibadConfig.season_end_date) return false;
+  } else if (mdStr < freibadConfig.season_start_md || mdStr > freibadConfig.season_end_md) return false;
 
   // Datumsspezifische Öffnungszeiten?
   const exc = freibadExceptions.find(e => e.date === dStr);
@@ -16617,10 +16623,10 @@ async function initAdmin() {
 //  ADMIN – Freibad-Config lesen & anzeigen
 // ============================================================
 async function loadAdminFreibad() {
-  await loadFreibadConfig();
+  try { await loadFreibadConfig({strict:true}); } catch(e) { adminTabLoaded.freibad=false;showAdminMsg('cfgSeasonErr',e.message);return; }
   const y = new Date().getFullYear();
-  document.getElementById('cfgSeasonStart').value = `${y}-${freibadConfig.season_start_md}`;
-  document.getElementById('cfgSeasonEnd').value   = `${y}-${freibadConfig.season_end_md}`;
+  document.getElementById('cfgSeasonStart').value = freibadConfig.season_start_date || `${y}-${freibadConfig.season_start_md}`;
+  document.getElementById('cfgSeasonEnd').value   = freibadConfig.season_end_date || `${y}-${freibadConfig.season_end_md}`;
   document.getElementById('cfgOpenH').value  = freibadConfig.open_hour;
   document.getElementById('cfgCloseH').value = freibadConfig.close_hour;
   await loadClosureList();
@@ -16632,42 +16638,22 @@ async function loadAdminFreibad() {
 }
 
 async function saveFreibadConfig() {
-  const __authH = await authHeaders();
-  const startVal = document.getElementById('cfgSeasonStart').value;
-  const endVal   = document.getElementById('cfgSeasonEnd').value;
-  const openH    = parseInt(document.getElementById('cfgOpenH').value);
-  const closeH   = parseInt(document.getElementById('cfgCloseH').value);
-
-  if (!startVal || !endVal || isNaN(openH) || isNaN(closeH)) {
-    showAdminMsg('cfgSeasonErr', 'Bitte alle Felder ausfüllen.'); return;
+  document.getElementById('cfgSeasonOk').textContent='';
+  document.getElementById('cfgSeasonErr').textContent='';
+  const startVal=document.getElementById('cfgSeasonStart').value,endVal=document.getElementById('cfgSeasonEnd').value;
+  const openH=Number(document.getElementById('cfgOpenH').value),closeH=Number(document.getElementById('cfgCloseH').value);
+  if(!startVal||!endVal||!document.getElementById('cfgOpenH').value||!document.getElementById('cfgCloseH').value||endVal<startVal||!Number.isInteger(openH)||!Number.isInteger(closeH)||openH<0||closeH>24||closeH<=openH){
+    showAdminMsg('cfgSeasonErr','Bitte gültige Saisontermine und Öffnungszeiten eingeben.');return;
   }
-  if (closeH <= openH) {
-    showAdminMsg('cfgSeasonErr', 'Schließzeit muss nach Öffnungszeit liegen.'); return;
-  }
-  const payload = {
-    id: 1,
-    season_start_md: startVal.slice(5),
-    season_end_md:   endVal.slice(5),
-    open_hour:  openH,
-    close_hour: closeH,
-    season_active: true,
-    updated_at: new Date().toISOString(),
-  };
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/freibad_config`, {
-      method: 'POST',
-      headers: {
-        ...__authH,
-        'Prefer': 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error(await res.text());
-    freibadConfig = { ...freibadConfig, ...payload };
-    showAdminMsg('cfgSeasonOk', '✓ Gespeichert');
-  } catch(e) {
-    showAdminMsg('cfgSeasonErr', 'Fehler: ' + e.message);
-  }
+    const r=await sb.rpc('admin_save_freibad_season',{p_start:startVal,p_end:endVal,p_open:openH,p_close:closeH,p_expected_updated_at:freibadConfig.updated_at||null});
+    if(r.error)throw r.error;
+    const saved=r.data;
+    if(!saved||saved.season_start_date!==startVal||saved.season_end_date!==endVal||saved.open_hour!==openH||saved.close_hour!==closeH||!saved.updated_at)
+      throw new Error('Speicherung konnte nicht bestätigt werden. Bitte die Einstellungen neu laden und prüfen.');
+    freibadConfig={...freibadConfig,...saved};
+    showAdminMsg('cfgSeasonOk','✓ Saison '+startVal.slice(0,4)+' gespeichert');
+  }catch(e){showAdminMsg('cfgSeasonErr','Fehler: '+(e.message||'Speichern nicht bestätigt. Bitte neu laden.'));}
 }
 
 // ============================================================
