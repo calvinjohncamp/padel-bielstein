@@ -6327,7 +6327,16 @@ main {
             <div><label class="eb-adm-lbl">Ende der Aktion</label><input type="datetime-local" id="ebAdmEnd" class="eb-adm-inp"></div>
             <div><label class="eb-adm-lbl">Sonder-Rabatt (%)</label><input type="number" id="ebAdmDiscount" min="0" max="100" step="1" class="eb-adm-inp"></div>
             <div><label class="eb-adm-lbl">Laufzeit (Monate)</label><input type="number" id="ebAdmTerm" min="1" step="1" class="eb-adm-inp"></div>
-            <div><label class="eb-adm-lbl">Saisonstart (Abo-Beginn)</label><input type="date" id="ebAdmAboStart" class="eb-adm-inp"></div>
+            <div style="grid-column:1/-1">
+              <label class="eb-adm-lbl" for="ebAdmStartMode">Beginn des Aktions-Abos</label>
+              <select id="ebAdmStartMode" class="eb-adm-inp" onchange="refreshAboStartFields()">
+                <option value="fixed_date">Festes Startdatum</option>
+                <option value="official_opening">Beginn mit offizieller Spieleröffnung</option>
+              </select>
+              <label class="eb-adm-lbl" for="ebAdmAboStart" id="ebAdmAboStartLabel" style="margin-top:10px">Festes Startdatum</label>
+              <input type="date" id="ebAdmAboStart" class="eb-adm-inp">
+              <p id="ebAdmAboStartHint" style="font-size:12px;line-height:1.5;margin:8px 0 0"></p>
+            </div>
             <div>
               <label class="eb-adm-lbl">Zielgruppe</label>
               <select id="ebAdmAudience" class="eb-adm-inp">
@@ -26656,7 +26665,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var publicSplash=window.__publicSplash||window.__splash;
     var publicAbo=window.__publicAboBanner||window.__abobanner;
     var publicSplashEnabled=window.__pbSplashActionEnabled;
-    window.__earlybird={active:false,enabled:!!a.action_enabled,preview:false,start:c.earlybird_start,end:c.earlybird_end,aboStart:c.earlybird_abo_start,discount:Number(c.earlybird_discount_pct)||25,termMonths:Number(c.earlybird_term_months)||24,audience:c.earlybird_audience||'members_partners',appliesTo:c.earlybird_applies_to||'abo',extraNoteVisible:c.earlybird_extra_note_visible!==false,extraNoteText:c.earlybird_extra_note_text||window.__earlybirdExtraNoteDefault};
+    window.__earlybird={active:false,enabled:!!a.action_enabled,preview:false,start:c.earlybird_start,end:c.earlybird_end,aboStart:c.earlybird_abo_start,startMode:c.earlybird_abo_start_mode||'fixed_date',discount:Number(c.earlybird_discount_pct)||25,termMonths:Number(c.earlybird_term_months)||24,audience:c.earlybird_audience||'members_partners',appliesTo:c.earlybird_applies_to||'abo',extraNoteVisible:c.earlybird_extra_note_visible!==false,extraNoteText:c.earlybird_extra_note_text||window.__earlybirdExtraNoteDefault};
     window.__splash=Object.assign({},publicSplash,c,{splash_action_enabled:!!a.splash_enabled,splash_action_modal_enabled:c.splash_action_modal_enabled!==false});
     window.__abobanner=c;
     window.__pbSplashActionEnabled=!!a.splash_enabled;
@@ -26688,7 +26697,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var sv=g('ebAdmStart'),ev=g('ebAdmEnd');
     return {
       earlybird_start:sv?new Date(sv).toISOString():null,earlybird_end:ev?new Date(ev).toISOString():null,
-      earlybird_discount_pct:Number(g('ebAdmDiscount')),earlybird_abo_start:g('ebAdmAboStart')||null,earlybird_term_months:Number(g('ebAdmTerm')),
+      earlybird_discount_pct:Number(g('ebAdmDiscount')),earlybird_abo_start_mode:g('ebAdmStartMode')||'fixed_date',earlybird_abo_start:g('ebAdmAboStart')||null,earlybird_term_months:Number(g('ebAdmTerm')),
       earlybird_audience:g('ebAdmAudience')||'members_partners',earlybird_applies_to:g('ebAdmAppliesTo')||'abo',
       earlybird_extra_note_visible:!!document.getElementById('ebAdmExtraNoteVisible')?.checked,earlybird_extra_note_text:g('ebAdmExtraNoteText'),
       splash_eb_kicker:g('spEbKicker'),splash_eb_kicker_color:g('spEbKickerColor'),splash_eb_text:g('spEbText'),splash_eb_text_color:g('spEbTextColor'),splash_eb_hi_color:g('spEbHiColor'),
@@ -26712,8 +26721,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       }
       var name=(document.getElementById('marketingActionName')?.value||'').trim();
       var config=window.collectMarketingActionConfig();
-      var r=await sb.rpc('admin_save_marketing_action',{p_id:id,p_name:name,p_config:config}); if(r.error) throw r.error;
-      r=await sb.rpc('admin_set_marketing_action_state',{p_id:id,p_action_enabled:!!window.__ebAdmEnabled,p_splash_enabled:!!window.__splashAdmEnabled}); if(r.error) throw r.error;
+      if(!config.earlybird_abo_start && config.earlybird_abo_start_mode==='fixed_date') throw new Error('Bitte ein festes Startdatum eingeben.');
+      if(!config.earlybird_abo_start && window.__ebAdmEnabled) throw new Error('Der Eröffnungstermin ist noch offen. Bitte die Aktion ausschalten, bevor du diesen Beginn speicherst.');
+      var r=await sb.rpc('admin_save_marketing_action_with_start',{p_id:id,p_name:name,p_config:config,p_action_enabled:!!window.__ebAdmEnabled,p_splash_enabled:!!window.__splashAdmEnabled}); if(r.error) throw r.error;
       if(fileEl) fileEl.value='';
       await window.loadMarketingActions(id);
       if(typeof loadEarlybird==='function') await loadEarlybird();
@@ -26763,6 +26773,18 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     fields.classList.toggle('is-disabled',!checkbox.checked);
     fields.querySelectorAll('input,textarea,select').forEach(function(el){ el.disabled=!checkbox.checked; });
   };
+  window.refreshAboStartFields=function(){
+    var mode=document.getElementById('ebAdmStartMode');
+    var opening=mode&&mode.value==='official_opening';
+    var date=document.getElementById('ebAdmAboStart');
+    if(date) date.required=!opening;
+    var label=document.getElementById('ebAdmAboStartLabel');
+    if(label) label.textContent=opening?'Offizieller Eröffnungstermin (sobald bekannt)':'Festes Startdatum';
+    var hint=document.getElementById('ebAdmAboStartHint');
+    if(hint) hint.textContent=opening
+      ?'Termin noch offen? Datumsfeld leeren und die Aktion ausgeschaltet speichern. Ein vorhandenes Datum wird beim Wechsel nicht automatisch gelöscht. Der Verkauf kann erst mit festgelegtem Eröffnungstermin aktiviert werden. Bestehende Abos bleiben unverändert.'
+      :'Dieses Datum gilt für neue Aktions-Abos. Bestehende Abos behalten ihren vereinbarten Beginn. Reguläre Jahresabos sind davon unabhängig.';
+  };
   window.fillEarlybirdAdmin = function(){
     var eb=window.__earlybird||{};
     var p=function(n){ return String(n).padStart(2,'0'); };
@@ -26772,7 +26794,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     set('ebAdmEnd', toLocal(eb.end));
     set('ebAdmDiscount', eb.discount!=null?eb.discount:25);
     set('ebAdmTerm', eb.termMonths!=null?eb.termMonths:24);
+    set('ebAdmStartMode', eb.startMode||'fixed_date');
     set('ebAdmAboStart', eb.aboStart? String(eb.aboStart).slice(0,10):'');
+    window.refreshAboStartFields();
     set('ebAdmAudience', eb.audience || 'members_partners');
     set('ebAdmAppliesTo', eb.appliesTo || 'abo');
     var noteOn=document.getElementById('ebAdmExtraNoteVisible');
