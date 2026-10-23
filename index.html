@@ -17659,7 +17659,7 @@ async function loadAdminSimulatorActions(){
     if([...select.options].some(o=>o.value===previous))select.value=previous;
     state.textContent=adminSimulatorActions.length?'Aktionsabos verwenden die gespeicherten Konditionen aus „Aktionen“.':'Keine gespeicherte Abo-Aktion vorhanden. Reguläre Abos laufen 12 Monate.';
     updateAdminPriceExampleKind({target:{id:'aboExampleKind'}});
-  }catch(e){adminSimulatorActions=[];select.value='regular';state.textContent=e.message+' Das reguläre Beispiel bleibt verfügbar.';renderAdminPricePreview();}
+  }catch(e){adminSimulatorActions=[];const regular=document.createElement('option');regular.value='regular';regular.textContent='Regulär · 12 Monate';select.replaceChildren(regular);state.textContent=e.message+' Das reguläre Beispiel bleibt verfügbar.';updateAdminPriceExampleKind({target:{id:'aboExampleKind'}});}
 }
 function adminSimulatorAction(){return adminSimulatorActions.find(a=>'action:'+a.id===document.getElementById('aboExampleKind').value)||null;}
 function updateAdminPriceExampleKind(event){
