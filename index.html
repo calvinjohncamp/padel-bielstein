@@ -9774,7 +9774,7 @@ function updateMinuteAboSummary(){
     'as-dur':`${minuteAboDuration} Minuten`,'as-total':fmt(total/100),'as-perperson':fmt(total/400),
     'as-hours':'Dein Preis enthält die unten aufgeführten Zeitanteile der bestehenden Stundentarife.',
     'as-rabatt':p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:'Dein Preis enthält keinen Rabatt.',
-    'as-reg':`${fmt(p.netCents/100)} je Termin`,'as-save':`ca. ${Math.round(months*365.2425/84)} Wochen · ${String(weeks*months/12).replace('.',',')} Wochen berechnet · volle ${months} Monate Laufzeit`,
+    'as-reg':`${fmt(p.netCents/100)} je Termin`,'as-save':`ca. ${Math.round(months*365.2425/84)} Wochen · davon nur ${String(weeks*months/12).replace('.',',')} Wochen berechnet · volle ${months} Monate Laufzeit`,
     'as-52':`Volles Jahr ab deinem ersten Spieltag – du zahlst davon ${weeks} Wochen.`};
   for(const [id,value]of Object.entries(values)){const e=document.getElementById(id);if(e)e.textContent=value;}
   const occurrence=minuteAboCalendar.offers.find(o=>o.court===aboSlot.court&&o.start_minute===aboSlot.start_minute);
