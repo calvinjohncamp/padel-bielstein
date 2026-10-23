@@ -9713,14 +9713,14 @@ function minuteCalc(root,terms,price,total=price.netCents,billing=null){
   const heading=document.createElement('div');heading.className='abo-calc-h';heading.textContent='Transparenz – So setzt sich dein Buchungspreis zusammen';
   const table=document.createElement('table'),body=document.createElement('tbody');table.style.minWidth='0';table.style.tableLayout='fixed';table.style.width='100%';
   const rows=PBMinuteDomain.minuteTariffReceiptRows(terms,price.snapshot);
-  if(billing?.earlybird)for(const row of rows)row[1]=row[1].replace(/ \(.*\)$/,'');
-  if(billing?.earlybird)rows.push(['Summe',fmt(price.snapshot.grossCents/100)]);
+  if(billing)for(const row of rows)row[1]=row[1].replace(/ \(.*\)$/,'');
+  if(billing)rows.push(['Summe',fmt(price.snapshot.grossCents/100)]);
   if(price.snapshot.discountPct>0)rows.push([(price.discountLabel||'Rabatt').replaceAll('/',' / '),`${String(price.snapshot.discountPct).replace('.',',')} %`]);
   if(price.loyaltyDiscountCents>0)rows.push(['Treuebonus',fmt(price.loyaltyDiscountCents/100)]);
   if(billing){
     rows.push(['Preis je Termin nach Rabatt',fmt(price.netCents/100)]);
     rows.push(['Berechnete Termine',String(billing.weeks*billing.months/12)]);
-    if(billing.earlybird)rows.push(['Gesamte Preisgrundlage vor Aktionsrabatt',fmt(Math.round(price.snapshot.grossCents*billing.weeks*billing.months/12)/100)]);
+    rows.push([billing.earlybird?'Preis vor Aktionsrabatt':'Preis vor Rabatt',fmt(Math.round(price.snapshot.grossCents*billing.weeks*billing.months/12)/100)]);
   }
   rows.push(['Dein Buchungspreis',fmt(total/100)]);
   for(const values of rows){const tr=document.createElement('tr');for(const value of values){const td=document.createElement('td');td.textContent=value;td.style.whiteSpace='normal';td.style.overflowWrap='anywhere';td.style.width='50%';td.style.textAlign=tr.children.length?'right':'left';tr.appendChild(td);}body.appendChild(tr);}
@@ -9776,15 +9776,16 @@ function updateMinuteAboSummary(){
     'as-dur':`${minuteAboDuration} Minuten`,'as-total':fmt(total/100),'as-perperson':fmt(total/400),
     'as-hours':'Dein Preis enthält die unten aufgeführten Zeitanteile der bestehenden Stundentarife.',
     'as-rabatt':p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:'Dein Preis enthält keinen Rabatt.',
-    'as-reg':`${fmt(p.netCents/100)} je Termin${early&&p.netCents<p.snapshot.grossCents?' anstatt '+fmt(p.snapshot.grossCents/100):''}`,'as-save':early?`Abo mit ${months} Monaten bzw. ${Math.round(months*365.2425/84)} Wochen Laufzeit – davon werden ${String(weeks*months/12).replace('.',',')} Wochen berechnet`:`ca. ${Math.round(months*365.2425/84)} Wochen · davon nur ${String(weeks*months/12).replace('.',',')} Wochen berechnet · volle ${months} Monate Laufzeit`,
+    'as-reg':`${fmt(p.netCents/100)} je Termin${p.netCents<p.snapshot.grossCents?' anstatt '+fmt(p.snapshot.grossCents/100):''}`,'as-save':`Abo mit ${months} Monaten bzw. ${Math.round(months*365.2425/84)} Wochen Laufzeit – davon werden ${String(weeks*months/12).replace('.',',')} Wochen berechnet`,
     'as-52':`Volles Jahr ab deinem ersten Spieltag – du zahlst davon ${weeks} Wochen.`};
   for(const [id,value]of Object.entries(values)){const e=document.getElementById(id);if(e)e.textContent=value;}
   const occurrence=minuteAboCalendar.offers.find(o=>o.court===aboSlot.court&&o.start_minute===aboSlot.start_minute);
   const terms={...aboSlot,weekday:aboWd,starts_on:occurrence.starts_on,ends_on:occurrence.ends_on};
   document.getElementById('as-52').textContent=`${minuteAboPeriod(occurrence.starts_on,occurrence.ends_on)}. Volles Jahr ab deinem ersten Spieltag – du zahlst davon ${weeks} Wochen.${occurrence.abo_delayed?' Der spätere Start berücksichtigt bestehende Einzelbuchungen.':''}`;
   if(early&&window.__earlybird?.startMode==='official_opening') document.getElementById('as-52').textContent=(window.__earlybird.openingActual?'Offizieller Spielstart: ':'Voraussichtlicher Spielstart: ')+minuteDateLabel(occurrence.starts_on)+(window.__earlybird.openingActual?'':' (E-Mail-Info folgt rechtzeitig)');
-  document.getElementById('as-hours').closest('.abo-benefit').style.display=early?'none':'';
+  document.getElementById('as-hours').closest('.abo-benefit').style.display='none';
   const startBullet=document.getElementById('as-52').closest('.abo-benefit'),benefits=card.querySelector('.abo-benefits');
+  startBullet.style.display=early?'':'none';
   if(early)benefits.appendChild(startBullet);else benefits.prepend(startBullet);
   const title=card.querySelector('.abo-sum-title');if(title)title.textContent=early?'Dein Frühbucher-Abo':'Dein Jahresabo';
   const cta=card.querySelector('.abo-cta');if(cta)cta.textContent=early?'Frühbucher-Abo sichern':'Jahresabo sichern';
