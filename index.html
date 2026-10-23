@@ -12379,7 +12379,15 @@ async function waitForPreparedCompletion({enabled=false,result,read,isCurrent,pe
 
 const PREPARED_SINGLE_PENDING_STATES = ['pending','paid_pending_journal','paid_pending_booking'];
 let preparedSingleReturnInFlight = null;
+function preparedResultIsDifferentSelection(result) {
+  if(typeof selSlot==='undefined'||!selSlot||!result?.terms||typeof selDate==='undefined')return false;
+  const t=result.terms,start=t.time_version===2?t.start_minute:Number(t.hour_start)*60,duration=t.time_version===2?t.duration_minutes:Number(t.duration)*60;
+  const selectedStart=selSlot.time_version===2?selSlot.start_minute:Number(selSlot.hour)*60;
+  const selectedDuration=selSlot.time_version===2?selSlot.duration_minutes:(typeof selDur==='undefined'?NaN:selDur*60);
+  return t.day!==selDate||t.court!==selSlot.court||start!==selectedStart||duration!==selectedDuration;
+}
 function paintPreparedSingleProgress(result, checking=false) {
+  if(PREPARED_SINGLE_PENDING_STATES.includes(result?.state)&&preparedResultIsDifferentSelection(result)){paintPreviousSingleRequest(result,false);return;}
   const panel=document.getElementById('bookingCompletionStatus');
   if (!panel) return;
   const pending=PREPARED_SINGLE_PENDING_STATES.includes(result?.state);
@@ -12808,7 +12816,7 @@ async function requestPreparedSingleCheckout(payload) {
   return data;
 }
 
-function paintPreviousSingleRequest(result) {
+function paintPreviousSingleRequest(result, scroll=true) {
   const panel=document.getElementById('bookingCompletionStatus');if(!panel)return;
   const t=result.terms||{},start=t.time_version===2?t.start_minute:Number(t.hour_start)*60,minutes=t.time_version===2?t.duration_minutes:Number(t.duration)*60;
   const clock=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
@@ -12828,11 +12836,12 @@ function paintPreviousSingleRequest(result) {
       paintPreviousSingleRequest({...checked,previous_request:true,terms:checked.terms||t});
     }catch(error){showToast(error.message||'Der frühere Vorgang muss weiter geprüft werden.');button.disabled=false;}
   };
-  panel.scrollIntoView({behavior:'smooth',block:'center'});
+  if(scroll)panel.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 async function showPreparedSingleState(result, allowRedirect) {
   if(result?.previous_request){paintPreviousSingleRequest(result);return;}
+  if(result?.state==='booked'&&/^B-\d{4}-\d{2}-\d{6}$/.test(result.receipt_number||'')&&preparedResultIsDifferentSelection(result)){paintPreviousSingleRequest(result);await refreshPreparedSingleBookingViews();return;}
   paintPreparedSingleProgress(result);
   if (result?.state === 'open' && allowRedirect) { redirectToExternalCheckout(result.url); return; }
   if(result?.state==='booked' && /^B-\d{4}-\d{2}-\d{6}$/.test(result.receipt_number||'')) {
@@ -12932,11 +12941,13 @@ async function processPreparedSingleReturn(params=null) {
   if (!currentUser?.id) { showToast('Bitte anmelden, damit der Zahlungsstand geprüft werden kann.'); return true; }
   try {
     const authId = currentUser.id;
-    const read=()=>runPreparedSingleDialog({enabled:true, authId, resumeOnly:true,
+    const read=async()=>{const savedTerms=readPreparedSingleRequest(localStorage,authId)?.terms;
+      const value=await runPreparedSingleDialog({enabled:true, authId, resumeOnly:true,
       expectedQuoteId:route.quoteId,
       resumeFromServer:true,
       isCurrent:()=>currentUser?.id === authId,
       storage:localStorage, locks:navigator.locks, request:requestPreparedSingleCheckout, newId:()=>crypto.randomUUID()});
+      return value?{...value,terms:value.terms||savedTerms}:value;};
     let result=await read();
     if(PREPARED_RETURN_POLL_ENABLED && PREPARED_SINGLE_PENDING_STATES.includes(result?.state))
       showToast('Die Zahlung wird mit der Buchung abgeglichen …');
@@ -13283,7 +13294,10 @@ async function confirmBooking(skipAuthCheck) {
     return;
   }
   if (typeof minuteBookingMode==='function'&&minuteBookingMode()) {
-    await loadBookings(selDate);renderSlots();if(selSlot)await confirmPreparedSingleBooking();return;
+    const chosen={...selSlot},chosenDay=selDate;
+    await loadBookings(selDate);renderSlots();
+    if(!selSlot||selDate!==chosenDay||['court','start_minute','duration_minutes'].some(key=>selSlot[key]!==chosen[key])){showToast('Die Verfügbarkeit deiner Auswahl hat sich geändert oder konnte nicht geprüft werden. Bitte prüfe die Auswahl erneut; es wurde keine Zahlung gestartet.');return;}
+    await confirmPreparedSingleBooking();return;
   }
   if (PREPARED_SINGLE_DIALOG_ENABLED) {
     await confirmPreparedSingleBooking();
