@@ -1916,6 +1916,23 @@ body .partner-drag-ghost{position:fixed;top:0;left:0;z-index:20000;pointer-event
 .partner-drag-ghost .partner-logo-name{color:#1C1A17;}
 .partner-drag-ghost.partner-drag-outside{opacity:.55;}
 body.partner-drag-active,body.partner-drag-active *{cursor:grabbing!important;user-select:none!important;}
+
+.partner-campaign-topline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.partner-campaign-topline>.admin-save-btn{flex:0 0 auto;}
+.partner-campaign-create{margin-top:14px;padding:16px;border:1px solid #E2DACB;border-radius:12px;background:#fff;}
+.partner-campaign-create p{font:500 12px/1.5 Manrope,sans-serif;color:#7A7368;margin:0 0 12px;}
+.partner-campaign-fields{display:grid;grid-template-columns:minmax(180px,1fr) 110px 110px;gap:10px;margin-bottom:12px;}
+.partner-campaign-create-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.partner-campaign-cancel{padding:10px 14px;border:1px solid #E2DACB;border-radius:8px;background:#fff;color:#5C564C;font:700 12px Manrope,sans-serif;cursor:pointer;}
+.partner-display-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.partner-display-settings-grid>.admin-section{min-width:0;}
+.partner-display-settings-grid .admin-section>div:not(.admin-section-title){align-items:flex-start!important;}
+@media(max-width:700px){.partner-display-settings-grid{grid-template-columns:1fr;gap:0;}.partner-campaign-fields{grid-template-columns:repeat(2,minmax(0,1fr));}.partner-campaign-fields>div:first-child{grid-column:1/-1;}.partner-campaign-topline>.admin-save-btn{flex:1 1 auto;}}
+#partnerOrderStatus:empty{display:none;}
+
+.partner-slideshow-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;gap:12px;align-items:end;}
+.partner-slideshow-fields>div{min-width:0;}
+@media(max-width:700px){.partner-slideshow-fields{grid-template-columns:repeat(2,minmax(0,1fr));}.partner-slideshow-fields>button{grid-column:1/-1;justify-self:start;}}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -6775,51 +6792,27 @@ main {
     <div id="adminSponsors" style="display:none;">
       <div class="admin-section" id="partnerCampaignNavigation" style="display:none;">
         <div class="admin-section-title">Partnerkampagnen</div>
-        <div id="partnerCampaignTabs" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+        <div class="partner-campaign-topline">
+          <div id="partnerCampaignTabs" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+          <button id="newPartnerCampaignToggle" type="button" class="admin-save-btn" aria-expanded="false" aria-controls="newPartnerCampaignForm" onclick="toggleNewPartnerCampaignForm()">Neue Partnerkampagne anlegen</button>
+        </div>
         <div id="partnerCampaignStateActions" style="margin-top:12px;"></div>
+        <div id="newPartnerCampaignForm" style="display:none;" class="partner-campaign-create">
+          <input id="newPartnerCampaignSource" type="hidden">
+          <p id="newPartnerCampaignSourceNote"></p>
+          <div class="partner-campaign-fields">
+            <div><label class="eb-adm-lbl" for="newPartnerCampaignName">Bezeichnung</label><input id="newPartnerCampaignName" class="eb-adm-inp" type="text" placeholder="Partner 2030-2033"></div>
+            <div><label class="eb-adm-lbl" for="newPartnerCampaignStart">Von</label><input id="newPartnerCampaignStart" class="eb-adm-inp" type="number" min="2027" max="2100"></div>
+            <div><label class="eb-adm-lbl" for="newPartnerCampaignEnd">Bis</label><input id="newPartnerCampaignEnd" class="eb-adm-inp" type="number" min="2027" max="2100"></div>
+          </div>
+          <p>Zusagen und Verträge beginnen für den neuen Zeitraum neu. Die laufende Partnerseite bleibt unverändert.</p>
+          <div class="partner-campaign-create-actions">
+            <button id="newPartnerCampaignSave" type="button" class="admin-save-btn" onclick="createPartnerCampaign()">Als Entwurf anlegen</button>
+            <button type="button" class="partner-campaign-cancel" onclick="toggleNewPartnerCampaignForm(false)">Abbrechen</button>
+          </div>
+        </div>
       </div>
       <div id="partnerCampaignReadOnlyNote" class="admin-section" style="display:none;border-color:#B7AA95;background:#F2EDE3;color:#5C564C;font:700 13px 'Manrope',sans-serif;line-height:1.5;">Historie: Diese abgeschlossene Kampagne ist schreibgeschützt. Übersicht und PDF bleiben verfügbar.</div>
-      <div class="admin-section">
-        <div class="admin-section-title">Partner-Seite im Hauptmenü (7. Tab)</div>
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-          <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
-            Blendet den öffentlichen Tab <strong>„Partner"</strong> (Premium / Partner / Regional) im Hauptmenü ein oder aus. Standardmäßig aus – ist der Schalter „An“, sehen ihn alle Besucher.
-          </div>
-          <button id="partnerTabToggle" type="button" onclick="togglePartnerTab()"
-            style="flex:0 0 auto;min-width:96px;padding:10px 18px;border:1.5px solid #E2DACB;border-radius:9px;background:#fff;color:#7A7368;font:800 13px 'Space Grotesk',sans-serif;letter-spacing:.04em;cursor:pointer;transition:all .15s;">– –</button>
-        </div>
-      </div>
-      <div class="admin-section">
-        <div class="admin-section-title">Partnerwerbung auf den übrigen Seiten</div>
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-          <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
-            Steuert die Partnerflächen auf Startseite, Buchen, Abo, Jetzt spielen, Verabreden, Guthaben und Kiosk. Auf <strong>„Aus"</strong> läuft das Buchungssystem werbefrei. Der Schalter darüber bestimmt zusätzlich, ob die eigene Partner-Seite im Hauptmenü angeboten wird.
-          </div>
-          <div class="seg-toggle" style="flex:0 0 auto;">
-            <button type="button" id="adsOff" class="seg-btn" onclick="setSponsorsEnabled(false)">Aus</button>
-            <button type="button" id="adsOn" class="seg-btn seg-active" onclick="setSponsorsEnabled(true)">Ein</button>
-          </div>
-        </div>
-      </div>
-      <div class="admin-section">
-        <div class="admin-section-title">Diashow-Zeiten Aktionslogos</div>
-        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
-          Steuert den automatischen Wechsel im Modus <strong>Diashow</strong>. Die Werte gelten jeweils pro Logo: Bei „4" bleibt Firmenlogo 4 Sekunden sichtbar, danach Aktionslogo 4 Sekunden.
-        </div>
-        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;">
-            <div>
-              <label class="eb-adm-lbl">Partner-Seite (Sekunden je Logo)</label>
-              <input id="slidePartnerSeconds" type="number" min="1" max="20" step="1" value="2" class="eb-adm-inp">
-            </div>
-            <div>
-              <label class="eb-adm-lbl">Übrige Seiten (Sekunden je Logo)</label>
-              <input id="slideAppSeconds" type="number" min="1" max="20" step="1" value="4" class="eb-adm-inp">
-            </div>
-            <button id="slideSaveBtn" type="button" class="admin-save-btn" onclick="saveActionLogoSlideshowSettings()">Speichern</button>
-          </div>
-        </div>
-      </div>
       <div class="admin-section">
         <div class="admin-section-title">Partnerseite · Logo-Reihenfolge</div>
         <div id="adminPartnerBoard"></div>
@@ -7112,21 +7105,50 @@ main {
         </div>
       </div>
 
+      <div class="partner-display-settings-grid">
       <div class="admin-section">
-        <button id="newPartnerCampaignToggle" type="button" class="admin-save-btn" onclick="toggleNewPartnerCampaignForm()">Neue Kampagne anlegen</button>
-        <div id="newPartnerCampaignForm" style="display:none;margin-top:12px;background:#fff;border:1.5px solid #E2DACB;border-radius:8px;padding:14px;">
-          <div style="display:grid;grid-template-columns:minmax(210px,1fr) 120px 120px;gap:10px;margin-bottom:10px;">
-            <div><label class="eb-adm-lbl">Bezeichnung</label><input id="newPartnerCampaignName" class="eb-adm-inp" type="text" placeholder="Partner 2030-2033"></div>
-            <div><label class="eb-adm-lbl">Von</label><input id="newPartnerCampaignStart" class="eb-adm-inp" type="number" min="2027" max="2100"></div>
-            <div><label class="eb-adm-lbl">Bis</label><input id="newPartnerCampaignEnd" class="eb-adm-inp" type="number" min="2027" max="2100"></div>
+        <div class="admin-section-title">Partner-Seite im Hauptmenü (7. Tab)</div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
+            Blendet den öffentlichen Tab <strong>„Partner"</strong> (Premium / Partner / Regional) im Hauptmenü ein oder aus. Standardmäßig aus – ist der Schalter „An“, sehen ihn alle Besucher.
           </div>
-          <label style="display:flex;align-items:center;gap:8px;font:700 13px 'Manrope',sans-serif;color:#1C1A17;margin-bottom:12px;cursor:pointer;"><input id="newPartnerCampaignCopy" type="checkbox" checked style="width:18px;height:18px;accent-color:#FF5A36;"> Partnerstamm und Jahresbeträge übernehmen; Zusagen und Verträge neu beginnen</label>
-          <div style="display:flex;gap:8px;">
-            <button type="button" class="admin-save-btn" onclick="createPartnerCampaign()">Kampagne speichern</button>
-            <button type="button" onclick="toggleNewPartnerCampaignForm(false)" style="padding:11px 14px;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;color:#7A7368;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer;">Abbrechen</button>
+          <button id="partnerTabToggle" type="button" onclick="togglePartnerTab()"
+            style="flex:0 0 auto;min-width:96px;padding:10px 18px;border:1.5px solid #E2DACB;border-radius:9px;background:#fff;color:#7A7368;font:800 13px 'Space Grotesk',sans-serif;letter-spacing:.04em;cursor:pointer;transition:all .15s;">– –</button>
+        </div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Partnerwerbung auf den übrigen Seiten</div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1 1 260px;font-size:0.8rem;color:#7A7368;line-height:1.5;">
+            Steuert die Partnerflächen auf Startseite, Buchen, Abo, Jetzt spielen, Verabreden, Guthaben und Kiosk. Auf <strong>„Aus"</strong> läuft das Buchungssystem werbefrei. Der Schalter „Partner-Seite im Hauptmenü“ steuert den eigenen Partner-Tab separat.
+          </div>
+          <div class="seg-toggle" style="flex:0 0 auto;">
+            <button type="button" id="adsOff" class="seg-btn" onclick="setSponsorsEnabled(false)">Aus</button>
+            <button type="button" id="adsOn" class="seg-btn seg-active" onclick="setSponsorsEnabled(true)">Ein</button>
           </div>
         </div>
       </div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Diashow-Zeiten Aktionslogos</div>
+        <div style="font-size:0.8rem;color:#7A7368;line-height:1.5;margin-bottom:14px;">
+          Steuert den automatischen Wechsel im Modus <strong>Diashow</strong>. Die Werte gelten jeweils pro Logo: Bei „4" bleibt Firmenlogo 4 Sekunden sichtbar, danach Aktionslogo 4 Sekunden.
+        </div>
+        <div style="background:#FFFFFF;border:1.5px solid #E2DACB;border-radius:12px;padding:16px 18px;">
+          <div class="partner-slideshow-fields">
+            <div>
+              <label class="eb-adm-lbl">Partner-Seite (Sekunden je Logo)</label>
+              <input id="slidePartnerSeconds" type="number" min="1" max="20" step="1" value="2" class="eb-adm-inp">
+            </div>
+            <div>
+              <label class="eb-adm-lbl">Übrige Seiten (Sekunden je Logo)</label>
+              <input id="slideAppSeconds" type="number" min="1" max="20" step="1" value="4" class="eb-adm-inp">
+            </div>
+            <button id="slideSaveBtn" type="button" class="admin-save-btn" onclick="saveActionLogoSlideshowSettings()">Speichern</button>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /adminSponsors -->
 
     <!-- ── MIS ── -->
@@ -14888,9 +14910,9 @@ function renderPartnerCampaignTabs() {
   const drafts = campaigns.filter(c => c.status === 'draft' || (!c.status && !c.is_current));
   const archived = campaigns.filter(c => c.status === 'archived');
   if (campaign?.status === 'archived') window.__partnerHistoryOpen = true;
-  if (nav) nav.style.display = campaigns.length ? '' : 'none';
+  if (nav) nav.style.display = '';
   const campaignButton = (c, label = c.name) => `
-    <button type="button" onclick="selectPartnerCampaign('${c.id}')" style="padding:10px 15px;border:1.5px solid ${c.id === window.__partnerCampaignId ? '#1C1A17' : '#E2DACB'};border-radius:8px;background:${c.id === window.__partnerCampaignId ? '#1C1A17' : '#fff'};color:${c.id === window.__partnerCampaignId ? '#fff' : '#5C564C'};font:800 12px 'Space Grotesk',sans-serif;cursor:pointer;">${esc(label)}</button>`;
+    <button type="button" onclick="selectPartnerCampaign('${c.id}')" style="padding:10px 15px;border:1.5px solid ${c.id === window.__partnerCampaignId ? '#1C1A17' : '#E2DACB'};border-radius:999px;background:${c.id === window.__partnerCampaignId ? '#1C1A17' : '#fff'};color:${c.id === window.__partnerCampaignId ? '#fff' : '#5C564C'};font:800 12px 'Space Grotesk',sans-serif;cursor:pointer;">${esc(label)}</button>`;
   if (box) box.innerHTML = [
     ...active.map(c => campaignButton(c)),
     ...drafts.map(c => campaignButton(c, `${c.name} · Entwurf`)),
@@ -14911,12 +14933,14 @@ function renderPartnerCampaignTabs() {
     if (campaign?.status === 'active') {
       actions.innerHTML = successor
         ? `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><span style="font:800 11px 'Space Grotesk',sans-serif;color:#1F8A5F;text-transform:uppercase;letter-spacing:.06em;">Laufende Kampagne</span><button type="button" onclick="finishPartnerCampaign()" style="padding:9px 12px;border:1.5px solid #B8402C;border-radius:8px;background:#fff;color:#B8402C;font:800 11px 'Space Grotesk',sans-serif;cursor:pointer;">Kampagne beenden</button><span style="font:600 11px 'Manrope',sans-serif;color:#7A7368;">Danach startet ${esc(successor.name)}.</span></div>`
-        : `<div style="font:700 11px 'Manrope',sans-serif;color:#7A7368;">Laufende Kampagne. Zum Beenden zuerst eine neue Kampagne als Entwurf anlegen.</div>`;
+        : '';
     } else if (campaign?.status === 'draft') {
       actions.innerHTML = `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><span style="font:800 11px 'Space Grotesk',sans-serif;color:#B06A00;text-transform:uppercase;letter-spacing:.06em;">Entwurf</span><button type="button" onclick="deleteDraftPartnerCampaign()" style="padding:9px 12px;border:1.5px solid #B8402C;border-radius:8px;background:#fff;color:#B8402C;font:800 11px 'Space Grotesk',sans-serif;cursor:pointer;">Entwurf löschen</button></div>`;
-    } else {
+    } else if(campaign?.status === 'archived') {
       actions.innerHTML = `<span style="font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;text-transform:uppercase;letter-spacing:.06em;">Historie · schreibgeschützt</span>`;
     }
+    if(!campaign)actions.innerHTML='';
+    actions.style.display=actions.innerHTML?'':'none';
   }
   applyPartnerCampaignMode();
 }
@@ -14944,6 +14968,7 @@ function applyPartnerCampaignMode() {
 
 async function selectPartnerCampaign(id) {
   if (id === window.__partnerCampaignId) return;
+  toggleNewPartnerCampaignForm(false);
   window.__partnerOrderStatus='';
   document.getElementById('partnerOrderDialog')?.close();
   sponsorOrderPositionId=null;
@@ -14996,27 +15021,35 @@ function toggleNewPartnerCampaignForm(force) {
   if (!form) return;
   const open = typeof force === 'boolean' ? force : form.style.display === 'none';
   form.style.display = open ? '' : 'none';
+  document.getElementById('newPartnerCampaignToggle')?.setAttribute('aria-expanded',String(open));
   if (!open) return;
   const current = currentPartnerCampaign();
   const start = current ? current.end_year : new Date().getFullYear();
-  const end = start + 3;
+  const end = start + (current ? current.end_year-current.start_year : 3);
+  document.getElementById('newPartnerCampaignSource').value=current?.id||'';
+  document.getElementById('newPartnerCampaignSourceNote').textContent=current ? 'Vorlage: '+current.name+'. Partner, Jahresbeträge und Logo-Reihenfolge werden übernommen.' : 'Eine neue Partnerkampagne als Entwurf vorbereiten.';
   document.getElementById('newPartnerCampaignStart').value = start;
   document.getElementById('newPartnerCampaignEnd').value = end;
   document.getElementById('newPartnerCampaignName').value = `Partner ${start}-${end}`;
 }
 
+let partnerCampaignCreating=false;
 async function createPartnerCampaign() {
+  if(partnerCampaignCreating)return;
   const name = document.getElementById('newPartnerCampaignName').value.trim();
   const start = parseInt(document.getElementById('newPartnerCampaignStart').value, 10);
   const end = parseInt(document.getElementById('newPartnerCampaignEnd').value, 10);
   if (!name || !Number.isInteger(start) || !Number.isInteger(end) || end < start) {
     alert('Bitte Bezeichnung und einen gültigen Zeitraum eintragen.'); return;
   }
+  const sourceId=document.getElementById('newPartnerCampaignSource').value||null;
+  const button=document.getElementById('newPartnerCampaignSave');
+  partnerCampaignCreating=true;if(button)button.disabled=true;
   try {
     const { data, error } = await sb.rpc('admin_create_partner_campaign', {
       p_name:name, p_start_year:start, p_end_year:end,
-      p_source_campaign_id:window.__partnerCampaignId,
-      p_copy_members:document.getElementById('newPartnerCampaignCopy').checked
+      p_source_campaign_id:sourceId,
+      p_copy_members:true
     });
     if (error) throw error;
     toggleNewPartnerCampaignForm(false);
@@ -15025,7 +15058,7 @@ async function createPartnerCampaign() {
     showToast('Neue Partnerkampagne angelegt. Zusagen und Verträge beginnen leer.');
   } catch (e) {
     alert('Kampagne konnte nicht angelegt werden: ' + (e?.message || 'Unbekannter Fehler'));
-  }
+  } finally {partnerCampaignCreating=false;if(button)button.disabled=false;}
 }
 
 function resetPartnerPipelineForm() {
@@ -18670,7 +18703,7 @@ async function saveSponsorOrder(tier,ids,focusId){
   const{error}=await sb.rpc('admin_reorder_partner_sponsors',{p_campaign_id:campaignId,p_tier:tier,p_ids:ids,p_expected:expected});if(error)throw error;
   let published=true;
   if(currentPartnerCampaign()?.is_current&&typeof window.pbPublishSplashSnapshot==='function')try{await window.pbPublishSplashSnapshot();}catch(_e){published=false;}
-  if(window.__partnerCampaignId===campaignId){await loadAdminSponsors(true);announce(published?'Reihenfolge gespeichert.':'Reihenfolge gespeichert. Die Logo-Vorschau konnte noch nicht aktualisiert werden.');
+  if(window.__partnerCampaignId===campaignId){await loadAdminSponsors(true);announce(published?'':'Reihenfolge gespeichert. Die Logo-Vorschau konnte noch nicht aktualisiert werden.');if(published&&typeof showToast==='function')showToast('Reihenfolge gespeichert.');
    document.querySelector(`#adminPartnerBoard [data-sponsor-order-id="${focusId}"]`)?.focus({preventScroll:true});}
  }catch(e){
   if(window.__partnerCampaignId===campaignId){await loadAdminSponsors(true);announce('Nicht verschoben: '+(e.message||e));}
