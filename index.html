@@ -9358,7 +9358,7 @@ function applyMinuteLoyalty(snapshot,offer) {
 }
 
 return {applyMinuteLoyalty};})();
-// booking-receipt-minutes SHA256 f17b75c0c2aaf6b139cb6d62862bfadf9a27542a131622e574d5fdb03a7dbe8a
+// booking-receipt-minutes SHA256 39b335524bbc379b5eef9a22dd1bfeea0ea853268c232d2a6c0d79c75061d1a5
 modules["booking-receipt-minutes"]=(()=>{
 const {bookingDiscountFactor}=modules["booking-discount-ratio"];
 // Shared frozen receipt/mail presentation. No price lookup or eligibility changes.
@@ -9390,7 +9390,7 @@ function minuteTariffReceiptRows(terms,snapshot) {
     const expected=Number((BigInt(p.baseRateCents+p.surchargeRateCents)*BigInt(p.minutes)*2n+60n)/120n);
     fact(p.grossCents===expected);cursor=p.endMinute;gross+=p.grossCents;
     return [`${minuteClock(p.startMinute)} – ${minuteClock(p.endMinute)} Uhr · ${p.minutes} Minuten`,
-      `${euro(p.grossCents)}${p.minutes===60&&p.startMinute%60===0&&p.endMinute%60===0?'':` (${euro(p.baseRateCents+p.surchargeRateCents)}/Stunde)`}`];
+      `${euro(p.grossCents)}${time.duration===60&&p.minutes===60&&p.startMinute%60===0&&p.endMinute%60===0?'':` (${euro(p.baseRateCents+p.surchargeRateCents)}/Stunde)`}`];
   });
   fact(cursor===time.end&&money(gross)&&gross===snapshot.grossCents
     &&money(snapshot.netBeforeLoyaltyCents)&&money(snapshot.discountCents)
