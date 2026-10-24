@@ -1933,6 +1933,16 @@ body.partner-drag-active,body.partner-drag-active *{cursor:grabbing!important;us
 .partner-slideshow-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;gap:12px;align-items:end;}
 .partner-slideshow-fields>div{min-width:0;}
 @media(max-width:700px){.partner-slideshow-fields{grid-template-columns:repeat(2,minmax(0,1fr));}.partner-slideshow-fields>button{grid-column:1/-1;justify-self:start;}}
+
+.partner-order-card{position:relative;min-width:0;}
+.partner-reject-button{position:absolute;top:4px;right:4px;z-index:5;width:23px;height:23px;border:1px solid #D8CEBE;border-radius:50%;background:#fff;color:#7A7368;cursor:pointer;font:600 18px/1 Arial,sans-serif;padding:0;}
+.partner-reject-button:hover{color:#B8402C;border-color:#B8402C;background:#FFF1EA;}
+#adminPartnerBoard .partner-order-empty{position:relative;background:#29251F;border:1px dashed #655749;box-shadow:none;color:#BEB4A5;font:600 11px Manrope,sans-serif;text-align:center;}
+#adminPartnerBoard .partner-order-card.partner-order-placeholder .partner-order-tile{opacity:.2;}
+#adminPartnerBoard .partner-order-card.partner-order-placeholder{border-radius:12px;}
+#adminPartnerBoard .partner-swap-target{outline:3px solid #FF5A36;outline-offset:2px;}
+#adminPartnerBoard .partner-swap-target::after{content:attr(data-swap-label);position:absolute;left:4px;right:4px;bottom:4px;z-index:4;border-radius:4px;padding:4px;background:#FF5A36;color:#fff;text-align:center;font:700 10px Manrope,sans-serif;pointer-events:none;}
+.partner-new-placement{outline:3px solid #FF5A36;outline-offset:3px;}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -14731,11 +14741,17 @@ function adminParseEuro(value) {
   return Number(compact.replace(/\./g, ''));
 }
 
+function sponsorSuggestedAnnual(tier,id=document.getElementById('spEditId')?.value){
+ if(tier!=='premium')return SPONSOR_TIER_CONFIG[tier]?.suggestedAnnualCents||0;
+ const rows=partnerPublicOrderRows('premium'),existing=rows.find(s=>s.id===id);
+ if(existing)return (existing.campaign_slot||rows.indexOf(existing)+1)===2?250000:500000;
+ return rows.some((s,i)=>(s.campaign_slot||i+1)===1)?250000:500000;
+}
 function syncSponsorAnnualAmount(force = false) {
   const tier = document.getElementById('spTier')?.value;
   const input = document.getElementById('spAnnualAmount');
   if (!input || !SPONSOR_TIER_CONFIG[tier]) return;
-  const suggested = (SPONSOR_TIER_CONFIG[tier].suggestedAnnualCents / 100).toFixed(0);
+  const suggested = (sponsorSuggestedAnnual(tier) / 100).toFixed(0);
   if (document.getElementById('spInKindPartnership')?.checked) {
     input.dataset.cashValue = suggested;
     input.value = '0';
@@ -14762,7 +14778,7 @@ function setSponsorInKindMode(enabled, restoreAmount = true) {
     input.title = '';
     if (restoreAmount && adminParseEuro(input.value) === 0) {
       const tier = document.getElementById('spTier')?.value;
-      input.value = input.dataset.cashValue || ((SPONSOR_TIER_CONFIG[tier]?.suggestedAnnualCents || 0) / 100).toFixed(0);
+      input.value = input.dataset.cashValue || (sponsorSuggestedAnnual(tier) / 100).toFixed(0);
     }
   }
 }
@@ -15176,19 +15192,8 @@ async function savePartnerRejectionEntry() {
   } catch (e) { alert('Absage konnte nicht gespeichert werden: ' + (e?.message || 'Unbekannter Fehler')); }
 }
 
-function convertPipelineToPartner(id) {
-  if (!ensurePartnerCampaignEditable()) return;
-  const row = (window.__partnerPipeline || []).find(item => item.id === id);
-  if (!row) return;
-  resetSponsorForm();
-  document.getElementById('spSourcePipelineId').value = row.id;
-  document.getElementById('spName').value = row.company || '';
-  document.getElementById('spContractCompany').value = row.company || '';
-  document.getElementById('spContactName').value = row.contact_name || '';
-  document.getElementById('spContactPhone').value = row.phone || '';
-  setSponsorCompanyAuto(true);
-  document.getElementById('spName').scrollIntoView({ behavior:'smooth', block:'center' });
-  setTimeout(() => document.getElementById('spTier')?.focus(), 350);
+async function convertPipelineToPartner(id) {
+  return executePartnerBoardAction('promote',id);
 }
 
 async function setPartnerPipelineStage(id, stage) {
@@ -15372,6 +15377,11 @@ async function loadAdminSponsors(campaignsReady = false) {
         verbal_commitment:member.verbal_commitment,
         contract_received:member.contract_received,
         public_sort_order:sponsor.sort_order,
+        public_tier:sponsor.tier,public_active:sponsor.active,public_court:sponsor.court_partner_enabled,public_court_label:sponsor.court_label,
+        public_annual:sponsor.annual_amount_cents,public_verbal:sponsor.verbal_commitment,public_contract:sponsor.contract_received,
+        tier:archived ? (snapshot.tier||sponsor.tier) : (member.sponsor_snapshot?.campaign_tier||sponsor.tier),
+        active:archived ? snapshot.active : (member.sponsor_snapshot?.campaign_active??sponsor.active),
+        campaign_slot:member.sponsor_snapshot?.campaign_slot??null,
         sort_order:archived ? snapshot.sort_order : (currentPartnerCampaign()?.is_current ? sponsor.sort_order : member.sort_order),
         campaign_sort_order:member.sort_order
       };
@@ -15616,7 +15626,7 @@ function editSponsor(id) {
   document.getElementById('spCourtLabel').value = s.court_label || '';
   document.getElementById('spCourtPartnerEnabled').checked = s.court_partner_enabled === true;
   document.getElementById('spAnnualAmount').value = ((Number(s.annual_amount_cents) || 0) / 100).toFixed(2).replace('.', ',');
-  document.getElementById('spAnnualAmount').dataset.cashValue = (SPONSOR_TIER_CONFIG[s.tier]?.suggestedAnnualCents / 100).toFixed(0);
+  document.getElementById('spAnnualAmount').dataset.cashValue = (sponsorSuggestedAnnual(s.tier,s.id) / 100).toFixed(0);
   setSponsorInKindMode(Number(s.annual_amount_cents) === 0, false);
   document.getElementById('spVerbalCommitment').checked = s.verbal_commitment === true;
   document.getElementById('spContractReceived').checked = s.contract_received === true;
@@ -15788,7 +15798,7 @@ async function saveSponsor() {
   const actionFile = document.getElementById('spActionFile').files[0];
   const existingSponsor = id ? (window.__sponsorRows || []).find(s => s.id === id) : null;
   const campaign = currentPartnerCampaign();
-  const active = campaign?.is_current ? activeRequested : (existingSponsor?.active || false);
+  const active = campaign?.is_current ? activeRequested : (existingSponsor?.public_active || false);
   const actionLogoMode = document.getElementById('spActionLogoMode').value || 'off';
   const hasActionLogo = actionLogoMode !== 'off';
   const contactName  = document.getElementById('spContactName').value.trim();
@@ -15834,6 +15844,7 @@ async function saveSponsor() {
     return;
   }
 
+  const targetPremiumSlot=tier==='premium'?(sponsorSuggestedAnnual(tier,id)===250000?2:1):null;
   const prev = btn.textContent;
   btn.disabled = true; btn.textContent = 'Speichert …';
   try {
@@ -15850,19 +15861,20 @@ async function saveSponsor() {
       document.getElementById('spActionLogoUrl').value = actionLogoUrl;
     }
     const payload = {
-      p_id: id, p_tier: tier, p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: sort,
+      p_id: id, p_tier: campaign?.is_current?tier:(existingSponsor?.public_tier||tier), p_name: name, p_logo_url: logoUrl, p_active: active, p_sort_order: campaign?.is_current?sort:(existingSponsor?.public_sort_order??sort),
       p_contact_name: contactName || null, p_contact_email: contactEmail || null, p_contact_phone: contactPhone || null,
       p_website_url: website || null,
-      p_court_label: courtLabelValue || null,
+      p_court_label: campaign?.is_current?(courtLabelValue||null):(existingSponsor?.public_court_label||null),
       p_court_partner_enabled: courtPartnerEnabled,
-      p_annual_amount_cents: annualAmountCents,
-      p_verbal_commitment: verbalCommitment,
-      p_contract_received: contractReceived,
+      p_annual_amount_cents: campaign?.is_current?annualAmountCents:(existingSponsor?.public_annual||0),
+      p_verbal_commitment: campaign?.is_current?verbalCommitment:(existingSponsor?.public_verbal||false),
+      p_contract_received: campaign?.is_current?contractReceived:(existingSponsor?.public_contract||false),
       p_discount_email_domains: null,
       p_action_logo_url: actionLogoUrl,
       p_has_action_logo: hasActionLogo,
       p_action_logo_mode: actionLogoMode
     };
+    if(!campaign?.is_current)payload.p_court_partner_enabled=existingSponsor?.public_court||false;
     if (hasContractCompanyDiff) payload.p_contract_company = contractCompany;
     if (hasAddressInput) {
       payload.p_address_street = addressStreet || null;
@@ -15885,6 +15897,10 @@ async function saveSponsor() {
       p_verbal_commitment:verbalCommitment, p_contract_received:contractReceived
     });
     if (campaignError) throw campaignError;
+    {
+      const {error:placementError}=await sb.rpc('admin_edit_partner_board',{p_campaign_id:window.__partnerCampaignId,p_action:'configure',p_source_id:sponsorId,p_tier:tier,p_visible:activeRequested,p_slot:targetPremiumSlot});
+      if(placementError)throw placementError;
+    }
     const { error: discountError } = await sb.rpc('admin_set_sponsor_discount_emails', {
       p_sponsor_id: sponsorId,
       p_emails: discountEmailParts.join('\n'),
@@ -18671,7 +18687,7 @@ function partnerPublicOrderRows(tier){return partnerOrderRows(tier).filter(s=>s.
 function partnerSlotCode(s){
  const i=partnerPublicOrderRows(s.tier).findIndex(row=>row.id===s.id);
  if(i<0)return '–';
- return s.tier==='premium'?'A'+(i+1):String.fromCharCode((s.tier==='partner'?66:68)+Math.floor(i/6))+(i%6+1);
+ return s.tier==='premium'?'A'+(s.campaign_slot||i+1):String.fromCharCode((s.tier==='partner'?66:68)+Math.floor(i/6))+(i%6+1);
 }
 function renderAdminPartnerBoard(){
  if(sponsorOrderDrag)sponsorOrderDrag.cancel();
@@ -18682,10 +18698,18 @@ function renderAdminPartnerBoard(){
  h+='<header class="pbp-head"><img class="pbp-brand" src="https://padel-bielstein.de/sponsors/brand-padel-bielstein.png" alt="Padel Bielstein"><div class="pbp-rule"></div><div class="pbp-welcome"><div class="pbp-wtop">Aus der Region, für die Region</div><div class="pbp-wsub">Unsere starken Partner vor Ort</div></div></header>';
  for(const tier of ['premium','partner','regional']){
   const rows=partnerPublicOrderRows(tier);
-  if(!rows.length&&tier!=='premium')continue;
   h+=label(tier==='premium'?'Premium-Partner':tier==='partner'?'Partner':'Regionale Partner')+'<div class="'+(tier==='premium'?'pbp-premwrap':'pbp-grid pbp-grid-'+tier)+'">';
-  h+=rows.map(s=>window.pbPartnerLogoTile(s,tier==='premium'?'pbp-tile-prem':'',partnerSlotCode(s),archived)).join('');
-  if(tier==='premium')for(let i=rows.length;i<2;i++)h+='<div class="pbp-tile pbp-tile-prem pbp-tile-prem-empty"><span class="partner-slot">A'+(i+1)+'</span>Premium-Partner '+(i+1)+'<span>frei</span></div>';
+  const editable=!archived;
+  const card=s=>{
+    const tile=window.pbPartnerLogoTile(s,tier==='premium'?'pbp-tile-prem':'',partnerSlotCode(s),archived).replace(/ data-sponsor-order-(?:id|tier)="[^"]*"/g,'');
+    return `<div class="partner-order-card" data-sponsor-order-id="${s.id}" data-sponsor-order-tier="${tier}">${tile}${editable?`<button type="button" class="partner-reject-button" title="In Absagen verschieben" aria-label="${esc(s.name)} in Absagen verschieben" onclick="rejectBoardPartner('${s.id}')">×</button>`:''}</div>`;
+  };
+  const empty=slot=>`<div class="pbp-tile ${tier==='premium'?'pbp-tile-prem':''} partner-order-empty" data-drop-tier="${tier}" data-drop-slot="${slot}"><span class="partner-slot">${sponsorSlotAt(tier,slot-1)}</span><span>Freier Platz</span></div>`;
+  if(tier==='premium'){
+   for(let slot=1;slot<=2;slot++){const partner=rows.find((s,i)=>(s.campaign_slot||i+1)===slot);h+=partner?card(partner):empty(slot);}
+  }else{
+   h+=rows.map(card).join('');for(let slot=rows.length+1;slot<=(SPONSOR_TIER_CONFIG[tier]?.limit||0);slot++)h+=empty(slot);
+  }
   h+='</div>';
  }
  h+='</div>';host.innerHTML=h;
@@ -18705,7 +18729,7 @@ async function saveSponsorOrder(tier,ids,focusId){
   let published=true;
   if(currentPartnerCampaign()?.is_current&&typeof window.pbPublishSplashSnapshot==='function')try{await window.pbPublishSplashSnapshot();}catch(_e){published=false;}
   if(window.__partnerCampaignId===campaignId){await loadAdminSponsors(true);announce(published?'':'Reihenfolge gespeichert. Die Logo-Vorschau konnte noch nicht aktualisiert werden.');if(published&&typeof showToast==='function')showToast('Reihenfolge gespeichert.');
-   document.querySelector(`#adminPartnerBoard [data-sponsor-order-id="${focusId}"]`)?.focus({preventScroll:true});}
+   document.querySelector(`#adminPartnerBoard [data-sponsor-order-id="${focusId}"] .partner-order-tile`)?.focus({preventScroll:true});}
  }catch(e){
   if(window.__partnerCampaignId===campaignId){await loadAdminSponsors(true);announce('Nicht verschoben: '+(e.message||e));}
  }finally{sponsorOrderSaving=false;}
@@ -18723,10 +18747,12 @@ function openSponsorPositionDialog(id){
  document.getElementById('partnerOrderDialogTitle').textContent=s.name+' verschieben';
  const select=document.getElementById('partnerOrderPosition');select.replaceChildren();
  partnerPublicOrderRows(s.tier).forEach((row,i)=>select.add(new Option(partnerSlotCode(row)+' · '+row.name,String(i))));select.value=String(partnerPublicOrderRows(s.tier).findIndex(row=>row.id===id));
+ appendPartnerBoardPositionOptions(s,select);
  document.getElementById('partnerOrderDialog').showModal();
 }
 async function confirmSponsorPosition(){
  const s=(window.__sponsorRows||[]).find(s=>s.id===sponsorOrderPositionId);if(!s)return;
+ const selected=document.getElementById('partnerOrderPosition').value;if(selected.startsWith('board:')){const parts=selected.split(':');document.getElementById('partnerOrderDialog').close();return executePartnerBoardAction(parts[1],s.id,parts[1]==='swap'?parts[2]:null,parts[1]==='move'?parts[2]:null,Number(parts[3])||null);}
  const ids=partnerOrderRows(s.tier).map(s=>s.id),visible=partnerPublicOrderRows(s.tier).map(s=>s.id),next=Number(document.getElementById('partnerOrderPosition').value);
  if(!Number.isInteger(next)||next<0||next>=visible.length)return;
  const old=visible.indexOf(s.id),target=visible[next];
@@ -18746,7 +18772,7 @@ function syncSponsorOrderPreview(d){
  visible.forEach((el,i)=>{
   const slot=sponsorSlotAt(d.tier,i),row=(window.__sponsorRows||[]).find(s=>s.id===el.dataset.sponsorOrderId);
   el.querySelector('.partner-slot').textContent=slot;
-  el.title=slot+' · '+row.name+' verschieben – ziehen oder Position wählen';el.setAttribute('aria-label',el.title);
+  el.title=slot+' · '+row.name+' verschieben – ziehen oder Position wählen';el.setAttribute('aria-label',el.title);el.querySelector('.partner-order-tile')?.setAttribute('aria-label',el.title);
   document.querySelector(`[data-partner-finance-id="${row.id}"] .partner-table-slot`)?.replaceChildren(document.createTextNode(slot));
  });
  const first=document.querySelector(`[data-partner-finance-id="${d.id}"]`),body=first?.parentElement;
@@ -18757,6 +18783,7 @@ function sponsorOrderDragTarget(d){
  // Gaps between tiles are valid targets too. Use the nearest layout cell,
  // rather than the old elementFromPoint test that silently rejected gaps.
  if(!d.grid.isConnected||window.__partnerCampaignId!==d.campaignId){d.cancel();return;}
+ if(partnerBoardForeignTarget(d))return;
  const rect=d.grid.getBoundingClientRect();
  if(d.x<rect.left-20||d.x>rect.right+20||d.y<rect.top-20||d.y>rect.bottom+20){
   d.valid=false;d.ghost?.classList.add('partner-drag-outside');if(d.ghost)d.ghost.dataset.dragLabel=d.name+' · Hier nicht ablegen';d.handle.dataset.dropLabel='Innerhalb dieser Kategorie ablegen';const status=document.getElementById('partnerOrderStatus');if(status)status.textContent='Bitte innerhalb derselben Kategorie ablegen.';return;
@@ -18769,14 +18796,14 @@ function sponsorOrderDragTarget(d){
   const remaining=tiles.filter(el=>el!==d.handle);d.grid.insertBefore(d.handle,remaining[nearest]||null);syncSponsorOrderPreview(d);
  }
  const slot=sponsorSlotAt(d.tier,nearest);d.handle.dataset.dropLabel='Hier einfügen · '+slot;
- if(d.ghost)d.ghost.dataset.dragLabel=d.name+' · '+d.fromSlot+' → '+slot;
+ if(d.ghost)d.ghost.dataset.dragLabel=d.name+' · '+d.fromSlot+' → '+slot+(d.tier==='premium'?' · '+adminFormatEuro(partnerBoardAnnual((window.__sponsorRows||[]).find(s=>s.id===d.id),'premium',nearest+1))+'/Jahr':'');
  const status=document.getElementById('partnerOrderStatus');if(status)status.textContent=d.name+': '+d.fromSlot+' → '+slot+' · Zum Speichern loslassen.';
 }
 function startSponsorOrderDrag(event,id){
  if(event.pointerType==='touch')return; // Touch keeps page scrolling and native position selection.
  if(event.button!==0||sponsorOrderSaving||sponsorOrderDrag||!ensurePartnerCampaignEditable())return;
  const s=(window.__sponsorRows||[]).find(s=>s.id===id);if(!s)return;
- const handle=event.currentTarget,grid=handle.parentElement,capture=document.getElementById('adminPartnerBoard'),rect=handle.getBoundingClientRect();
+ const handle=event.currentTarget.closest('[data-sponsor-order-id]'),grid=handle.closest('.pbp-grid,.pbp-premwrap'),capture=document.getElementById('adminPartnerBoard'),rect=handle.getBoundingClientRect();
  const d={id,name:s.name,tier:s.tier,handle,grid,capture,pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top,width:rect.width,height:rect.height,fromSlot:partnerSlotCode(s),originalVisible:[...grid.querySelectorAll('[data-sponsor-order-id]')].map(el=>el.dataset.sponsorOrderId),previewIds:partnerOrderRows(s.tier).map(row=>row.id),moved:false,valid:false,frame:0,campaignId:window.__partnerCampaignId,ghost:null};
  sponsorOrderDrag=d;
  const positionGhost=()=>{if(d.ghost)d.ghost.style.transform=`translate3d(${d.x-d.offsetX}px,${d.y-d.offsetY}px,0)`;};
@@ -18790,7 +18817,7 @@ function startSponsorOrderDrag(event,id){
   if(e.pointerId!==d.pointerId)return;d.x=e.clientX;d.y=e.clientY;
   if(!d.moved&&Math.hypot(d.x-d.startX,d.y-d.startY)>7){
    d.moved=true;
-   const ghost=document.createElement('div');ghost.className=handle.className+' partner-drag-ghost';ghost.innerHTML=handle.innerHTML;ghost.setAttribute('aria-hidden','true');ghost.style.width=d.width+'px';ghost.style.height=d.height+'px';document.body.append(ghost);d.ghost=ghost;
+   const ghost=document.createElement('div');const visual=handle.querySelector('.partner-order-tile')||handle;ghost.className=visual.className+' partner-drag-ghost';ghost.innerHTML=visual.innerHTML;ghost.setAttribute('aria-hidden','true');ghost.style.width=d.width+'px';ghost.style.height=d.height+'px';document.body.append(ghost);d.ghost=ghost;
    const layers=handle.querySelectorAll('.pbp-logo-main,.pbp-logo-action');
    ghost.querySelectorAll('.pbp-logo-main,.pbp-logo-action').forEach((layer,i)=>{layer.style.setProperty('opacity',getComputedStyle(layers[i]).opacity,'important');layer.style.animation='none';layer.style.transition='none';});
    handle.classList.add('partner-order-placeholder');document.body.classList.add('partner-drag-active');d.frame=requestAnimationFrame(scrollFrame);
@@ -18801,6 +18828,7 @@ function startSponsorOrderDrag(event,id){
   for(const id of d.originalVisible){const el=grid.querySelector(`[data-sponsor-order-id="${id}"]`);if(el)grid.append(el);}
   syncSponsorOrderPreview(d);
  };
+ d.restore=restore;
  const finish=(e,cancelled=false)=>{
   if(sponsorOrderDrag!==d||e&&e.pointerId!==undefined&&e.pointerId!==d.pointerId)return;
   if(e?.type==='pointerup'&&d.moved){d.x=e.clientX;d.y=e.clientY;sponsorOrderDragTarget(d);if(sponsorOrderDrag!==d)return;}
@@ -18808,10 +18836,11 @@ function startSponsorOrderDrag(event,id){
   capture.removeEventListener('pointermove',move);capture.removeEventListener('pointerup',finish);capture.removeEventListener('pointercancel',cancel);capture.removeEventListener('lostpointercapture',cancel);document.removeEventListener('keydown',key);window.removeEventListener('blur',cancel);
   sponsorOrderDrag=null;
   if(capture.hasPointerCapture(d.pointerId))capture.releasePointerCapture(d.pointerId);
-  d.ghost?.remove();handle.classList.remove('partner-order-placeholder');delete handle.dataset.dropLabel;document.body.classList.remove('partner-drag-active');
+  clearPartnerBoardTargets();d.ghost?.remove();handle.classList.remove('partner-order-placeholder');delete handle.dataset.dropLabel;document.body.classList.remove('partner-drag-active');
   if(d.moved)e?.preventDefault();
   else if(!cancelled&&e?.type==='pointerup')openSponsorPositionDialog(d.id);
   if(d.moved&&!cancelled&&d.valid&&window.__partnerCampaignId===d.campaignId){
+   if(d.cross){void executePartnerBoardAction(d.cross.action,d.id,d.cross.targetId,d.cross.tier,d.cross.slot);return;}
    const changed=d.previewIds.some((id,i)=>id!==partnerOrderRows(d.tier)[i]?.id);
    if(changed){void saveSponsorOrder(d.tier,d.previewIds,d.id);return;}
   }
@@ -18822,6 +18851,54 @@ function startSponsorOrderDrag(event,id){
  // can lose capture and abort a drag in Safari/Chromium.
  capture.setPointerCapture(event.pointerId);
  capture.addEventListener('pointermove',move);capture.addEventListener('pointerup',finish);capture.addEventListener('pointercancel',cancel);capture.addEventListener('lostpointercapture',cancel);document.addEventListener('keydown',key);window.addEventListener('blur',cancel);
+}
+
+function partnerBoardState(){return Object.fromEntries((window.__sponsorRows||[]).map(s=>[s.id,{tier:s.tier,order:pbSponsorSortNumber(s.sort_order),active:!!s.active,slot:s.tier==='premium'&&s.active?Number(s.campaign_slot||partnerPublicOrderRows('premium').findIndex(row=>row.id===s.id)+1):null}]));}
+function partnerBoardAnnual(s,tier,slot){return Number(s.annual_amount_cents)===0?0:tier==='premium'?(slot===2?250000:500000):tier==='partner'?100000:30000;}
+function clearPartnerBoardTargets(){document.querySelectorAll('.partner-swap-target').forEach(el=>{el.classList.remove('partner-swap-target');delete el.dataset.swapLabel;});}
+function partnerBoardForeignTarget(d){
+ clearPartnerBoardTargets();
+ const grids=[...document.querySelectorAll('#adminPartnerBoard .pbp-grid,#adminPartnerBoard .pbp-premwrap')];
+ const grid=grids.find(el=>{const r=el.getBoundingClientRect();return d.x>=r.left-12&&d.x<=r.right+12&&d.y>=r.top-12&&d.y<=r.bottom+12;});
+ if(!grid){if(d.cross){d.restore();d.cross=null;}return false;}
+ const candidates=[...grid.querySelectorAll('[data-sponsor-order-id],.partner-order-empty')];let target=null,best=Infinity;
+ for(const el of candidates){const r=el.getBoundingClientRect(),dx=Math.max(r.left-d.x,0,d.x-r.right),dy=Math.max(r.top-d.y,0,d.y-r.bottom),dist=dx*dx+dy*dy;if(dist<best){best=dist;target=el;}}
+ if(!target)return false;
+ if(grid===d.grid&&!target.classList.contains('partner-order-empty')){if(d.cross){d.restore();d.cross=null;}return false;}
+ if(grid===d.grid&&d.tier!=='premium'){if(d.cross){d.restore();d.cross=null;}return false;}
+ if(!d.cross)d.restore();
+ const tier=target.dataset.sponsorOrderTier||target.dataset.dropTier,other=(window.__sponsorRows||[]).find(s=>s.id===target.dataset.sponsorOrderId);
+ const slot=tier==='premium'?Number(other?.campaign_slot||target.dataset.dropSlot||partnerPublicOrderRows(tier).findIndex(s=>s.id===other?.id)+1):null;
+ d.cross={action:other?'swap':'move',targetId:other?.id||null,tier,slot};d.valid=true;target.classList.add('partner-swap-target');target.dataset.swapLabel=other?'Plätze tauschen':'Hier einsetzen';
+ const source=(window.__sponsorRows||[]).find(s=>s.id===d.id),code=other?partnerSlotCode(other):sponsorSlotAt(tier,Number(target.dataset.dropSlot)-1),price=adminFormatEuro(partnerBoardAnnual(source,tier,slot));
+ d.ghost.dataset.dragLabel=d.name+' → '+code+' · '+price+'/Jahr';d.ghost.classList.remove('partner-drag-outside');d.handle.dataset.dropLabel='Ausgangsplatz · '+d.fromSlot;
+ const status=document.getElementById('partnerOrderStatus');if(status)status.textContent=other?d.name+' → '+code+' ('+price+'/Jahr); '+other.name+' → '+d.fromSlot+' ('+adminFormatEuro(partnerBoardAnnual(other,source.tier,source.campaign_slot||Number(d.fromSlot.slice(1))))+'/Jahr). Zum Tauschen loslassen.':d.name+' → '+code+' · '+price+'/Jahr. Zum Einsetzen loslassen.';
+ return true;
+}
+function appendPartnerBoardPositionOptions(s,select){
+ for(const tier of ['premium','partner','regional']){
+  const group=document.createElement('optgroup');group.label=SPONSOR_TIER_CONFIG[tier].label;
+  for(const other of partnerPublicOrderRows(tier))if(tier!==s.tier)group.append(new Option('Tauschen: '+partnerSlotCode(other)+' · '+other.name+' · '+adminFormatEuro(partnerBoardAnnual(s,tier,other.campaign_slot||partnerPublicOrderRows(tier).indexOf(other)+1))+'/Jahr','board:swap:'+other.id));
+  const occupied=partnerPublicOrderRows(tier),free=tier==='premium'?[1,2].filter(slot=>!occupied.some((row,i)=>(row.campaign_slot||i+1)===slot)):occupied.length<(SPONSOR_TIER_CONFIG[tier].limit||0)?[occupied.length+1]:[];
+  for(const slot of free)group.append(new Option('Freier Platz '+sponsorSlotAt(tier,slot-1)+' · '+adminFormatEuro(partnerBoardAnnual(s,tier,slot))+'/Jahr','board:move:'+tier+':'+slot));
+  if(group.children.length)select.append(group);
+ }
+}
+async function rejectBoardPartner(id){if(!sponsorOrderSaving&&ensurePartnerCampaignEditable())await executePartnerBoardAction('reject',id);}
+async function executePartnerBoardAction(action,id,target=null,tier=null,slot=null){
+ if(sponsorOrderSaving||!ensurePartnerCampaignEditable())return;
+ const campaignId=window.__partnerCampaignId;sponsorOrderSaving=true;document.querySelectorAll('.partner-order-tile,.partner-reject-button').forEach(el=>el.disabled=true);
+ const status=document.getElementById('partnerOrderStatus');if(status)status.textContent='Partner wird gespeichert …';
+ try{
+  const{data,error}=await sb.rpc('admin_edit_partner_board',{p_campaign_id:campaignId,p_action:action,p_source_id:id,p_target_id:target,p_tier:tier,p_expected:partnerBoardState(),p_slot:slot});if(error)throw error;
+  let published=true;if(currentPartnerCampaign()?.is_current&&typeof window.pbPublishSplashSnapshot==='function')try{await window.pbPublishSplashSnapshot();}catch(_e){published=false;}
+  if(window.__partnerCampaignId!==campaignId)return;
+  window.__partnerOrderStatus='';await loadAdminSponsors(true);if(typeof loadPartnerPipeline==='function')await loadPartnerPipeline();
+  if(!published){window.__partnerOrderStatus='Partner gespeichert. Die öffentliche Anzeigenvorschau konnte noch nicht aktualisiert werden.';const warning=document.getElementById('partnerOrderStatus');if(warning)warning.textContent=window.__partnerOrderStatus;}
+  showToast(action==='reject'?'Partner nach Absagen verschoben.':action==='promote'?'Partner auf freiem Platz eingesetzt.':'Partnerplätze und Jahresbeträge aktualisiert.');
+  if(action==='promote'){const el=document.querySelector(`#adminPartnerBoard [data-sponsor-order-id="${data.id}"]`);el?.classList.add('partner-new-placement');el?.scrollIntoView({behavior:'smooth',block:'center'});}
+ }catch(e){if(window.__partnerCampaignId===campaignId){await loadAdminSponsors(true);window.__partnerOrderStatus='Nicht geändert: '+(e.message||e);const el=document.getElementById('partnerOrderStatus');if(el)el.textContent=window.__partnerOrderStatus;}}
+ finally{sponsorOrderSaving=false;document.querySelectorAll('.partner-order-tile,.partner-reject-button').forEach(el=>el.disabled=partnerCampaignIsArchived());}
 }
 const TECHNICAL_OPERATOR_UI_ENABLED = true;
 const technicalOperatorState = {generation:0,actor:null,scope:null,preview:null,pending:null,busy:false};
@@ -26586,6 +26663,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         var label=esc(slot+' · '+s.name+(readonly?'':' verschieben – ziehen oder Position wählen'));
         return '<button type="button" class="'+cl+' partner-order-tile"'+attrs+' aria-label="'+label+'" title="'+label+'"'+(readonly?' disabled':' onpointerdown="startSponsorOrderDrag(event,\''+esc(s.id)+'\')" onclick="openSponsorPositionDialog(\''+esc(s.id)+'\')"')+'><span class="partner-slot">'+esc(slot)+'</span>'+ (displayLogo?img:'<span class="partner-logo-name">'+esc(s.name)+'</span>')+'</button>';
       }
+      if(!displayLogo)img='<span class="partner-logo-name">'+esc(s.name)+'</span>';
       var url=normUrl(s.website_url);
       // Nur auf der Partner-Seite: Logo verlinkt auf die Firmen-Website (neuer Tab).
       if(url) return '<a class="'+cl+'" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer nofollow" title="'+esc(s.name)+'">'+img+'</a>';
@@ -26607,7 +26685,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     };
     try{
       if(typeof sb==='undefined' || !sb){ host.innerHTML=''; return; }
-      var res=await sb.from('sponsors_public').select('id,tier,name,logo_url,action_logo_url,action_logo_mode,has_action_logo,sort_order,website_url,court_label');
+      var res=await sb.from('sponsors_public').select('id,tier,name,logo_url,action_logo_url,action_logo_mode,has_action_logo,sort_order,website_url,court_label,premium_slot');
       if(res.error){
         res=await sb.from('sponsors_public').select('id,tier,name,logo_url,action_logo_url,has_action_logo,sort_order,website_url');
       }
@@ -26625,8 +26703,8 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
         +'<div class="pbp-wtop">Aus der Region, für die Region</div>'
         +'<div class="pbp-wsub">Unsere starken Partner vor Ort</div></div></header>';
       if(prem.length){
-        var premiumTiles=prem.slice(0,2).map(function(s){return tile(s,'pbp-tile-prem');});
-        while(premiumTiles.length<2) premiumTiles.push(premiumPlaceholder(premiumTiles.length+1));
+        var premiumTiles=[];
+        for(var slot=1;slot<=2;slot++){var sponsor=prem.find(function(s,i){return (s.premium_slot||i+1)===slot;});premiumTiles.push(sponsor?tile(sponsor,'pbp-tile-prem'):premiumPlaceholder(slot));}
         h+=label('Premium-Partner')+'<div class="pbp-premwrap">'+premiumTiles.join('')+'</div>';
       }
       if(part.length) h+=label('Partner')+'<div class="pbp-grid pbp-grid-partner">'+part.map(function(s){return tile(s);}).join('')+'</div>';
