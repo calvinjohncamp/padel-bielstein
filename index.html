@@ -2139,7 +2139,7 @@ main {
     <div class="statement-kicker">Mein Kontoauszug</div>
     <h2 class="statement-title">Meine Abrechnungen</h2>
     <div class="statement-tabs" role="tablist" aria-label="Abrechnungsart">
-      <button type="button" id="statementBookingsTab" class="statement-tab active" onclick="showAccountStatementTab('bookings')">Buchungen</button>
+      <button type="button" id="statementBookingsTab" class="statement-tab active" onclick="showAccountStatementTab('bookings')">Buchungen &amp; Abos</button>
       <button type="button" id="statementKioskTab" class="statement-tab" onclick="showAccountStatementTab('kiosk')">Kiosk-Einkäufe</button>
     </div>
     <div id="statementPeriod" class="statement-period"></div>
@@ -21311,16 +21311,18 @@ function statementCardHTML() {
 }
 
 let accountStatementTab = 'bookings';
+let accountStatementLoad = 0;
 
 function statementMoney(cents) {
   return (Number(cents || 0) / 100).toLocaleString('de-DE', { minimumFractionDigits:2, maximumFractionDigits:2 }) + ' €';
 }
 function statementDate(value, withTime) {
+  if (!value) return 'Datum unbekannt';
   const d = new Date(value && String(value).length === 10 ? value + 'T12:00:00' : value);
   if (!Number.isFinite(d.getTime())) return 'Datum unbekannt';
   return d.toLocaleDateString('de-DE', withTime
-    ? { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }
-    : { weekday:'short', day:'2-digit', month:'2-digit', year:'numeric' });
+    ? { timeZone:'Europe/Berlin', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }
+    : { timeZone:'Europe/Berlin', weekday:'short', day:'2-digit', month:'2-digit', year:'numeric' });
 }
 function statementReference(value) {
   const ref = String(value || '').trim();
@@ -21331,6 +21333,41 @@ function statementEmpty(text) {
   return `<div class="statement-empty">${esc(text)}</div>`;
 }
 
+async function statementPurchaseRows(table, columns, userId, cutoff) {
+  const rows=[];
+  for (let offset=0, more=true; more; offset+=500) {
+    const page=await sb.from(table).select(bookingReadColumns(columns))
+      .eq('user_id',userId).gte('created_at',cutoff.toISOString())
+      .in('status',['paid','active','cancelled'])
+      .order('created_at',{ascending:false}).order('id',{ascending:false}).range(offset,offset+499);
+    if(page.error) throw page.error;
+    rows.push(...(page.data||[]));more=(page.data||[]).length===500;
+  }
+  return rows;
+}
+function statementBookingItem(row) {
+  const cancelled=row.status==='cancelled';
+  const loyalty=Number(row.loyalty_discount_cents||0)>0
+    ? `<span>Treuebonus: ${row.loyalty_reward_threshold % 100===0?'100. Stunde kostenlos':statementMoney(row.loyalty_discount_cents)}</span>`:'';
+  const time=bookingReadTime(row);
+  return `<article class="statement-item${cancelled?' is-cancelled':''}">
+    <div class="statement-item-head"><strong>Einzelbuchung · ${statementDate(row.date,false)}</strong><b>${statementMoney(row.price_paid_cents)}</b></div>
+    <div class="statement-item-main">${esc(courtLabel(row.court))} · ${time.range} Uhr · ${time.minutes} Min.</div>
+    <div class="statement-item-meta"><span>Kaufdatum: ${statementDate(row.created_at,true)}</span><span>${cancelled?'Storniert · als Spielguthaben gutgeschrieben':'Bezahlt'}</span>${loyalty}<span>${row.receipt_number?`Beleg ${esc(row.receipt_number)}`:`Zahlungsreferenz ${esc(statementReference(row.stripe_session_id))}`}</span></div>
+  </article>`;
+}
+function statementSubscriptionItem(row) {
+  const time=bookingReadTime(row),period=subscriptionDisplayPeriod(row),total=row.price_total_cents??row.total_price_cents;
+  const label=row.is_earlybird?'Frühbucher-Abo':'Jahresabo';
+  const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  return `<article class="statement-item${row.status==='cancelled'?' is-cancelled':''}">
+    <div class="statement-item-head"><strong>${label}</strong><b>${total==null?'Betrag nicht hinterlegt':statementMoney(total)}</b></div>
+    <div class="statement-item-main">${esc(courtLabel(row.court))} · ${days[row.weekday]||'Wochentag unbekannt'} · ${time.range} Uhr · ${time.minutes} Min.</div>
+    <div class="statement-item-main">${period?`Laufzeit: ${statementDate(period.from,false)} bis ${statementDate(period.through,false)}`:'Laufzeit nicht hinterlegt'}</div>
+    <div class="statement-item-meta"><span>Kaufdatum: ${statementDate(row.created_at,true)}</span><span>${row.status==='cancelled'?'Beendet / storniert':'Bezahlt'}</span><span>${row.receipt_number?`Beleg ${esc(row.receipt_number)}`:'Keine Belegnummer hinterlegt'}</span></div>
+  </article>`;
+}
+
 async function openAccountStatement() {
   const modal = document.getElementById('accountStatementModal');
   if (!modal || !currentUser) return;
@@ -21338,6 +21375,7 @@ async function openAccountStatement() {
   await showAccountStatementTab(accountStatementTab);
 }
 function closeAccountStatement() {
+  accountStatementLoad++;
   document.getElementById('accountStatementModal')?.classList.remove('open');
 }
 document.getElementById('accountStatementModal')?.addEventListener('click', function(event) {
@@ -21351,36 +21389,22 @@ async function showAccountStatementTab(tab) {
   const list = document.getElementById('statementList');
   const period = document.getElementById('statementPeriod');
   if (!list || !period || !currentUser) return;
+  const generation=++accountStatementLoad, owner=currentUser.id, selectedTab=accountStatementTab;
+  const isCurrent=()=>generation===accountStatementLoad&&currentUser?.id===owner&&accountStatementTab===selectedTab;
   list.innerHTML = statementEmpty('Wird geladen …');
   try {
     if (accountStatementTab === 'bookings') {
-      period.textContent = 'Deine Einzelbuchungen der letzten 12 Monate';
-      const userId = await dataUserId();
-      const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 12);
-      const data = [];
-      for (let offset = 0, more = true; more; offset += 500) {
-        const page = await sb.from('bookings')
-          .select(bookingReadColumns('id,court,date,hour_start,duration,price_gross_cents,price_paid_cents,discount_pct,loyalty_discount_cents,loyalty_reward_threshold,status,receipt_number,stripe_session_id,cancelled_at'))
-          .eq('user_id', userId)
-          .gte('date', localISODate(cutoff))
-          .in('status', ['paid','active','cancelled'])
-          .order('date', { ascending:false })
-          .order('hour_start', { ascending:false })
-          .range(offset, offset + 499);
-        if (page.error) throw page.error;
-        data.push(...(page.data || []));
-        more = (page.data || []).length === 500;
-      }
-      list.innerHTML = data?.length ? data.map(row => {
-        const cancelled = row.status === 'cancelled';
-        const loyalty = Number(row.loyalty_discount_cents || 0) > 0
-          ? `<span>Treuebonus: ${row.loyalty_reward_threshold % 100 === 0 ? '100. Stunde kostenlos' : statementMoney(row.loyalty_discount_cents)}</span>` : '';
-        return `<article class="statement-item${cancelled ? ' is-cancelled' : ''}">
-          <div class="statement-item-head"><strong>${statementDate(row.date, false)}</strong><b>${statementMoney(row.price_paid_cents)}</b></div>
-          <div class="statement-item-main">${esc(courtLabel(row.court))} · ${bookingReadTime(row).range} Uhr · ${bookingReadTime(row).minutes} Min.</div>
-          <div class="statement-item-meta"><span>${cancelled ? 'Storniert · als Spielguthaben gutgeschrieben' : 'Bezahlt'}</span>${loyalty}<span>${row.receipt_number ? `Beleg ${esc(row.receipt_number)}` : `Zahlungsreferenz ${esc(statementReference(row.stripe_session_id))}`}</span></div>
-        </article>`;
-      }).join('') : statementEmpty('Noch keine Buchungen in diesem Zeitraum.');
+      period.textContent = 'Deine Einzelbuchungen und Abo-Käufe der letzten 12 Monate · neueste Käufe zuerst';
+      const userId=await dataUserId();if(!isCurrent())return;
+      const cutoff=new Date();cutoff.setMonth(cutoff.getMonth() - 12);
+      const [bookings,subscriptions]=await Promise.all([
+        statementPurchaseRows('bookings','id,court,date,hour_start,duration,price_gross_cents,price_paid_cents,discount_pct,loyalty_discount_cents,loyalty_reward_threshold,status,receipt_number,stripe_session_id,cancelled_at,created_at',userId,cutoff),
+        statementPurchaseRows('subscriptions','id,court,weekday,hour_start,duration,starts_on,ends_on,status,receipt_number,price_total_cents,total_price_cents,is_earlybird,term_months,created_at',userId,cutoff)
+      ]);
+      if(!isCurrent())return;
+      const purchases=[...bookings.map(row=>({row,kind:'booking'})),...subscriptions.map(row=>({row,kind:'subscription'}))]
+        .sort((a,b)=>String(b.row.created_at||'').localeCompare(String(a.row.created_at||''))||String(b.row.id).localeCompare(String(a.row.id)));
+      list.innerHTML=purchases.length?purchases.map(p=>p.kind==='booking'?statementBookingItem(p.row):statementSubscriptionItem(p.row)).join(''):statementEmpty('Noch keine Buchungen oder Abo-Käufe in diesem Zeitraum.');
     } else {
       period.textContent = 'Deine Kiosk-Abrechnungen der letzten zwei Monate';
       const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 2);
@@ -21397,6 +21421,7 @@ async function showAccountStatementTab(tab) {
         data.push(...(page.data || []));
         more = (page.data || []).length === 500;
       }
+      if(!isCurrent())return;
       const groups = new Map();
       (data || []).forEach(row => {
         const key = row.settlement_key || row.stripe_payment_intent_id || row.id;
@@ -21415,6 +21440,7 @@ async function showAccountStatementTab(tab) {
       }).join('') : statementEmpty('Noch keine abgeschlossenen Kiosk-Abrechnungen in diesem Zeitraum.');
     }
   } catch (error) {
+    if(!isCurrent())return;
     console.error('Abrechnungsübersicht konnte nicht geladen werden', error);
     list.innerHTML = statementEmpty('Die Abrechnungsübersicht konnte gerade nicht geladen werden.');
   }
