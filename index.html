@@ -1864,6 +1864,25 @@ body.bielstein-theme #bookBtn.visible{display:flex!important}
 .partner-member-dialog table{width:100%;border-collapse:collapse;font:500 13px/1.5 Manrope,sans-serif;}
 .partner-member-dialog td,.partner-member-dialog th{text-align:left;padding:8px 4px;border-bottom:1px solid #E2DACB;overflow-wrap:anywhere;}
 @media(max-width:600px){.partner-discount-fields{grid-template-columns:1fr;}.partner-member-actions button{flex:1 1 auto;}.partner-member-dialog{padding:18px;}}
+/* A single compact partner-order surface in the financial overview. */
+.partner-order-cell{display:flex;align-items:center;gap:8px;min-width:0;}
+.partner-order-controls{display:flex;align-items:center;gap:3px;flex:0 0 auto;}
+.partner-order-controls button{border:1px solid #D8CEBE;background:#fff;color:#1C1A17;border-radius:5px;padding:4px 7px;min-height:30px;cursor:pointer;font:700 14px/1 "Space Grotesk",sans-serif;}
+.partner-order-controls button:disabled{opacity:.35;cursor:default;}
+.partner-order-controls .partner-order-grip{touch-action:none;cursor:grab;font-size:22px;padding:5px 6px;}
+.partner-order-grip:active{cursor:grabbing;}
+.partner-order-arrows{display:flex;flex-direction:column;gap:2px;}
+.partner-order-arrows button{min-height:24px;font-size:12px;padding:2px 5px;}
+.partner-editor-link{border:0;background:transparent;padding:2px 0;min-width:0;color:#1C1A17;text-align:left;cursor:pointer;font:700 12px/1.4 Manrope,sans-serif;text-decoration:underline;text-decoration-color:#D8CEBE;text-underline-offset:3px;}
+.partner-editor-link:hover{color:#C94323;text-decoration-color:currentColor;}
+.partner-order-help{font:500 12px/1.6 Manrope,sans-serif;color:#5C564C;max-width:900px;margin:10px 0;}
+#partnerOrderStatus{font:600 12px/1.5 Manrope,sans-serif;color:#7A472E;}
+.partner-order-pending{padding:10px 12px;font:500 11px/1.5 Manrope,sans-serif;color:#7A7368;}
+.partner-order-before>td{box-shadow:inset 0 3px #FF5A36;}
+.partner-order-after>td{box-shadow:inset 0 -3px #FF5A36;}
+.partner-order-dragging{opacity:.5;}
+.partner-order-return{font:600 11px/1.4 Manrope,sans-serif;color:#7A7368;text-align:center;}
+#fundraisingSummary,#partnerEditorSection,.partner-detail-card{scroll-margin-top:100px;}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -2702,6 +2721,15 @@ main {
     </div>
   </div>
 
+  <dialog id="partnerOrderDialog" class="partner-member-dialog" aria-labelledby="partnerOrderDialogTitle">
+    <h2 id="partnerOrderDialogTitle">Partner verschieben</h2>
+    <label for="partnerOrderPosition">Neue Position innerhalb dieser Kategorie</label>
+    <select id="partnerOrderPosition" class="admin-input" style="width:100%;margin:12px 0"></select>
+    <div class="partner-member-actions">
+      <button type="button" class="admin-save-btn" onclick="confirmSponsorPosition()">Position speichern</button>
+      <button type="button" class="admin-save-btn" onclick="document.getElementById('partnerOrderDialog').close()">Abbrechen</button>
+    </div>
+  </dialog>
   <dialog id="partnerMemberDialog" class="partner-member-dialog" aria-labelledby="partnerMemberDialogTitle">
     <h2 id="partnerMemberDialogTitle">Mitgliederliste</h2>
     <div id="partnerMemberDialogBody"></div>
@@ -14701,21 +14729,19 @@ function renderFundraisingSummary() {
       <div style="font:800 20px 'Space Grotesk',sans-serif;color:${accent};">${adminFormatEuro(value)}</div>
       <div style="font:600 11px 'Manrope',sans-serif;color:#7A7368;margin-top:4px;line-height:1.35;">${note}</div>
     </div>`;
-  const statusCell = sponsor => `<td style="padding:10px 8px;text-align:left;white-space:nowrap;font:800 10px 'Manrope',sans-serif;color:${sponsor.contract_received ? '#1F8A5F' : '#B06A00'};">${sponsor.contract_received ? 'Vertrag' : 'Mündlich'}${Number(sponsor.annual_amount_cents) === 0 ? '<br><span style="color:#5C564C;">Gegenleistung</span>' : ''}</td>`;
+  const statusCell = sponsor => `<td style="padding:10px 8px;text-align:left;white-space:nowrap;font:800 10px 'Manrope',sans-serif;color:${sponsor.contract_received ? '#1F8A5F' : '#B06A00'};">${sponsor.contract_received ? 'Vertrag' : (sponsor.verbal_commitment ? 'Mündlich' : 'Noch offen')}${Number(sponsor.annual_amount_cents) === 0 ? '<br><span style="color:#5C564C;">Gegenleistung</span>' : ''}</td>`;
   const contractCell = sponsor => `<td aria-label="Vertrag liegt vor" style="width:42px;padding:10px 5px;text-align:center;color:#FF5A36;font:900 14px/1 Arial,sans-serif;text-shadow:.2px 0 currentColor;">${sponsor.contract_received ? '✓' : ''}</td>`;
   const moneyCell = value => `<td style="padding:10px 12px;text-align:right;white-space:nowrap;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${adminFormatEuro(value)}</td>`;
   const partnerTable = tier => {
     const config = SPONSOR_TIER_CONFIG[tier];
-    const rows = committedSponsors
-      .filter(s => s.tier === tier)
-      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de', { sensitivity:'base' }));
-    const annual = rows.reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
-    const body = rows.length ? rows.map(s => {
+    const rows = sponsors.filter(s => s.tier === tier).sort(pbCompareSponsors);
+    const annual = rows.filter(s=>s.verbal_commitment||s.contract_received).reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
+    const body = rows.length ? rows.map((s,index) => {
       const amount = Number(s.annual_amount_cents) || 0;
-      return `<tr style="border-top:1px solid #EFE9DC;">
-        <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${esc(s.name)}</td>
+      return `<tr class="partner-order-row" data-sponsor-order-id="${s.id}" data-sponsor-order-tier="${tier}" style="border-top:1px solid #EFE9DC;">
+        <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;"><div class="partner-order-cell">${partnerOrderControls(s,index,rows.length)}${partnerCampaignIsArchived()?esc(s.name):`<button type="button" class="partner-editor-link" onclick="editSponsor('${s.id}')" title="Partner bearbeiten">${esc(s.name)} ↗</button>`}</div></td>
         ${statusCell(s)}${contractCell(s)}
-        ${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount * 3)}
+        ${s.verbal_commitment||s.contract_received?`${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount * 3)}`:'<td colspan="4" class="partner-order-pending">Noch keine Zusage · nicht in der Summe</td>'}
       </tr>`;
     }).join('') : `<tr style="border-top:1px solid #EFE9DC;"><td colspan="7" style="padding:10px 12px;color:#8A8379;font:600 12px 'Manrope',sans-serif;">Noch keine Zusage erfasst.</td></tr>`;
     return `<div style="margin-top:14px;overflow-x:auto;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;">
@@ -14751,6 +14777,7 @@ function renderFundraisingSummary() {
       ${metric('Spenden · einmalig', donationTotal, 'Alle zugesagten Spenden', '#1F6E50', '#F7F3EA')}
       ${metric('Gesamtsumme', committedTotal, 'Addition aus Partner + Spenden', '#FF5A36', '#EDE5D7')}
     </div>
+    <div id="partnerOrderHelp" class="partner-order-help">${partnerCampaignIsArchived()?'Historie · schreibgeschützt':'Reihenfolge mit Pfeilen oder Ziehgriff ändern. Partnernamen anklicken zum Bearbeiten. Die laufende Kampagne bestimmt die Logo-Reihenfolge auf der Partnerseite.'}</div><div id="partnerOrderStatus" role="status" aria-live="polite">${esc(window.__partnerOrderStatus||'')}</div>
     ${SPONSOR_TIER_ORDER.map(partnerTable).join('')}
     <div style="margin-top:14px;overflow-x:auto;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;">
       <table style="width:100%;min-width:680px;border-collapse:collapse;table-layout:fixed;">
@@ -14880,6 +14907,9 @@ function applyPartnerCampaignMode() {
 
 async function selectPartnerCampaign(id) {
   if (id === window.__partnerCampaignId) return;
+  window.__partnerOrderStatus='';
+  document.getElementById('partnerOrderDialog')?.close();
+  sponsorOrderPositionId=null;
   window.__partnerCampaignId = id;
   sessionStorage.setItem('partnerCampaignId', id);
   resetSponsorForm();
@@ -15270,6 +15300,8 @@ async function loadAdminSponsors(campaignsReady = false) {
         annual_amount_cents:member.annual_amount_cents,
         verbal_commitment:member.verbal_commitment,
         contract_received:member.contract_received,
+        public_sort_order:sponsor.sort_order,
+        sort_order:archived ? snapshot.sort_order : (currentPartnerCampaign()?.is_current ? sponsor.sort_order : member.sort_order),
         campaign_sort_order:member.sort_order
       };
     }).sort(pbCompareSponsors);
@@ -15350,13 +15382,10 @@ async function loadAdminSponsors(campaignsReady = false) {
       const financeState = s.contract_received ? 'Vertrag liegt vor' : (s.verbal_commitment ? 'Mündlich zugesagt' : 'Noch keine Zusage');
       const financeColor = s.contract_received ? '#1F8A5F' : (s.verbal_commitment ? '#B06A00' : '#7A7368');
       const num = getNum(s, idx, tier);
-      const previousTier = SPONSOR_TIER_ORDER[tierIndex - 1];
-      const nextTier = SPONSOR_TIER_ORDER[tierIndex + 1];
-      const canMoveUp = idx > 0 || (previousTier && byTier[previousTier].length < SPONSOR_TIER_CONFIG[previousTier].limit);
-      const canMoveDown = idx < tierRows.length - 1 || (nextTier && byTier[nextTier].length < SPONSOR_TIER_CONFIG[nextTier].limit);
+
 
       return `
-        <div style="display:grid;grid-template-columns:180px 180px 1fr auto;gap:14px;align-items:center;background:#fff;border:1.5px solid #E2DACB;border-radius:12px;padding:14px;margin-bottom:10px;">
+        <div id="partner-detail-${s.id}" class="partner-detail-card" style="display:grid;grid-template-columns:180px 180px 1fr auto;gap:14px;align-items:center;background:#fff;border:1.5px solid #E2DACB;border-radius:12px;padding:14px;margin-bottom:10px;">
           <!-- Linke Kachel: Firmenlogo (vertikal zentriert) -->
           <div style="display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #E2DACB;border-radius:8px;min-height:81px;">${mainLogo}</div>
 
@@ -15399,10 +15428,7 @@ async function loadAdminSponsors(campaignsReady = false) {
 
           <!-- Buttons rechts -->
           ${archivedCampaign ? '' : `<div style="display:flex;flex-direction:column;gap:6px;flex:none;">
-            <div style="display:flex;gap:3px;">
-              <button onclick="moveSponsor('${s.id}', 'up')" ${canMoveUp ? '' : 'disabled'} style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:${canMoveUp ? '#fff' : '#f5f5f5'};color:#1C1A17;font:700 12px 'Space Grotesk',sans-serif;cursor:${canMoveUp ? 'pointer' : 'not-allowed'};opacity:${canMoveUp ? '1' : '0.5'};">↑</button>
-              <button onclick="moveSponsor('${s.id}', 'down')" ${canMoveDown ? '' : 'disabled'} style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:${canMoveDown ? '#fff' : '#f5f5f5'};color:#1C1A17;font:700 12px 'Space Grotesk',sans-serif;cursor:${canMoveDown ? 'pointer' : 'not-allowed'};opacity:${canMoveDown ? '1' : '0.5'};">↓</button>
-            </div>
+            <a class="partner-order-return" href="#fundraisingSummary" onclick="document.getElementById('fundraisingSummary').scrollIntoView({behavior:'smooth',block:'start'});return false;">Reihenfolge oben ↑</a>
             <button onclick="editSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#1C1A17;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Ändern</button>
             <button onclick="deleteSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#B8402C;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Aus Kampagne entfernen</button>
           </div>`}
@@ -15524,7 +15550,7 @@ function editSponsor(id) {
   document.getElementById('spVerbalCommitment').checked = s.verbal_commitment === true;
   document.getElementById('spContractReceived').checked = s.contract_received === true;
   document.getElementById('spWebsite').value  = s.website_url || '';
-  document.getElementById('spSort').value     = s.sort_order;
+  document.getElementById('spSort').value     = s.public_sort_order ?? s.sort_order;
   document.getElementById('spActive').checked = !!s.active;
   document.getElementById('spContactName').value  = s.contact_name  || '';
   document.getElementById('spContactEmail').value = s.contact_email || '';
@@ -15682,7 +15708,8 @@ async function saveSponsor() {
   const id     = document.getElementById('spEditId').value || null;
   const tier   = document.getElementById('spTier').value;
   const name   = document.getElementById('spName').value.trim();
-  const sort   = parseInt(document.getElementById('spSort').value) || 0;
+  const orderRow = id ? (window.__sponsorRows || []).find(s=>s.id===id) : null;
+  const sort = orderRow?.tier===tier ? (orderRow.public_sort_order ?? orderRow.sort_order) : Math.max(0,...(window.__sponsorRows||[]).filter(s=>s.tier===tier&&s.id!==id).map(s=>Number(s.public_sort_order ?? s.sort_order)||0))+1000;
   const activeRequested = document.getElementById('spActive').checked;
   let   logoUrl = document.getElementById('spLogoUrl').value || null;
   let   actionLogoUrl = document.getElementById('spActionLogoUrl').value || null;
@@ -15829,17 +15856,6 @@ async function deleteSponsor(id) {
   }
 }
 
-async function moveSponsor(id, direction) {
-  if (!ensurePartnerCampaignEditable()) return;
-  try {
-    const { error } = await sb.rpc('admin_move_sponsor', { p_id: id, p_direction: direction });
-    if (error) throw error;
-    if(typeof window.pbPublishSplashSnapshot==='function')await window.pbPublishSplashSnapshot();
-    loadAdminSponsors();
-  } catch(e) {
-    alert('Verschieben fehlgeschlagen: ' + (e?.message || 'Unbekannter Fehler'));
-  }
-}
 
 async function loadFundraisingDonations() {
   const box = document.getElementById('fundraisingDonationList');
@@ -18572,6 +18588,89 @@ async function showPartnerMembers(offset=0) {
     const dialog=document.getElementById('partnerMemberDialog');if(!dialog.open)dialog.showModal();
   }catch(e){document.getElementById('partnerMemberMessage').textContent='Liste konnte nicht geladen werden: '+(e.message||e);}
   finally{partnerMemberLoading=false;}
+}
+// One ordering control surface, shared by arrows, pointer dragging and position selection.
+let sponsorOrderSaving=false;
+let sponsorOrderDrag=null;
+let sponsorOrderPositionId=null;
+let sponsorOrderSuppressClick=false;
+function partnerOrderRows(tier){return(window.__sponsorRows||[]).filter(s=>s.tier===tier).slice().sort(pbCompareSponsors);}
+function partnerOrderControls(s,index,total){
+ if(partnerCampaignIsArchived())return '';
+ return `<span class="partner-order-controls"><button type="button" class="partner-order-grip" aria-label="${esc(s.name)} verschieben" title="Ziehen oder Position wählen" onpointerdown="startSponsorOrderDrag(event,'${s.id}')" onclick="openSponsorPositionDialog('${s.id}')">⠿</button><span class="partner-order-arrows"><button type="button" aria-label="${esc(s.name)} nach oben" onclick="moveSponsor('${s.id}','up')" ${index===0?'disabled':''}>↑</button><button type="button" aria-label="${esc(s.name)} nach unten" onclick="moveSponsor('${s.id}','down')" ${index===total-1?'disabled':''}>↓</button></span></span>`;
+}
+async function saveSponsorOrder(tier,ids,focusId){
+ if(sponsorOrderSaving||!ensurePartnerCampaignEditable())return;
+ const campaignId=window.__partnerCampaignId;
+ const rows=partnerOrderRows(tier);
+ if(ids.every((id,i)=>id===rows[i]?.id))return;
+ const expected=Object.fromEntries(rows.map(s=>[s.id,pbSponsorSortNumber(s.sort_order)]));
+ sponsorOrderSaving=true;
+ document.querySelectorAll('.partner-order-controls button').forEach(b=>b.disabled=true);
+ const announce=text=>{window.__partnerOrderStatus=text;const e=document.getElementById('partnerOrderStatus');if(e)e.textContent=text;};
+ announce('Reihenfolge wird gespeichert …');
+ try{
+  const{error}=await sb.rpc('admin_reorder_partner_sponsors',{p_campaign_id:campaignId,p_tier:tier,p_ids:ids,p_expected:expected});if(error)throw error;
+  let published=true;
+  if(currentPartnerCampaign()?.is_current&&typeof window.pbPublishSplashSnapshot==='function')try{await window.pbPublishSplashSnapshot();}catch(_e){published=false;}
+  if(window.__partnerCampaignId===campaignId){await loadAdminSponsors(true);announce(published?'Reihenfolge gespeichert.':'Reihenfolge gespeichert. Die Logo-Vorschau konnte noch nicht aktualisiert werden.');
+   document.querySelector(`[data-sponsor-order-id="${focusId}"] .partner-order-grip`)?.focus({preventScroll:true});}
+ }catch(e){
+  if(window.__partnerCampaignId===campaignId){await loadAdminSponsors(true);announce('Nicht verschoben: '+(e.message||e));}
+ }finally{sponsorOrderSaving=false;}
+}
+async function moveSponsor(id,direction){
+ const s=(window.__sponsorRows||[]).find(s=>s.id===id);if(!s)return;
+ const ids=partnerOrderRows(s.tier).map(s=>s.id),at=ids.indexOf(id),next=at+(direction==='up'?-1:1);
+ if(next<0||next>=ids.length)return;
+ [ids[at],ids[next]]=[ids[next],ids[at]];await saveSponsorOrder(s.tier,ids,id);
+}
+function openSponsorPositionDialog(id){
+ if(sponsorOrderSuppressClick){sponsorOrderSuppressClick=false;return;}
+ if(sponsorOrderSaving||!ensurePartnerCampaignEditable())return;
+ const s=(window.__sponsorRows||[]).find(s=>s.id===id);if(!s)return;
+ sponsorOrderPositionId=id;
+ document.getElementById('partnerOrderDialogTitle').textContent=s.name+' verschieben';
+ const select=document.getElementById('partnerOrderPosition');select.replaceChildren();
+ partnerOrderRows(s.tier).forEach((row,i)=>select.add(new Option((i+1)+'. '+row.name,String(i))));select.value=String(partnerOrderRows(s.tier).findIndex(row=>row.id===id));
+ document.getElementById('partnerOrderDialog').showModal();
+}
+async function confirmSponsorPosition(){
+ const s=(window.__sponsorRows||[]).find(s=>s.id===sponsorOrderPositionId);if(!s)return;
+ const ids=partnerOrderRows(s.tier).map(s=>s.id),next=Number(document.getElementById('partnerOrderPosition').value);
+ if(!Number.isInteger(next)||next<0||next>=ids.length)return;
+ ids.splice(ids.indexOf(s.id),1);ids.splice(next,0,s.id);document.getElementById('partnerOrderDialog').close();await saveSponsorOrder(s.tier,ids,s.id);
+}
+function clearSponsorOrderTarget(){document.querySelectorAll('.partner-order-before,.partner-order-after').forEach(el=>el.classList.remove('partner-order-before','partner-order-after'));}
+function sponsorOrderDragTarget(d){
+ clearSponsorOrderTarget();d.target=null;
+ const row=document.elementFromPoint(d.x,d.y)?.closest('[data-sponsor-order-id]');
+ if(!row||row.dataset.sponsorOrderId===d.id||row.dataset.sponsorOrderTier!==d.tier)return;
+ d.target={id:row.dataset.sponsorOrderId,after:d.y>row.getBoundingClientRect().top+row.getBoundingClientRect().height/2};row.classList.add(d.target.after?'partner-order-after':'partner-order-before');
+}
+function startSponsorOrderDrag(event,id){
+ if(event.button!==0||sponsorOrderSaving||!ensurePartnerCampaignEditable())return;
+ const s=(window.__sponsorRows||[]).find(s=>s.id===id);if(!s)return;
+ const handle=event.currentTarget;handle.setPointerCapture(event.pointerId);
+ const d={id,tier:s.tier,handle,pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,moved:false,target:null,frame:0,campaignId:window.__partnerCampaignId};sponsorOrderDrag=d;
+ const scrollFrame=()=>{
+  if(sponsorOrderDrag!==d||!d.moved)return;
+  const dy=d.y<80?-Math.ceil((80-d.y)/7):d.y>innerHeight-80?Math.ceil((d.y-innerHeight+80)/7):0;
+  if(dy){window.scrollBy(0,dy);sponsorOrderDragTarget(d);}d.frame=requestAnimationFrame(scrollFrame);
+ };
+ const move=e=>{if(e.pointerId!==d.pointerId)return;d.x=e.clientX;d.y=e.clientY;
+  if(!d.moved&&Math.hypot(d.x-d.startX,d.y-d.startY)>7){d.moved=true;handle.closest('tr')?.classList.add('partner-order-dragging');d.frame=requestAnimationFrame(scrollFrame);}
+  if(d.moved){e.preventDefault();sponsorOrderDragTarget(d);}
+ };
+ const finish=e=>{
+  if(e.pointerId!==d.pointerId)return;
+  cancelAnimationFrame(d.frame);handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',finish);handle.removeEventListener('pointercancel',cancel);handle.removeEventListener('lostpointercapture',cancel);
+  sponsorOrderDrag=null;handle.closest('tr')?.classList.remove('partner-order-dragging');clearSponsorOrderTarget();
+  if(d.moved){sponsorOrderSuppressClick=true;setTimeout(()=>{sponsorOrderSuppressClick=false;},0);}
+  if(d.moved&&d.target&&window.__partnerCampaignId===d.campaignId){const ids=partnerOrderRows(d.tier).map(s=>s.id);ids.splice(ids.indexOf(d.id),1);ids.splice(ids.indexOf(d.target.id)+(d.target.after?1:0),0,d.id);void saveSponsorOrder(d.tier,ids,d.id);}
+ };
+ const cancel=e=>{if(e.pointerId!==d.pointerId)return;d.target=null;finish(e);};
+ handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',cancel);handle.addEventListener('lostpointercapture',cancel);
 }
 const TECHNICAL_OPERATOR_UI_ENABLED = true;
 const technicalOperatorState = {generation:0,actor:null,scope:null,preview:null,pending:null,busy:false};
