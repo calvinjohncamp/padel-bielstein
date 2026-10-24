@@ -1866,23 +1866,34 @@ body.bielstein-theme #bookBtn.visible{display:flex!important}
 @media(max-width:600px){.partner-discount-fields{grid-template-columns:1fr;}.partner-member-actions button{flex:1 1 auto;}.partner-member-dialog{padding:18px;}}
 /* A single compact partner-order surface in the financial overview. */
 .partner-order-cell{display:flex;align-items:center;gap:8px;min-width:0;}
-.partner-order-controls{display:flex;align-items:center;gap:3px;flex:0 0 auto;}
-.partner-order-controls button{border:1px solid #D8CEBE;background:#fff;color:#1C1A17;border-radius:5px;padding:4px 7px;min-height:30px;cursor:pointer;font:700 14px/1 "Space Grotesk",sans-serif;}
-.partner-order-controls button:disabled{opacity:.35;cursor:default;}
-.partner-order-controls .partner-order-grip{touch-action:none;cursor:grab;font-size:22px;padding:5px 6px;}
-.partner-order-grip:active{cursor:grabbing;}
-.partner-order-arrows{display:flex;flex-direction:column;gap:2px;}
-.partner-order-arrows button{min-height:24px;font-size:12px;padding:2px 5px;}
 .partner-editor-link{border:0;background:transparent;padding:2px 0;min-width:0;color:#1C1A17;text-align:left;cursor:pointer;font:700 12px/1.4 Manrope,sans-serif;text-decoration:underline;text-decoration-color:#D8CEBE;text-underline-offset:3px;}
 .partner-editor-link:hover{color:#C94323;text-decoration-color:currentColor;}
 .partner-order-help{font:500 12px/1.6 Manrope,sans-serif;color:#5C564C;max-width:900px;margin:10px 0;}
 #partnerOrderStatus{font:600 12px/1.5 Manrope,sans-serif;color:#7A472E;}
 .partner-order-pending{padding:10px 12px;font:500 11px/1.5 Manrope,sans-serif;color:#7A7368;}
-.partner-order-before>td{box-shadow:inset 0 3px #FF5A36;}
-.partner-order-after>td{box-shadow:inset 0 -3px #FF5A36;}
 .partner-order-dragging{opacity:.5;}
 .partner-order-return{font:600 11px/1.4 Manrope,sans-serif;color:#7A7368;text-align:center;}
 #fundraisingSummary,#partnerEditorSection,.partner-detail-card{scroll-margin-top:100px;}
+
+/* Public logo layout doubles as the sole admin ordering surface. */
+#adminPartnerBoard{scroll-margin-top:100px;}
+#adminPartnerBoard .partner-order-tile{position:relative;padding:0;border:1px solid rgba(255,255,255,.2);width:100%;font:inherit;cursor:grab;touch-action:pan-y;user-select:none;}
+#adminPartnerBoard .partner-order-tile:active{cursor:grabbing;}
+#adminPartnerBoard .partner-order-tile:disabled{cursor:default;opacity:1;}
+#adminPartnerBoard .partner-order-tile:focus-visible{outline:3px solid #FF5A36;outline-offset:3px;}
+#adminPartnerBoard img{pointer-events:none;-webkit-user-drag:none;}
+#adminPartnerBoard .pbp-tile-prem-empty{position:relative;}
+.partner-slot{position:absolute;left:5px;top:4px;z-index:3;background:#1C1A17;color:#fff;padding:2px 5px;border-radius:4px;font:700 10px/1.2 "Space Grotesk",sans-serif;}
+.partner-logo-name{color:#1C1A17;padding:12px;font:700 13px/1.3 Manrope,sans-serif;}
+#adminPartnerBoard .partner-order-before{box-shadow:inset 5px 0 #FF5A36;}
+#adminPartnerBoard .partner-order-after{box-shadow:inset -5px 0 #FF5A36;}
+.partner-table-slot{flex:0 0 28px;color:#7A7368;font:700 11px/1.3 "Space Grotesk",sans-serif;}
+#fundraisingSummary tbody td,#fundraisingSummary thead th,#fundraisingSummary tfoot td{padding-top:6px!important;padding-bottom:6px!important;line-height:1.25!important;}
+#fundraisingSummary .partner-order-cell{gap:4px;}
+#fundraisingSummary .partner-editor-link{line-height:1.25;}
+
+#adminPartnerBoard .pbp-tile-prem-empty{flex-direction:column;}
+#adminPartnerBoard .pbp-tile-prem-empty .partner-slot{color:#fff;font-size:10px;letter-spacing:normal;margin:0;}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -6786,6 +6797,10 @@ main {
             <button id="slideSaveBtn" type="button" class="admin-save-btn" onclick="saveActionLogoSlideshowSettings()">Speichern</button>
           </div>
         </div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Partnerseite · Logo-Reihenfolge</div>
+        <div id="adminPartnerBoard"></div>
       </div>
       <div class="admin-section">
         <div class="admin-section-title" id="partnerCampaignSummaryTitle">Partner 2027-2030</div>
@@ -14712,6 +14727,7 @@ function setSponsorInKindMode(enabled, restoreAmount = true) {
 function renderFundraisingSummary() {
   const box = document.getElementById('fundraisingSummary');
   if (!box) return;
+  renderAdminPartnerBoard();
   const sponsors = window.__sponsorRows || [];
   const donations = window.__fundraisingDonations || [];
   const committedSponsors = sponsors.filter(s => s.verbal_commitment || s.contract_received);
@@ -14738,8 +14754,8 @@ function renderFundraisingSummary() {
     const annual = rows.filter(s=>s.verbal_commitment||s.contract_received).reduce((sum, s) => sum + (Number(s.annual_amount_cents) || 0), 0);
     const body = rows.length ? rows.map((s,index) => {
       const amount = Number(s.annual_amount_cents) || 0;
-      return `<tr class="partner-order-row" data-sponsor-order-id="${s.id}" data-sponsor-order-tier="${tier}" style="border-top:1px solid #EFE9DC;">
-        <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;"><div class="partner-order-cell">${partnerOrderControls(s,index,rows.length)}${partnerCampaignIsArchived()?esc(s.name):`<button type="button" class="partner-editor-link" onclick="editSponsor('${s.id}')" title="Partner bearbeiten">${esc(s.name)} ↗</button>`}</div></td>
+      return `<tr class="partner-finance-row" data-partner-finance-id="${s.id}" style="border-top:1px solid #EFE9DC;">
+        <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;"><div class="partner-order-cell"><span class="partner-table-slot" title="${s.active?'Platz in der Logo-Vorschau':'Nicht öffentlich geschaltet'}">${partnerSlotCode(s)}</span>${partnerCampaignIsArchived()?esc(s.name):`<button type="button" class="partner-editor-link" onclick="editSponsor('${s.id}')" title="Partner bearbeiten">${esc(s.name)} ↗</button>`}</div></td>
         ${statusCell(s)}${contractCell(s)}
         ${s.verbal_commitment||s.contract_received?`${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount * 3)}`:'<td colspan="4" class="partner-order-pending">Noch keine Zusage · nicht in der Summe</td>'}
       </tr>`;
@@ -14777,7 +14793,7 @@ function renderFundraisingSummary() {
       ${metric('Spenden · einmalig', donationTotal, 'Alle zugesagten Spenden', '#1F6E50', '#F7F3EA')}
       ${metric('Gesamtsumme', committedTotal, 'Addition aus Partner + Spenden', '#FF5A36', '#EDE5D7')}
     </div>
-    <div id="partnerOrderHelp" class="partner-order-help">${partnerCampaignIsArchived()?'Historie · schreibgeschützt':'Reihenfolge mit Pfeilen oder Ziehgriff ändern. Partnernamen anklicken zum Bearbeiten. Die laufende Kampagne bestimmt die Logo-Reihenfolge auf der Partnerseite.'}</div><div id="partnerOrderStatus" role="status" aria-live="polite">${esc(window.__partnerOrderStatus||'')}</div>
+    <div class="partner-order-help">Partnernamen anklicken zum Bearbeiten. Platzcodes wie A1 oder D1 entsprechen der Logo-Vorschau oben; „–“ bedeutet nicht öffentlich geschaltet.</div>
     ${SPONSOR_TIER_ORDER.map(partnerTable).join('')}
     <div style="margin-top:14px;overflow-x:auto;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;">
       <table style="width:100%;min-width:680px;border-collapse:collapse;table-layout:fixed;">
@@ -15428,7 +15444,7 @@ async function loadAdminSponsors(campaignsReady = false) {
 
           <!-- Buttons rechts -->
           ${archivedCampaign ? '' : `<div style="display:flex;flex-direction:column;gap:6px;flex:none;">
-            <a class="partner-order-return" href="#fundraisingSummary" onclick="document.getElementById('fundraisingSummary').scrollIntoView({behavior:'smooth',block:'start'});return false;">Reihenfolge oben ↑</a>
+            <a class="partner-order-return" href="#adminPartnerBoard" onclick="document.getElementById('adminPartnerBoard').scrollIntoView({behavior:'smooth',block:'start'});return false;">Reihenfolge oben ↑</a>
             <button onclick="editSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#1C1A17;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Ändern</button>
             <button onclick="deleteSponsor('${s.id}')" style="padding:6px 8px;border:1.5px solid #E2DACB;border-radius:6px;background:transparent;color:#B8402C;font:700 11px 'Space Grotesk',sans-serif;cursor:pointer;">Aus Kampagne entfernen</button>
           </div>`}
@@ -18589,15 +18605,34 @@ async function showPartnerMembers(offset=0) {
   }catch(e){document.getElementById('partnerMemberMessage').textContent='Liste konnte nicht geladen werden: '+(e.message||e);}
   finally{partnerMemberLoading=false;}
 }
-// One ordering control surface, shared by arrows, pointer dragging and position selection.
+// Public-layout ordering surface: pointer dragging and accessible position selection.
 let sponsorOrderSaving=false;
 let sponsorOrderDrag=null;
 let sponsorOrderPositionId=null;
 let sponsorOrderSuppressClick=false;
 function partnerOrderRows(tier){return(window.__sponsorRows||[]).filter(s=>s.tier===tier).slice().sort(pbCompareSponsors);}
-function partnerOrderControls(s,index,total){
- if(partnerCampaignIsArchived())return '';
- return `<span class="partner-order-controls"><button type="button" class="partner-order-grip" aria-label="${esc(s.name)} verschieben" title="Ziehen oder Position wählen" onpointerdown="startSponsorOrderDrag(event,'${s.id}')" onclick="openSponsorPositionDialog('${s.id}')">⠿</button><span class="partner-order-arrows"><button type="button" aria-label="${esc(s.name)} nach oben" onclick="moveSponsor('${s.id}','up')" ${index===0?'disabled':''}>↑</button><button type="button" aria-label="${esc(s.name)} nach unten" onclick="moveSponsor('${s.id}','down')" ${index===total-1?'disabled':''}>↓</button></span></span>`;
+// Slot addresses always refer to the public six-column desktop layout.
+function partnerPublicOrderRows(tier){return partnerOrderRows(tier).filter(s=>s.active);}
+function partnerSlotCode(s){
+ const i=partnerPublicOrderRows(s.tier).findIndex(row=>row.id===s.id);
+ if(i<0)return '–';
+ return s.tier==='premium'?'A'+(i+1):String.fromCharCode((s.tier==='partner'?66:68)+Math.floor(i/6))+(i%6+1);
+}
+function renderAdminPartnerBoard(){
+ const host=document.getElementById('adminPartnerBoard');if(!host)return;
+ const archived=partnerCampaignIsArchived();
+ const label=t=>'<div class="pbp-seclabel"><span class="pbp-line"></span><span class="pbp-lbl">'+t+'</span><span class="pbp-line"></span></div>';
+ let h='<div class="partner-order-help">'+(archived?'Historie · schreibgeschützt.':currentPartnerCampaign()?.is_current?'Logos mit der Maus innerhalb ihrer Kategorie ziehen. Die Reihenfolge wird direkt gespeichert und gilt auf der Partnerseite.':'Kampagnenvorschau: Logos mit der Maus innerhalb ihrer Kategorie ziehen. Die öffentliche Partnerseite bleibt unverändert.')+' Antippen oder Enter öffnet die Positionswahl. Platzcodes entsprechen der Desktop-Ansicht.</div><div id="partnerOrderStatus" role="status" aria-live="polite">'+esc(window.__partnerOrderStatus||'')+'</div><div class="pbp-board">';
+ h+='<header class="pbp-head"><img class="pbp-brand" src="https://padel-bielstein.de/sponsors/brand-padel-bielstein.png" alt="Padel Bielstein"><div class="pbp-rule"></div><div class="pbp-welcome"><div class="pbp-wtop">Aus der Region, für die Region</div><div class="pbp-wsub">Unsere starken Partner vor Ort</div></div></header>';
+ for(const tier of ['premium','partner','regional']){
+  const rows=partnerPublicOrderRows(tier);
+  if(!rows.length&&tier!=='premium')continue;
+  h+=label(tier==='premium'?'Premium-Partner':tier==='partner'?'Partner':'Regionale Partner')+'<div class="'+(tier==='premium'?'pbp-premwrap':'pbp-grid pbp-grid-'+tier)+'">';
+  h+=rows.map(s=>window.pbPartnerLogoTile(s,tier==='premium'?'pbp-tile-prem':'',partnerSlotCode(s),archived)).join('');
+  if(tier==='premium')for(let i=rows.length;i<2;i++)h+='<div class="pbp-tile pbp-tile-prem pbp-tile-prem-empty"><span class="partner-slot">A'+(i+1)+'</span>Premium-Partner '+(i+1)+'<span>frei</span></div>';
+  h+='</div>';
+ }
+ h+='</div>';host.innerHTML=h;
 }
 async function saveSponsorOrder(tier,ids,focusId){
  if(sponsorOrderSaving||!ensurePartnerCampaignEditable())return;
@@ -18606,7 +18641,7 @@ async function saveSponsorOrder(tier,ids,focusId){
  if(ids.every((id,i)=>id===rows[i]?.id))return;
  const expected=Object.fromEntries(rows.map(s=>[s.id,pbSponsorSortNumber(s.sort_order)]));
  sponsorOrderSaving=true;
- document.querySelectorAll('.partner-order-controls button').forEach(b=>b.disabled=true);
+ document.querySelectorAll('.partner-order-tile').forEach(b=>b.disabled=true);
  const announce=text=>{window.__partnerOrderStatus=text;const e=document.getElementById('partnerOrderStatus');if(e)e.textContent=text;};
  announce('Reihenfolge wird gespeichert …');
  try{
@@ -18614,7 +18649,7 @@ async function saveSponsorOrder(tier,ids,focusId){
   let published=true;
   if(currentPartnerCampaign()?.is_current&&typeof window.pbPublishSplashSnapshot==='function')try{await window.pbPublishSplashSnapshot();}catch(_e){published=false;}
   if(window.__partnerCampaignId===campaignId){await loadAdminSponsors(true);announce(published?'Reihenfolge gespeichert.':'Reihenfolge gespeichert. Die Logo-Vorschau konnte noch nicht aktualisiert werden.');
-   document.querySelector(`[data-sponsor-order-id="${focusId}"] .partner-order-grip`)?.focus({preventScroll:true});}
+   document.querySelector(`#adminPartnerBoard [data-sponsor-order-id="${focusId}"]`)?.focus({preventScroll:true});}
  }catch(e){
   if(window.__partnerCampaignId===campaignId){await loadAdminSponsors(true);announce('Nicht verschoben: '+(e.message||e));}
  }finally{sponsorOrderSaving=false;}
@@ -18632,23 +18667,25 @@ function openSponsorPositionDialog(id){
  sponsorOrderPositionId=id;
  document.getElementById('partnerOrderDialogTitle').textContent=s.name+' verschieben';
  const select=document.getElementById('partnerOrderPosition');select.replaceChildren();
- partnerOrderRows(s.tier).forEach((row,i)=>select.add(new Option((i+1)+'. '+row.name,String(i))));select.value=String(partnerOrderRows(s.tier).findIndex(row=>row.id===id));
+ partnerPublicOrderRows(s.tier).forEach((row,i)=>select.add(new Option(partnerSlotCode(row)+' · '+row.name,String(i))));select.value=String(partnerPublicOrderRows(s.tier).findIndex(row=>row.id===id));
  document.getElementById('partnerOrderDialog').showModal();
 }
 async function confirmSponsorPosition(){
  const s=(window.__sponsorRows||[]).find(s=>s.id===sponsorOrderPositionId);if(!s)return;
- const ids=partnerOrderRows(s.tier).map(s=>s.id),next=Number(document.getElementById('partnerOrderPosition').value);
- if(!Number.isInteger(next)||next<0||next>=ids.length)return;
- ids.splice(ids.indexOf(s.id),1);ids.splice(next,0,s.id);document.getElementById('partnerOrderDialog').close();await saveSponsorOrder(s.tier,ids,s.id);
+ const ids=partnerOrderRows(s.tier).map(s=>s.id),visible=partnerPublicOrderRows(s.tier).map(s=>s.id),next=Number(document.getElementById('partnerOrderPosition').value);
+ if(!Number.isInteger(next)||next<0||next>=visible.length)return;
+ const old=visible.indexOf(s.id),target=visible[next];
+ if(old!==next){ids.splice(ids.indexOf(s.id),1);ids.splice(ids.indexOf(target)+(next>old?1:0),0,s.id);}document.getElementById('partnerOrderDialog').close();await saveSponsorOrder(s.tier,ids,s.id);
 }
 function clearSponsorOrderTarget(){document.querySelectorAll('.partner-order-before,.partner-order-after').forEach(el=>el.classList.remove('partner-order-before','partner-order-after'));}
 function sponsorOrderDragTarget(d){
  clearSponsorOrderTarget();d.target=null;
- const row=document.elementFromPoint(d.x,d.y)?.closest('[data-sponsor-order-id]');
+ const row=document.elementFromPoint(d.x,d.y)?.closest('#adminPartnerBoard [data-sponsor-order-id]');
  if(!row||row.dataset.sponsorOrderId===d.id||row.dataset.sponsorOrderTier!==d.tier)return;
- d.target={id:row.dataset.sponsorOrderId,after:d.y>row.getBoundingClientRect().top+row.getBoundingClientRect().height/2};row.classList.add(d.target.after?'partner-order-after':'partner-order-before');
+ d.target={id:row.dataset.sponsorOrderId,after:d.x>row.getBoundingClientRect().left+row.getBoundingClientRect().width/2};row.classList.add(d.target.after?'partner-order-after':'partner-order-before');
 }
 function startSponsorOrderDrag(event,id){
+ if(event.pointerType==='touch')return; // Keep normal page scrolling; tapping opens native position selection.
  if(event.button!==0||sponsorOrderSaving||!ensurePartnerCampaignEditable())return;
  const s=(window.__sponsorRows||[]).find(s=>s.id===id);if(!s)return;
  const handle=event.currentTarget;handle.setPointerCapture(event.pointerId);
@@ -18659,13 +18696,13 @@ function startSponsorOrderDrag(event,id){
   if(dy){window.scrollBy(0,dy);sponsorOrderDragTarget(d);}d.frame=requestAnimationFrame(scrollFrame);
  };
  const move=e=>{if(e.pointerId!==d.pointerId)return;d.x=e.clientX;d.y=e.clientY;
-  if(!d.moved&&Math.hypot(d.x-d.startX,d.y-d.startY)>7){d.moved=true;handle.closest('tr')?.classList.add('partner-order-dragging');d.frame=requestAnimationFrame(scrollFrame);}
+  if(!d.moved&&Math.hypot(d.x-d.startX,d.y-d.startY)>7){d.moved=true;handle.closest('[data-sponsor-order-id]')?.classList.add('partner-order-dragging');d.frame=requestAnimationFrame(scrollFrame);}
   if(d.moved){e.preventDefault();sponsorOrderDragTarget(d);}
  };
  const finish=e=>{
   if(e.pointerId!==d.pointerId)return;
   cancelAnimationFrame(d.frame);handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',finish);handle.removeEventListener('pointercancel',cancel);handle.removeEventListener('lostpointercapture',cancel);
-  sponsorOrderDrag=null;handle.closest('tr')?.classList.remove('partner-order-dragging');clearSponsorOrderTarget();
+  sponsorOrderDrag=null;handle.closest('[data-sponsor-order-id]')?.classList.remove('partner-order-dragging');clearSponsorOrderTarget();
   if(d.moved){sponsorOrderSuppressClick=true;setTimeout(()=>{sponsorOrderSuppressClick=false;},0);}
   if(d.moved&&d.target&&window.__partnerCampaignId===d.campaignId){const ids=partnerOrderRows(d.tier).map(s=>s.id);ids.splice(ids.indexOf(d.id),1);ids.splice(ids.indexOf(d.target.id)+(d.target.after?1:0),0,d.id);void saveSponsorOrder(d.tier,ids,d.id);}
  };
@@ -26418,15 +26455,9 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
      Liest die aktiven Sponsoren aus sponsors_public – neue Partner erscheinen
      automatisch. Premium groß oben, dann Partner, dann Regionale Partner.
      Reine Anzeige – Fehler nie an die App weiterreichen. */
-  window.renderPartnerBoard = async function(){
-    var host=document.getElementById('partnerBoard'); if(!host) return;
-    if(typeof window.loadActionLogoSlideshowSettings === 'function') await window.loadActionLogoSlideshowSettings();
-    var esc=function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
-    var BRAND='https://padel-bielstein.de/sponsors/brand-padel-bielstein.png';
-    var normUrl=function(u){ u=String(u==null?'':u).trim(); if(!u) return '';
-      if(!/^https?:\/\//i.test(u)) u='https://'+u; return u; };
-    var tile=function(s,cls){
+  window.pbPartnerLogoTile=function(s,cls,slot,readonly){
+    var esc=function(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));};
+    var normUrl=function(u){u=String(u??'').trim();return u&&!/^https?:\/\//i.test(u)?'https://'+u:u;};
       var mode=s.action_logo_mode || (s.has_action_logo ? 'hover' : 'off');
       var showActionDirect=(mode==='replace' && s.action_logo_url);
       var hasSlideAction=(mode==='slideshow' && s.logo_url && s.action_logo_url);
@@ -26436,10 +26467,25 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       var img=(hasHoverAction || hasSlideAction)
         ? '<img class="pbp-logo-main" src="'+esc(s.logo_url)+'" alt="'+esc(s.name)+'" loading="lazy"><span class="pbp-logo-action"><img class="pbp-action-motif" src="'+esc(s.action_logo_url)+'" alt="'+esc(s.name)+' Aktion" loading="lazy"></span>'
         : '<img'+(showActionDirect?' class="pbp-action-motif"':'')+' src="'+esc(displayLogo)+'" alt="'+esc(s.name)+'" loading="lazy">';
+      if(slot){
+        var attrs=' data-sponsor-order-id="'+esc(s.id)+'" data-sponsor-order-tier="'+esc(s.tier)+'"';
+        var label=esc(slot+' · '+s.name+(readonly?'':' verschieben – ziehen oder Position wählen'));
+        return '<button type="button" class="'+cl+' partner-order-tile"'+attrs+' aria-label="'+label+'" title="'+label+'"'+(readonly?' disabled':' onpointerdown="startSponsorOrderDrag(event,\''+esc(s.id)+'\')" onclick="openSponsorPositionDialog(\''+esc(s.id)+'\')"')+'><span class="partner-slot">'+esc(slot)+'</span>'+ (displayLogo?img:'<span class="partner-logo-name">'+esc(s.name)+'</span>')+'</button>';
+      }
       var url=normUrl(s.website_url);
       // Nur auf der Partner-Seite: Logo verlinkt auf die Firmen-Website (neuer Tab).
       if(url) return '<a class="'+cl+'" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer nofollow" title="'+esc(s.name)+'">'+img+'</a>';
       return '<div class="'+cl+'">'+img+'</div>'; };
+
+  window.renderPartnerBoard = async function(){
+    var host=document.getElementById('partnerBoard'); if(!host) return;
+    if(typeof window.loadActionLogoSlideshowSettings === 'function') await window.loadActionLogoSlideshowSettings();
+    var esc=function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+    var BRAND='https://padel-bielstein.de/sponsors/brand-padel-bielstein.png';
+    var normUrl=function(u){ u=String(u==null?'':u).trim(); if(!u) return '';
+      if(!/^https?:\/\//i.test(u)) u='https://'+u; return u; };
+    var tile=window.pbPartnerLogoTile;
     var label=function(t){ return '<div class="pbp-seclabel"><span class="pbp-line"></span>'
       +'<span class="pbp-lbl">'+t+'</span><span class="pbp-line"></span></div>'; };
     var premiumPlaceholder=function(n){
