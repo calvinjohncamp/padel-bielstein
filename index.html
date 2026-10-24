@@ -976,6 +976,21 @@ body.bielstein-theme #mainTabs.pb-tabs-hidden { display:none !important; }
 .eb-body strong { color:#F6F1E7; font-weight:700; }
 .eb-body .eb-hi { color:#FF5A36; font-weight:800; white-space:nowrap; }
 .eb-body-2 { margin-top:-6px; }
+/* The configured discount shares the title's signature typeface. */
+.eb-hero.eb-has-discount { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; column-gap:clamp(24px,4vw,64px); }
+.eb-copy { min-width:0; }
+.eb-discount { display:flex; align-items:baseline; gap:.08em; padding:0 0 16px; color:#FF5A36; font-family:"Space Grotesk","Arial Narrow",sans-serif; font-size:clamp(88px,9vw,144px); font-weight:900; line-height:1; letter-spacing:-.065em; white-space:nowrap; }
+.eb-discount-unit { font-size:.58em; letter-spacing:-.04em; }
+.eb-discount[hidden] { display:none; }
+@media (max-width:620px){
+  .eb-hero.eb-has-discount { column-gap:16px; }
+  .eb-has-discount .eb-copy { display:contents; }
+  .eb-has-discount .eb-kicker { grid-column:1/-1; }
+  .eb-has-discount .eb-title { grid-column:1; grid-row:2; align-self:center; }
+  .eb-has-discount .eb-body { grid-column:1/-1; }
+  .eb-discount { grid-column:2; grid-row:2; font-size:clamp(64px,16vw,96px); padding-bottom:11px; }
+}
+
 .eb-meta { display:flex; flex-wrap:wrap; align-items:center; gap:16px; margin:0 0 4px; }
 .eb-meta-boxes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; flex:0 1 auto; }
 .eb-meta-item { background:#242019; border:1px solid #332F27; border-radius:11px; padding:10px 14px; }
@@ -2649,10 +2664,15 @@ main {
 
   <!-- Gemeinsamer Aktionskopf fuer Jetzt buchen und Jahresabo sichern. -->
   <div class="eb-banner" id="earlybirdBanner">
-    <span class="eb-kicker">Exklusiv · Frühbucherphase</span>
-    <div class="eb-title">Sichere dir für 2 Jahre deinen festen Platz</div>
-    <div class="eb-body">Nur für <strong>TFB-Mitglieder &amp; Partner</strong>: jetzt vorab die begehrtesten Spielzeiten reservieren — mit dem einmaligen <span class="eb-hi">25&nbsp;% Start-Rabatt</span> anstatt der regulären 10&nbsp;%.</div>
-    <div class="eb-body eb-body-2"><strong>Dieser Court gehört für 2 Jahre</strong> an den von dir gebuchten Tagen und zu den von dir gebuchten Stunden <strong>allein dir.</strong></div>
+    <div class="eb-hero">
+      <div class="eb-copy">
+        <span class="eb-kicker">Exklusiv · Frühbucherphase</span>
+        <div class="eb-title">Sichere dir für 2 Jahre deinen festen Platz</div>
+        <div class="eb-body">Nur für <strong>TFB-Mitglieder &amp; Partner</strong>: jetzt vorab die begehrtesten Spielzeiten reservieren — mit dem einmaligen <span class="eb-hi">25&nbsp;% Start-Rabatt</span> anstatt der regulären 10&nbsp;%.</div>
+        <div class="eb-body eb-body-2"><strong>Dieser Court gehört für 2 Jahre</strong> an den von dir gebuchten Tagen und zu den von dir gebuchten Stunden <strong>allein dir.</strong></div>
+      </div>
+      <div class="eb-discount" hidden aria-label="Aktionsrabatt"><span class="eb-discount-value"></span><span class="eb-discount-unit" aria-hidden="true">%</span></div>
+    </div>
     <div class="eb-meta">
       <div class="eb-meta-boxes">
         <div class="eb-meta-item"><span class="eb-meta-lbl">Start der Aktion</span><span class="eb-meta-val" id="ebActionStart">—</span></div>
@@ -26447,6 +26467,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       ? (eb.appliesTo==='single'||eb.appliesTo==='both')
       : (current==='abo'&&(!eb.appliesTo||eb.appliesTo==='abo'||eb.appliesTo==='both'));
     var banner=document.getElementById('earlybirdBanner');
+    window.renderActionDiscount(banner,eb.discount);
     if(banner) banner.classList.toggle('show',!!eb.enabled&&!!applies);
   };
   window.ebFmtDate = function(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return '—'; } };
@@ -27066,6 +27087,15 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   };
 
   // Rich text stays in the existing ab_body text field; unedited legacy copy is retained verbatim.
+  window.renderActionDiscount = function(banner,discount){
+    if(!banner)return;
+    var badge=banner.querySelector('.eb-discount'),hero=banner.querySelector('.eb-hero');
+    if(!badge||!hero)return;
+    var value=Number(discount),visible=Number.isFinite(value)&&value>0&&value<=100;
+    badge.hidden=!visible;hero.classList.toggle('eb-has-discount',visible);
+    badge.querySelector('.eb-discount-value').textContent=visible?value.toLocaleString('de-DE'):'';
+    badge.setAttribute('aria-label',visible?value.toLocaleString('de-DE')+' Prozent Aktionsrabatt':'Aktionsrabatt');
+  };
   var actionRichPrefix='<!--pb-action-rich-v1-->';
   window.cleanActionHtml=function(raw){
     var template=document.createElement('template');template.innerHTML=String(raw||'');
@@ -27136,6 +27166,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     clone.querySelectorAll('.eb-meta-lbl').forEach(function(el,i){el.textContent=labels[i];el.style.color=color('abLabelColor','ash');});
     var note=clone.querySelector('.eb-meta-note');note.style.color=color('abLabelColor','ash');
     window.applyActionDateNote(note,g('abNote'));
+    window.renderActionDiscount(clone,g('ebAdmDiscount'));
     host.replaceChildren(clone);
   };
   (function(){
