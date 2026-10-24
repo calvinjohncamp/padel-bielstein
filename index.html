@@ -1845,6 +1845,25 @@ body.bielstein-theme #bookBtn.visible{display:flex!important}
 /* Emphasize time and base tariff; keep seasonal and Abo comparisons quiet. */
 #adminPrices .is-overview thead th,#adminPrices .is-overview td{font-weight:400}
 #adminPrices .is-overview th:first-child,#adminPrices .is-overview th:nth-child(2),#adminPrices .is-overview td:first-of-type{font-weight:700}
+
+/* Partner eligibility: five individual addresses and one scoped member list. */
+.partner-discount-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.partner-discount-fields label{font:600 12px/1.5 Manrope,sans-serif;color:#5C564C;min-width:0;}
+.partner-discount-fields input{display:block;width:100%;margin-top:4px;min-width:0;box-sizing:border-box;}
+.partner-member-panel{padding:16px;margin-bottom:12px;border:1px solid #E2DACB;border-radius:10px;background:#FBF9F4;}
+.partner-member-panel h3{color:#1C1A17;font:800 15px "Space Grotesk",sans-serif;margin:0 0 8px;}
+.partner-member-panel p,.partner-member-dialog p{font:500 13px/1.55 Manrope,sans-serif;margin:8px 0;color:#5C564C;}
+.partner-member-panel .partner-member-note{font-size:12px;color:#7A7368;}
+.partner-member-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.partner-member-panel button:disabled{opacity:.5;cursor:default;}
+.partner-member-panel [hidden],.partner-member-dialog [hidden]{display:none!important;}
+#partnerMemberSetup select{width:100%;margin:6px 0 10px;}
+.partner-member-dialog{box-sizing:border-box;margin:auto;width:calc(100% - 28px);max-width:680px;max-height:85dvh;overflow:auto;border:1px solid #D8CEBE;border-radius:16px;padding:22px;background:#F6F1E7;color:#1C1A17;}
+.partner-member-dialog::backdrop{background:rgba(28,26,23,.55);}
+.partner-member-dialog h2{font:800 22px "Space Grotesk",sans-serif;margin:0 0 12px;}
+.partner-member-dialog table{width:100%;border-collapse:collapse;font:500 13px/1.5 Manrope,sans-serif;}
+.partner-member-dialog td,.partner-member-dialog th{text-align:left;padding:8px 4px;border-bottom:1px solid #E2DACB;overflow-wrap:anywhere;}
+@media(max-width:600px){.partner-discount-fields{grid-template-columns:1fr;}.partner-member-actions button{flex:1 1 auto;}.partner-member-dialog{padding:18px;}}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -2682,6 +2701,16 @@ main {
       <div class="eb-meta-note">Dein Abo startet automatisch am Eröffnungstag unserer neuen Anlage.</div>
     </div>
   </div>
+
+  <dialog id="partnerMemberDialog" class="partner-member-dialog" aria-labelledby="partnerMemberDialogTitle">
+    <h2 id="partnerMemberDialogTitle">Mitgliederliste</h2>
+    <div id="partnerMemberDialogBody"></div>
+    <div class="partner-member-actions">
+      <button type="button" id="partnerMemberApply" class="admin-save-btn" hidden onclick="applyPartnerMemberImport()">Liste verbindlich übernehmen</button>
+      <button type="button" class="admin-save-btn" id="partnerMemberClose" onclick="closePartnerMemberDialog()">Schließen</button>
+    </div>
+    <p id="partnerMemberDialogMessage" role="status"></p>
+  </dialog>
 
   <dialog id="officialOpeningDialog" aria-labelledby="officialOpeningHeading" style="margin:auto;max-width:720px;width:calc(100% - 32px);max-height:85vh;overflow:auto;border:1px solid #D8CEBE;border-radius:18px;padding:22px;background:#F6F0E4;color:#1C1A17">
     <h2 id="officialOpeningHeading">Anlageneröffnung festlegen</h2>
@@ -6860,11 +6889,35 @@ main {
                 <input id="spContactEmail" type="email" placeholder="kontakt@firma.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;">
               </div>
               <div style="grid-column:1 / -1;">
-                <label for="spDiscountEmails" style="display:block;font:700 10.5px 'Space Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7A7368;margin-bottom:5px;">Rabatt-/Buchungs-E-Mail-Adressen (max. 5)</label>
-                <textarea id="spDiscountEmails" rows="5" placeholder="buchung@firma.de&#10;zweite@firma.de" style="width:100%;padding:9px 11px;border:1.5px solid #E2DACB;border-radius:8px;font:500 14px 'Manrope',sans-serif;background:#fff;color:#1C1A17;resize:vertical;"></textarea>
+                <div class="partner-discount-fields">
+                  <label for="spDiscountEmail1">Rabattberechtigte E-Mail 1<input id="spDiscountEmail1" type="email" autocomplete="off" placeholder="name@beispiel.de" class="admin-input" oninput="syncSponsorDiscountFields()"></label>
+                  <label for="spDiscountEmail2">Rabattberechtigte E-Mail 2<input id="spDiscountEmail2" type="email" autocomplete="off" placeholder="name@beispiel.de" class="admin-input" oninput="syncSponsorDiscountFields()"></label>
+                  <label for="spDiscountEmail3">Rabattberechtigte E-Mail 3<input id="spDiscountEmail3" type="email" autocomplete="off" placeholder="name@beispiel.de" class="admin-input" oninput="syncSponsorDiscountFields()"></label>
+                  <label for="spDiscountEmail4">Rabattberechtigte E-Mail 4<input id="spDiscountEmail4" type="email" autocomplete="off" placeholder="name@beispiel.de" class="admin-input" oninput="syncSponsorDiscountFields()"></label>
+                  <label for="spDiscountEmail5">Rabattberechtigte E-Mail 5<input id="spDiscountEmail5" type="email" autocomplete="off" placeholder="name@beispiel.de" class="admin-input" oninput="syncSponsorDiscountFields()"></label>
+                </div>
+                <textarea id="spDiscountEmails" hidden aria-hidden="true" tabindex="-1"></textarea>
               </div>
             </div>
           </div>
+
+          <section class="partner-member-panel" aria-labelledby="partnerMembersHeading">
+            <h3 id="partnerMembersHeading">Mitgliederliste</h3>
+            <p id="partnerMemberHint">Excel (.xlsx) oder CSV mit Spalte „E-Mail“, eine Adresse je Zeile. Name optional. Nur Rabattberechtigte aufnehmen.</p>
+            <p id="partnerMemberStatus" role="status">Partner zuerst speichern, dann eine Liste zuordnen.</p>
+            <div id="partnerMemberSetup" hidden>
+              <label for="partnerMemberSource">Liste zuordnen</label>
+              <select id="partnerMemberSource" class="admin-input"><option value="">Neue E-Mail-Liste für diesen Partner</option></select>
+              <button type="button" class="admin-save-btn" onclick="preparePartnerMemberGroup()">Liste zuordnen</button>
+            </div>
+            <div class="partner-member-actions">
+              <button type="button" id="partnerMemberUpload" class="admin-save-btn" disabled onclick="document.getElementById('partnerMemberFile').click()">Excel- oder CSV-Liste auswählen</button>
+              <button type="button" id="partnerMemberView" class="admin-save-btn" disabled onclick="showPartnerMembers(0)">Liste ansehen</button>
+            </div>
+            <input id="partnerMemberFile" type="file" hidden accept=".xlsx,.xls,.xlsm,.csv,text/csv" onchange="handlePartnerMemberFile(this)">
+            <p class="partner-member-note">Eine neue Datei ersetzt nur diese Mitgliederliste. Die fünf Einzeladressen bleiben erhalten.</p>
+            <div id="partnerMemberMessage" role="status"></div>
+          </section>
 
           <div style="margin-bottom:12px;padding:12px 13px;border:1.5px solid #E2DACB;border-radius:10px;background:#FBF9F4;">
             <div style="font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:#1C1A17;margin-bottom:4px;">Vertragsadresse</div>
@@ -15476,7 +15529,8 @@ function editSponsor(id) {
   document.getElementById('spContactName').value  = s.contact_name  || '';
   document.getElementById('spContactEmail').value = s.contact_email || '';
   document.getElementById('spContactPhone').value = s.contact_phone || '';
-  document.getElementById('spDiscountEmails').value = s.discount_emails || '';
+  fillSponsorDiscountFields(s.discount_emails || '');
+  void loadPartnerMemberPanel(s.id);
   const contractCompany = s.contract_company || s.name || '';
   document.getElementById('spContractCompany').value = contractCompany;
   setSponsorCompanyAuto(contractCompany === (s.name || ''));
@@ -15516,7 +15570,8 @@ function resetSponsorForm() {
   document.getElementById('spContactName').value  = '';
   document.getElementById('spContactEmail').value = '';
   document.getElementById('spContactPhone').value = '';
-  document.getElementById('spDiscountEmails').value = '';
+  fillSponsorDiscountFields('');
+  resetPartnerMemberPanel();
   document.getElementById('spContractCompany').value = '';
   setSponsorCompanyAuto(true);
   document.getElementById('spAddressStreet').value = '';
@@ -15641,6 +15696,7 @@ async function saveSponsor() {
   const contactName  = document.getElementById('spContactName').value.trim();
   const contactEmail = document.getElementById('spContactEmail').value.trim();
   const contactPhone = document.getElementById('spContactPhone').value.trim();
+  syncSponsorDiscountFields();
   const discountEmails = document.getElementById('spDiscountEmails').value.trim();
   const website      = document.getElementById('spWebsite').value.trim();
   const courtLabelValue = document.getElementById('spCourtLabel').value.trim();
@@ -15661,6 +15717,9 @@ async function saveSponsor() {
   if (!name) { alert('Bitte eine Marke angeben.'); return; }
   if (!Number.isFinite(annualAmountCents) || annualAmountCents < 0) { alert('Bitte einen gültigen Jahresbetrag angeben.'); return; }
   if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
+  if (Array.from({length:5},(_,i)=>document.getElementById('spDiscountEmail'+(i+1))).some(input=>input.value.trim()&&!input.checkValidity())) {
+    alert('Bitte pro Feld genau eine gültige Rabatt-E-Mail-Adresse eingeben.'); return;
+  }
   const discountEmailParts = [...new Set(discountEmails.split(/[\s,;]+/).map(v => v.trim().toLowerCase()).filter(Boolean))];
   if (discountEmailParts.some(value => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value))) {
     alert('Bitte nur vollständige, gültige Rabatt-/Buchungs-E-Mail-Adressen eintragen.'); return;
@@ -18395,6 +18454,125 @@ async function refreshBookingCancellationTerms() {
 }
 
 // ============================================================
+// Partner lists reuse club_members and the audited source-scoped replacement import.
+let partnerMemberGroups = [];
+let partnerMemberContext = null;
+let partnerMemberDraft = null;
+let partnerMemberLoading = false;
+let partnerMemberGeneration = 0;
+
+function fillSponsorDiscountFields(raw) {
+  const values = [...new Set(String(raw || '').split(/[,;\s]+/).map(s => s.trim()).filter(Boolean))];
+  for(let i=1;i<=5;i++) document.getElementById('spDiscountEmail'+i).value=values[i-1]||'';
+  document.getElementById('spDiscountEmails').value=values.join('\n');
+}
+function syncSponsorDiscountFields() {
+  document.getElementById('spDiscountEmails').value=Array.from({length:5},(_,i)=>document.getElementById('spDiscountEmail'+(i+1)).value.trim()).filter(Boolean).join('\n');
+}
+function closePartnerMemberDialog() {
+  document.getElementById('partnerMemberDialog').close();partnerMemberDraft=null;
+}
+function resetPartnerMemberPanel() {
+  partnerMemberGeneration++;partnerMemberContext=null;partnerMemberDraft=null;
+  document.getElementById('partnerMemberDialog')?.close();
+  for(const id of ['partnerMemberUpload','partnerMemberView']) document.getElementById(id).disabled=true;
+  document.getElementById('partnerMemberSetup').hidden=true;
+  document.getElementById('partnerMemberStatus').textContent='Partner zuerst speichern, dann eine Liste zuordnen.';
+  document.getElementById('partnerMemberMessage').textContent='';
+}
+async function loadPartnerMemberPanel(sponsorId) {
+  resetPartnerMemberPanel();const generation=partnerMemberGeneration;
+  const status=document.getElementById('partnerMemberStatus');status.textContent='Mitgliederliste wird geladen …';
+  try {
+    const {data,error}=await sb.rpc('admin_list_partner_member_groups');if(error)throw error;
+    if(generation!==partnerMemberGeneration||document.getElementById('spEditId').value!==sponsorId)return;
+    partnerMemberGroups=data||[];
+    const group=partnerMemberGroups.find(g=>g.sponsor_id===sponsorId);
+    const sponsor=(window.__sponsorRows||[]).find(s=>s.id===sponsorId);
+    partnerMemberContext={sponsorId,group,name:sponsor?.name||'Partner'};
+    document.getElementById('partnerMemberHint').textContent=group&&!group.email_only
+      ? 'Excel (.xlsx) oder CSV mit „Name“ und „E-Mail“; alternativ „Vorname“, „Nachname“, „E-Mail“. Eine Person je Zeile.'
+      : 'Excel (.xlsx) oder CSV mit Spalte „E-Mail“, eine Adresse je Zeile. Name optional. Nur Rabattberechtigte aufnehmen.';
+    if(group){
+      status.textContent=group.name+' · '+Number(group.active_members||0)+' aktive Einträge · letzter Import: '+(group.last_import_at?new Date(group.last_import_at).toLocaleDateString('de-DE'):'noch keiner');
+      document.getElementById('partnerMemberUpload').disabled=!group.active||!group.import_enabled||!group.grants_discount||partnerCampaignIsArchived();
+      document.getElementById('partnerMemberView').disabled=false;
+    } else {
+      status.textContent='Noch keine Mitgliederliste zugeordnet.';
+      const select=document.getElementById('partnerMemberSource');select.replaceChildren(new Option('Neue E-Mail-Liste für diesen Partner',''));
+      partnerMemberGroups.filter(g=>!g.sponsor_id&&g.active&&g.import_enabled&&g.grants_discount&&!g.email_only).forEach(g=>select.add(new Option(g.name+' – bestehende Liste',g.source)));
+      document.getElementById('partnerMemberSetup').hidden=partnerCampaignIsArchived();
+    }
+  } catch(e){if(generation===partnerMemberGeneration)status.textContent='Mitgliederliste konnte nicht geladen werden: '+(e.message||e);}
+}
+async function preparePartnerMemberGroup() {
+  if(!partnerMemberContext||partnerMemberLoading||!ensurePartnerCampaignEditable())return;
+  const ctx=partnerMemberContext,source=document.getElementById('partnerMemberSource').value;partnerMemberLoading=true;
+  try {
+    const {error}=await sb.rpc('admin_prepare_partner_member_group',{p_sponsor_id:ctx.sponsorId,p_existing_source:source||null});if(error)throw error;
+    if(partnerMemberContext===ctx)await loadPartnerMemberPanel(ctx.sponsorId);
+  }catch(e){document.getElementById('partnerMemberMessage').textContent='Zuordnung fehlgeschlagen: '+(e.message||e);}
+  finally{partnerMemberLoading=false;}
+}
+function buildPartnerEmailRows(matrix) {
+  if(!matrix.length)throw new Error('Die Datei ist leer.');
+  const head=matrix[0].map(v=>String(v||'').trim().toLowerCase()),mail=head.findIndex(h=>/mail/.test(h));
+  if(mail<0)throw new Error('Benötigt wird eine Spalte „E-Mail“, eine Adresse je Zeile.');
+  const first=head.findIndex(h=>h==='vorname'),last=head.findIndex(h=>h==='name'||h==='nachname'||h==='vollständiger name');
+  const rows=matrix.slice(1).filter(r=>r.some(v=>String(v||'').trim())).map((r,i)=>{
+    const email=String(r[mail]||'').trim().toLowerCase();
+    if(!/^[^@,;<>\s]+@[^@,;<>\s]+\.[^@,;<>\s]+$/.test(email))throw new Error('Fehlende oder ungültige E-Mail in Zeile '+(i+2)+'. Bitte eine Adresse je Zeile eintragen.');
+    return {email,full_name:((first>=0?String(r[first]||'').trim()+' ':'')+(last>=0?String(r[last]||'').trim():'')).trim()};
+  });
+  if(!rows.length)throw new Error('Die Datei enthält keine Adressen.');return rows;
+}
+async function handlePartnerMemberFile(input) {
+  const file=input.files?.[0];input.value='';
+  if(!file||!partnerMemberContext?.group||partnerMemberLoading||!ensurePartnerCampaignEditable())return;
+  const ctx=partnerMemberContext,message=document.getElementById('partnerMemberMessage');partnerMemberLoading=true;message.textContent='Datei wird geprüft …';
+  try {
+    if(file.size>10*1024*1024)throw new Error('Bitte eine Datei mit höchstens 10 MB auswählen.');
+    let matrix;
+    if(/\.(xlsx|xlsm|xls)$/i.test(file.name)){await ensureXlsxLib();const book=XLSX.read(await file.arrayBuffer(),{type:'array'});matrix=XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]],{header:1,raw:false,defval:''});}
+    else matrix=parseCsv(await file.text());
+    const rows=ctx.group.email_only?buildPartnerEmailRows(matrix):buildMemberRows(matrix);
+    if(rows.some(r=>!r.email||(!ctx.group.email_only&&!r.full_name)))throw new Error('Bitte jede Zeile mit Name und gültiger E-Mail vervollständigen.');
+    if(rows.length>10000)throw new Error('Bitte höchstens 10.000 Einträge je Datei verwenden.');
+    const sha256=await memberFileSha256(file);
+    const {data,error}=await sb.rpc('admin_sync_club_members_preview',{p_source:ctx.group.source,p_rows:rows,p_file_name:file.name,p_file_sha256:sha256});if(error)throw error;
+    if(partnerMemberContext!==ctx)return;
+    partnerMemberDraft={...ctx,rows,fileName:file.name,sha256,preview:data};
+    const dialog=document.getElementById('partnerMemberDialog');document.getElementById('partnerMemberDialogTitle').textContent=ctx.group.name+' – Import prüfen';
+    document.getElementById('partnerMemberDialogBody').innerHTML='<p>'+adminUserEsc(file.name)+'</p><table><tbody>'+[['Gültige Einträge',data.gueltig],['Neu',data.neu],['Bereits vorhanden',data.vorhanden],['Wieder aktiv',data.reaktivieren],['Künftig nicht mehr berechtigt',data.deaktivieren],['Doppelte Einträge',data.duplikate]].map(([k,v])=>'<tr><td>'+k+'</td><td>'+Number(v||0)+'</td></tr>').join('')+'</tbody></table><p>Nur diese Liste wird aktualisiert. Einzeladressen, Benutzerkonten und bestehende Buchungen bleiben erhalten.</p>';
+    document.getElementById('partnerMemberApply').hidden=false;document.getElementById('partnerMemberApply').disabled=false;document.getElementById('partnerMemberDialogMessage').textContent='';dialog.showModal();message.textContent='';
+  }catch(e){if(partnerMemberContext===ctx)message.textContent='Import nicht übernommen: '+(e.message||e);}
+  finally{partnerMemberLoading=false;}
+}
+async function applyPartnerMemberImport() {
+  const draft=partnerMemberDraft;if(!draft||partnerMemberLoading||!ensurePartnerCampaignEditable())return;
+  partnerMemberLoading=true;const button=document.getElementById('partnerMemberApply');button.disabled=true;
+  try {
+    const {data,error}=await sb.rpc('admin_sync_club_members_apply',{p_source:draft.group.source,p_rows:draft.rows,p_file_name:draft.fileName,p_file_sha256:draft.sha256});if(error)throw error;
+    partnerMemberDraft=null;document.getElementById('partnerMemberDialog').close();
+    if(partnerMemberContext?.sponsorId===draft.sponsorId){await loadPartnerMemberPanel(draft.sponsorId);document.getElementById('partnerMemberMessage').textContent='Liste übernommen: '+Number(data.aktiv_gesamt||0)+' aktive Einträge.';}
+  }catch(e){document.getElementById('partnerMemberDialogMessage').textContent='Nicht übernommen: '+(e.message||e);button.disabled=false;}
+  finally{partnerMemberLoading=false;}
+}
+async function showPartnerMembers(offset=0) {
+  if(!partnerMemberContext?.group||partnerMemberLoading)return;const ctx=partnerMemberContext;partnerMemberLoading=true;
+  try {
+    const {data,error}=await sb.rpc('admin_list_partner_members',{p_sponsor_id:ctx.sponsorId,p_offset:offset});if(error)throw error;
+    if(ctx!==partnerMemberContext)return;partnerMemberDraft=null;
+    document.getElementById('partnerMemberDialogTitle').textContent=ctx.group.name;
+    document.getElementById('partnerMemberApply').hidden=true;document.getElementById('partnerMemberDialogMessage').textContent='';
+    const body=document.getElementById('partnerMemberDialogBody');body.replaceChildren();
+    const summary=document.createElement('p');summary.textContent=Number(data.total||0)+' aktive Einträge'+(data.total?' · '+(offset+1)+'–'+Math.min(offset+100,data.total):'');body.append(summary);
+    const table=document.createElement('table');for(const row of data.rows||[]){const tr=table.insertRow();tr.insertCell().textContent=row.full_name||'–';tr.insertCell().textContent=row.email;}body.append(table);
+    const paging=document.createElement('div');paging.className='partner-member-actions';for(const [label,next,visible]of[['Zurück',offset-100,offset>0],['Weiter',offset+100,offset+100<data.total]]){if(visible){const b=document.createElement('button');b.type='button';b.className='admin-save-btn';b.textContent=label;b.onclick=()=>showPartnerMembers(next);paging.append(b);}}body.append(paging);
+    const dialog=document.getElementById('partnerMemberDialog');if(!dialog.open)dialog.showModal();
+  }catch(e){document.getElementById('partnerMemberMessage').textContent='Liste konnte nicht geladen werden: '+(e.message||e);}
+  finally{partnerMemberLoading=false;}
+}
 const TECHNICAL_OPERATOR_UI_ENABLED = true;
 const technicalOperatorState = {generation:0,actor:null,scope:null,preview:null,pending:null,busy:false};
 const operatorUuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
