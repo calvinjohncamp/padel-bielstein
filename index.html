@@ -1876,7 +1876,7 @@ body.bielstein-theme #bookBtn.visible{display:flex!important}
 @media(max-width:600px){.partner-discount-fields{grid-template-columns:1fr;}.partner-member-actions button{flex:1 1 auto;}.partner-member-dialog{padding:18px;}}
 /* A single compact partner-order surface in the financial overview. */
 .partner-order-cell{display:flex;align-items:center;gap:8px;min-width:0;}
-.partner-editor-link{border:0;background:transparent;padding:2px 0;min-width:0;color:#1C1A17;text-align:left;cursor:pointer;font:700 12px/1.4 Manrope,sans-serif;text-decoration:underline;text-decoration-color:#D8CEBE;text-underline-offset:3px;}
+.partner-editor-link{border:0;background:transparent;padding:2px 0;min-width:0;color:#1C1A17;text-align:left;cursor:pointer;font:700 12px/1.4 Manrope,sans-serif;text-decoration:none;}
 .partner-editor-link:hover{color:#C94323;text-decoration-color:currentColor;}
 .partner-order-help{font:500 12px/1.6 Manrope,sans-serif;color:#5C564C;max-width:900px;margin:10px 0;}
 #partnerOrderStatus{font:600 12px/1.5 Manrope,sans-serif;color:#7A472E;}
@@ -1904,6 +1904,18 @@ body.bielstein-theme #bookBtn.visible{display:flex!important}
 
 #adminPartnerBoard .pbp-tile-prem-empty{flex-direction:column;}
 #adminPartnerBoard .pbp-tile-prem-empty .partner-slot{color:#fff;font-size:10px;letter-spacing:normal;margin:0;}
+
+.partner-table-number{flex:0 0 22px;font:600 11px/1.25 Manrope,sans-serif;color:#7A7368;font-variant-numeric:tabular-nums;}
+.partner-details-link{flex:0 0 auto;margin-left:4px;border:1px solid #D8CEBE;border-radius:999px;background:#F6F2E9;color:#5C564C;padding:3px 7px;cursor:pointer;font:600 10px/1.2 Manrope,sans-serif;}
+.partner-details-link:hover,.partner-details-link:focus-visible{border-color:#FF5A36;color:#C94323;}
+#adminPartnerBoard .partner-order-placeholder{border:2px dashed #FF5A36;background:#F6F1E7;box-shadow:0 0 0 3px rgba(255,90,54,.2);}
+#adminPartnerBoard .partner-order-placeholder>img,#adminPartnerBoard .partner-order-placeholder>.pbp-logo-action,#adminPartnerBoard .partner-order-placeholder>.partner-logo-name{opacity:.12!important;}
+#adminPartnerBoard .partner-order-placeholder::after{content:attr(data-drop-label);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;color:#C94323;font:800 12px/1.4 Manrope,sans-serif;text-align:center;}
+body .partner-drag-ghost{position:fixed;top:0;left:0;z-index:20000;pointer-events:none!important;margin:0;padding:0;border:2px solid #FF5A36;opacity:1;overflow:visible;box-shadow:0 12px 32px rgba(0,0,0,.4);will-change:transform;}
+.partner-drag-ghost::after{content:attr(data-drag-label);position:absolute;left:0;right:0;bottom:-25px;padding:4px 7px;border-radius:5px;background:#FF5A36;color:#fff;font:700 11px/1.3 Manrope,sans-serif;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.partner-drag-ghost .partner-logo-name{color:#1C1A17;}
+.partner-drag-ghost.partner-drag-outside{opacity:.55;}
+body.partner-drag-active,body.partner-drag-active *{cursor:grabbing!important;user-select:none!important;}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -14764,9 +14776,9 @@ function renderFundraisingSummary() {
     const body = rows.length ? rows.map((s,index) => {
       const amount = Number(s.annual_amount_cents) || 0;
       return `<tr class="partner-finance-row" data-partner-finance-id="${s.id}" style="border-top:1px solid #EFE9DC;">
-        <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;"><div class="partner-order-cell"><span class="partner-table-slot" title="${s.active?'Platz in der Logo-Vorschau':'Nicht öffentlich geschaltet'}">${partnerSlotCode(s)}</span>${partnerCampaignIsArchived()?esc(s.name):`<button type="button" class="partner-editor-link" onclick="editSponsor('${s.id}')" title="Partner bearbeiten">${esc(s.name)} ↗</button>`}</div></td>
+        <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;"><div class="partner-order-cell"><span class="partner-table-number">${partnerTableNumber(s)}</span><span class="partner-table-slot" title="${s.active?'Platz in der Logo-Vorschau':'Nicht öffentlich geschaltet'}">${partnerSlotCode(s)}</span>${partnerCampaignIsArchived()?esc(s.name):`<button type="button" class="partner-editor-link" onclick="editSponsor('${s.id}')" title="Partner bearbeiten">${esc(s.name)}</button><button type="button" class="partner-details-link" onclick="editSponsor('${s.id}')" aria-label="Details zu ${esc(s.name)}">Details</button>`}</div></td>
         ${statusCell(s)}${contractCell(s)}
-        ${s.verbal_commitment||s.contract_received?`${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount * 3)}`:'<td colspan="4" class="partner-order-pending">Noch keine Zusage · nicht in der Summe</td>'}
+        ${s.verbal_commitment||s.contract_received?`${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount)}${moneyCell(amount * 3)}`:'<td colspan="4" class="partner-order-pending"></td>'}
       </tr>`;
     }).join('') : `<tr style="border-top:1px solid #EFE9DC;"><td colspan="7" style="padding:10px 12px;color:#8A8379;font:600 12px 'Manrope',sans-serif;">Noch keine Zusage erfasst.</td></tr>`;
     return `<div style="margin-top:14px;overflow-x:auto;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;">
@@ -18619,7 +18631,6 @@ async function showPartnerMembers(offset=0) {
 let sponsorOrderSaving=false;
 let sponsorOrderDrag=null;
 let sponsorOrderPositionId=null;
-let sponsorOrderSuppressClick=false;
 function partnerOrderRows(tier){return(window.__sponsorRows||[]).filter(s=>s.tier===tier).slice().sort(pbCompareSponsors);}
 // Slot addresses always refer to the public six-column desktop layout.
 function partnerPublicOrderRows(tier){return partnerOrderRows(tier).filter(s=>s.active);}
@@ -18629,6 +18640,7 @@ function partnerSlotCode(s){
  return s.tier==='premium'?'A'+(i+1):String.fromCharCode((s.tier==='partner'?66:68)+Math.floor(i/6))+(i%6+1);
 }
 function renderAdminPartnerBoard(){
+ if(sponsorOrderDrag)sponsorOrderDrag.cancel();
  const host=document.getElementById('adminPartnerBoard');if(!host)return;
  const archived=partnerCampaignIsArchived();
  const label=t=>'<div class="pbp-seclabel"><span class="pbp-line"></span><span class="pbp-lbl">'+t+'</span><span class="pbp-line"></span></div>';
@@ -18671,7 +18683,6 @@ async function moveSponsor(id,direction){
  [ids[at],ids[next]]=[ids[next],ids[at]];await saveSponsorOrder(s.tier,ids,id);
 }
 function openSponsorPositionDialog(id){
- if(sponsorOrderSuppressClick){sponsorOrderSuppressClick=false;return;}
  if(sponsorOrderSaving||!ensurePartnerCampaignEditable())return;
  const s=(window.__sponsorRows||[]).find(s=>s.id===id);if(!s)return;
  sponsorOrderPositionId=id;
@@ -18687,37 +18698,96 @@ async function confirmSponsorPosition(){
  const old=visible.indexOf(s.id),target=visible[next];
  if(old!==next){ids.splice(ids.indexOf(s.id),1);ids.splice(ids.indexOf(target)+(next>old?1:0),0,s.id);}document.getElementById('partnerOrderDialog').close();await saveSponsorOrder(s.tier,ids,s.id);
 }
-function clearSponsorOrderTarget(){document.querySelectorAll('.partner-order-before,.partner-order-after').forEach(el=>el.classList.remove('partner-order-before','partner-order-after'));}
+// Preview only changes DOM order. Original data stays intact for the atomic save
+// and stale-state check; cancellation restores the original sequence without writes.
+function sponsorSlotAt(tier,index){return tier==='premium'?'A'+(index+1):String.fromCharCode((tier==='partner'?66:68)+Math.floor(index/6))+(index%6+1);}
+function partnerTableNumber(s){
+ const rows=['premium','partner','regional'].flatMap(tier=>partnerOrderRows(tier));
+ return rows.findIndex(row=>row.id===s.id)+1;
+}
+function syncSponsorOrderPreview(d){
+ const visible=[...d.grid.querySelectorAll('[data-sponsor-order-id]')];
+ const ids=visible.map(el=>el.dataset.sponsorOrderId),queue=ids.slice();
+ d.previewIds=partnerOrderRows(d.tier).map(s=>s.active?queue.shift():s.id);
+ visible.forEach((el,i)=>{
+  const slot=sponsorSlotAt(d.tier,i),row=(window.__sponsorRows||[]).find(s=>s.id===el.dataset.sponsorOrderId);
+  el.querySelector('.partner-slot').textContent=slot;
+  el.title=slot+' · '+row.name+' verschieben – ziehen oder Position wählen';el.setAttribute('aria-label',el.title);
+  document.querySelector(`[data-partner-finance-id="${row.id}"] .partner-table-slot`)?.replaceChildren(document.createTextNode(slot));
+ });
+ const first=document.querySelector(`[data-partner-finance-id="${d.id}"]`),body=first?.parentElement;
+ if(body)for(const id of d.previewIds){const row=body.querySelector(`[data-partner-finance-id="${id}"]`);if(row)body.append(row);}
+ document.querySelectorAll('#fundraisingSummary .partner-table-number').forEach((el,i)=>el.textContent=String(i+1));
+}
 function sponsorOrderDragTarget(d){
- clearSponsorOrderTarget();d.target=null;
- const row=document.elementFromPoint(d.x,d.y)?.closest('#adminPartnerBoard [data-sponsor-order-id]');
- if(!row||row.dataset.sponsorOrderId===d.id||row.dataset.sponsorOrderTier!==d.tier)return;
- d.target={id:row.dataset.sponsorOrderId,after:d.x>row.getBoundingClientRect().left+row.getBoundingClientRect().width/2};row.classList.add(d.target.after?'partner-order-after':'partner-order-before');
+ // Gaps between tiles are valid targets too. Use the nearest layout cell,
+ // rather than the old elementFromPoint test that silently rejected gaps.
+ if(!d.grid.isConnected||window.__partnerCampaignId!==d.campaignId){d.cancel();return;}
+ const rect=d.grid.getBoundingClientRect();
+ if(d.x<rect.left-20||d.x>rect.right+20||d.y<rect.top-20||d.y>rect.bottom+20){
+  d.valid=false;d.ghost?.classList.add('partner-drag-outside');if(d.ghost)d.ghost.dataset.dragLabel=d.name+' · Hier nicht ablegen';d.handle.dataset.dropLabel='Innerhalb dieser Kategorie ablegen';const status=document.getElementById('partnerOrderStatus');if(status)status.textContent='Bitte innerhalb derselben Kategorie ablegen.';return;
+ }
+ d.valid=true;d.ghost?.classList.remove('partner-drag-outside');
+ const tiles=[...d.grid.querySelectorAll('[data-sponsor-order-id]')];let nearest=0,best=Infinity;
+ tiles.forEach((tile,i)=>{const r=tile.getBoundingClientRect();const dx=Math.max(r.left-d.x,0,d.x-r.right),dy=Math.max(r.top-d.y,0,d.y-r.bottom);const distance=dx*dx+dy*dy;if(distance<best){best=distance;nearest=i;}});
+ const at=tiles.indexOf(d.handle);
+ if(at!==nearest){
+  const remaining=tiles.filter(el=>el!==d.handle);d.grid.insertBefore(d.handle,remaining[nearest]||null);syncSponsorOrderPreview(d);
+ }
+ const slot=sponsorSlotAt(d.tier,nearest);d.handle.dataset.dropLabel='Hier einfügen · '+slot;
+ if(d.ghost)d.ghost.dataset.dragLabel=d.name+' · '+d.fromSlot+' → '+slot;
+ const status=document.getElementById('partnerOrderStatus');if(status)status.textContent=d.name+': '+d.fromSlot+' → '+slot+' · Zum Speichern loslassen.';
 }
 function startSponsorOrderDrag(event,id){
- if(event.pointerType==='touch')return; // Keep normal page scrolling; tapping opens native position selection.
- if(event.button!==0||sponsorOrderSaving||!ensurePartnerCampaignEditable())return;
+ if(event.pointerType==='touch')return; // Touch keeps page scrolling and native position selection.
+ if(event.button!==0||sponsorOrderSaving||sponsorOrderDrag||!ensurePartnerCampaignEditable())return;
  const s=(window.__sponsorRows||[]).find(s=>s.id===id);if(!s)return;
- const handle=event.currentTarget;handle.setPointerCapture(event.pointerId);
- const d={id,tier:s.tier,handle,pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,moved:false,target:null,frame:0,campaignId:window.__partnerCampaignId};sponsorOrderDrag=d;
+ const handle=event.currentTarget,grid=handle.parentElement,capture=document.getElementById('adminPartnerBoard'),rect=handle.getBoundingClientRect();
+ const d={id,name:s.name,tier:s.tier,handle,grid,capture,pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top,width:rect.width,height:rect.height,fromSlot:partnerSlotCode(s),originalVisible:[...grid.querySelectorAll('[data-sponsor-order-id]')].map(el=>el.dataset.sponsorOrderId),previewIds:partnerOrderRows(s.tier).map(row=>row.id),moved:false,valid:false,frame:0,campaignId:window.__partnerCampaignId,ghost:null};
+ sponsorOrderDrag=d;
+ const positionGhost=()=>{if(d.ghost)d.ghost.style.transform=`translate3d(${d.x-d.offsetX}px,${d.y-d.offsetY}px,0)`;};
  const scrollFrame=()=>{
   if(sponsorOrderDrag!==d||!d.moved)return;
   const dy=d.y<80?-Math.ceil((80-d.y)/7):d.y>innerHeight-80?Math.ceil((d.y-innerHeight+80)/7):0;
-  if(dy){window.scrollBy(0,dy);sponsorOrderDragTarget(d);}d.frame=requestAnimationFrame(scrollFrame);
+  if(dy){window.scrollBy({top:dy,left:0,behavior:'instant'});sponsorOrderDragTarget(d);}
+  if(sponsorOrderDrag===d)d.frame=requestAnimationFrame(scrollFrame);
  };
- const move=e=>{if(e.pointerId!==d.pointerId)return;d.x=e.clientX;d.y=e.clientY;
-  if(!d.moved&&Math.hypot(d.x-d.startX,d.y-d.startY)>7){d.moved=true;handle.closest('[data-sponsor-order-id]')?.classList.add('partner-order-dragging');d.frame=requestAnimationFrame(scrollFrame);}
-  if(d.moved){e.preventDefault();sponsorOrderDragTarget(d);}
+ const move=e=>{
+  if(e.pointerId!==d.pointerId)return;d.x=e.clientX;d.y=e.clientY;
+  if(!d.moved&&Math.hypot(d.x-d.startX,d.y-d.startY)>7){
+   d.moved=true;
+   const ghost=document.createElement('div');ghost.className=handle.className+' partner-drag-ghost';ghost.innerHTML=handle.innerHTML;ghost.setAttribute('aria-hidden','true');ghost.style.width=d.width+'px';ghost.style.height=d.height+'px';document.body.append(ghost);d.ghost=ghost;
+   const layers=handle.querySelectorAll('.pbp-logo-main,.pbp-logo-action');
+   ghost.querySelectorAll('.pbp-logo-main,.pbp-logo-action').forEach((layer,i)=>{layer.style.setProperty('opacity',getComputedStyle(layers[i]).opacity,'important');layer.style.animation='none';layer.style.transition='none';});
+   handle.classList.add('partner-order-placeholder');document.body.classList.add('partner-drag-active');d.frame=requestAnimationFrame(scrollFrame);
+  }
+  if(d.moved){e.preventDefault();positionGhost();sponsorOrderDragTarget(d);}
  };
- const finish=e=>{
-  if(e.pointerId!==d.pointerId)return;
-  cancelAnimationFrame(d.frame);handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',finish);handle.removeEventListener('pointercancel',cancel);handle.removeEventListener('lostpointercapture',cancel);
-  sponsorOrderDrag=null;handle.closest('[data-sponsor-order-id]')?.classList.remove('partner-order-dragging');clearSponsorOrderTarget();
-  if(d.moved){sponsorOrderSuppressClick=true;setTimeout(()=>{sponsorOrderSuppressClick=false;},0);}
-  if(d.moved&&d.target&&window.__partnerCampaignId===d.campaignId){const ids=partnerOrderRows(d.tier).map(s=>s.id);ids.splice(ids.indexOf(d.id),1);ids.splice(ids.indexOf(d.target.id)+(d.target.after?1:0),0,d.id);void saveSponsorOrder(d.tier,ids,d.id);}
+ const restore=()=>{
+  for(const id of d.originalVisible){const el=grid.querySelector(`[data-sponsor-order-id="${id}"]`);if(el)grid.append(el);}
+  syncSponsorOrderPreview(d);
  };
- const cancel=e=>{if(e.pointerId!==d.pointerId)return;d.target=null;finish(e);};
- handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',cancel);handle.addEventListener('lostpointercapture',cancel);
+ const finish=(e,cancelled=false)=>{
+  if(sponsorOrderDrag!==d||e&&e.pointerId!==undefined&&e.pointerId!==d.pointerId)return;
+  if(e?.type==='pointerup'&&d.moved){d.x=e.clientX;d.y=e.clientY;sponsorOrderDragTarget(d);if(sponsorOrderDrag!==d)return;}
+  cancelAnimationFrame(d.frame);
+  capture.removeEventListener('pointermove',move);capture.removeEventListener('pointerup',finish);capture.removeEventListener('pointercancel',cancel);capture.removeEventListener('lostpointercapture',cancel);document.removeEventListener('keydown',key);window.removeEventListener('blur',cancel);
+  sponsorOrderDrag=null;
+  if(capture.hasPointerCapture(d.pointerId))capture.releasePointerCapture(d.pointerId);
+  d.ghost?.remove();handle.classList.remove('partner-order-placeholder');delete handle.dataset.dropLabel;document.body.classList.remove('partner-drag-active');
+  if(d.moved)e?.preventDefault();
+  else if(!cancelled&&e?.type==='pointerup')openSponsorPositionDialog(d.id);
+  if(d.moved&&!cancelled&&d.valid&&window.__partnerCampaignId===d.campaignId){
+   const changed=d.previewIds.some((id,i)=>id!==partnerOrderRows(d.tier)[i]?.id);
+   if(changed){void saveSponsorOrder(d.tier,d.previewIds,d.id);return;}
+  }
+  if(d.moved){restore();const status=document.getElementById('partnerOrderStatus');if(status)status.textContent=cancelled||!d.valid?'Verschieben abgebrochen.':'Reihenfolge unverändert.';}
+ };
+ const cancel=e=>finish(e,true),key=e=>{if(e.key==='Escape'){e.preventDefault();finish(null,true);}};d.cancel=()=>finish(null,true);
+ // Capture on the stable board, not the tile: moving a captured tile in the DOM
+ // can lose capture and abort a drag in Safari/Chromium.
+ capture.setPointerCapture(event.pointerId);
+ capture.addEventListener('pointermove',move);capture.addEventListener('pointerup',finish);capture.addEventListener('pointercancel',cancel);capture.addEventListener('lostpointercapture',cancel);document.addEventListener('keydown',key);window.addEventListener('blur',cancel);
 }
 const TECHNICAL_OPERATOR_UI_ENABLED = true;
 const technicalOperatorState = {generation:0,actor:null,scope:null,preview:null,pending:null,busy:false};
