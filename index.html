@@ -2736,7 +2736,6 @@ main {
       <div class="abo-calc" id="sb-calc" style="margin-top:14px;"></div>
       <div class="abo-benefits" id="sb-benefits" style="margin-top:12px;">
         <div class="abo-benefit"><div class="abo-benefit-dot"></div>Dein fester Trainingsplatz.</div>
-        <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="sb-hours">—</span></div>
         <div class="abo-benefit"><div class="abo-benefit-dot"></div><span id="sb-rabatt">—</span></div>
         <div class="abo-benefit" id="sb-bonus" style="display:none;"><div class="abo-benefit-dot"></div><span><strong>Bonus:</strong> Während der Freibad-Öffnungszeiten ist deine Buchung gleichzeitig Eintrittskarte für das Freibad (4 Spieler).</span></div>
       </div>
@@ -9734,7 +9733,6 @@ function updateMinuteSummary(){
   const values={sDate:new Date(selDate+'T12:00Z').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}),
     sCourt:courtLabel(selSlot.court),sTime:PBMinuteDomain.receiptBookingTime(terms).range,sDur:`${minuteSingleDuration} Minuten`,sTotal:fmt(p.netCents/100),sPer:fmt(p.netCents/400),
     sReg:p.netCents<p.snapshot.grossCents?`statt ${fmt(p.snapshot.grossCents/100)} regulär`:'',
-    'sb-hours':'Dein Preis enthält die unten aufgeführten Zeitanteile der bestehenden Stundentarife.',
     'sb-rabatt':p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:''};
   for(const [id,value]of Object.entries(values)){const e=document.getElementById(id);if(e)e.textContent=value;}
   const save=document.getElementById('sSave');save.style.display=p.netCents<p.snapshot.grossCents?'':'none';save.textContent=`Du sparst ${fmt((p.snapshot.grossCents-p.netCents)/100)}`;
