@@ -14791,6 +14791,7 @@ function renderFundraisingSummary() {
   const statusCell = sponsor => `<td style="padding:10px 8px;text-align:left;white-space:nowrap;font:800 10px 'Manrope',sans-serif;color:${sponsor.contract_received ? '#1F8A5F' : '#B06A00'};">${sponsor.contract_received ? 'Vertrag' : (sponsor.verbal_commitment ? 'Mündlich' : 'Noch offen')}${Number(sponsor.annual_amount_cents) === 0 ? '<br><span style="color:#5C564C;">Gegenleistung</span>' : ''}</td>`;
   const contractCell = sponsor => `<td aria-label="Vertrag liegt vor" style="width:42px;padding:10px 5px;text-align:center;color:#FF5A36;font:900 14px/1 Arial,sans-serif;text-shadow:.2px 0 currentColor;">${sponsor.contract_received ? '✓' : ''}</td>`;
   const moneyCell = value => `<td style="padding:10px 12px;text-align:right;white-space:nowrap;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${adminFormatEuro(value)}</td>`;
+  const overviewColumns = '<colgroup><col style="width:35%"><col style="width:11%"><col style="width:4%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:14%"></colgroup>';
   const partnerTable = tier => {
     const config = SPONSOR_TIER_CONFIG[tier];
     const rows = sponsors.filter(s => s.tier === tier).sort(pbCompareSponsors);
@@ -14805,7 +14806,7 @@ function renderFundraisingSummary() {
     }).join('') : `<tr style="border-top:1px solid #EFE9DC;"><td colspan="7" style="padding:10px 12px;color:#8A8379;font:600 12px 'Manrope',sans-serif;">Noch keine Zusage erfasst.</td></tr>`;
     return `<div style="margin-top:14px;overflow-x:auto;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;">
       <table style="width:100%;min-width:780px;border-collapse:collapse;table-layout:fixed;">
-        <colgroup><col style="width:35%"><col style="width:11%"><col style="width:4%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:14%"></colgroup>
+        ${overviewColumns}
         <thead><tr style="background:#F6F2E9;">
           <th style="padding:10px 12px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">${config.label}</th>
           <th style="padding:10px 8px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Stand</th>
@@ -14825,11 +14826,11 @@ function renderFundraisingSummary() {
   };
   const donationRows = reportDonations.length ? reportDonations.map(d => `<tr style="border-top:1px solid #EFE9DC;">
     <td style="padding:10px 12px;font:700 12px 'Manrope',sans-serif;color:#1C1A17;">${esc(d.donor_name)}</td>
-    <td style="padding:10px 12px;font:800 10px 'Manrope',sans-serif;color:${d.status === 'received' ? '#1F8A5F' : '#B06A00'};">${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</td>
+    <td style="padding:10px 8px;font:800 10px 'Manrope',sans-serif;color:${d.status === 'received' ? '#1F8A5F' : '#B06A00'};">${d.status === 'received' ? 'Eingegangen' : 'Zugesagt'}</td>
     <td aria-label="Spende eingegangen" style="width:42px;padding:10px 5px;text-align:center;color:#FF5A36;font:900 14px/1 Arial,sans-serif;text-shadow:.2px 0 currentColor;">${d.status === 'received' ? '✓' : ''}</td>
-    <td style="padding:10px 12px;text-align:right;white-space:nowrap;font:700 11px 'Manrope',sans-serif;color:#5C564C;">${esc(d.donation_date || '')}</td>
+    <td colspan="3" style="padding:10px 12px;text-align:left;white-space:nowrap;font:700 11px 'Manrope',sans-serif;color:#5C564C;">${esc(d.donation_date || '')}</td>
     ${moneyCell(d.amount_cents)}
-  </tr>`).join('') : '<tr style="border-top:1px solid #EFE9DC;"><td colspan="5" style="padding:10px 12px;color:#8A8379;font:600 12px Manrope,sans-serif;">Noch keine Spende erfasst.</td></tr>';
+  </tr>`).join('') : '<tr style="border-top:1px solid #EFE9DC;"><td colspan="7" style="padding:10px 12px;color:#8A8379;font:600 12px Manrope,sans-serif;">Noch keine Spende erfasst.</td></tr>';
   box.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:14px;">
       ${metric('Partner · 3 Jahre', partnerThreeYearTotal, 'Summe aus Premium, Partner und Regional', '#1C1A17', '#FFFFFF')}
@@ -14839,18 +14840,18 @@ function renderFundraisingSummary() {
     <div class="partner-order-help">Partnernamen anklicken zum Bearbeiten. Platzcodes wie A1 oder D1 entsprechen der Logo-Vorschau oben; „–“ bedeutet nicht öffentlich geschaltet.</div>
     ${SPONSOR_TIER_ORDER.map(partnerTable).join('')}
     <div style="margin-top:14px;overflow-x:auto;border:1.5px solid #E2DACB;border-radius:8px;background:#fff;">
-      <table style="width:100%;min-width:680px;border-collapse:collapse;table-layout:fixed;">
-        <colgroup><col style="width:43%"><col style="width:15%"><col style="width:5%"><col style="width:17%"><col style="width:20%"></colgroup>
+      <table style="width:100%;min-width:780px;border-collapse:collapse;table-layout:fixed;">
+        ${overviewColumns}
         <thead><tr style="background:#F6F2E9;">
           <th style="padding:10px 12px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Spenden</th>
-          <th style="padding:10px 12px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Stand</th>
+          <th style="padding:10px 8px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Stand</th>
           <th title="Spende eingegangen" style="padding:10px 5px;text-align:center;font:900 12px/1 Arial,sans-serif;color:#1C1A17;text-shadow:.2px 0 currentColor;">✓</th>
-          <th style="padding:10px 12px;text-align:right;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Datum</th>
+          <th colspan="3" style="padding:10px 12px;text-align:left;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Datum</th>
           <th style="padding:10px 12px;text-align:right;font:800 11px 'Space Grotesk',sans-serif;color:#5C564C;">Einmalig</th>
         </tr></thead>
         <tbody>${donationRows}</tbody>
         <tfoot><tr style="border-top:2px solid #D8CDBB;background:#FCFAF5;">
-          <td colspan="4" style="padding:10px 12px;font:800 12px 'Space Grotesk',sans-serif;color:#1C1A17;">Summe Spenden</td>
+          <td colspan="6" style="padding:10px 12px;font:800 12px 'Space Grotesk',sans-serif;color:#1C1A17;">Summe Spenden</td>
           <td style="padding:10px 12px;text-align:right;white-space:nowrap;font:800 12px 'Space Grotesk',sans-serif;color:#1C1A17;">${adminFormatEuro(donationTotal)}</td>
         </tr></tfoot>
       </table>
