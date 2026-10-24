@@ -15,7 +15,17 @@
 <html lang="de" class="pb-boot">
 <head>
 <meta charset="UTF-8">
-<script>
+<script>// Jede neu geöffnete App-Seite beginnt oben; keine Browser-Wiederherstellung
+// einer Scrollposition aus einer anderen Ansicht (auch bei Cmd-R und BFCache).
+try { history.scrollRestoration = 'manual'; } catch(e) {}
+window.pbPageStart = function(){
+  try { window.scrollTo({top:0, left:0, behavior:'instant'}); }
+  catch(e) { window.scrollTo(0,0); }
+};
+document.addEventListener('DOMContentLoaded', window.pbPageStart, {once:true});
+window.addEventListener('pageshow', window.pbPageStart);
+
+
 /* Ganz bewusst das Allererste auf der Seite: festhalten, ob der Nutzer
    gerade von Stripe zurueckkommt. Die Initialisierung raeumt die Adresszeile
    spaeter auf ("/"), danach ist die Information unwiederbringlich weg -
@@ -10091,7 +10101,7 @@ function refreshVerabredungenFrame() {
 // ============================================================
 //  MODE
 // ============================================================
-function setMode(m) {
+function setMode(m, options) {
   if (m !== 'admin' && typeof clearAdminCustomerSupport === 'function') clearAdminCustomerSupport();
   if (m === 'kiosk' && window.__kioskTabOn === false) m = 'book';
   curMode = m;
@@ -10128,8 +10138,6 @@ function setMode(m) {
     document.getElementById('heroHeader').style.cursor = 'pointer';
     document.getElementById('heroHeader').title = '← Zurück zur Buchungsübersicht';
     document.getElementById('adminFooterBtn').textContent = '← Home';
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
     initAdmin();
   } else {
     document.getElementById('mainTabs').style.display = 'grid';
@@ -10138,6 +10146,7 @@ function setMode(m) {
     document.getElementById('heroHeader').title = '';
     document.getElementById('adminFooterBtn').textContent = '⚙ Admin';
   }
+  if (!options?.preserveScroll) window.pbPageStart();
 }
 
 // ============================================================
@@ -10824,7 +10833,7 @@ async function refreshCurrentMode() {
     } else if (typeof window.setMode === 'function') {
       // setMode laedt die Daten des jeweiligen Tabs neu - inklusive der
       // Wertkarten-Uebersicht, die per Wrapper daran haengt.
-      window.setMode(curMode);
+      window.setMode(curMode, {preserveScroll:true});
     }
   } catch (e) {
     console.warn('Seite nach Anmeldewechsel nicht aktualisiert', e);
@@ -16379,6 +16388,7 @@ function setAdminTab(tab) {
   if (tab==='users'    && !adminTabLoaded.users)    { loadAdminUsers();   adminTabLoaded.users=true; }
   if (tab==='infomails'&& !adminTabLoaded.infomails){ initInfoMailsAdmin(); adminTabLoaded.infomails=true; }
   if (tab==='infos'    && !adminTabLoaded.infos)    { if(typeof initInfosEditor==='function') initInfosEditor(); adminTabLoaded.infos=true; }
+  window.pbPageStart();
 }
 
 // ============================================================
