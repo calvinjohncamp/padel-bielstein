@@ -13184,6 +13184,47 @@ async function runPreparedSingleDialog({enabled=false, authId, terms, storage, l
   });
 }
 
+// A deliberate purchase click may finish old housekeeping and then prepare the
+// selected purchase. Return/status callbacks still use the read-only dialog directly.
+async function runPreparedSinglePurchase(options, {
+  wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)), attempts=3,
+}={}) {
+  let resumeId=null, retries=0, continued=false;
+  for (;;) {
+    let result;
+    try {
+      result=await runPreparedSingleDialog(resumeId
+        ? {...options,resumeOnly:true,expectedQuoteId:resumeId}
+        : options);
+    } catch(error) {
+      if(error?.retryable!==true || retries>=attempts) throw error;
+      const record=readPreparedSingleRequest(options.storage,options.authId);
+      // An uncertain create/complete can only be READ back with the same identity.
+      // Preparation is immutable and may be replayed before a create was sent.
+      if(!record || resumeId && record.id!==resumeId) throw error;
+      resumeId=record.phase==='checkout_requested'?record.id:null;
+      await wait(750*++retries);
+      continue;
+    }
+    if(result?.state==='pending' && !result.previous_request && retries<attempts) {
+      resumeId=result.quote_id;
+      await wait(750*++retries);
+      continue;
+    }
+    const unpaidClosed=['offer_retired','released'].includes(result?.state);
+    const differentPurchaseClosed=result?.previous_request===true
+      && ['booked','booking_cancelled'].includes(result.state);
+    if(!continued && result?.closed===true && (unpaidClosed || differentPurchaseClosed)) {
+      // Only a verified server close and successful local removal permit replacement.
+      // Same-slot booked results must never turn into another purchase.
+      if(!options.isCurrent() || readPreparedSingleRequest(options.storage,options.authId)) return result;
+      continued=true;resumeId=null;
+      continue;
+    }
+    return result;
+  }
+}
+
 async function requestPreparedSingleCheckout(payload) {
   const headers=await checkoutHeaders();
   const failure=retryable=>Object.assign(new Error('Der Bezahlvorgang ist noch nicht bestätigt. Bitte denselben Vorgang erneut prüfen.'),{retryable});
@@ -13258,9 +13299,12 @@ async function confirmPreparedSingleBooking() {
     const expectedCents=displayedCheckoutCents('sTotal');
     const expectedCancellation=BOOKING_CANCELLATION_POLICY_ENABLED
       ?displayedBookingCancellationPolicy():null;
-    const result = await runPreparedSingleDialog({enabled:PREPARED_SINGLE_DIALOG_ENABLED||(typeof minuteBookingMode==='function'&&minuteBookingMode()), authId, terms,promoCode:typeof pricingCodeFor==='function'?pricingCodeFor('single'):null,
+    const result = await runPreparedSinglePurchase({enabled:PREPARED_SINGLE_DIALOG_ENABLED||(typeof minuteBookingMode==='function'&&minuteBookingMode()), authId, terms,promoCode:typeof pricingCodeFor==='function'?pricingCodeFor('single'):null,
       discoverOwn:()=>requestPreparedSingleCheckout({booking_type:'single',single_checkout_action:'discover',use_credit:false}),
-      isCurrent:()=>currentUser?.id === authId,
+      isCurrent:()=>currentUser?.id === authId && selDate===terms.day && !!selSlot
+        && selSlot.court===terms.court && (terms.time_version===2
+          ? selSlot.time_version===2 && selSlot.start_minute===terms.start_minute && selSlot.duration_minutes===terms.duration_minutes
+          : selSlot.hour===terms.hour_start && selDur===terms.duration),
       storage:localStorage, locks:navigator.locks, request:requestPreparedSingleCheckout, newId:()=>crypto.randomUUID(),
       choosePayment:async()=>{
         const wallet = await readPreparedSingleWallet({client:typeof sb === 'undefined' ? null : sb, authId,
@@ -13279,6 +13323,7 @@ async function confirmPreparedSingleBooking() {
             throw new Error('Die Stornobedingungen haben sich geändert. Bitte die Auswahl erneut laden und prüfen.');
           }
         }
+        if(displayedCheckoutCents('sTotal')!==expectedCents) throw new Error('Die Preisanzeige hat sich geändert. Bitte die Auswahl erneut prüfen.');
         return approveDisplayedCheckout(offer,expectedCents,authId,'single');
       }});
     if(currentUser?.id!==authId) throw new Error('Bitte erneut anmelden.');
@@ -13665,6 +13710,20 @@ window.addEventListener('message', (event) => {
 });
 
 async function confirmBooking(skipAuthCheck) {
+  if(confirmBooking.inFlight) return;
+  confirmBooking.inFlight=true;
+  const button=typeof document==='undefined'?null:document.getElementById('bookBtn');
+  const label=button?.textContent;
+  if(button){button.disabled=true;button.setAttribute('aria-busy','true');button.textContent='Zahlung wird vorbereitet …';}
+  try {await confirmBookingOnce(skipAuthCheck);}
+  catch(error){showToast(error.message || 'Die Buchung konnte noch nicht vorbereitet werden. Bitte erneut prüfen.');}
+  finally {
+    confirmBooking.inFlight=false;
+    if(button){button.disabled=false;button.removeAttribute('aria-busy');button.textContent=label;}
+  }
+}
+
+async function confirmBookingOnce(skipAuthCheck) {
   if (!selSlot) return;
   if (!skipAuthCheck && !(await ensureActiveLogin({ basicProfile: true }))) {
     openModal('book');
