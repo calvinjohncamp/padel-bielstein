@@ -9708,6 +9708,9 @@ function renderMinuteSlots(){
   }
   updateMinuteSummary();
 }
+function minuteAboBilledCount(months,weeks){
+  return (months===12?'':String(months/12).replace('.',',')+' × ')+String(weeks).replace('.',',');
+}
 function minuteCalc(root,terms,price,total=price.netCents,billing=null){
   const heading=document.createElement('div');heading.className='abo-calc-h';heading.textContent='Transparenz – So setzt sich dein Buchungspreis zusammen';
   const table=document.createElement('table'),body=document.createElement('tbody');table.style.minWidth='0';table.style.tableLayout='fixed';table.style.width='100%';
@@ -9718,7 +9721,7 @@ function minuteCalc(root,terms,price,total=price.netCents,billing=null){
   if(price.loyaltyDiscountCents>0)rows.push(['Treuebonus',fmt(price.loyaltyDiscountCents/100)]);
   if(billing){
     rows.push(['Preis je Termin nach Rabatt',fmt(price.netCents/100)]);
-    rows.push(['Berechnete Termine',String(billing.weeks*billing.months/12)]);
+    rows.push(['Berechnete Termine',minuteAboBilledCount(billing.months,billing.weeks)]);
     rows.push([billing.earlybird?'Preis vor Aktionsrabatt':'Preis vor Rabatt',fmt(Math.round(price.snapshot.grossCents*billing.weeks*billing.months/12)/100)]);
   }
   rows.push(['Dein Buchungspreis',fmt(total/100)]);
@@ -9774,7 +9777,7 @@ function updateMinuteAboSummary(){
     'as-dur':`${minuteAboDuration} Minuten`,'as-total':fmt(total/100),'as-perperson':fmt(total/400),
     'as-hours':'Dein Preis enthält die unten aufgeführten Zeitanteile der bestehenden Stundentarife.',
     'as-rabatt':p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:'Dein Preis enthält keinen Rabatt.',
-    'as-reg':`${fmt(p.netCents/100)} je Termin${p.netCents<p.snapshot.grossCents?' anstatt '+fmt(p.snapshot.grossCents/100):''}`,'as-save':`Abo mit ${months} Monaten bzw. ${Math.round(months*365.2425/84)} Wochen Laufzeit – davon werden ${String(weeks*months/12).replace('.',',')} Wochen berechnet`,
+    'as-reg':`${fmt(p.netCents/100)} je Termin${p.netCents<p.snapshot.grossCents?' anstatt '+fmt(p.snapshot.grossCents/100):''}`,'as-save':`Abo mit ${months} Monaten bzw. ${Math.round(months*365.2425/84)} Wochen Laufzeit – davon werden ${minuteAboBilledCount(months,weeks)} Wochen berechnet`,
     'as-52':`Volles Jahr ab deinem ersten Spieltag – du zahlst davon ${weeks} Wochen.`};
   for(const [id,value]of Object.entries(values)){const e=document.getElementById(id);if(e)e.textContent=value;}
   const occurrence=minuteAboCalendar.offers.find(o=>o.court===aboSlot.court&&o.start_minute===aboSlot.start_minute);
