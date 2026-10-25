@@ -22632,7 +22632,7 @@ function ensureAvatarLightbox() {
       <div class="avatar-lightbox-name" id="avatarLightboxName"></div>
     </div>`;
   overlay.addEventListener('click', (event) => {
-    if (event.target === overlay) closeAvatarLightbox();
+    if (overlay.classList.contains('is-lockbox') || event.target === overlay) closeAvatarLightbox();
   });
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeAvatarLightbox();
