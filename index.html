@@ -3424,6 +3424,11 @@ main {
 .invite-composer .group-editor{margin-bottom:20px}
 @media(max-width:700px){.invite-composer{padding:18px!important}.invite-composer .invite-group-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.invite-composer .invite-filter-grid{grid-template-columns:1fr}.invite-composer .invite-level-options{grid-template-columns:repeat(3,minmax(0,1fr))}.invite-composer .invite-audience .chip{font-size:14px;padding:11px 12px}.invite-composer .invite-section-head{gap:5px}.invite-composer #sendInvite{font-size:14px;padding:15px 18px}.invite-composer .invite-group-tile label{padding:14px 28px 14px 11px;gap:8px}.invite-composer .invite-group-tile strong{font-size:13px}.invite-composer .invite-group-new{font-size:13px;padding:13px}.invite-composer .email-panel{padding:12px}}
 
+
+/* Context beside the open-invitation audience selector. */
+.invite-composer .invite-audience-row{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:18px;align-items:start}
+.invite-composer .invite-audience-info{margin:0;padding:12px 14px;border:1px solid #e5dccd;border-left:3px solid #ff5934;border-radius:11px;background:#faf8f3;color:#7a7368;font-size:13px;line-height:1.55;font-weight:400}
+@media(max-width:780px){.invite-composer .invite-audience-row{grid-template-columns:1fr;gap:10px}.invite-composer .invite-audience-info{font-size:12px}}
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body class=&quot;embedded&quot;&gt;
@@ -4531,6 +4536,7 @@ main {
       const all=selectedChip(&#x27;audience&#x27;)===&#x27;Alle&#x27;;
       $$(&#x27;[data-selected-only]&#x27;).forEach(el=&gt;el.hidden=all);
       if($(&#x27;#allOrganizer&#x27;))$(&#x27;#allOrganizer&#x27;).hidden=!all;
+      if($(&#x27;#allAudienceInfo&#x27;))$(&#x27;#allAudienceInfo&#x27;).hidden=!all;
       if($(&#x27;#inviteFilters&#x27;))$(&#x27;#inviteFilters&#x27;).hidden=!all;
       if($(&#x27;#organizerPlays&#x27;))$(&#x27;#organizerPlays&#x27;).checked=collectEmails().some(isUserEmail);
       const note=$(&#x27;#invitationChannel&#x27;);if(note)note.textContent=all?&#x27;Sichtbar für passende Spieler in der App. Keine E-Mails.&#x27;:&#x27;Die ausgewählten Personen erhalten eine E-Mail und eine Einladung in Dating 2.0.&#x27;;
@@ -4986,7 +4992,7 @@ main {
       return `&lt;article class=&quot;create-card is-booking invite-composer ${selectedToneClass()}&quot;&gt;
         &lt;div class=&quot;badge&quot;&gt;Ich habe gebucht&lt;/div&gt;
         &lt;div class=&quot;create-head&quot;&gt;&lt;div&gt;&lt;h2 class=&quot;card-title&quot;&gt;${esc(item.day)}, ${esc(item.date)} · ${esc(item.time)}–${esc(item.end)} Uhr&lt;/h2&gt;&lt;p class=&quot;card-sub&quot;&gt;&lt;strong class=&quot;duration-line&quot;&gt;${esc(durationText(item.duration))}&lt;/strong&gt;${editorPagerHTML(&#x27;booking&#x27;)}&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;source-stack&quot;&gt;&lt;div class=&quot;source-mini&quot;&gt;&lt;strong&gt;${esc(item.court)}&lt;/strong&gt;&lt;span&gt;${esc(item.paidBy)}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
-        &lt;div class=&quot;invite-audience field&quot;&gt;&lt;label&gt;Wen möchtest du einladen?&lt;/label&gt;${segmentHTML(&#x27;audience&#x27;,[{value:&#x27;Mitspieler&#x27;,label:&#x27;Ausgewählte Personen&#x27;},...(systemOpenInvitesEnabled===false?[]:[{value:&#x27;Alle&#x27;,label:&#x27;Alle&#x27;}])],audience)}&lt;/div&gt;
+        &lt;div class=&quot;invite-audience field&quot;&gt;&lt;label&gt;Wen möchtest du einladen?&lt;/label&gt;&lt;div class=&quot;invite-audience-row&quot;&gt;${segmentHTML(&#x27;audience&#x27;,[{value:&#x27;Mitspieler&#x27;,label:&#x27;Ausgewählte Personen&#x27;},...(systemOpenInvitesEnabled===false?[]:[{value:&#x27;Alle&#x27;,label:&#x27;Alle&#x27;}])],audience)}&lt;aside class=&quot;invite-audience-info&quot; id=&quot;allAudienceInfo&quot; ${audience===&#x27;Alle&#x27;?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;Mit „Alle“ erreichst du passende Spieler aus unserer Padel-Datenbank – auch Personen, die du noch nicht kennst. Deine Vorgaben zu Spielstärke, Geschlecht und Alter bestimmen, wer die Einladung in der App sieht. Möchtest du selbst keine offenen Einladungen erhalten, deaktiviere „Für Mitspieler auffindbar sein“ in deinem Account.&lt;/aside&gt;&lt;/div&gt;&lt;/div&gt;
         &lt;div class=&quot;selected-recipient-panel&quot; data-selected-only ${audience===&#x27;Alle&#x27;?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;
           &lt;div class=&quot;email-panel&quot;&gt;&lt;span class=&quot;email-block-label&quot;&gt;Diese Personen lädst du ein&lt;/span&gt;&lt;div class=&quot;email-list&quot; id=&quot;emailList&quot;&gt;${rows.map(r=&gt;emailRowHTML(r.email,r.index,r.player,true)).join(&#x27;&#x27;)}&lt;/div&gt;&lt;div class=&quot;actions&quot;&gt;&lt;button class=&quot;btn secondary&quot; type=&quot;button&quot; id=&quot;addEmail&quot;&gt;+ Person ergänzen&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
           &lt;section class=&quot;invite-groups field&quot;&gt;&lt;div class=&quot;invite-section-head&quot;&gt;&lt;h3&gt;Meine Gruppen&lt;/h3&gt;&lt;span&gt;Gruppe auswählen und Personen bei Bedarf entfernen.&lt;/span&gt;&lt;/div&gt;${groupToolsHTML()}${groupEditorHTML()}&lt;/section&gt;
