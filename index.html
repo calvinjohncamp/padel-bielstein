@@ -2732,7 +2732,7 @@ main {
       <em><span id="weatherNoteCount">0</span>/200</em>
     </label>
     <button type="button" class="weather-submit" id="weatherSubmitBtn" disabled onclick="submitWeatherReport()">Meldung absenden</button>
-    <p style="font:500 12.5px/1.6 'Manrope',sans-serif;color:#7A7368;margin:14px 0 0;text-align:center;">Wir gleichen deine Meldung mit unseren Wetter- und Platzdaten ab. Nach Bestätigung wird der Betrag deinem Spielguthaben gutgeschrieben.</p>
+    <p style="font:500 12.5px/1.6 'Manrope',sans-serif;color:#7A7368;margin:14px 0 0;text-align:center;">Wir gleichen deine Meldung mit unseren Wetter- und Platzdaten ab. Nach Bestätigung schreiben wir dir den genehmigten Anteil als Spielguthaben oder Treuezeit gut.</p>
   </article>
 </div>
 <main>
@@ -9442,7 +9442,7 @@ function berlinBookingDate(day,minute) {
 }
 
 return {bookingReadTime,meetupReadTime,berlinBookingDate};})();
-// booking-minute-loyalty SHA256 662600fddd5e68884808fa53cbc47182d17e4d7a122683e6803c52e45d2e89d7
+// booking-minute-loyalty SHA256 1f9d6401fb2015adeec8af398d50be0c6aafef1f97533f487f884fdc37b5bcf4
 modules["booking-minute-loyalty"]=(()=>{
 // Preserve existing loyalty pricing: percentage bonus applies AFTER the resolved
 // member/partner/action discount. A free hour removes 60 minutes of that net
@@ -9476,17 +9476,18 @@ function applyMinuteLoyalty(snapshot,offer) {
       p.loyaltyDiscountCents=discounted-previous;previous=discounted;
     }
   } else if(offer.kind==='free_hour') {
-    const offset=offer.start_offset_minutes;
-    fact(Number.isInteger(offset)&&offset>=0&&offset%30===0&&offer.free_minutes===60&&offset+60<=duration);
+    const offset=offer.start_offset_minutes,free=offer.free_minutes,units=Math.round(free*100);
+    fact(Number.isFinite(free)&&units>=1&&units<=6000&&Math.abs(units/100-free)<1e-8);
+    fact(Number.isInteger(offset)&&offset>=0&&offset%30===0&&offset+free<=duration);
     for(const p of parts) {
-      const a=Math.max(p.startMinute,start+offset),b=Math.min(p.endMinute,start+offset+60);
+      const a=Math.max(p.startMinute,start+offset),b=Math.min(p.endMinute,start+offset+free);
       if(a>=b)continue;
       // Cumulative allocation conserves an odd cent: first/second halves of
       // a 1001-cent net hour are 501/500, never two discounted 501-cent halves.
-      const at=minute=>round(BigInt(p.netBeforeLoyaltyCents)*BigInt(minute-p.startMinute),BigInt(p.minutes));
-      p.loyaltyFreeMinutes=b-a;p.loyaltyDiscountCents=at(b)-at(a);
+      const at=minute=>round(BigInt(p.netBeforeLoyaltyCents)*BigInt(Math.round((minute-p.startMinute)*100)),BigInt(p.minutes*100));
+      p.loyaltyFreeMinutes=Math.round((b-a)*100)/100;p.loyaltyDiscountCents=at(b)-at(a);
     }
-    fact(parts.reduce((n,p)=>n+p.loyaltyFreeMinutes,0)===60);
+    fact(parts.reduce((n,p)=>n+Math.round(p.loyaltyFreeMinutes*100),0)===units);
   }
   const discount=parts.reduce((n,p)=>n+p.loyaltyDiscountCents,0);
   fact(money(discount)&&discount<=base);
@@ -9543,6 +9544,7 @@ function minuteTariffReceiptRows(terms,snapshot) {
 
 return {minuteClock,receiptBookingTime,minuteTariffReceiptRows};})();
 globalThis.PBMinuteDomain=Object.freeze(Object.assign({},...Object.values(modules)));})();
+
 // Public discount preview only; the server captures the applicable policy once.
 let pricingOffersState=null,pricingOffersReady=false,pricingOffersOwner=null,pricingOffersCode='',pricingOffersGeneration=0,pricingOffersTimer=null;
 function pricingCodeFor(kind){return pricingOffersReady&&pricingOffersOwner===(currentUser?.id||null)&&pricingOffersState?.code_scopes?.includes(kind)?pricingOffersCode:null;}
@@ -9854,6 +9856,7 @@ function minuteAboBilledCount(months,weeks){
 function minuteLoyaltyExplanation(offer){
   if(!offer||!['percent','free_hour'].includes(offer.kind))return '';
   const threshold=Number.isInteger(offer.threshold)&&offer.threshold>0?offer.threshold:null;
+  if(offer.kind==='free_hour'&&offer.weather_return)return `Deine zurückerhaltene Treuezeit: ${Number(offer.free_minutes).toLocaleString('de-DE')} Minuten werden bei dieser Buchung eingelöst.`;
   if(offer.kind==='free_hour')return threshold?`Deine ${threshold}. gebuchte Spielstunde ist kostenlos. Bei dieser Buchung schenken wir dir 60 Minuten.`:'Bei dieser Buchung erhältst du als Treuebonus 60 Minuten kostenlos.';
   return (threshold?`Du hast ${threshold} gebuchte Spielstunden erreicht. `:'')+`Dafür erhältst du bei dieser Einzelbuchung einmalig ${offer.pct} % Treuerabatt.`;
 }
@@ -9864,7 +9867,7 @@ function minuteCalc(root,terms,price,total=price.netCents,billing=null){
   if(billing)for(const row of rows)row[1]=row[1].replace(/ \(.*\)$/,'');
   if(billing)rows.push(['Summe',fmt(price.snapshot.grossCents/100)]);
   if(price.snapshot.discountPct>0)rows.push([(price.discountLabel||'Rabatt').replaceAll('/',' / '),`${String(price.snapshot.discountPct).replace('.',',')} %`]);
-  if(price.loyaltyDiscountCents>0)rows.push([price.offer?.kind==='free_hour'?`Treuebonus – ${price.offer.threshold||100}. Stunde kostenlos`:`Treuebonus – ${price.offer?.pct||0} %`,fmt(price.loyaltyDiscountCents/100)]);
+  if(price.loyaltyDiscountCents>0)rows.push([price.offer?.kind==='free_hour'?(price.offer.weather_return?`Treuezeit aus Wetterausfall – ${Number(price.offer.free_minutes).toLocaleString('de-DE')} Min.`:`Treuebonus – ${price.offer.threshold||100}. Stunde kostenlos`):`Treuebonus – ${price.offer?.pct||0} %`,fmt(price.loyaltyDiscountCents/100)]);
   if(billing){
     rows.push(['Preis je Termin nach Rabatt',fmt(price.netCents/100)]);
     rows.push(['Berechnete Termine',minuteAboBilledCount(billing.months,billing.weeks)]);
@@ -12264,8 +12267,25 @@ function weatherDeadlineDate(b) {
   const nextDay=new Date(Date.parse(b.date+'T12:00:00Z')+86400000).toISOString().slice(0,10);
   return PBMinuteDomain.berlinBookingDate(nextDay,1439);
 }
+async function enrichWeatherLoyaltyBookings(rows) {
+  const own=rows.filter(b=>!b.isMatch&&!b.isAbo&&!b.isEvent);
+  if(!own.length)return;
+  const {data,error}=await sb.rpc('own_weather_loyalty_bookings',{p_booking_ids:own.map(b=>b.id)});
+  if(error||!Array.isArray(data))throw error||Error('Treuezeit konnte nicht geprüft werden.');
+  const byId=new Map(data.map(r=>[r.booking_id,Number(r.loyalty_minutes)]));
+  own.forEach(b=>{b.weather_loyalty_minutes=byId.get(b.id)||0;});
+}
+function weatherCreditLabel(cents,minutes) {
+  const parts=[];
+  if(Number(cents)>0)parts.push(weatherFmtEUR(Number(cents)));
+  if(Number(minutes)>0)parts.push(Number(minutes).toLocaleString('de-DE',{maximumFractionDigits:2})+' Min. Treuezeit');
+  return parts.join(' + ')||weatherFmtEUR(0);
+}
+function weatherRequestedCredit(b,percent) {
+  return weatherCreditLabel(Math.round(Number(b.price_paid_cents||0)*percent/100),Math.floor(Number(b.weather_loyalty_minutes||0)*percent)/100);
+}
 function weatherCanReport(b,now=Date.now()) {
-  return !!b&&!b.isMatch&&!b.isAbo&&!b.isEvent&&Number(b.price_paid_cents)>0&&['paid','active'].includes(b.status)&&
+  return !!b&&!b.isMatch&&!b.isAbo&&!b.isEvent&&(Number(b.price_paid_cents)>0||Number(b.weather_loyalty_minutes)>0)&&['paid','active'].includes(b.status)&&
     now>=weatherEndDate(b).getTime()&&now<=weatherDeadlineDate(b).getTime();
 }
 function weatherTimeRemaining(b,now=Date.now()) {
@@ -12335,9 +12355,10 @@ async function renderWeatherReportCard(requestedId=null) {
       .eq('user_id',userId).in('status',['paid','active']).gte('date',yesterday).lte('date',today)
       .order('date',{ascending:false}).order('hour_start',{ascending:false});
     if(!current())return;if(error)throw error;
+    await enrichWeatherLoyaltyBookings(data||[]);if(!current())return;
     const eligible=(data||[]).filter(b=>weatherCanReport(b)).sort((a,b)=>bookingDateAt(b)-bookingDateAt(a));
     if(!eligible.length){weatherReportBookings=[];weatherReportSelection=null;weatherReportBooking=null;card.style.display='none';box.replaceChildren();box.weatherContentSignature=null;return;}
-    const result=await sb.from('weather_reports').select('booking_id,percent,status,credit_cents,admin_note').in('booking_id',eligible.map(b=>b.id));
+    const result=await sb.from('weather_reports').select('booking_id,percent,status,credit_cents,credited_loyalty_minutes,admin_note').in('booking_id',eligible.map(b=>b.id));
     if(!current())return;if(result.error)throw result.error;
     weatherReportBookings=eligible;
     weatherReportsByBooking=Object.fromEntries((result.data||[]).map(r=>[r.booking_id,r]));
@@ -12374,11 +12395,11 @@ function selectWeatherBooking(id,scroll=false) {
     return;
   }
   const picker=weatherReportBookings.length>1?`<div class="weather-booking-picker" role="group" aria-label="Buchung für die Wettermeldung auswählen">${weatherReportBookings.map((row,index)=>`<button type="button" class="weather-booking-choice" data-weather-booking="${esc(row.id)}" aria-pressed="${row.id===b.id}" onclick="selectWeatherBooking(this.dataset.weatherBooking)"><span>${index+1} · ${esc(weatherBookingLabel(row))}</span><small data-weather-remaining="${esc(row.id)}">${weatherReportsByBooking[row.id]?'Meldung vorhanden':'Frist: noch '+weatherTimeRemaining(row)}</small></button>`).join('')}</div>`:'';
-  const row=`<div class="closure-item my-booking" style="margin-bottom:4px;"><div style="flex:1;"><div class="closure-item-date">${esc(weatherBookingLabel(b))}</div><div class="closure-item-note">Buchungswert ${weatherFmtEUR(weatherBookingValueCents(b))}</div></div></div>`;
+  const row=`<div class="closure-item my-booking" style="margin-bottom:4px;"><div style="flex:1;"><div class="closure-item-date">${esc(weatherBookingLabel(b))}</div><div class="closure-item-note">Buchungswert ${weatherRequestedCredit(b,100)}</div></div></div>`;
   let status;
   if(!report)status=`<button type="button" class="weather-report-btn" onclick="openWeatherReport()">🌧 Wetterausfall melden</button><div class="weather-report-hint">Meldung noch ${weatherTimeRemaining(b)} möglich · bis ${weatherDeadlineLabel(b)} (Bielstein).</div>`;
   else if(report.status==='pending')status=`<div class="weather-status-note">Meldung eingegangen (${Number(report.percent)} % ausgefallen) – wird geprüft.</div>`;
-  else if(report.status==='approved')status=`<div class="weather-status-note">Wetterausfall bestätigt – ${weatherFmtEUR(report.credit_cents||0)} wurden deinem Spielguthaben gutgeschrieben.</div>`;
+  else if(report.status==='approved')status=`<div class="weather-status-note">Wetterausfall bestätigt – ${weatherCreditLabel(report.credit_cents,report.credited_loyalty_minutes)} wurden dir gutgeschrieben.</div>`;
   else status=`<div class="weather-status-note">Deine Meldung (${Number(report.percent)} %) wurde nach Abgleich mit den Wetterdaten nicht bestätigt.${report.admin_note?'<br>Hinweis: '+esc(report.admin_note):''}</div>`;
   const oldProof=weatherReportSelection===box.weatherSelectedBooking?box.querySelector('#weatherProofPanel'):null;
   box.innerHTML=picker+row+renderWeatherProofShell(b)+status;
@@ -12391,7 +12412,7 @@ function selectWeatherBooking(id,scroll=false) {
 function refreshWeatherHistoryBadges() {
   document.querySelectorAll('.history-weather-link').forEach(button=>{
     const b=historyItems.find(row=>row.id===button.dataset.weatherBooking&&!row.isMatch&&!row.isAbo&&!row.isEvent);
-    if(b&&weatherCanReport(b))button.textContent='Wetterfrist: noch '+weatherTimeRemaining(b);
+    if(b&&weatherCanReport(b))button.textContent='Frist für Wettermeldung: noch '+weatherTimeRemaining(b);
     else {const ended=document.createElement('span');ended.className='history-badge';ended.textContent='✓ Beendet';button.replaceWith(ended);}
   });
 }
@@ -12406,7 +12427,7 @@ function openWeatherReport() {
   weatherReportDialogBooking=weatherReportBooking;weatherReportDialogViewer=currentUser?.id;
   weatherReportPercent = 0;
   document.getElementById('weatherDialogBooking').textContent =
-    weatherBookingLabel(weatherReportBooking) + ' · ' + weatherFmtEUR(weatherBookingValueCents(weatherReportBooking));
+    weatherBookingLabel(weatherReportBooking) + ' · ' + weatherRequestedCredit(weatherReportBooking,100);
   document.querySelectorAll('#weatherPctGrid .weather-pct').forEach(el => el.classList.remove('selected'));
   document.getElementById('weatherCreditBox').classList.remove('visible');
   const note = document.getElementById('weatherReportNote');
@@ -12444,7 +12465,7 @@ function selectWeatherPercent(btn) {
   weatherReportPercent = Number(btn.dataset.pct);
   document.querySelectorAll('#weatherPctGrid .weather-pct').forEach(el => el.classList.toggle('selected', el === btn));
   const credit = Math.round(weatherBookingValueCents(weatherReportDialogBooking) * weatherReportPercent / 100);
-  document.getElementById('weatherCreditAmount').textContent = weatherFmtEUR(credit);
+  document.getElementById('weatherCreditAmount').textContent = weatherRequestedCredit(weatherReportDialogBooking,weatherReportPercent);
   document.getElementById('weatherCreditBox').classList.add('visible');
   document.getElementById('weatherSubmitBtn').disabled = false;
 }
@@ -12554,7 +12575,8 @@ async function renderMyHistory(reset,completedToday=null,participantMatches=null
     const rows=historyItems.slice(historyOffset,historyOffset+visibleCount),reportsByBooking={};
     const ownIds=rows.filter(b=>!b.isMatch&&!b.isAbo&&!b.isEvent).map(b=>b.id);
     if(ownIds.length){
-      const {data,error}=await sb.from('weather_reports').select('booking_id,percent,status,credit_cents').in('booking_id',ownIds);
+      await enrichWeatherLoyaltyBookings(rows);if(!current())return;
+      const {data,error}=await sb.from('weather_reports').select('booking_id,percent,status,credit_cents,credited_loyalty_minutes').in('booking_id',ownIds);
       if(error)throw error;
       for(const r of data||[])reportsByBooking[r.booking_id]=r;
     }
@@ -12565,9 +12587,9 @@ async function renderMyHistory(reset,completedToday=null,participantMatches=null
       const origin=b.isMatch?' · Gebucht von '+esc(b.bookedBy)+' · Du warst dabei':b.isAbo?' · Jahresabo':b.isEvent?' · Event':'';
       const r=reportsByBooking[b.id];let badge='<span class="history-badge" style="color:#7A7368;">✓ Beendet</span>';
       if(r?.status==='pending')badge='<span class="history-badge" style="color:#B8402C;">⏳ Wettermeldung wird geprüft</span>';
-      else if(r?.status==='approved')badge=`<span class="history-badge" style="color:#1F8A5F;">🌧 ${r.percent===100?'wetterbedingt ausgefallen':r.percent+' % gutgeschrieben'} · +${weatherFmtEUR(r.credit_cents||0)}</span>`;
+      else if(r?.status==='approved')badge=`<span class="history-badge" style="color:#1F8A5F;">🌧 ${r.percent===100?'wetterbedingt ausgefallen':r.percent+' % gutgeschrieben'} · +${weatherCreditLabel(r.credit_cents,r.credited_loyalty_minutes)}</span>`;
       else if(r)badge='<span class="history-badge" style="color:#7A7368;">Wettermeldung nicht bestätigt</span>';
-      else if(weatherCanReport(b))badge=`<button type="button" class="history-weather-link" data-weather-booking="${esc(b.id)}" onclick="showWeatherBooking(this.dataset.weatherBooking)">Wetterfrist: noch ${weatherTimeRemaining(b)}</button>`;
+      else if(weatherCanReport(b))badge=`<button type="button" class="history-weather-link" data-weather-booking="${esc(b.id)}" onclick="showWeatherBooking(this.dataset.weatherBooking)">Frist für Wettermeldung: noch ${weatherTimeRemaining(b)}</button>`;
       return `<div class="closure-item my-booking"><div style="flex:1;"><div class="closure-item-date">${date} · ${bookingReadTime(b).range} Uhr</div><div class="closure-item-note">${esc(courtLabel(b.court))}${origin}${price}</div></div>${badge}</div>`;
     }).join('');
     if(reset){if(list.historyMarkup!==html){list.innerHTML=html;list.historyMarkup=html;}}else {list.insertAdjacentHTML('beforeend',html);list.historyMarkup=null;}historyOffset+=rows.length;
@@ -14738,7 +14760,7 @@ async function loadAdminWeather() {
     const statusBadge = r.status === 'pending'
       ? '<span style="color:#B8402C;font-weight:800;">● offen</span>'
       : r.status === 'approved'
-        ? `<span style="color:#1F8A5F;font-weight:800;">✓ bestätigt · ${weatherFmtEUR(r.credit_cents || 0)}</span>`
+        ? `<span style="color:#1F8A5F;font-weight:800;">✓ bestätigt · ${weatherCreditLabel(r.credit_cents,r.credited_loyalty_minutes)}</span>`
         : '<span style="color:#7A7368;font-weight:800;">✗ abgelehnt</span>';
     const noteRow = (r.status !== 'pending' && r.admin_note)
       ? `<div style="font-size:0.76rem;color:#7A7368;margin-top:6px;">Vermerk: ${esc(r.admin_note)}</div>` : '';
@@ -14748,7 +14770,7 @@ async function loadAdminWeather() {
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
         <button onclick="adminDecideWeather('${r.report_id}', true)"
                 style="flex:1;min-width:170px;padding:11px 14px;border:0;border-radius:9px;background:#1F8A5F;color:#fff;font:700 13px 'Space Grotesk',sans-serif;cursor:pointer;">
-          ✓ Bestätigen – ${weatherFmtEUR(credit)} gutschreiben</button>
+          ✓ Bestätigen – ${weatherCreditLabel(credit,r.requested_loyalty_minutes)} gutschreiben</button>
         <button onclick="adminDecideWeather('${r.report_id}', false)"
                 style="flex:0 1 auto;min-width:120px;padding:11px 14px;border:1.5px solid #E2DACB;border-radius:9px;background:transparent;color:#7A7368;font:700 13px 'Space Grotesk',sans-serif;cursor:pointer;">
           ✗ Ablehnen</button>
@@ -14760,7 +14782,7 @@ async function loadAdminWeather() {
             <div style="font:800 15px 'Space Grotesk',sans-serif;color:#1C1A17;">${esc(r.user_name || r.user_email || '—')}</div>
             <div style="font-size:0.8rem;color:#7A7368;margin-top:2px;">${esc(r.user_email || '')}</div>
             <div style="font-size:0.85rem;color:#1C1A17;margin-top:6px;">${dateStr} · ${timeStr} Uhr · ${courtLabel(r.court)} · Buchungswert ${weatherFmtEUR(r.price_paid_cents || 0)}</div>
-            <div style="font-size:0.85rem;color:#1C1A17;margin-top:2px;">meldet <strong>${r.percent} % ausgefallen</strong> → Gutschrift ${weatherFmtEUR(credit)}</div>
+            <div style="font-size:0.85rem;color:#1C1A17;margin-top:2px;">meldet <strong>${r.percent} % ausgefallen</strong> → Gutschrift ${weatherCreditLabel(credit,r.requested_loyalty_minutes)}</div>
             ${userNoteRow}
           </div>
           <div style="text-align:right;">
@@ -14829,7 +14851,7 @@ async function adminDecideWeather(reportId, approve) {
     note = prompt('Grund der Ablehnung (wird dem Nutzer angezeigt, optional):') || null;
   }
   if (!confirm(approve
-    ? 'Meldung bestätigen? Die Gutschrift wird sofort ins Kontobuch geschrieben.'
+    ? 'Meldung bestätigen? Geldguthaben bzw. Treuezeit werden nach Bestätigung gutgeschrieben.'
     : 'Meldung ablehnen?')) return;
   try {
     const { data, error } = await sb.rpc('admin_decide_weather_report', {
@@ -14839,7 +14861,7 @@ async function adminDecideWeather(reportId, approve) {
     });
     if (error) throw error;
     showToast(approve
-      ? `✓ Bestätigt – ${weatherFmtEUR(data?.credit_cents || 0)} wurden gutgeschrieben.`
+      ? `✓ Bestätigt – ${weatherCreditLabel(data?.credit_cents,data?.credited_loyalty_minutes)} wurden gutgeschrieben.`
       : 'Meldung abgelehnt.');
     loadAdminWeather();
   } catch(e) {
@@ -21918,6 +21940,7 @@ function loyaltyCycleHours(hoursPlayed) {
   return Math.max(0, Number(hoursPlayed) || 0) % 100;
 }
 function nextRewardTeaser(hoursPlayed, offer) {
+  if (offer?.weather_return) return `${Number(offer.free_minutes).toLocaleString('de-DE')} Minuten Treuezeit aus Wetterausfall sind wieder verfügbar.`;
   if (offer?.kind === 'free_hour') return 'Deine 100. Stunde ist jetzt kostenlos.';
   if (offer?.kind === 'percent') return `${Number(offer.pct) || 0} % Treuebonus für deine nächste Einzelbuchung.`;
   const cycleHours = loyaltyCycleHours(hoursPlayed);
