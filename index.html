@@ -12133,7 +12133,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
     return;
   }
 
-  bookingsEl.innerHTML = upcoming.map(item => {
+  bookingsEl.innerHTML = upcoming.map((item,index) => {
     const dateStr = new Date(item.date+'T12:00:00').toLocaleDateString('de-DE',
       {weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
     const timeStr = bookingReadTime(item).range;
@@ -12152,6 +12152,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
     return `<div class="upcoming-item">
       <div class="upcoming-item-head">
         <div class="upcoming-item-main">
+          <div class="upcoming-sequence" aria-label="Termin ${index+1}">${index+1}</div>
           <div class="upcoming-item-date"><span>${dateStr}</span><strong>${timeStr} Uhr</strong></div>
           <div class="upcoming-item-note">${courtLabel(item.court)}${item.isMatch?' · Gebucht von '+esc(item.bookedBy)+' · Du bist dabei'+(item.matchState==='ready'?' · ✓ Das Match steht':''):''}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
         </div>
@@ -12778,11 +12779,11 @@ async function fetchLockboxAccess(b) {
 function playLockboxAccessHtml(access,showBox=true,compact=false) {
   const v=PBLockboxContent.lockboxAccessContent(access),side=access.side;
   const entrance=side==='F'?'Freibadseite':'Parkplatzseite';
-  const symbol='<svg class="play-open-symbol" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 11V7a5 5 0 0 1 10 0v4M6 11h12v10H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>';
-  const box=showBox?`<button type="button" class="play-keybox-photo" aria-label="Schlüsselbox ${side}: Originalfoto ansehen" aria-haspopup="dialog"><span class="play-keybox" role="img" aria-label="Schlüsselbox: Öffnen-Taste rechts unten im Tastenfeld"><span class="play-keybox-led"></span><span class="play-keybox-keys" aria-hidden="true">${['1','2','3','4','5','6','7','8','9','↶','0',symbol].map((key,i)=>`<span class="${i===11?'play-keybox-open':''}">${key}</span>`).join('')}</span><span class="play-keybox-brand" aria-hidden="true">igloo</span></span></button>`:'';
+  const symbol='<svg class="play-open-symbol" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 11V7a5 5 0 0 1 10 0M6 11h12v10H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  const box=showBox?`<button type="button" class="play-keybox-photo" aria-label="Schlüsselbox ${side}: Originalfoto ansehen" aria-haspopup="dialog"><span class="play-keybox" role="img" aria-label="Schlüsselbox: Öffnen-Taste rechts unten im Tastenfeld"><span class="play-keybox-led"></span><span class="play-keybox-keys" aria-hidden="true">${['1','2','3','4','5','6','7','8','9','↶','0',symbol].map((key,i)=>`<span class="${i===11?'play-keybox-open':''}">${key}</span>`).join('')}</span></span></button>`:'';
   const heading=`<div class="play-access-location">${box}<div><div class="play-access-kicker">Dein Platzzugang</div><h3>${entrance}</h3><div class="play-access-side">Schlüsselbox ${side}</div></div></div>`;
   if(v.pending)return `<div class="play-access play-access-pending">${heading}<p>${esc(v.message)}</p></div>`;
-  const instructions=`<div class="play-access-steps"><div class="play-access-step"><span class="play-step-number">01</span><div><strong class="play-step-heading">Code eingeben <span class="play-open-reminder">${symbol}</span></strong><p>Danach die <strong>Öffnen-Taste rechts unten</strong> drücken.</p></div></div><div class="play-access-step"><span class="play-step-number">02</span><div><strong>Schlüssel entnehmen</strong><p>Tür öffnen, Schlüssel sofort zurücklegen und Schlüsselbox wieder schließen.</p></div></div><div class="play-access-step"><span class="play-step-number">03</span><div><strong>Nach dem Spiel</strong><p>Einfach nur die Tür wieder zuziehen.</p></div></div></div>`;
+  const instructions=`<div class="play-access-steps"><div class="play-access-step"><span class="play-step-number">01</span><div><strong class="play-step-heading">Code eingeben</strong><p class="play-open-instruction"><span>Danach die <strong>Öffnen-Taste rechts unten</strong> drücken.</span><span class="play-open-reminder">${symbol}</span></p></div></div><div class="play-access-step"><span class="play-step-number">02</span><div><strong>Schlüssel entnehmen</strong><p>Tür öffnen, Schlüssel sofort zurücklegen und Schlüsselbox wieder schließen.</p></div></div><div class="play-access-step"><span class="play-step-number">03</span><div><strong>Nach dem Spiel</strong><p>Einfach nur die Tür wieder zuziehen.</p></div></div></div>`;
   return `<div class="play-access ${compact?'play-access-compact':''}"><div class="play-access-main">${heading}<div class="play-access-code"><div class="play-access-kicker">Dein Zugangscode</div><div class="lockbox-pin">${esc(v.pin)}</div><p>Zutritt ab <strong>${v.entryClock} Uhr</strong> · Buchung um ${v.startClock} Uhr</p></div></div>${compact?`<details class="play-access-details"><summary>So öffnest du die Schlüsselbox</summary>${instructions}</details>`:instructions}</div>`;
 }
 async function renderLockboxAccess(b,target=null,showPhoto=true) {
@@ -24019,12 +24020,13 @@ body.bielstein-theme #modePlay .play-today-kind-row {display:flex;flex-wrap:wrap
 #modePlay .play-keybox-photo {flex:0 0 auto;border:0;background:transparent;padding:4px;margin:0;color:inherit;cursor:zoom-in;}
 #modePlay .play-keybox-photo:focus-visible {outline:3px solid #ff8357;outline-offset:3px;border-radius:12px;}
 #modePlay .play-keybox {box-sizing:border-box;display:flex;align-items:center;flex-direction:column;width:68px;height:106px;padding:13px 9px 10px;border-radius:17px 17px 20px 20px;background:linear-gradient(115deg,#41453e,#171c18);border:1px solid #5f655a;box-shadow:4px 4px 0 #171c1880,inset 1px 1px 0 #ffffff17;}
-#modePlay .play-keybox-led {height:3px;width:26px;background:#b2d87f;border-radius:4px;box-shadow:0 0 5px #b2d87f30;margin-bottom:9px;}
+#modePlay .play-keybox-led {display:block;flex:0 0 4px;height:4px;width:30px;background:#b2d87f;border-radius:4px;box-shadow:0 0 6px #b2d87f55;margin-bottom:9px;}
 #modePlay .play-keybox-keys {display:grid;grid-template-columns:repeat(3,13px);gap:5px 4px;}
 #modePlay .play-keybox-keys > span {display:flex;align-items:center;justify-content:center;background:#454a42;border:1px solid #555a51;border-radius:50%;width:13px;height:13px;font:500 8px/1 Arial,sans-serif;color:#f1f2e9;}
 #modePlay .play-keybox-keys > .play-keybox-open {background:#57452f;color:#ffc492;border:1px solid #f4a36b;box-shadow:0 0 0 2px #f4a36b26;}
 #modePlay .play-keybox-open .play-open-symbol {width:9px;height:9px;}
-#modePlay .play-keybox-brand {font:400 7px/1 Arial,sans-serif;color:#a0a595;margin-top:8px;letter-spacing:.03em;}
+#modePlay .play-access-step .play-open-instruction {display:flex;align-items:center;gap:8px;}
+#modePlay .upcoming-sequence {margin-bottom:9px;color:#99988a;font:500 17px/1.2 "Space Grotesk",Arial,sans-serif;font-variant-numeric:tabular-nums;}
 #modePlay .play-access-pending {padding:24px;}
 #modePlay .play-access-pending > p {font-size:14px;line-height:1.7;color:#d4d9c9;}
 body.bielstein-theme #upcomingBookingsCard {margin:34px 0 0!important;}
