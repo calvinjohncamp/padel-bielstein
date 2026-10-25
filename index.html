@@ -10857,6 +10857,9 @@ async function applyAuthState(event,session,revision) {
     return;
   }
   if (session?.user) {
+    if(currentUser?.id!==session.user.id){
+      currentProfile=null;member=null;memberAboDiscount=0;myMemberSources=[];myPartner=null;
+    }
     currentUser = session.user;
     await loadProfile(session.user.id);
     if(revision!==authUiRevision)return;
