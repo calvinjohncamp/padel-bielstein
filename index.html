@@ -8527,6 +8527,7 @@ async function loadProfileBasic(authId) {
     if (!res.ok) return null;
     const data = await res.json();
     if (data && data.length > 0) {
+      if(currentUser?.id!==authId)return null;
       currentProfile = data[0];
       return currentProfile;
     }
@@ -9586,6 +9587,8 @@ let minuteSingleDuration=60,minuteAboDuration=90,minuteCalendar=null,minuteAboCa
 let minuteCalendarError=false,minuteAboGeneration=0,minuteSingleLoading=false,minuteAboLoading=false;
 let minuteCalendarReceivedAt=0;
 const minuteLoyaltyCache=new Map();
+let minuteLoyaltyGeneration=0;
+function clearMinuteLoyaltyPreview(){minuteLoyaltyCache.clear();minuteLoyaltyGeneration++;}
 const minutePickerState={single:{key:null,start:null,preferredCourt:null},abo:{key:null,start:null,preferredCourt:null}};
 function minuteBookingMode(){return MINUTE_BOOKING_UI_ENABLED;}
 function minuteAboWeeksBilled(){
@@ -9651,8 +9654,8 @@ async function loadMinuteBookings(date,generation){
     for(const c of data.courts)for(const b of c.occupied)for(let h=Math.floor(b.start_minute/60);h<Math.ceil(b.end_minute/60);h++)booked[c.court].add(`${date}-${h}`);
   }catch{if(generation!==bookingsLoadGeneration)return;minuteCalendar=null;minuteCalendarError=true;selSlot=null;}
   if(currentUser){const key=`${currentUser.id}:${minuteSingleDuration}`;if(!minuteLoyaltyCache.has(key)){
-    const owner=currentUser.id;const {data,error}=await sb.rpc('own_minute_loyalty_preview',{p_minutes:minuteSingleDuration});
-    if(currentUser?.id===owner&&!error&&['none','percent','free_hour'].includes(data?.kind))minuteLoyaltyCache.set(key,data);
+    const owner=currentUser.id,loyaltyGeneration=minuteLoyaltyGeneration;const {data,error}=await sb.rpc('own_minute_loyalty_preview',{p_minutes:minuteSingleDuration});
+    if(currentUser?.id===owner&&loyaltyGeneration===minuteLoyaltyGeneration&&!error&&['none','percent','free_hour'].includes(data?.kind))minuteLoyaltyCache.set(key,data);
   }}
   if(generation===bookingsLoadGeneration){minuteSingleLoading=false;minuteDurationButtons();}
 }
@@ -9830,7 +9833,7 @@ function minuteCalc(root,terms,price,total=price.netCents,billing=null){
   if(billing)for(const row of rows)row[1]=row[1].replace(/ \(.*\)$/,'');
   if(billing)rows.push(['Summe',fmt(price.snapshot.grossCents/100)]);
   if(price.snapshot.discountPct>0)rows.push([(price.discountLabel||'Rabatt').replaceAll('/',' / '),`${String(price.snapshot.discountPct).replace('.',',')} %`]);
-  if(price.loyaltyDiscountCents>0)rows.push(['Treuebonus',fmt(price.loyaltyDiscountCents/100)]);
+  if(price.loyaltyDiscountCents>0)rows.push([price.offer?.kind==='free_hour'?'Treuebonus – 100. Stunde kostenlos':`Treuebonus – ${price.offer?.pct||0} %`,fmt(price.loyaltyDiscountCents/100)]);
   if(billing){
     rows.push(['Preis je Termin nach Rabatt',fmt(price.netCents/100)]);
     rows.push(['Berechnete Termine',minuteAboBilledCount(billing.months,billing.weeks)]);
@@ -9848,7 +9851,7 @@ function updateMinuteSummary(){
   const values={sDate:new Date(selDate+'T12:00Z').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}),
     sCourt:courtLabel(selSlot.court),sTime:PBMinuteDomain.receiptBookingTime(terms).range,sDur:`${minuteSingleDuration} Minuten`,sTotal:fmt(p.netCents/100),sPer:fmt(p.netCents/400),
     sReg:p.netCents<p.snapshot.grossCents?`statt ${fmt(p.snapshot.grossCents/100)} regulär`:'',
-    'sb-rabatt':p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:''};
+    'sb-rabatt':[p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:'',p.offer.kind==='free_hour'?'Treuebonus: Du hast die kostenlose 100. Stunde erreicht. Bei dieser Buchung sind 60 Minuten kostenlos.':p.offer.kind==='percent'?`Zusätzlich erhältst du ${p.offer.pct} % Treuebonus.`:''].filter(Boolean).join(' ')};
   for(const [id,value]of Object.entries(values)){const e=document.getElementById(id);if(e)e.textContent=value;}
   const save=document.getElementById('sSave');save.style.display=p.netCents<p.snapshot.grossCents?'':'none';save.textContent=`Du sparst ${fmt((p.snapshot.grossCents-p.netCents)/100)}`;
   const bonus=document.getElementById('sb-bonus');if(bonus)bonus.style.display=p.snapshot.parts.some(part=>part.surchargeRateCents>0)?'':'none';
@@ -10375,6 +10378,7 @@ function loyaltyPreviewKey(duration) {
 }
 
 function clearLoyaltyPreviewCache() {
+  if(typeof clearMinuteLoyaltyPreview==='function')clearMinuteLoyaltyPreview();
   loyaltyPreviewCache = Object.create(null);
   loyaltyPreviewPending = Object.create(null);
 }
@@ -10826,7 +10830,20 @@ async function refreshCurrentMode() {
   }
 }
 
-sb.auth.onAuthStateChange(async (event, session) => {
+let authUiRevision=0;
+sb.auth.onAuthStateChange((event, session) => {
+  const revision=++authUiRevision;
+  // Auth callbacks run under Supabase's session lock. Never return a promise
+  // that calls getSession through profile or discount loading from this callback.
+  if(event==='PASSWORD_RECOVERY')passwordRecoveryActive=true;
+  setTimeout(()=>{
+    if(revision!==authUiRevision)return;
+    void applyAuthState(event,session,revision).catch(error=>console.warn('Anmeldung aktualisieren fehlgeschlagen',error.message));
+  },0);
+});
+async function applyAuthState(event,session,revision) {
+  if ((currentUser?.id !== session?.user?.id || event === 'SIGNED_IN' || event === 'SIGNED_OUT')
+    && typeof clearLoyaltyPreviewCache === 'function') clearLoyaltyPreviewCache();
   if ((currentUser?.id !== session?.user?.id || event === 'SIGNED_OUT')
     && typeof clearLockboxAccess === 'function') clearLockboxAccess(true);
   if ((currentUser?.id !== session?.user?.id || event === 'SIGNED_OUT')
@@ -10842,6 +10859,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
     currentUser = session.user;
     await loadProfile(session.user.id);
+    if(revision!==authUiRevision)return;
     updateUserBar();
   } else {
     currentUser = null;
@@ -10868,7 +10886,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     // Erst nach Abschluss des Auth-Callbacks die Passwortmaske öffnen.
     setTimeout(openPasswordRecovery, 0);
   }
-});
+}
 
 // Fallback fuer Recovery-Links: Supabase feuert normalerweise
 // PASSWORD_RECOVERY. Falls ein Browser den Event erst spaet oder gar nicht
@@ -10938,15 +10956,18 @@ async function loadMemberDiscount() {
   myMemberSources = [];
   myPartner = null;
   if (!currentUser) return;
+  const owner=currentUser.id;
 
   // Partner-Status (Firma) + geschenktes Guthaben einlösen – unabhängig von der
   // Vereinsmitgliedschaft.
   try {
     const { data: pt } = await sb.rpc('my_partner');
+    if(currentUser?.id!==owner)return;
     myPartner = (Array.isArray(pt) && pt.length) ? pt[0] : null;
-  } catch(e) { myPartner = null; }
+  } catch(e) { if(currentUser?.id!==owner)return;myPartner = null; }
   try {
     const { data: g } = await sb.rpc('claim_my_credit_gifts');
+    if(currentUser?.id!==owner)return;
     if (g && g.claimed_cents > 0) {
       showToast('🎁 Du hast ' + (g.claimed_cents/100).toFixed(2).replace('.',',') + ' € geschenktes Guthaben erhalten!');
       try { if (typeof renderCreditOverview === 'function') renderCreditOverview(); } catch(_e) {}
@@ -10957,6 +10978,7 @@ async function loadMemberDiscount() {
 
   try {
     const { data: sources, error } = await sb.rpc('my_membership');
+    if(currentUser?.id!==owner)return;
     if (error) throw error;
     myMemberSources = Array.isArray(sources) ? sources : [];
     if (!myMemberSources.length && !myPartner) return;
@@ -10966,6 +10988,7 @@ async function loadMemberDiscount() {
       .from('discount_rules')
       .select('rule_type,discount_pct,applies_to,valid_from,valid_until')
       .eq('active', true);
+    if(currentUser?.id!==owner)return;
     if (rErr) throw rErr;
 
     const wanted = myMemberSources.length ? ['member_tfb'] : [];
@@ -11114,6 +11137,10 @@ document.getElementById('authModal').addEventListener('click', function(e) {
 
 function switchAuthTab(tab) {
   clearAuthMessages();
+  if(tab==='login'||tab==='register'||tab==='reset'){
+    document.getElementById('modalTitle').textContent=tab==='register'?'Registrieren':tab==='reset'?'Passwort zurücksetzen':'Anmelden';
+    document.getElementById('modalSub').textContent=tab==='register'?'Erstelle deinen persönlichen Account':tab==='reset'?'Wir helfen dir wieder in dein Konto':'Melde dich an um fortzufahren';
+  }
   const loginEmail = document.getElementById('loginEmail');
   const resetEmail = document.getElementById('resetEmail');
   if (tab === 'reset' && resetEmail && loginEmail?.value.trim() && !resetEmail.value.trim()) {
@@ -11221,6 +11248,20 @@ document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==
 // ============================================================
 //  REGISTRIERUNG
 // ============================================================
+function showRegistrationResult(email) {
+  showAuthOk('Wenn diese Adresse neu ist, erhältst du eine Bestätigungsmail. Hast du bereits ein Konto, melde dich an oder setze dein Passwort zurück. Eine erneute Registrierung ändert dein bisheriges Passwort nicht.');
+  const actions=document.createElement('div');actions.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:10px';
+  for(const [label,tab] of [['Zur Anmeldung','login'],['Passwort zurücksetzen','reset']]){
+    const button=document.createElement('button');button.type='button';button.textContent=label;
+    button.style.cssText='border:1px solid #DED2C2;border-radius:8px;background:#fff;color:#1C1A17;padding:9px 11px;font:inherit;font-weight:800;cursor:pointer';
+    button.addEventListener('click',()=>{
+      document.getElementById('loginEmail').value=email;document.getElementById('resetEmail').value=email;
+      switchAuthTab(tab);
+    });actions.appendChild(button);
+  }
+  document.getElementById('authOk').appendChild(actions);
+}
+
 async function doRegister() {
   const name   = document.getElementById('regName').value.trim();
   const email  = document.getElementById('regEmail').value.trim();
@@ -11262,7 +11303,8 @@ async function doRegister() {
     });
     if (authErr) { showAuthErr(translateAuthError(authErr.message)); return; }
 
-    showAuthOk('Fast fertig! Bitte bestätige deine E-Mail-Adresse – dann kannst du dich anmelden.');
+    document.getElementById('regPw').value='';document.getElementById('regPwConfirm').value='';
+    showRegistrationResult(email);
   } catch(e) {
     showAuthErr('Fehler beim Anlegen des Kontos – bitte versuche es erneut.');
   } finally {
@@ -11276,12 +11318,32 @@ async function doRegister() {
 async function doReset() {
   const email = document.getElementById('resetEmail').value.trim();
   if (!email) { showAuthErr('Bitte E-Mail eingeben.'); return; }
-  clearAuthMessages();
-  const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://padel-bielstein.de/?password_recovery=1'
-  });
-  if (error) { showAuthErr(translateAuthError(error.message)); return; }
-  showAuthOk('Link gesendet! Bitte prüfe dein Postfach.');
+  const button=document.querySelector('#formReset .modal-btn');
+  if(button.disabled)return;
+  button.disabled=true;button.textContent='Link wird angefordert …';clearAuthMessages();
+  let timer;
+  try{
+    const {error}=await Promise.race([
+      sb.auth.resetPasswordForEmail(email,{redirectTo:'https://padel-bielstein.de/?password_recovery=1'}),
+      new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Die Anfrage konnte noch nicht bestätigt werden. Bitte lade die Seite neu und versuche es erneut.')),15000);})
+    ]);
+    if(error){showAuthErr(translateAuthError(error.message));return;}
+    showAuthOk('Wenn für diese Adresse ein Konto besteht, erhältst du einen Link zum Zurücksetzen. Bitte prüfe auch deinen Spamordner.');
+  }catch(error){showAuthErr(error.message||'Die Anfrage ist fehlgeschlagen. Bitte versuche es erneut.');}
+  finally{clearTimeout(timer);button.disabled=false;button.textContent='Link senden →';}
+}
+
+let passwordRecoveryAccount=null;
+async function verifyPasswordRecoveryAccount(){
+  const button=document.getElementById('recoveryBtn');button.disabled=true;
+  try{
+    const {data,error}=await sb.auth.getUser();
+    if(error||!data?.user?.id||!data.user.email)throw Error('Der Rücksetzlink ist nicht mehr gültig. Bitte fordere einen neuen Link an.');
+    if(!passwordRecoveryActive)return;
+    passwordRecoveryAccount={id:data.user.id,email:data.user.email};
+    document.getElementById('modalSub').textContent='Neues Passwort für '+data.user.email;
+    button.disabled=false;
+  }catch(error){passwordRecoveryAccount=null;showAuthErr(error.message);}
 }
 
 function openPasswordRecovery() {
@@ -11296,6 +11358,8 @@ function openPasswordRecovery() {
   document.getElementById('modalTitle').textContent = 'Neues Passwort';
   document.getElementById('modalSub').textContent = 'Passwort sicher zurücksetzen';
   document.getElementById('authModal').classList.add('open');
+  passwordRecoveryAccount=null;
+  void verifyPasswordRecoveryAccount();
   setTimeout(() => document.getElementById('recoveryPw')?.focus(), 100);
 }
 
@@ -11306,25 +11370,30 @@ async function completePasswordRecovery() {
   if (pw !== confirmation) { showAuthErr('Die beiden Passwörter stimmen nicht überein.'); return; }
   if (!passwordRecoveryActive) { showAuthErr('Der Reset-Link ist abgelaufen. Bitte fordere einen neuen Link an.'); return; }
 
+  if(!passwordRecoveryAccount){showAuthErr('Bitte warte, bis die E-Mail-Adresse für diesen Rücksetzlink geprüft wurde.');return;}
+  const target={...passwordRecoveryAccount};
   const btn = document.getElementById('recoveryBtn');
   btn.disabled = true; btn.textContent = '…';
   clearAuthMessages();
   try {
-    const { error } = await sb.auth.updateUser({ password: pw });
+    const verified=await sb.auth.getUser();
+    if(verified.error||verified.data?.user?.id!==target.id){passwordRecoveryAccount=null;throw Error('Das angemeldete Konto hat sich geändert. Bitte öffne deinen Rücksetzlink erneut.');}
+    const { data, error } = await sb.auth.updateUser({ password: pw });
     if (error) { showAuthErr(translateAuthError(error.message)); return; }
     passwordRecoveryActive = false;
     window.__pbPasswordRecovery = false;
     // Zugangsdaten aus dem Recovery-Link aus der Adresszeile entfernen.
     history.replaceState(null, document.title, location.pathname);
-    showAuthOk('Passwort geändert. Du bist jetzt angemeldet.');
+    passwordRecoveryAccount=null;
+    showAuthOk('Passwort für '+target.email+' geändert. Du bist jetzt angemeldet.');
     setTimeout(() => {
       closeModal();
       showToast('Passwort erfolgreich geändert. 🎾');
     }, 900);
   } catch(e) {
-    showAuthErr('Netzwerkfehler – bitte versuche es erneut.');
+    showAuthErr(e.message||'Netzwerkfehler – bitte versuche es erneut.');
   } finally {
-    btn.disabled = false; btn.textContent = 'Passwort speichern →';
+    btn.disabled = !passwordRecoveryAccount; btn.textContent = 'Passwort speichern →';
   }
 }
 
@@ -12220,6 +12289,9 @@ async function renderWeatherReportCard() {
     b = {
       ...b,
       date: '2026-07-26',
+      time_version:1,
+      start_minute:1080,
+      duration_minutes:120,
       hour_start: 18,
       duration: 2,
       court: b?.court || 2,
