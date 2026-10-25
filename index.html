@@ -12240,7 +12240,7 @@ function weatherDeadlineDate(b) {
 }
 function weatherCanReport(b,now=Date.now()) {
   return !!b&&!b.isMatch&&!b.isAbo&&!b.isEvent&&Number(b.price_paid_cents)>0&&['paid','active'].includes(b.status)&&
-    now>=bookingDateAt(b).getTime()&&now<=weatherDeadlineDate(b).getTime();
+    now>=weatherEndDate(b).getTime()&&now<=weatherDeadlineDate(b).getTime();
 }
 function weatherTimeRemaining(b,now=Date.now()) {
   const minutes=Math.max(0,Math.floor((weatherDeadlineDate(b).getTime()-now)/60000));
@@ -23906,7 +23906,7 @@ init();
       function renderHourlyBox(el, dateKey, title){
         const hourly = d.hourly || {};
         if(!el || !hourly.time) return;
-        let bars = ''; let windowRain = 0; let missing = false;
+        let bars = ''; let windowRain = 0; let missing = false; let knownHours = 0;
         for(let hour=8; hour<=21; hour++){
           const stamp = dateKey+'T'+String(hour+1).padStart(2,'0')+':00';
           const i = hourly.time.findIndex(t => t === stamp);
@@ -23914,7 +23914,7 @@ init();
           const elapsed = dateKey === todayKey && hour < wxHour({timestamp:new Date().toISOString()});
           const value = elapsed ? observed?.precipitation : i >= 0 && hourly.precipitation ? hourly.precipitation[i] : null;
           const amount = value == null ? null : Math.max(0, Number(value));
-          if(amount !== null) windowRain += amount;
+          if(amount !== null){windowRain += amount;knownHours++;}
           else missing = true;
           const temperature = elapsed ? observed?.temperature : i >= 0 && hourly.temperature_2m ? hourly.temperature_2m[i] : null;
           const temp = temperature == null ? null : Math.round(Number(temperature));
@@ -23924,7 +23924,7 @@ init();
             + '<div class="track"><div class="fill" style="height:'+Math.max(2,h)+'%"></div><span class="temp">'+(temp==null?'–':temp+'°')+'</span></div>'
             + '<span class="hr">'+hour+'</span></div>';
         }
-        el.innerHTML = '<div class="hd"><span>'+esc(title)+'</span><b>'+mmFmt(rows.some(w=>w.precipitation!=null)?windowRain:null)+' mm'+(missing?' · unvollständig':'')+'</b></div><div class="wx-wx-bars">'+bars+'</div>';
+        el.innerHTML = '<div class="hd"><span>'+esc(title)+'</span><b>'+mmFmt(knownHours?windowRain:null)+' mm'+(missing?' · unvollständig':'')+'</b></div><div class="wx-wx-bars">'+bars+'</div>';
         el.style.display = '';
       }
       renderHourlyBox(document.getElementById('pbwxTodayHourly'), todayKey, 'Niederschlag heute · 8 bis 22 Uhr · Messwerte / Prognose');
