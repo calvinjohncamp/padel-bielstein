@@ -12025,6 +12025,7 @@ async function cancelSingleBooking(bookingId, bookingLabel, priceCents) {
   );
   if (!confirmed) return;
 
+  clearLockboxAccess(true);
   const button = document.querySelector(`[data-cancel-booking="${bookingId}"]`);
   if (button) button.disabled = true;
   try {
@@ -12032,7 +12033,8 @@ async function cancelSingleBooking(bookingId, bookingLabel, priceCents) {
     if (error) throw error;
     const credited = weatherFmtEUR(Number(data?.credit_cents || 0));
     showToast(`Buchung storniert. ${credited} Spielguthaben gutgeschrieben.`);
-    await renderMyBookingsLists();
+    if(document.getElementById('modePlay')?.style.display!=='none') await renderPlaySection();
+    else await renderMyBookingsLists();
     if (typeof renderCreditOverview === 'function') renderCreditOverview();
   } catch (e) {
     if (button) button.disabled = false;
