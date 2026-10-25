@@ -12024,6 +12024,24 @@ function bookingStartTime(item) {
   return bookingDateAt(item);
 }
 
+function scheduleBookingCancellationExpiry(root, items) {
+  root.querySelectorAll('[data-cancel-booking]').forEach(button=>{
+    clearTimeout(button.bookingCancellationTimer);
+    const item=items.find(b=>b.id===button.dataset.cancelBooking);
+    if(!item)return;
+    const deadline=BOOKING_CANCELLATION_POLICY_ENABLED
+      ? Date.parse(item.cancellation?.deadline_at)
+      : bookingStartTime(item).getTime()-48*3600000;
+    if(!Number.isFinite(deadline))return;
+    const expire=()=>{
+      if(!button.isConnected)return;
+      if(Date.now()<deadline){button.bookingCancellationTimer=setTimeout(expire,Math.min(2147483647,deadline-Date.now()));return;}
+      const notice=document.createElement('span');notice.className='booking-cancel-deadline';notice.textContent='Stornofrist abgelaufen';
+      button.replaceWith(notice);
+    };
+    expire();
+  });
+}
 function canCancelSingleBooking(item) {
   if (BOOKING_CANCELLATION_POLICY_ENABLED) {
     return item.kind === 'single' && item.status === 'paid' && item.cancellation?.can_cancel === true &&
@@ -12140,6 +12158,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
         if(target&&canCancelSingleBooking(item)) {
           const label=`${new Date(b.date+'T12:00:00').toLocaleDateString('de-DE')} um ${bookingReadTime(b).from} Uhr, ${courtLabel(b.court)}`;
           target.innerHTML=`<button type="button" class="booking-cancel-btn" data-cancel-booking="${b.id}" onclick="cancelSingleBooking('${b.id}', '${label.replace(/'/g, "\\'")}', ${Number(b.price_paid_cents||0)})">Stornieren</button>`;
+          scheduleBookingCancellationExpiry(target,[item]);
         }
       }
       upcoming.forEach(item=>{if(item.kind==='single') item.cancellation=byId.get(item.id);});
@@ -12191,6 +12210,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
     </div>`;
   }).join('');
   reconcilePlayBookings(bookingsEl,upcomingMarkup);
+  scheduleBookingCancellationExpiry(bookingsEl,upcoming);
   await renderUpcomingLockboxAccess(upcoming,bookingsEl);
 }
 
@@ -12845,7 +12865,10 @@ function openPlayAccessInfo(trigger) {
 }
 function playLockboxAccessHtml(access,showBox=true,compact=false) {
   const v=PBLockboxContent.lockboxAccessContent(access),side=access.side;
-  if(v.scheduled)return `<div class="play-access play-access-pending play-access-scheduled ${compact?'play-access-compact':''}"><div class="play-access-kicker">Dein Zugangscode</div><p>${esc(v.message)}</p></div>`;
+  if(v.scheduled){
+    const release=new Date(access.release_at).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `<div class="play-access play-access-pending play-access-scheduled ${compact?'play-access-compact':''}"><div class="play-access-kicker">Dein Zugangscode</div><p>Dein Zugangscode erscheint hier nach Ablauf der Stornofrist, ab ${esc(release)} Uhr. Du erhältst ihn außerdem automatisch per E-Mail.</p></div>`;
+  }
   const entrance=side==='F'?'Freibadseite':'Parkplatzseite';
   const symbol='<svg class="play-open-symbol" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 11V7a5 5 0 0 1 10 0M6 11h12v10H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>';
   const box=showBox?`<button type="button" class="play-keybox-photo" aria-label="Schlüsselbox ${side}: Originalfoto ansehen" aria-haspopup="dialog"><span class="play-keybox" role="img" aria-label="Schlüsselbox: Öffnen-Taste rechts unten im Tastenfeld"><span class="play-keybox-led"></span><span class="play-keybox-keys" aria-hidden="true">${['1','2','3','4','5','6','7','8','9','↶','0',symbol].map((key,i)=>`<span class="${i===11?'play-keybox-open':''}">${key}</span>`).join('')}</span></span></button>`:'';
@@ -12894,11 +12917,11 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
     }else if(access.state==='not_configured'&&['P','F'].includes(access.side)) {
       renderAccess(access);
     }else if(access.state==='not_configured')content.textContent='Die Lockbox-Anbindung wird vorbereitet. Es ist noch kein Zugangscode verfügbar.';
-    else content.textContent='Der Zugangscode ist derzeit nicht verfügbar. Bitte erneut laden oder den Verein kontaktieren.';
+    else content.textContent='Dein Zugangscode kann gerade nicht angezeigt werden. Bitte versuche es in Kürze erneut.';
     if(b.isMatch&&access.ticket){const ticket=personalMatchTicketHtml(access.ticket);if(content.playTicketSignature!==ticket){content.querySelector('[data-play-tickets]')?.remove();content.insertAdjacentHTML('beforeend','<div data-play-tickets>'+ticket+'</div>');content.playTicketSignature=ticket;}}
   }catch(error) {
     if(!current())return;
-    if(!keepAccess||(content.querySelector('.lockbox-pin')&&content.playAccessUntil<=Date.now())){content.playAccessSignature=null;content.textContent='Der Zugangscode konnte nicht geladen werden. Bitte erneut laden oder den Verein kontaktieren.';}
+    if(!keepAccess||(content.querySelector('.lockbox-pin')&&content.playAccessUntil<=Date.now())){content.playAccessSignature=null;content.textContent='Dein Zugangscode kann gerade nicht angezeigt werden. Bitte versuche es in Kürze erneut.';}
   }
   if(!b.isMatch&&!b.isEvent&&current()&&bookingDateAt(b).getTime()+bookingReadTime(b).minutes*60000>Date.now()){
     try{const tickets=await fetchOwnerFreibadTickets(b);if(current()){content.querySelector('.play-ticket-warning')?.remove();const ticket=tickets.length?ownerFreibadTicketsHtml(tickets,b.date):'';if(content.playTicketSignature!==ticket){content.querySelector('[data-play-tickets]')?.remove();if(ticket)content.insertAdjacentHTML('beforeend','<div data-play-tickets>'+ticket+'</div>');content.playTicketSignature=ticket;}}}
@@ -24047,8 +24070,11 @@ init();
     }
     const dayRows=rows.filter(w=>wxHour(w)>=8&&wxHour(w)<22);
     const expected=14,archived=dayRows.filter(w=>w.archived).length;
+    const ongoing=dayKey===wxDateKeyLocal(new Date())&&Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',hour:'2-digit',hourCycle:'h23'}).format(new Date()))<22;
+    const progress=ongoing&&dayRows.filter(w=>w.precipitation!=null).length<14
+      ? ' Der Spieltag läuft noch. Weitere Stundenwerte folgen nach Messung und Bereitstellung.' : '';
     container.innerHTML = proofCardHTML(dayRows, b, expected) + proofHourlyHTML(dayRows, dayKey, playStart, playEnd)
-      + '<div class="pbwx-note"><span class="weather-booking-legend">Orange: deine gebuchte Spielzeit '+esc(bookingReadTime(b).range)+' Uhr.</span> '+archived+' von 14 Stunden archiviert · Stationswerte als Orientierung für die Prüfung. Fehlende Messwerte sind mit – gekennzeichnet.'+(playStart%1||playEnd%1?' Die Markierung umfasst die von deiner Buchung berührten Stunden.':'')+'</div>';
+      + '<div class="pbwx-note"><span class="weather-booking-legend">Orange: deine gebuchte Spielzeit '+esc(bookingReadTime(b).range)+' Uhr.</span> '+archived+' von 14 Stunden archiviert · Stationswerte als Orientierung für die Prüfung.'+progress+' Fehlende Messwerte sind mit – gekennzeichnet.'+(playStart%1||playEnd%1?' Die Markierung umfasst die von deiner Buchung berührten Stunden.':'')+'</div>';
     return true;
   }
 
