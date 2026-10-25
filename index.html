@@ -12046,6 +12046,7 @@ async function renderMyBookingsLists() {
   const bookingsEl = document.getElementById('mySingleBookingsList');
   if (!bookingsEl || !currentUser) return;
   const viewerAuthId = currentUser.id;
+  document.querySelectorAll('[data-today-cancel]').forEach(el=>el.replaceChildren());
   bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Buchungen werden geladen …</div></div>`;
 
   let bookings, abos;
@@ -12097,6 +12098,15 @@ async function renderMyBookingsLists() {
         return [row.booking_id,row];
       }));
       if (currentUser?.id !== actor) return;
+      // Keep eligible same-day cancellation on the combined card after removing its duplicate.
+      for(const b of bookings.filter(b=>b.date===today)) {
+        const item={...b,kind:'single',cancellation:byId.get(b.id)};
+        const target=Array.from(document.querySelectorAll('[data-today-cancel]')).find(el=>el.dataset.todayCancel===b.id);
+        if(target&&canCancelSingleBooking(item)) {
+          const label=`${new Date(b.date+'T12:00:00').toLocaleDateString('de-DE')} um ${bookingReadTime(b).from} Uhr, ${courtLabel(b.court)}`;
+          target.innerHTML=`<button type="button" class="booking-cancel-btn" data-cancel-booking="${b.id}" onclick="cancelSingleBooking('${b.id}', '${label.replace(/'/g, "\\'")}', ${Number(b.price_paid_cents||0)})">Stornieren</button>`;
+        }
+      }
       upcoming.forEach(item=>{if(item.kind==='single') item.cancellation=byId.get(item.id);});
       upcoming = upcoming.filter(item=>item.kind!=='single' || Date.parse(item.cancellation.starts_at)>Date.now());
     } catch (e) {
@@ -12652,7 +12662,7 @@ async function renderPlaySection() {
     const kind=b.isAbo?'Jahresabo':b.isEvent?'Event':'Einzelbuchung';
     const badge=status==='past'?'Beendet':status==='now'?'Zugang bereit':'Bald';
     return `<article class="play-today-booking">
-      <div class="play-today-booking-head"><div><div class="play-today-kind">${kind}</div><h2>${esc(courtLabel(b.court))}</h2><div class="play-today-time">${time.from} – ${time.to} Uhr</div></div><span class="play-today-status">${badge}</span></div>
+      <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><h2>${esc(courtLabel(b.court))}</h2><div class="play-today-time">${time.from} – ${time.to} Uhr</div></div><span class="play-today-status">${badge}</span></div>
       ${status==='past'?'<p class="play-today-ended">Deine Spielzeit ist beendet.</p>':`<div class="lockbox-today-access" data-today-index="${index}"></div>`}
     </article>`;
   }).join('') : '<div class="play-today-booking play-today-empty"><h2>Heute hast du keine Buchung.</h2><p>Deine nächsten bestätigten Termine findest du unter „Demnächst“.</p></div>';
@@ -28692,5 +28702,8 @@ body.bielstein-theme #todayBookingsCard.play-today-section { background: transpa
   .lockbox-access .lockbox-access-header td:last-child { width: 100% !important; padding-top: 16px !important; }
   .lockbox-access .lockbox-photo { width: 144px !important; height: 144px !important; }
 }
+
+body.bielstein-theme .play-today-kind-row {display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:8px;}
+body.bielstein-theme .play-today-kind-row .play-today-kind {margin-bottom:0;}
 
 </style>
