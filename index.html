@@ -12055,19 +12055,34 @@ async function cancelSingleBooking(bookingId, bookingLabel, priceCents) {
 
 // Füllt „Demnächst" als EINE gemeinsame chronologische Liste. Einzelbuchungen
 // und der jeweils nächste Abo-Termin haben dieselbe visuelle Wichtigkeit.
+function reconcilePlayBookings(list,markup) {
+  const template=document.createElement('template');template.innerHTML=markup;
+  const previous=new Map(Array.from(list.children).filter(el=>el.dataset.playBookingKey).map(el=>[el.dataset.playBookingKey,el]));
+  const nodes=Array.from(template.content.children).map(next=>{
+    const signature=next.outerHTML,old=previous.get(next.dataset.playBookingKey);
+    if(old&&old.playMarkup===signature)return old;
+    if(old){
+      const access=old.querySelector('.lockbox-today-access,.lockbox-booking-access'),placeholder=next.querySelector('.lockbox-today-access,.lockbox-booking-access');
+      if(access&&placeholder){for(const name of ['todayIndex','lockboxSource','lockboxDay'])if(name in placeholder.dataset)access.dataset[name]=placeholder.dataset[name];placeholder.replaceWith(access);}
+    }
+    next.playMarkup=signature;return next;
+  });
+  const keep=new Set(nodes);Array.from(list.children).forEach(node=>{if(!keep.has(node))node.remove();});
+  nodes.forEach((node,index)=>{if(list.children[index]!==node)list.insertBefore(node,list.children[index]||null);});
+}
 async function renderMyBookingsLists(confirmedMatches = null) {
   const bookingsEl = document.getElementById('mySingleBookingsList');
   if (!bookingsEl || !currentUser) return;
   const viewerAuthId = currentUser.id;
-  document.querySelectorAll('[data-today-cancel]').forEach(el=>el.replaceChildren());
-  bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Buchungen werden geladen …</div></div>`;
+  if(bookingsEl.dataset.viewer!==viewerAuthId){bookingsEl.replaceChildren();bookingsEl.dataset.viewer=viewerAuthId;}
+  if(!bookingsEl.children.length)bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Buchungen werden geladen …</div></div>`;
 
   let bookings, abos;
   try {
     [bookings, abos] = await Promise.all([loadUpcomingBookings(), loadActiveAbos()]);
   } catch(e) {
     const safeMessage = esc(e?.message || 'Unbekannter Datenbankfehler');
-    bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;color:#d64545;">Buchungen konnten nicht geladen werden:<br>${safeMessage}</div>`;
+    if(!bookingsEl.querySelector('.upcoming-item'))bookingsEl.innerHTML = `<div class="play-empty" style="padding:24px 0;color:#d64545;">Buchungen konnten nicht geladen werden:<br>${safeMessage}</div>`;
     console.error('Meine Buchungen laden fehlgeschlagen:', e);
     return;
   }
@@ -12115,6 +12130,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
       for(const b of bookings.filter(b=>b.date===today)) {
         const item={...b,kind:'single',cancellation:byId.get(b.id)};
         const target=Array.from(document.querySelectorAll('[data-today-cancel]')).find(el=>el.dataset.todayCancel===b.id);
+        if(target&&!canCancelSingleBooking(item))target.replaceChildren();
         if(target&&canCancelSingleBooking(item)) {
           const label=`${new Date(b.date+'T12:00:00').toLocaleDateString('de-DE')} um ${bookingReadTime(b).from} Uhr, ${courtLabel(b.court)}`;
           target.innerHTML=`<button type="button" class="booking-cancel-btn" data-cancel-booking="${b.id}" onclick="cancelSingleBooking('${b.id}', '${label.replace(/'/g, "\\'")}', ${Number(b.price_paid_cents||0)})">Stornieren</button>`;
@@ -12124,6 +12140,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
       upcoming = upcoming.filter(item=>item.kind!=='single' || Date.parse(item.cancellation.starts_at)>Date.now());
     } catch (e) {
       if (currentUser?.id !== actor) return;
+      document.querySelectorAll('[data-today-cancel]').forEach(el=>el.replaceChildren());
       // Unknown conditions must never fall back to a permissive 48-hour button.
       upcoming.forEach(item=>{if(item.kind==='single') item.cancellation=null;});
     }
@@ -12139,7 +12156,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
     return;
   }
 
-  bookingsEl.innerHTML = upcoming.map((item,index) => {
+  const upcomingMarkup = upcoming.map((item,index) => {
     const dateStr = new Date(item.date+'T12:00:00').toLocaleDateString('de-DE',
       {weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
     const timeStr = bookingReadTime(item).range;
@@ -12155,7 +12172,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
               ? 'Stornierung derzeit nicht prüfbar' : BOOKING_CANCELLATION_POLICY_ENABLED && !item.cancellation.policy.cancellation_enabled
                 ? 'Keine Stornierung vorgesehen' : 'Stornofrist abgelaufen'}</span>`
           : '');
-    return `<div class="upcoming-item">
+    return `<div class="upcoming-item" data-play-booking-key="${esc((item.kind||'booking')+':'+item.id+':'+item.date+':'+bookingReadTime(item).start)}">
       <div class="upcoming-item-head">
         <div class="upcoming-item-main">
           <div class="upcoming-sequence" aria-label="Termin ${index+1}">${index+1}</div>
@@ -12167,6 +12184,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
       ${!pending ? `<div class="lockbox-booking-access" data-lockbox-source="${item.id}" data-lockbox-day="${item.date}" aria-live="polite"></div>` : ''}
     </div>`;
   }).join('');
+  reconcilePlayBookings(bookingsEl,upcomingMarkup);
   await renderUpcomingLockboxAccess(upcoming,bookingsEl);
 }
 
@@ -12278,8 +12296,8 @@ async function renderWeatherReportCard(requestedId=null) {
   const card=document.getElementById('weatherReportCard'),box=document.getElementById('weatherReportContent');
   if(!card||!box)return;
   const viewer=currentUser?.id,revision=++weatherReportRevision;
-  clearTimeout(weatherReportTimer);weatherReportBooking=null;
-  card.style.display='none';box.replaceChildren();
+  clearTimeout(weatherReportTimer);
+  if(weatherReportViewer!==viewer){card.style.display='none';box.replaceChildren();box.weatherContentSignature=null;weatherReportBooking=null;}
   if(!viewer){clearWeatherReportState();return;}
   if(weatherReportViewer!==viewer){closeWeatherReport();weatherReportDialogBooking=null;weatherReportDialogViewer=null;weatherReportSelection=null;weatherReportBookings=[];weatherReportsByBooking={};}
   weatherReportViewer=viewer;
@@ -12292,10 +12310,10 @@ async function renderWeatherReportCard(requestedId=null) {
       .order('date',{ascending:false}).order('hour_start',{ascending:false});
     if(!current())return;if(error)throw error;
     const eligible=(data||[]).filter(b=>weatherCanReport(b)).sort((a,b)=>bookingDateAt(b)-bookingDateAt(a));
-    weatherReportBookings=eligible;
-    if(!eligible.length){weatherReportSelection=null;return;}
+    if(!eligible.length){weatherReportBookings=[];weatherReportSelection=null;weatherReportBooking=null;card.style.display='none';box.replaceChildren();box.weatherContentSignature=null;return;}
     const result=await sb.from('weather_reports').select('booking_id,percent,status,credit_cents,admin_note').in('booking_id',eligible.map(b=>b.id));
     if(!current())return;if(result.error)throw result.error;
+    weatherReportBookings=eligible;
     weatherReportsByBooking=Object.fromEntries((result.data||[]).map(r=>[r.booking_id,r]));
     const desired=requestedId||weatherReportSelection;
     const selected=eligible.find(b=>b.id===desired)||eligible.find(b=>!weatherReportsByBooking[b.id])||eligible[0];
@@ -12305,7 +12323,10 @@ async function renderWeatherReportCard(requestedId=null) {
     }},Math.max(1000,Math.min(60000,Math.min(...eligible.map(b=>weatherDeadlineDate(b).getTime()))-Date.now()+1)));
   } catch(error) {
     if(!current())return;
-    box.innerHTML='<p class="weather-report-hint" role="status">Die meldbaren Buchungen konnten nicht geladen werden. <button type="button" class="weather-retry" onclick="renderWeatherReportCard()">Erneut versuchen</button></p>';
+    const message='<p class="weather-refresh-warning" role="status">Die Buchungen konnten gerade nicht aktualisiert werden. <button type="button" class="weather-retry" onclick="renderWeatherReportCard()">Erneut versuchen</button></p>';
+    box.querySelector('.weather-refresh-warning')?.remove();
+    if(box.weatherContentSignature)box.insertAdjacentHTML('beforeend',message);else {weatherReportBookings=[];weatherReportsByBooking={};weatherReportBooking=null;box.innerHTML=message;}
+    weatherReportTimer=setTimeout(()=>{if(currentUser?.id===viewer&&document.getElementById('modePlay')?.style.display!=='none')renderWeatherReportCard();},60000);
     card.style.display='block';
     console.error('Wettermeldungen konnten nicht geladen werden',error);
   }
@@ -12317,14 +12338,26 @@ function selectWeatherBooking(id,scroll=false) {
   weatherReportSelection=b.id;
   const report=weatherReportsByBooking[b.id]||null,box=document.getElementById('weatherReportContent');
   weatherReportBooking=report?null:b;
-  const picker=weatherReportBookings.length>1?`<div class="weather-booking-picker" role="group" aria-label="Buchung für die Wettermeldung auswählen">${weatherReportBookings.map((row,index)=>`<button type="button" class="weather-booking-choice" data-weather-booking="${esc(row.id)}" aria-pressed="${row.id===b.id}" onclick="selectWeatherBooking(this.dataset.weatherBooking)"><span>${index+1} · ${esc(weatherBookingLabel(row))}</span><small>${weatherReportsByBooking[row.id]?'Meldung vorhanden':'Frist: noch '+weatherTimeRemaining(row)}</small></button>`).join('')}</div>`:'';
+  const signature=JSON.stringify([b.id,weatherReportBookings.map(row=>[row.id,weatherBookingLabel(row),row.price_paid_cents,weatherReportsByBooking[row.id]||null])]);
+  if(box.weatherContentSignature===signature){
+    box.querySelector('.weather-refresh-warning')?.remove();
+    box.querySelectorAll('[data-weather-remaining]').forEach(el=>{const row=weatherReportBookings.find(row=>row.id===el.dataset.weatherRemaining);if(row)el.textContent=weatherReportsByBooking[row.id]?'Meldung vorhanden':'Frist: noch '+weatherTimeRemaining(row);});
+    const hint=box.querySelector('.weather-report-hint');if(hint&&!report)hint.textContent=`Meldung noch ${weatherTimeRemaining(b)} möglich · bis ${weatherDeadlineLabel(b)} (Bielstein).`;
+    loadWeatherProofForBooking(b);
+    if(scroll)document.getElementById('playWeatherSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
+  const picker=weatherReportBookings.length>1?`<div class="weather-booking-picker" role="group" aria-label="Buchung für die Wettermeldung auswählen">${weatherReportBookings.map((row,index)=>`<button type="button" class="weather-booking-choice" data-weather-booking="${esc(row.id)}" aria-pressed="${row.id===b.id}" onclick="selectWeatherBooking(this.dataset.weatherBooking)"><span>${index+1} · ${esc(weatherBookingLabel(row))}</span><small data-weather-remaining="${esc(row.id)}">${weatherReportsByBooking[row.id]?'Meldung vorhanden':'Frist: noch '+weatherTimeRemaining(row)}</small></button>`).join('')}</div>`:'';
   const row=`<div class="closure-item my-booking" style="margin-bottom:4px;"><div style="flex:1;"><div class="closure-item-date">${esc(weatherBookingLabel(b))}</div><div class="closure-item-note">Buchungswert ${weatherFmtEUR(weatherBookingValueCents(b))}</div></div></div>`;
   let status;
   if(!report)status=`<button type="button" class="weather-report-btn" onclick="openWeatherReport()">🌧 Wetterausfall melden</button><div class="weather-report-hint">Meldung noch ${weatherTimeRemaining(b)} möglich · bis ${weatherDeadlineLabel(b)} (Bielstein).</div>`;
   else if(report.status==='pending')status=`<div class="weather-status-note">Meldung eingegangen (${Number(report.percent)} % ausgefallen) – wird geprüft.</div>`;
   else if(report.status==='approved')status=`<div class="weather-status-note">Wetterausfall bestätigt – ${weatherFmtEUR(report.credit_cents||0)} wurden deinem Spielguthaben gutgeschrieben.</div>`;
   else status=`<div class="weather-status-note">Deine Meldung (${Number(report.percent)} %) wurde nach Abgleich mit den Wetterdaten nicht bestätigt.${report.admin_note?'<br>Hinweis: '+esc(report.admin_note):''}</div>`;
+  const oldProof=weatherReportSelection===box.weatherSelectedBooking?box.querySelector('#weatherProofPanel'):null;
   box.innerHTML=picker+row+renderWeatherProofShell(b)+status;
+  if(oldProof)box.querySelector('#weatherProofPanel').replaceWith(oldProof);
+  box.weatherContentSignature=signature;box.weatherSelectedBooking=b.id;
   document.getElementById('weatherReportCard').style.display='block';
   loadWeatherProofForBooking(b);
   if(scroll)document.getElementById('playWeatherSection')?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -12464,9 +12497,12 @@ async function renderMyHistory(reset,completedToday=null,participantMatches=null
   if(!card||!list||!more||!currentUser)return;
   const viewer=currentUser.id,revision=++historyRenderRevision;
   const current=()=>currentUser?.id===viewer&&revision===historyRenderRevision;
-  if(historyOwner!==viewer){reset=true;historyTodayEntries=[];}
+  const previousOffset=historyOffset;
+  const changedViewer=historyOwner!==viewer;
+  const visibleCount=reset&&!changedViewer?Math.max(HISTORY_PAGE,historyOffset):HISTORY_PAGE;
+  if(changedViewer){reset=true;historyTodayEntries=[];}
   if(completedToday!==null)historyTodayEntries=completedToday;
-  if(reset){historyOffset=0;historyItems=[];historyOwner=viewer;list.innerHTML='';card.style.display='none';more.style.display='none';}
+  if(reset){historyOffset=0;historyOwner=viewer;if(changedViewer){historyItems=[];list.replaceChildren();list.historyMarkup=null;card.style.display='none';more.style.display='none';}}
   more.disabled=true;
   try{
     if(reset){
@@ -12489,11 +12525,11 @@ async function renderMyHistory(reset,completedToday=null,participantMatches=null
       }
       historyItems=[...unique.values()].sort((a,b)=>b.date.localeCompare(a.date)||bookingReadTime(b).start-bookingReadTime(a).start);
     }
-    const rows=historyItems.slice(historyOffset,historyOffset+HISTORY_PAGE),reportsByBooking={};
+    const rows=historyItems.slice(historyOffset,historyOffset+visibleCount),reportsByBooking={};
     const ownIds=rows.filter(b=>!b.isMatch&&!b.isAbo&&!b.isEvent).map(b=>b.id);
     if(ownIds.length){
       const {data,error}=await sb.from('weather_reports').select('booking_id,percent,status,credit_cents').in('booking_id',ownIds);
-      if(error)console.warn('Historie: Wettermeldungen nicht verfügbar',error.message);
+      if(error)throw error;
       for(const r of data||[])reportsByBooking[r.booking_id]=r;
     }
     if(!current())return;
@@ -12508,9 +12544,9 @@ async function renderMyHistory(reset,completedToday=null,participantMatches=null
       else if(weatherCanReport(b))badge=`<button type="button" class="history-weather-link" data-weather-booking="${esc(b.id)}" onclick="showWeatherBooking(this.dataset.weatherBooking)">Wetterfrist: noch ${weatherTimeRemaining(b)}</button>`;
       return `<div class="closure-item my-booking"><div style="flex:1;"><div class="closure-item-date">${date} · ${bookingReadTime(b).range} Uhr</div><div class="closure-item-note">${esc(courtLabel(b.court))}${origin}${price}</div></div>${badge}</div>`;
     }).join('');
-    list.insertAdjacentHTML('beforeend',html);historyOffset+=rows.length;
+    if(reset){if(list.historyMarkup!==html){list.innerHTML=html;list.historyMarkup=html;}}else {list.insertAdjacentHTML('beforeend',html);list.historyMarkup=null;}historyOffset+=rows.length;
     card.style.display=historyItems.length?'block':'none';more.style.display=historyOffset<historyItems.length?'block':'none';
-  }catch(error){if(current())console.error('Historie laden fehlgeschlagen',error);}
+  }catch(error){if(current()){if(reset&&!changedViewer)historyOffset=previousOffset;console.error('Historie laden fehlgeschlagen',error);}}
   finally{if(current())more.disabled=false;}
 }
 function loadMoreHistory() { renderMyHistory(false); }
@@ -12618,7 +12654,8 @@ function getBookingStatus(b) {
 // nur an einem Tooltip. Wer ohne Buchung vor der Tuer steht, darf keine
 // scharfen Tueroeffner sehen. Jetzt steht dort ehrlich, dass nichts gebucht ist.
 
-async function renderPlaySection() {
+const playRefreshState={viewer:null,promise:null};
+async function renderPlaySectionNow() {
   const notLoggedIn = document.getElementById('playNotLoggedIn');
   const loggedIn    = document.getElementById('playLoggedIn');
 
@@ -12633,8 +12670,10 @@ async function renderPlaySection() {
   notLoggedIn.style.display = 'none';
   loggedIn.style.display    = 'block';
 
-  // Remove any previous access state before asynchronous account reads.
-  clearLockboxAccess();
+  // Keep verified access on screen while refreshing the same account.
+  const playList=document.getElementById('playBookingsList');
+  if(playList.dataset.viewer!==currentUser.id){clearLockboxAccess();playList.replaceChildren();playList.dataset.viewer=currentUser.id;}
+  else {lockboxRenderVersion++;clearTimeout(lockboxRefreshTimer);}
   const oldDoors=document.getElementById('doorButtons');
   if(oldDoors) oldDoors.style.display='none';
   const viewer=currentUser.id;
@@ -12660,16 +12699,17 @@ async function renderPlaySection() {
   const listEl = document.getElementById('playBookingsList');
   document.getElementById('todayBookingsTitle').textContent='Heute, '+new Date(todayStr()+'T12:00:00').toLocaleDateString('de-DE',{day:'numeric',month:'long',timeZone:'Europe/Berlin'});
 
-  listEl.innerHTML = allBookings.length ? allBookings.map((b,index)=>{
+  const todayMarkup = allBookings.length ? allBookings.map((b,index)=>{
     const status=getBookingStatus(b),time=bookingReadTime(b);
     const kind=b.isMatch?'Mitspieltermin':b.isAbo?'Jahresabo':b.isEvent?'Event':'Einzelbuchung';
     const badge=status==='past'?'Beendet':b.isMatch?(b.matchState==='ready'?'✓ Das Match steht':'Du bist dabei'):status==='now'?'Zugang bereit':'Bald';
-    return `<article class="play-today-booking">
+    return `<article class="play-today-booking" data-play-booking-key="${esc(kind+':'+b.id+':'+b.date+':'+time.start)}">
       <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isMatch&&!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><div class="play-today-time">${time.from} – ${time.to}<span>Uhr</span></div><h2>${esc(courtLabel(b.court))}</h2><span class="play-today-status">${badge}</span>${b.isMatch?`<p class="play-today-booked-by">Gebucht von ${esc(b.bookedBy)} · Du bist dabei</p>`:""}</div>${route}</div>
       ${status==='past'?'<p class="play-today-ended">Deine Spielzeit ist beendet.</p>':`<div class="lockbox-today-access" data-today-index="${index}"></div>`}
     </article>`;
   }).join('') : `<div class="play-today-booking play-today-empty"><h2>Heute stehen keine weiteren Spieltermine an.</h2><p>Deine nächsten bestätigten Termine findest du unter „Demnächst“.</p>${route}</div>`;
 
+  reconcilePlayBookings(listEl,todayMarkup);
   if(confirmedMatchReadFailed)listEl.insertAdjacentHTML('beforeend','<p role="status">Mitspieltermine konnten nicht geladen werden. Bitte erneut laden.</p>');
   const photoIndex=allBookings.findIndex(b=>getBookingStatus(b)!=='past');
   let cursor=0;
@@ -12686,7 +12726,7 @@ async function renderPlaySection() {
   const futureEnds=allBookings.map(b=>bookingDateAt(b).getTime()+bookingReadTime(b).minutes*60000).filter(t=>t>Date.now());
   if(futureEnds.length&&currentUser?.id===viewer&&version===lockboxRenderVersion) {
     lockboxRefreshTimer=setTimeout(()=>{
-      if(currentUser?.id===viewer&&document.getElementById('modePlay')?.style.display!=='none')renderPlaySection().catch(()=>clearLockboxAccess());
+      if(currentUser?.id===viewer&&document.getElementById('modePlay')?.style.display!=='none')renderPlaySection().catch(error=>console.warn('Spielansicht konnte nicht aktualisiert werden',error));
     },Math.max(1000,Math.min(60000,Math.min(...futureEnds)-Date.now())));
   }
 
@@ -12694,6 +12734,14 @@ async function renderPlaySection() {
   alignPlayRouteAddresses(listEl);
   renderWeatherReportCard(); // „Letzte Buchung" mit Wetterausfall-Meldung
   renderMyHistory(true,completedToday,confirmedMatches); // Completed today goes straight into history.
+}
+async function renderPlaySection() {
+  const viewer=currentUser?.id;
+  if(playRefreshState.promise&&playRefreshState.viewer===viewer)return playRefreshState.promise;
+  playRefreshState.viewer=viewer;
+  const task=renderPlaySectionNow();playRefreshState.promise=task;
+  try{return await task;}catch(error){console.warn('Spielansicht konnte nicht aktualisiert werden',error);if(currentUser?.id===viewer&&document.getElementById('modePlay')?.style.display!=='none')lockboxRefreshTimer=setTimeout(()=>renderPlaySection(),60000);}
+  finally{if(playRefreshState.promise===task)playRefreshState.promise=null;}
 }
 
 // Klick-Demo für die Türen: der Button reagiert sichtbar, es passiert aber noch
@@ -12723,7 +12771,7 @@ const lockboxAccessRequests = new Map();
 function clearLockboxAccess(resetCache=false) {
   lockboxRenderVersion++;
   clearTimeout(lockboxRefreshTimer);
-  document.querySelectorAll('#lockboxAccessContent,.lockbox-booking-access,.lockbox-today-access').forEach(el=>el.replaceChildren());
+  document.querySelectorAll('#lockboxAccessContent,.lockbox-booking-access,.lockbox-today-access').forEach(el=>{clearTimeout(el.playAccessExpiryTimer);el.playAccessSignature=null;el.playTicketSignature=null;el.playAccessUntil=null;el.replaceChildren();});
   if(resetCache) {lockboxAccessCache.clear();lockboxAccessRequests.clear();lockboxCacheViewer=null;}
 }
 function plannedLockboxSide(b) {
@@ -12805,10 +12853,14 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
   const version=lockboxRenderVersion,viewer=currentUser?.id;
   const current=()=>version===lockboxRenderVersion&&currentUser?.id===viewer&&content.isConnected;
   if(!LOCKBOX_ACCESS_UI_ENABLED) {content.textContent='Die Lockbox-Anbindung wird vorbereitet. Es ist noch kein Zugangscode verfügbar.';return;}
-  content.textContent='Dein Zugang wird geladen …';
+  const keepAccess=content.playAccessViewer===viewer&&content.playAccessUntil>Date.now()&&!!content.querySelector('.lockbox-pin');
+  if(!keepAccess)content.textContent='Dein Zugang wird geladen …';
   const renderAccess=access=>{
     const template=document.createElement('template');
-    template.innerHTML=playLockboxAccessHtml(access,showPhoto,!!content.closest('.upcoming-item'));
+    const html=playLockboxAccessHtml(access,showPhoto,!!content.closest('.upcoming-item'));
+    const signature=JSON.stringify([html,access.access_until]);
+    if(content.playAccessSignature===signature)return;
+    template.innerHTML=html;
     const photo=template.content.querySelector('.play-keybox-photo');
     if(photo) {
       const label='Schlüsselbox '+access.side+' · '+(access.side==='F'?'Freibadseite':'Parkplatzseite');
@@ -12816,13 +12868,17 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
       photo.addEventListener('click',()=>openAvatarLightbox(source,label,source,'lockbox'));
     }
 
-    content.replaceChildren(template.content);
+    content.replaceChildren(template.content);content.playAccessSignature=signature;content.playTicketSignature=null;content.playAccessViewer=viewer;
+    content.playAccessUntil=access.state==='ready'?Math.min(Date.parse(access.access_until),bookingDateAt(b).getTime()+bookingReadTime(b).minutes*60000):null;
+    clearTimeout(content.playAccessExpiryTimer);
+    if(content.playAccessUntil){const expire=()=>{if(!content.isConnected)return;if(Date.now()<content.playAccessUntil){content.playAccessExpiryTimer=setTimeout(expire,Math.min(2147483647,content.playAccessUntil-Date.now()));return;}content.playAccessSignature=null;content.playTicketSignature=null;content.replaceChildren();};content.playAccessExpiryTimer=setTimeout(expire,Math.min(2147483647,Math.max(1,content.playAccessUntil-Date.now())));}
   };
   try {
     const access=await fetchLockboxAccess(b);
     if(!current())return;
+    if(access.state!=='ready'){content.playAccessSignature=null;content.playTicketSignature=null;content.playAccessUntil=null;clearTimeout(content.playAccessExpiryTimer);}
     if(access.state==='ready') {
-      if(Date.now()>=Date.parse(access.access_until))throw Error('lockbox_expired');
+      if(Date.now()>=Date.parse(access.access_until)){content.playAccessUntil=0;throw Error('lockbox_expired');}
       renderAccess(access);
     }else if(access.state==='match_forming') {
       content.textContent='Deine Teilnahme konnte gerade nicht bestätigt werden. Bitte lade die Seite neu.';
@@ -12830,21 +12886,21 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
       renderAccess(access);
     }else if(access.state==='not_configured')content.textContent='Die Lockbox-Anbindung wird vorbereitet. Es ist noch kein Zugangscode verfügbar.';
     else content.textContent='Der Zugangscode ist derzeit nicht verfügbar. Bitte erneut laden oder den Verein kontaktieren.';
-    if(b.isMatch&&access.ticket)content.insertAdjacentHTML('beforeend',personalMatchTicketHtml(access.ticket));
+    if(b.isMatch&&access.ticket){const ticket=personalMatchTicketHtml(access.ticket);if(content.playTicketSignature!==ticket){content.querySelector('[data-play-tickets]')?.remove();content.insertAdjacentHTML('beforeend','<div data-play-tickets>'+ticket+'</div>');content.playTicketSignature=ticket;}}
   }catch(error) {
     if(!current())return;
-    content.textContent='Der Zugangscode konnte nicht geladen werden. Bitte erneut laden oder den Verein kontaktieren.';
+    if(!keepAccess||content.playAccessUntil<=Date.now()){content.playAccessSignature=null;content.textContent='Der Zugangscode konnte nicht geladen werden. Bitte erneut laden oder den Verein kontaktieren.';}
   }
   if(!b.isMatch&&!b.isEvent&&current()&&bookingDateAt(b).getTime()+bookingReadTime(b).minutes*60000>Date.now()){
-    try{const tickets=await fetchOwnerFreibadTickets(b);if(current()&&tickets.length)content.insertAdjacentHTML('beforeend',ownerFreibadTicketsHtml(tickets,b.date));}
-    catch(error){if(current())content.insertAdjacentHTML('beforeend','<p role="status">Freibadtickets konnten gerade nicht geladen werden. Bitte erneut laden.</p>');}
+    try{const tickets=await fetchOwnerFreibadTickets(b);if(current()){content.querySelector('.play-ticket-warning')?.remove();const ticket=tickets.length?ownerFreibadTicketsHtml(tickets,b.date):'';if(content.playTicketSignature!==ticket){content.querySelector('[data-play-tickets]')?.remove();if(ticket)content.insertAdjacentHTML('beforeend','<div data-play-tickets>'+ticket+'</div>');content.playTicketSignature=ticket;}}}
+    catch(error){if(current()&&!content.querySelector('.play-ticket-warning'))content.insertAdjacentHTML('beforeend','<p class="play-ticket-warning" role="status">Freibadtickets konnten gerade nicht geladen werden. Bitte erneut laden.</p>');}
   }
   // The prominent card refreshes at expiry; future booking cards need no countdown.
   if(!target&&current()) {
     clearTimeout(lockboxRefreshTimer);
     const until=bookingDateAt(b).getTime()+bookingReadTime(b).minutes*60000;
     lockboxRefreshTimer=setTimeout(()=>{
-      if(currentUser?.id===viewer&&document.getElementById('modePlay')?.style.display!=='none')renderPlaySection().catch(()=>clearLockboxAccess());
+      if(currentUser?.id===viewer&&document.getElementById('modePlay')?.style.display!=='none')renderPlaySection().catch(error=>console.warn('Spielansicht konnte nicht aktualisiert werden',error));
     },Math.max(1000,Math.min(60000,until-Date.now())));
   }
 }
@@ -23968,7 +24024,7 @@ init();
     const complete = rows.filter(w=>w.precipitation!=null).length === Math.ceil(playEnd)-Math.floor(playStart);
     return '<div class="wx-wx-hourly"><div class="hd"><span>Niederschlag zur gebuchten Spielzeit · DWD/Bright Sky</span><b>'+mmFmt(rows.some(w=>w.precipitation!=null)?windowRain:null)+' mm'+(complete?'':' · unvollständig')+'</b></div><div class="wx-wx-bars">'+bars+'</div></div>';
   }
-  async function renderBookingProof(container, b){
+  async function renderBookingProofContent(container, b){
     if(!container || !b) return;
     const dayKey = String(b.date);
     const playStart = bookingReadTime(b).start/60;
@@ -23979,15 +24035,34 @@ init();
     if(!rows || !rows.length){
       container.innerHTML = '<div class="wx-wx-today yesterday"><div class="wx-wx-place">'+esc(proofPlaceLabel(b))+'</div>'
         + '<div class="pbwx-note">Die Wetterdaten sind gerade nicht abrufbar. Deine Meldung bleibt trotzdem möglich – der Abgleich mit den DWD-Werten erfolgt nachträglich.</div></div>';
-      return;
+      return false;
     }
     const selected=rows.filter(w=>wxHour(w)<playEnd&&wxHour(w)+1>playStart);
     const expected=Math.ceil(playEnd)-Math.floor(playStart),archived=selected.filter(w=>w.archived).length;
-    if(!selected.length){container.innerHTML='<div class="wx-wx-today yesterday"><div class="wx-wx-place">'+esc(proofPlaceLabel(b))+'</div><div class="pbwx-note">Für diese Spielzeit liegen noch keine Beobachtungswerte vor. Deine Meldung bleibt möglich; fehlende Stunden werden nachgeliefert.</div></div>';return;}
+    if(!selected.length){container.innerHTML='<div class="wx-wx-today yesterday"><div class="wx-wx-place">'+esc(proofPlaceLabel(b))+'</div><div class="pbwx-note">Für diese Spielzeit liegen noch keine Beobachtungswerte vor. Deine Meldung bleibt möglich; fehlende Stunden werden nachgeliefert.</div></div>';return false;}
     container.innerHTML = proofCardHTML(selected, b, expected) + proofHourlyHTML(selected, dayKey, playStart, playEnd)
       + '<div class="pbwx-note">'+archived+' von '+expected+' Stunden archiviert · Stationswerte als Orientierung für die Prüfung.'+(playStart%1||playEnd%1?' Stundenwerte: Randstunden enthalten auch Zeit außerhalb deiner Buchung.':'')+'</div>';
+    return true;
   }
 
+  async function renderBookingProof(container,b){
+    if(!container||!b)return;
+    const key=JSON.stringify([b.date,bookingReadTime(b).start,bookingReadTime(b).end]);
+    if(container.weatherProofPending&&container.weatherProofBooking===key)return container.weatherProofPending;
+    const revision=(container.weatherProofRevision||0)+1;container.weatherProofRevision=revision;
+    const keep=container.weatherProofBooking===key&&container.weatherProofReady;
+    container.weatherProofBooking=key;
+    if(!keep){container.weatherProofMarkup=null;container.innerHTML='<div class="wx-wx-today yesterday"><div class="pbwx-note">Wetter zur Spielzeit wird geladen …</div></div>';}
+    const staged={innerHTML:''};
+    const task=(async()=>{
+      const available=await renderBookingProofContent(staged,b);
+      if(container.weatherProofRevision!==revision)return;
+      if(available||!keep){if(container.weatherProofMarkup!==staged.innerHTML){container.innerHTML=staged.innerHTML;container.weatherProofMarkup=staged.innerHTML;}container.weatherProofReady=!!available;if(available)container.querySelector?.('.weather-update-note')?.remove();}
+      else if(container.querySelector&&!container.querySelector('.weather-update-note'))container.insertAdjacentHTML('beforeend','<div class="pbwx-note weather-update-note">Die Wetterdaten konnten gerade nicht aktualisiert werden. Der zuletzt geladene Stand bleibt sichtbar.</div>');
+    })();
+    container.weatherProofPending=task;
+    try{await task;}finally{if(container.weatherProofPending===task)container.weatherProofPending=null;}
+  }
   window.PBWeather = { renderBookingProof: renderBookingProof };
 
   if(document.readyState === 'loading'){
