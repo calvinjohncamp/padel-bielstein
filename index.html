@@ -3430,6 +3430,40 @@ main {
 .invite-composer .invite-audience-info{margin:0;padding:12px 14px;border:1px solid #e5dccd;border-left:3px solid #ff5934;border-radius:11px;background:#faf8f3;color:#7a7368;font-size:13px;line-height:1.55;font-weight:400}
 @media(max-width:780px){.invite-composer .invite-audience-row{grid-template-columns:1fr;gap:10px}.invite-composer .invite-audience-info{font-size:12px}}
 .meetup-full.match-ready{background:#e1eddc!important;color:#426d3a!important}.meetup-full.match-ready strong{color:inherit!important}
+/* Two explicit actions: already arranged, or still collecting replies. */
+.invite-composer .invite-save-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start!important;width:100%}
+.invite-composer .invite-action-option{min-width:0;width:100%}
+.invite-composer .invite-action-option .btn{width:100%!important;min-height:62px;font-size:16px;line-height:1.35;padding:16px 18px;border-radius:11px}
+.invite-composer .invite-action-option #sendInvite{width:100%!important}
+.invite-composer #invitationChannel{margin:10px 0 0;line-height:1.55}
+.invite-composer #confirmKnownGroup{background:#1c1a17;color:#fff}
+.invite-composer .invite-action-option p{font-size:13px;line-height:1.55;color:#7a7368;margin:10px 0 0}
+.invite-composer .invite-action-option[hidden]{display:none!important}
+.invite-composer .invite-save-actions.is-open{grid-template-columns:minmax(0,1fr)}
+.invite-composer .invite-save-actions.is-open .invite-action-option{max-width:560px}
+.invite-composer .level-any{display:flex;align-items:center;justify-content:center}
+.invite-composer .level-any .level-legend-title{font-family:inherit;font-size:15px;font-weight:900;line-height:1.1}
+@media(min-width:900px){
+ .invite-composer .invite-level-options .level-legend-item{min-height:78px;gap:10px;padding:15px 13px}
+ .invite-composer .invite-level-options .level-legend-title{font-size:14px;font-weight:900}
+ .invite-composer .invite-level-options .level-any .level-legend-title{font-size:17px}
+ .invite-composer .invite-level-options .level-legend-letter{font-size:20px}
+ .invite-composer .invite-level-options .balls{gap:3px}
+ .invite-composer .invite-level-options .balls img{width:15px;height:15px}
+ .email-list .email-row .mini-avatar{width:50px;height:50px;font-size:16px}
+ .email-list .email-row{min-height:74px}
+ .email-list .email-row .recipient-search{font-size:16px}
+ .email-profile .profile-level-letter{font-size:20px}
+ .email-profile .balls img{width:16px;height:16px}
+ .pick-avatar .mini-avatar{width:50px;height:50px;font-size:18px}
+ .seat:not(.free) .seat-avatar{width:55px;height:55px;font-size:20px}
+ .seat:not(.free){grid-template-columns:34px 55px minmax(0,1fr) auto;gap:12px}
+ .seat-name{font-size:19px}
+ .seat-level .balls img{width:20px;height:20px}
+ .profile-card .balls img{width:19px;height:19px}
+}
+@media(max-width:700px){.invite-composer .invite-save-actions{grid-template-columns:1fr;gap:20px}.invite-composer .invite-action-option .btn{font-size:15px}}
+
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body class=&quot;embedded&quot;&gt;
@@ -4542,7 +4576,9 @@ main {
       if($(&#x27;#allAudienceInfo&#x27;))$(&#x27;#allAudienceInfo&#x27;).hidden=!all;
       if($(&#x27;#inviteFilters&#x27;))$(&#x27;#inviteFilters&#x27;).hidden=!all;
       if($(&#x27;#organizerPlays&#x27;))$(&#x27;#organizerPlays&#x27;).checked=collectEmails().some(isUserEmail);
-      const note=$(&#x27;#invitationChannel&#x27;);if(note)note.textContent=all?&#x27;Sichtbar für passende Spieler in der App. Keine E-Mails.&#x27;:&#x27;Die ausgewählten Personen erhalten eine E-Mail und eine Einladung in Dating 2.0.&#x27;;
+      if($(&#x27;#knownGroupAction&#x27;))$(&#x27;#knownGroupAction&#x27;).hidden=all;
+      $(&#x27;.invite-save-actions&#x27;)?.classList.toggle(&#x27;is-open&#x27;,all);
+      const note=$(&#x27;#invitationChannel&#x27;);if(note)note.textContent=all?&#x27;Du suchst noch Mitspieler? Passende Spieler sehen deine Einladung nur in der App. Keine E-Mails.&#x27;:&#x27;Noch Mitspieler oder Zusagen offen? Die ausgewählten Personen erhalten eine Einladung und antworten in der App.&#x27;;
       rememberInvitationForm();refreshActionButtons();sendMeetHeight();
     }
 
@@ -4555,6 +4591,7 @@ main {
     }
 
     function wireInvitationComposer(){
+      $(&#x27;#confirmKnownGroup&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;sendInvitation(&#x27;confirmed&#x27;));
       $$(&#x27;[data-choose-group]&#x27;).forEach(input=&gt;input.addEventListener(&#x27;change&#x27;,()=&gt;applySavedGroup(input.checked?input.dataset.chooseGroup:&#x27;&#x27;)));
       $$(&#x27;[data-edit-group]&#x27;).forEach(button=&gt;button.addEventListener(&#x27;click&#x27;,()=&gt;openGroupEditor(button.dataset.editGroup)));
       $$(&#x27;#editor .chip,#editor [data-level-legend]&#x27;).forEach(button=&gt;button.addEventListener(&#x27;click&#x27;,()=&gt;{if(button.closest(&#x27;[data-seg=&quot;audience&quot;]&#x27;))syncInvitationAudience();else rememberInvitationForm();}));
@@ -4978,6 +5015,8 @@ main {
       const send=$(&#x27;#sendInvite&#x27;);if(!send)return;const all=selectedChip(&#x27;audience&#x27;)===&#x27;Alle&#x27;;
       const targets=uniqueEmails(collectEmails().filter(v=&gt;!isUserEmail(v))),accepted=collectPlayerSlots().filter(p=&gt;p.accepted).length;
       send.disabled=!all&amp;&amp;(!targets.length||!targets.every(mailOk)||accepted&gt;4||targets.length&gt;12);
+      const values=collectEmails(),ready=!all&amp;&amp;values.length===4&amp;&amp;uniqueEmails(values).length===4&amp;&amp;values.every(mailOk);
+      const known=$(&#x27;#confirmKnownGroup&#x27;);if(known){known.disabled=!ready;known.title=ready?&#x27;Diese vier Personen sind bereits fest verabredet.&#x27;:&#x27;Bitte genau vier Personen auswählen, einschließlich dir, falls du mitspielst.&#x27;;}
       send.textContent=&#x27;Spieler einladen – Bist du dabei?&#x27;;rememberRecipients();rememberInvitationForm();
     }
 
@@ -5003,11 +5042,14 @@ main {
         &lt;div id=&quot;allOrganizer&quot; ${audience===&#x27;Alle&#x27;?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;&lt;div class=&quot;all-organizer&quot;&gt;${miniAvatarHTML(user.name,user.avatar_url)}&lt;div&gt;&lt;small&gt;Du lädst ein&lt;/small&gt;&lt;strong&gt;${esc(user.name)}&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;label class=&quot;organizer-participation&quot;&gt;&lt;input type=&quot;checkbox&quot; id=&quot;organizerPlays&quot; ${ownPlays?&#x27;checked&#x27;:&#x27;&#x27;}&gt; Ich spiele selbst mit&lt;/label&gt;&lt;/div&gt;
         &lt;section class=&quot;invite-filter-panel&quot; id=&quot;inviteFilters&quot; ${audience===&#x27;Alle&#x27;?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;
           &lt;div class=&quot;invite-section-head&quot;&gt;&lt;h3&gt;Welche Mitspieler suchst du?&lt;/h3&gt;&lt;span&gt;Passende Spieler sehen deine Einladung in Dating 2.0.&lt;/span&gt;&lt;/div&gt;
-          &lt;div class=&quot;field level-field&quot;&gt;&lt;label&gt;Gewünschte Spielstärke&lt;/label&gt;&lt;div class=&quot;level-state&quot; hidden&gt;${segmentHTML(&#x27;level&#x27;,[{value:&#x27;A&#x27;,label:&#x27;A&#x27;},{value:&#x27;B&#x27;,label:&#x27;B&#x27;},{value:&#x27;C&#x27;,label:&#x27;C&#x27;},{value:&#x27;D&#x27;,label:&#x27;D&#x27;},{value:&#x27;egal&#x27;,label:&#x27;egal&#x27;}],chosenLevels,true)}&lt;/div&gt;&lt;div class=&quot;level-legend invite-level-options&quot;&gt;${Object.entries(levels).map(([level,meta])=&gt;`&lt;button type=&quot;button&quot; class=&quot;level-legend-item ${chosenLevels.includes(level)?&#x27;active&#x27;:&#x27;&#x27;}&quot; data-level-legend=&quot;${level}&quot; aria-pressed=&quot;${chosenLevels.includes(level)}&quot;&gt;&lt;span class=&quot;level-legend-letter&quot;&gt;${level}&lt;/span&gt;&lt;span class=&quot;level-legend-main&quot;&gt;&lt;span class=&quot;level-legend-title&quot;&gt;${esc(meta.title)}&lt;/span&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${meta.balls}&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;button type=&quot;button&quot; class=&quot;level-legend-item level-any ${chosenLevels.includes(&#x27;egal&#x27;)?&#x27;active&#x27;:&#x27;&#x27;}&quot; data-level-legend=&quot;egal&quot; aria-pressed=&quot;${chosenLevels.includes(&#x27;egal&#x27;)}&quot;&gt;egal&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
+          &lt;div class=&quot;field level-field&quot;&gt;&lt;label&gt;Gewünschte Spielstärke&lt;/label&gt;&lt;div class=&quot;level-state&quot; hidden&gt;${segmentHTML(&#x27;level&#x27;,[{value:&#x27;A&#x27;,label:&#x27;A&#x27;},{value:&#x27;B&#x27;,label:&#x27;B&#x27;},{value:&#x27;C&#x27;,label:&#x27;C&#x27;},{value:&#x27;D&#x27;,label:&#x27;D&#x27;},{value:&#x27;egal&#x27;,label:&#x27;egal&#x27;}],chosenLevels,true)}&lt;/div&gt;&lt;div class=&quot;level-legend invite-level-options&quot;&gt;${Object.entries(levels).map(([level,meta])=&gt;`&lt;button type=&quot;button&quot; class=&quot;level-legend-item ${chosenLevels.includes(level)?&#x27;active&#x27;:&#x27;&#x27;}&quot; data-level-legend=&quot;${level}&quot; aria-pressed=&quot;${chosenLevels.includes(level)}&quot;&gt;&lt;span class=&quot;level-legend-letter&quot;&gt;${level}&lt;/span&gt;&lt;span class=&quot;level-legend-main&quot;&gt;&lt;span class=&quot;level-legend-title&quot;&gt;${esc(meta.title)}&lt;/span&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${meta.balls}&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;button type=&quot;button&quot; class=&quot;level-legend-item level-any ${chosenLevels.includes(&#x27;egal&#x27;)?&#x27;active&#x27;:&#x27;&#x27;}&quot; data-level-legend=&quot;egal&quot; aria-pressed=&quot;${chosenLevels.includes(&#x27;egal&#x27;)}&quot;&gt;&lt;span class=&quot;level-legend-title&quot;&gt;egal&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
           &lt;div class=&quot;invite-filter-grid&quot;&gt;&lt;div class=&quot;field&quot;&gt;&lt;label&gt;Mitspieler&lt;/label&gt;${segmentHTML(&#x27;gender&#x27;,[{value:&#x27;egal&#x27;,label:&#x27;egal&#x27;},{value:&#x27;weiblich&#x27;,label:&#x27;weiblich&#x27;},{value:&#x27;männlich&#x27;,label:&#x27;männlich&#x27;}],gender)}&lt;/div&gt;&lt;div class=&quot;field age-filter-row&quot;&gt;&lt;label&gt;Alter&lt;/label&gt;${ageFilterHTML(age)}&lt;/div&gt;&lt;/div&gt;
         &lt;/section&gt;
         &lt;label class=&quot;cost-option&quot;&gt;&lt;input type=&quot;checkbox&quot; id=&quot;costCoveredByOrganizer&quot; ${(draft.cost??existing?.costCoveredByOrganizer)?&#x27;checked&#x27;:&#x27;&#x27;}&gt;&lt;span&gt;&lt;strong&gt;Ich übernehme die kompletten Kosten&lt;/strong&gt;&lt;/span&gt;&lt;/label&gt;
-        &lt;div class=&quot;actions invite-save-actions&quot;&gt;&lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot;&gt;Spieler einladen – Bist du dabei?&lt;/button&gt;&lt;p class=&quot;small-note&quot; id=&quot;invitationChannel&quot;&gt;${audience===&#x27;Alle&#x27;?&#x27;Sichtbar für passende Spieler in der App. Keine E-Mails.&#x27;:&#x27;Die ausgewählten Personen erhalten eine E-Mail und eine Einladung in Dating 2.0.&#x27;}&lt;/p&gt;&lt;/div&gt;
+        &lt;div class=&quot;actions invite-save-actions ${audience===&#x27;Alle&#x27;?&#x27;is-open&#x27;:&#x27;&#x27;}&quot;&gt;
+          &lt;div class=&quot;invite-action-option&quot; id=&quot;knownGroupAction&quot; ${audience===&#x27;Alle&#x27;?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;button class=&quot;btn cta-large&quot; type=&quot;button&quot; id=&quot;confirmKnownGroup&quot;&gt;Spieler informieren – Du bist dabei!&lt;/button&gt;&lt;p&gt;Schon zu viert verabredet? Wähle genau diese vier Personen aus. Sie erhalten ihre Spielbestätigung samt Zugang – ohne weitere Zusage.&lt;/p&gt;&lt;/div&gt;
+          &lt;div class=&quot;invite-action-option&quot;&gt;&lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot;&gt;Spieler einladen – Bist du dabei?&lt;/button&gt;&lt;p class=&quot;small-note&quot; id=&quot;invitationChannel&quot;&gt;${audience===&#x27;Alle&#x27;?&#x27;Du suchst noch Mitspieler? Passende Spieler sehen deine Einladung nur in der App. Keine E-Mails.&#x27;:&#x27;Noch Mitspieler oder Zusagen offen? Die ausgewählten Personen erhalten eine Einladung und antworten in der App.&#x27;}&lt;/p&gt;&lt;/div&gt;
+        &lt;/div&gt;
       &lt;/article&gt;`;
     }
 
@@ -5161,7 +5203,7 @@ main {
       const deleteGroupBtn = $(&quot;#deleteGroup&quot;);
       if (deleteGroupBtn) deleteGroupBtn.addEventListener(&quot;click&quot;, deleteGroup);
       const send = $(&quot;#sendInvite&quot;);
-      if (send) send.addEventListener(&quot;click&quot;, () =&gt; sendInvitation(false));
+      if (send) send.addEventListener(&quot;click&quot;, () =&gt; sendInvitation());
       const reminder = $(&quot;#sendReminder&quot;);
       if (reminder) reminder.addEventListener(&quot;click&quot;, () =&gt; sendInvitation(true, &quot;status_update&quot;));
       const saveMeetup = $(&quot;#saveMeetup&quot;);
@@ -5281,29 +5323,34 @@ main {
         return true;
       });
     }
-    async function sendInvitation(){
+    async function sendInvitation(mode=&#x27;invite&#x27;){
+      const confirmed=mode===&#x27;confirmed&#x27;;
       const item=currentBooking();if(!item)return;
       const open=selectedChip(&#x27;audience&#x27;)===&#x27;Alle&#x27;,values=open?[]:collectEmails(),targets=uniqueEmails(values.filter(v=&gt;!isUserEmail(v)));
       if(!open&amp;&amp;(!targets.length||values.some(v=&gt;!mailOk(v)))){toast(&#x27;Bitte mindestens eine Person auswählen oder eine gültige E-Mail-Adresse eingeben.&#x27;);return;}
       if(!open&amp;&amp;uniqueEmails(values).length!==values.length){toast(&#x27;Bitte jede Person nur einmal auswählen.&#x27;);return;}
+      if(confirmed&amp;&amp;(open||values.length!==4||uniqueEmails(values).length!==4)){toast(&#x27;Bitte genau vier Personen für die feste Spielrunde auswählen.&#x27;);return;}
       const slots=open?($(&#x27;#organizerPlays&#x27;)?.checked?[{email:user.email,accepted:true}]:[]):collectPlayerSlots().filter(p=&gt;p.accepted);
       if(slots.length&gt;4||targets.length&gt;12){toast(&#x27;Höchstens zwölf Einladungen und vier bestätigte Spieler sind möglich.&#x27;);return;}
       const age=open?selectedAgeFilterFromEditor():{min:null,max:null};if(!age)return;
-      const button=$(&#x27;#sendInvite&#x27;);button.disabled=true;button.textContent=&#x27;Einladung wird verschickt …&#x27;;
+      const button=$(confirmed?&#x27;#confirmKnownGroup&#x27;:&#x27;#sendInvite&#x27;);
+      $(&#x27;#sendInvite&#x27;).disabled=true;if($(&#x27;#confirmKnownGroup&#x27;))$(&#x27;#confirmKnownGroup&#x27;).disabled=true;
+      button.textContent=confirmed?&#x27;Spielrunde wird bestätigt …&#x27;:&#x27;Einladung wird verschickt …&#x27;;
       try{
-        const data=await callMeetupFunction({action:&#x27;save_meetup&#x27;,booking_id:item.bookingId||&#x27;&#x27;,subscription_id:item.subscriptionId||&#x27;&#x27;,scheduled_date:item.dateISO,
+        const data=await callMeetupFunction({action:confirmed?&#x27;confirm_group&#x27;:&#x27;save_meetup&#x27;,organizer_plays:values.some(isUserEmail),booking_id:item.bookingId||&#x27;&#x27;,subscription_id:item.subscriptionId||&#x27;&#x27;,scheduled_date:item.dateISO,
           desired_levels:open?selectedLevelsFromEditor().filter(l=&gt;l!==&#x27;egal&#x27;):[],desired_gender:open?selectedChip(&#x27;gender&#x27;):&#x27;egal&#x27;,desired_age_min:age.min,desired_age_max:age.max,
-          audience:open?&#x27;alle&#x27;:&#x27;mitspieler&#x27;,group_id:null,recipient_emails:targets,send_emails:!open,mail_type:&#x27;lust_auf_padel&#x27;,cost_covered_by_organizer:$(&#x27;#costCoveredByOrganizer&#x27;)?.checked===true,
+          audience:open?&#x27;alle&#x27;:&#x27;mitspieler&#x27;,group_id:null,recipient_emails:targets,send_emails:!open&amp;&amp;!confirmed,mail_type:&#x27;lust_auf_padel&#x27;,cost_covered_by_organizer:$(&#x27;#costCoveredByOrganizer&#x27;)?.checked===true,
           slots:slots.map((p,i)=&gt;({slot_no:i+1,email:p.email,accepted:true,display_name:profileForEmail(p.email)?.name||&#x27;&#x27;}))});
         if(!data.meetup)throw new Error(&#x27;Die Einladung konnte nicht bestätigt werden.&#x27;);
         const saved=ownMatchFromMeetup(data.meetup),index=state.ownMatches.findIndex(m=&gt;m.meetupId===saved.meetupId||sameBookingSource(m,saved));
         if(index&gt;=0)state.ownMatches.splice(index,1,saved);else state.ownMatches.push(saved);
         recipientDrafts.delete(item.id);invitationDrafts.delete(item.id);renderPickLists();renderEditor();renderStatus();
         const summary=data.mail_summary||{},failed=Number(summary.failed||0),sent=Number(summary.sent||0),skipped=Number(summary.skipped||0);
-        if(open)toast(&#x27;Einladung in Dating 2.0 veröffentlicht. Keine E-Mails verschickt.&#x27;);
+        if(confirmed)toast(&#x27;Das Match steht. Alle vier sehen den Termin unter „Jetzt spielen“ und erhalten ihre Spielbestätigung.&#x27;);
+        else if(open)toast(&#x27;Einladung in Dating 2.0 veröffentlicht. Keine E-Mails verschickt.&#x27;);
         else if(failed){toast(&#x27;Einladung in der App gespeichert. Beim E-Mail-Versand gab es Probleme.&#x27;);showInviteResultDialog(&#x27;Einladung gespeichert – E-Mail-Versand prüfen&#x27;,&#x27;Die Einladung ist in der App vorhanden. Fehlgeschlagene E-Mails kannst du erneut versuchen.&#x27;,data.mail_results||[]);}
         else toast(sent?`${sent} Einladung${sent===1?&#x27;&#x27;:&#x27;en&#x27;} per E-Mail verschickt und in der App gespeichert.`:skipped?&#x27;Einladung aktualisiert. Bereits verschickte E-Mails werden nicht doppelt gesendet.&#x27;:&#x27;Einladung in der App gespeichert.&#x27;);
-      }catch(error){toast(readableErrorText(error,&#x27;Einladung konnte nicht gespeichert werden.&#x27;));button.disabled=false;button.textContent=&#x27;Erneut versuchen&#x27;;}
+      }catch(error){toast(readableErrorText(error,&#x27;Einladung konnte nicht gespeichert werden.&#x27;));refreshActionButtons();button.disabled=false;button.textContent=&#x27;Erneut versuchen&#x27;;}
       sendMeetHeight();
     }
 
