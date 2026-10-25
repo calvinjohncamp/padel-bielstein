@@ -3007,34 +3007,37 @@ main {
 
       <!-- Heutige Buchungen: ein Einstieg aus Spielzugang und Anreise. -->
       <section class="play-today-section" id="todayBookingsCard" aria-labelledby="todayBookingsTitle">
-        <div class="play-card-title" id="todayBookingsTitle">▶ Heutige Buchungen</div>
+        <div class="play-day-kicker">Jetzt spielen</div>
+        <h1 id="todayBookingsTitle">Heute</h1>
         <div class="play-today-layout">
           <div id="playBookingsList" class="play-today-list" aria-live="polite">
             <div class="play-today-booking"><p>Deine Buchungen werden geladen …</p></div>
           </div>
-          <aside class="play-route-card" id="playRouteCard" aria-labelledby="playRouteTitle">
-            <div class="play-route-kicker">Zugang zur Padel-Anlage</div>
-            <h2 id="playRouteTitle">Dein Weg zum Court</h2>
-            <p>Nutze den Eingang, der auf deiner Buchungskarte angegeben ist.</p>
-            <div class="play-route-rule"><strong>Freibad geöffnet</strong><p>Der Zugang erfolgt ausschließlich über die Freibadseite. Dein Padel-Ticket gilt zugleich als Eintrittskarte für das Freibad.</p></div>
-            <div class="play-route-rule"><strong>Freibad geschlossen</strong><p>Du erreichst die Courts über die Parkplatzseite.</p></div>
-            <p class="play-route-sharing">Teile den Zugangscode mit deinen Mitspielern, damit ihr gemeinsam auf den Platz kommt.</p>
-            <div class="play-route-address"><div><strong>Padel Bielstein</strong><span>Jahnstraße 13<br>51674 Wiehl-Bielstein</span></div><a href="https://www.google.com/maps/dir/?api=1&amp;destination=Jahnstra%C3%9Fe%2013%2C%2051674%20Wiehl-Bielstein" target="_blank" rel="noopener">Route planen</a></div>
-          </aside>
+
         </div>
       </section>
-
 
       <!-- Alle kommenden Termine in einer gemeinsamen chronologischen Liste:
            Einzelbuchungen und jeweils der nächste Termin eines Jahresabos. -->
       <div class="play-card upcoming-bookings-card" id="upcomingBookingsCard" style="margin-top:14px;">
-        <div class="play-card-title">■ Demnächst</div>
+        <div class="play-card-title">Demnächst</div>
         <div id="mySingleBookingsList">
           <div class="play-empty" style="padding:24px 0;">
             <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
           </div>
         </div>
       </div>
+
+      <details class="play-route-help" id="playRouteCard">
+        <summary id="playRouteTitle">Zugang zur Padel-Anlage</summary>
+        <div class="play-route-help-content">
+            <p>Nutze den Eingang, der auf deiner Buchungskarte angegeben ist.</p>
+            <div class="play-route-rule"><strong>Freibad geöffnet</strong><p>Der Zugang erfolgt ausschließlich über die Freibadseite. Dein Padel-Ticket gilt zugleich als Eintrittskarte für das Freibad.</p></div>
+            <div class="play-route-rule"><strong>Freibad geschlossen</strong><p>Du erreichst die Courts über die Parkplatzseite.</p></div>
+            <p class="play-route-sharing">Teile den Zugangscode mit deinen Mitspielern, damit ihr gemeinsam auf den Platz kommt.</p>
+        </div>
+      </details>
+            <div class="play-route-address"><div><strong>Padel Bielstein</strong><span>Jahnstraße 13<br>51674 Wiehl-Bielstein</span></div><a href="https://www.google.com/maps/dir/?api=1&amp;destination=Jahnstra%C3%9Fe%2013%2C%2051674%20Wiehl-Bielstein" target="_blank" rel="noopener">Route planen</a></div>
 
       <section class="play-history-section" aria-labelledby="playHistoryTitle">
         <!-- Die letzte meldbare Buchung bleibt bis 24 h nach Spielende optisch
@@ -12149,7 +12152,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
     return `<div class="upcoming-item">
       <div class="upcoming-item-head">
         <div class="upcoming-item-main">
-          <div class="upcoming-item-date">${dateStr} · ${timeStr} Uhr</div>
+          <div class="upcoming-item-date"><span>${dateStr}</span><strong>${timeStr} Uhr</strong></div>
           <div class="upcoming-item-note">${courtLabel(item.court)}${item.isMatch?' · Gebucht von '+esc(item.bookedBy)+' · Du bist dabei'+(item.matchState==='ready'?' · ✓ Das Match steht':''):''}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
         </div>
         <div class="upcoming-item-actions"><span class="upcoming-kind">${item.isMatch ? 'Mitspieltermin' : isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>${cancelAction ? `<div class="booking-cancel-row">${cancelAction}</div>` : ''}</div>
@@ -12674,13 +12677,14 @@ async function renderPlaySection() {
   allBookings.sort((a,b) => bookingReadTime(a).start - bookingReadTime(b).start);
 
   const listEl = document.getElementById('playBookingsList');
+  document.getElementById('todayBookingsTitle').textContent='Heute, '+new Date(todayStr()+'T12:00:00').toLocaleDateString('de-DE',{day:'numeric',month:'long',timeZone:'Europe/Berlin'});
 
   listEl.innerHTML = allBookings.length ? allBookings.map((b,index)=>{
     const status=getBookingStatus(b),time=bookingReadTime(b);
     const kind=b.isMatch?'Mitspieltermin':b.isAbo?'Jahresabo':b.isEvent?'Event':'Einzelbuchung';
     const badge=status==='past'?'Beendet':b.isMatch?(b.matchState==='ready'?'✓ Das Match steht':'Du bist dabei'):status==='now'?'Zugang bereit':'Bald';
     return `<article class="play-today-booking">
-      <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isMatch&&!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><h2>${esc(courtLabel(b.court))}</h2><div class="play-today-time">${time.from} – ${time.to} Uhr</div>${b.isMatch?`<p class="play-today-booked-by" style="margin:8px 0 0;color:#7a7368;font-size:14px;">Gebucht von ${esc(b.bookedBy)} · Du bist dabei</p>`:""}</div><span class="play-today-status">${badge}</span></div>
+      <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isMatch&&!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><div class="play-today-time">${time.from} – ${time.to}<span>Uhr</span></div><h2>${esc(courtLabel(b.court))}</h2><span class="play-today-status">${badge}</span>${b.isMatch?`<p class="play-today-booked-by">Gebucht von ${esc(b.bookedBy)} · Du bist dabei</p>`:""}</div></div>
       ${status==='past'?'<p class="play-today-ended">Deine Spielzeit ist beendet.</p>':`<div class="lockbox-today-access" data-today-index="${index}"></div>`}
     </article>`;
   }).join('') : '<div class="play-today-booking play-today-empty"><h2>Heute stehen keine weiteren Spieltermine an.</h2><p>Deine nächsten bestätigten Termine findest du unter „Demnächst“.</p></div>';
@@ -12771,6 +12775,16 @@ async function fetchLockboxAccess(b) {
   lockboxAccessRequests.set(key,pending);
   try {return await pending;} finally {if(lockboxAccessRequests.get(key)===pending)lockboxAccessRequests.delete(key);}
 }
+function playLockboxAccessHtml(access,showBox=true,compact=false) {
+  const v=PBLockboxContent.lockboxAccessContent(access),side=access.side;
+  const entrance=side==='F'?'Freibadseite':'Parkplatzseite';
+  const symbol='<svg class="play-open-symbol" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 11V7a5 5 0 0 1 10 0v4M6 11h12v10H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  const box=showBox?`<button type="button" class="play-keybox-photo" aria-label="Schlüsselbox ${side}: Originalfoto ansehen" aria-haspopup="dialog"><span class="play-keybox" role="img" aria-label="Schlüsselbox: Öffnen-Taste rechts unten im Tastenfeld"><span class="play-keybox-led"></span><span class="play-keybox-keys" aria-hidden="true">${['1','2','3','4','5','6','7','8','9','↶','0',symbol].map((key,i)=>`<span class="${i===11?'play-keybox-open':''}">${key}</span>`).join('')}</span><span class="play-keybox-brand" aria-hidden="true">igloo</span></span></button>`:'';
+  const heading=`<div class="play-access-location">${box}<div><div class="play-access-kicker">Dein Platzzugang</div><h3>${entrance}</h3><div class="play-access-side">Schlüsselbox ${side}</div></div></div>`;
+  if(v.pending)return `<div class="play-access play-access-pending">${heading}<p>${esc(v.message)}</p></div>`;
+  const instructions=`<div class="play-access-steps"><div class="play-access-step"><span class="play-step-number">01</span><div><strong class="play-step-heading">Code eingeben <span class="play-open-reminder">${symbol}</span></strong><p>Danach die <strong>Öffnen-Taste rechts unten</strong> drücken.</p></div></div><div class="play-access-step"><span class="play-step-number">02</span><div><strong>Schlüssel entnehmen</strong><p>Tür öffnen, Schlüssel sofort zurücklegen und Schlüsselbox wieder schließen.</p></div></div><div class="play-access-step"><span class="play-step-number">03</span><div><strong>Nach dem Spiel</strong><p>Einfach nur die Tür wieder zuziehen.</p></div></div></div>`;
+  return `<div class="play-access ${compact?'play-access-compact':''}"><div class="play-access-main">${heading}<div class="play-access-code"><div class="play-access-kicker">Dein Zugangscode</div><div class="lockbox-pin">${esc(v.pin)}</div><p>Zutritt ab <strong>${v.entryClock} Uhr</strong> · Buchung um ${v.startClock} Uhr</p></div></div>${compact?`<details class="play-access-details"><summary>So öffnest du die Schlüsselbox</summary>${instructions}</details>`:instructions}</div>`;
+}
 async function renderLockboxAccess(b,target=null,showPhoto=true) {
   const content=target||document.getElementById('lockboxAccessContent');
   if(!content||!b)return;
@@ -12780,21 +12794,14 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
   content.textContent='Dein Zugang wird geladen …';
   const renderAccess=access=>{
     const template=document.createElement('template');
-    template.innerHTML=PBLockboxContent.lockboxAccessHtml(access);
-    if(!showPhoto)template.content.querySelector('.lockbox-access-header td:last-child')?.remove();
-    const photo=template.content.querySelector('.lockbox-photo');
+    template.innerHTML=playLockboxAccessHtml(access,showPhoto,!!content.closest('.upcoming-item'));
+    const photo=template.content.querySelector('.play-keybox-photo');
     if(photo) {
-      const label='Schlüsselbox · '+(access.side==='F'?'Freibadseite':'Parkplatzseite');
-      const button=document.createElement('button');
-      button.type='button';button.className='lockbox-photo-button';
-      button.setAttribute('aria-label',label+' groß ansehen');
-      button.setAttribute('aria-haspopup','dialog');
-      button.addEventListener('click',()=>openAvatarLightbox(photo.src,label,photo.src,'lockbox'));
-      photo.replaceWith(button);button.appendChild(photo);
+      const label='Schlüsselbox '+access.side+' · '+(access.side==='F'?'Freibadseite':'Parkplatzseite');
+      const source='https://padel-bielstein.de/assets/access/lockbox-example.jpg';
+      photo.addEventListener('click',()=>openAvatarLightbox(source,label,source,'lockbox'));
     }
 
-    const closing=template.content.querySelector('.lockbox-instructions p:last-child');
-    if(closing)closing.textContent='Nach Spielende einfach nur die Tür wieder zuziehen.';
     content.replaceChildren(template.content);
   };
   try {
@@ -23973,6 +23980,95 @@ init();
 })();
 </script>
 
+<style id="playDayDesign">
+/* Play day: presentation only; scoped to the existing player page. */
+body.bielstein-theme #playLoggedIn {padding-inline:3px;}
+body.bielstein-theme #todayBookingsCard.play-today-section {margin:28px 0 36px;}
+#modePlay .play-day-kicker {color:#7b756b;font:700 11px/1.5 "Manrope",Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;}
+body.bielstein-theme #todayBookingsTitle {margin:6px 0 28px;color:#242620;font:600 clamp(30px,3.4vw,45px)/1.15 "Space Grotesk",Arial,sans-serif;letter-spacing:-.045em;text-transform:none;}
+#modePlay .play-today-layout,#modePlay .play-today-list {display:block;}
+#modePlay .play-today-list > article + article {margin-top:28px;}
+#modePlay .play-today-booking {display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,2fr);gap:28px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;}
+#modePlay .play-today-booking-head {display:block;min-width:0;margin:0;padding:0 24px 0 0;border:0;border-right:1px solid #dcd6c9;}
+body.bielstein-theme #modePlay .play-today-kind-row {display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
+#modePlay .play-today-kind {font-size:10px;letter-spacing:.12em;color:#b7472c;}
+#modePlay .play-today-time {font:500 clamp(24px,2.7vw,36px)/1.2 "Space Grotesk",Arial,sans-serif;letter-spacing:-.05em;color:#292c23;}
+#modePlay .play-today-time > span {display:block;margin:6px 0 18px;font:400 12px/1.4 "Manrope",Arial,sans-serif;letter-spacing:0;color:#78786c;}
+#modePlay .play-today-booking h2 {font-size:23px;margin:0 0 14px;color:#292c23;}
+#modePlay .play-today-status {display:inline-flex;white-space:normal;padding:5px 10px;font-size:11px;background:transparent;border-color:#bac5a9;color:#536441;}
+#modePlay .play-today-booked-by {margin:16px 0 0;font-size:12px;color:#73766a;line-height:1.65;}
+#modePlay .play-today-empty {display:block;padding:20px 0;border-top:1px solid #dcd6c9;}
+#modePlay .lockbox-today-access {min-width:0;}
+#modePlay .play-access {min-width:0;overflow:hidden;border-radius:12px;background:#2a3026;color:#f9f6eb;}
+#modePlay .play-access-main {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;padding:26px;align-items:center;}
+#modePlay .play-access-location {display:flex;align-items:center;gap:20px;min-width:0;}
+#modePlay .play-access-kicker {font:600 10px/1.5 "Manrope",Arial,sans-serif;letter-spacing:.13em;text-transform:uppercase;color:#c5caba;}
+#modePlay .play-access h3 {margin:6px 0 4px;font:500 clamp(21px,2.2vw,29px)/1.15 "Space Grotesk",Arial,sans-serif;letter-spacing:-.04em;color:#f9f6eb;overflow-wrap:anywhere;}
+#modePlay .play-access-side {font-size:13px;color:#c5caba;}
+#modePlay .play-access-code {border-left:1px solid #ffffff26;padding-left:22px;min-width:0;}
+#modePlay .play-access .lockbox-pin {font:600 clamp(25px,2.8vw,38px)/1.3 "Space Grotesk",Arial,sans-serif;letter-spacing:.025em;white-space:nowrap;color:#f9f6eb;padding:0;margin:5px 0;font-variant-numeric:tabular-nums;}
+#modePlay .play-access-code p {font-size:12px;line-height:1.7;margin:0;color:#c5caba;}
+#modePlay .play-access-steps {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;padding:23px 26px;background:#fffcf5;color:#33382c;}
+#modePlay .play-access-step {display:flex;gap:10px;min-width:0;font-size:12px;line-height:1.6;}
+#modePlay .play-step-number {color:#cc502f;font-size:11px;font-weight:700;padding-top:4px;}
+#modePlay .play-access-step strong {font-weight:700;}
+#modePlay .play-access-step p {font-size:12px;margin:5px 0 0;color:#73766a;line-height:1.7;}
+#modePlay .play-step-heading {display:flex;align-items:center;flex-wrap:wrap;gap:8px;}
+#modePlay .play-open-reminder {display:inline-flex;align-items:center;justify-content:center;border:1px solid #e49b7d;border-radius:50%;background:#fae9dc;color:#b44726;width:30px;height:30px;flex-shrink:0;}
+#modePlay .play-open-symbol {width:18px;height:18px;display:block;flex:none;}
+#modePlay .play-keybox-photo {flex:0 0 auto;border:0;background:transparent;padding:4px;margin:0;color:inherit;cursor:zoom-in;}
+#modePlay .play-keybox-photo:focus-visible {outline:3px solid #ff8357;outline-offset:3px;border-radius:12px;}
+#modePlay .play-keybox {box-sizing:border-box;display:flex;align-items:center;flex-direction:column;width:68px;height:106px;padding:13px 9px 10px;border-radius:17px 17px 20px 20px;background:linear-gradient(115deg,#41453e,#171c18);border:1px solid #5f655a;box-shadow:4px 4px 0 #171c1880,inset 1px 1px 0 #ffffff17;}
+#modePlay .play-keybox-led {height:3px;width:26px;background:#b2d87f;border-radius:4px;box-shadow:0 0 5px #b2d87f30;margin-bottom:9px;}
+#modePlay .play-keybox-keys {display:grid;grid-template-columns:repeat(3,13px);gap:5px 4px;}
+#modePlay .play-keybox-keys > span {display:flex;align-items:center;justify-content:center;background:#454a42;border:1px solid #555a51;border-radius:50%;width:13px;height:13px;font:500 8px/1 Arial,sans-serif;color:#f1f2e9;}
+#modePlay .play-keybox-keys > .play-keybox-open {background:#57452f;color:#ffc492;border:1px solid #f4a36b;box-shadow:0 0 0 2px #f4a36b26;}
+#modePlay .play-keybox-open .play-open-symbol {width:9px;height:9px;}
+#modePlay .play-keybox-brand {font:400 7px/1 Arial,sans-serif;color:#a0a595;margin-top:8px;letter-spacing:.03em;}
+#modePlay .play-access-pending {padding:24px;}
+#modePlay .play-access-pending > p {font-size:14px;line-height:1.7;color:#d4d9c9;}
+body.bielstein-theme #upcomingBookingsCard {margin:34px 0 0!important;}
+body.bielstein-theme #modePlay #upcomingBookingsCard {background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important;}
+#modePlay #upcomingBookingsCard > .play-card-title {padding:0 0 14px;margin:0;border-bottom:1px solid #dcd6c9;font-size:17px;color:#3b3d32;letter-spacing:0;text-transform:none;}
+#modePlay #mySingleBookingsList {display:block;}
+body.bielstein-theme #modePlay .upcoming-item {display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;max-width:none;padding:22px 0;border:0;border-bottom:1px solid #dcd6c9;border-radius:0;background:transparent;box-shadow:none;}
+body.bielstein-theme #modePlay .upcoming-item-head {gap:12px;}
+#modePlay .upcoming-item-date {display:flex;flex-wrap:wrap;gap:5px 16px;font-size:14px;line-height:1.6;color:#393c30;}
+#modePlay .upcoming-item-date > span {font-weight:500;}
+#modePlay .upcoming-item-date strong {font-weight:600;}
+#modePlay .upcoming-item-note {margin-top:5px;font-size:12px;color:#75776a;line-height:1.6;}
+#modePlay .upcoming-kind {font-size:10px!important;background:transparent!important;border:0!important;padding:0!important;color:#78796e!important;letter-spacing:.06em;}
+#modePlay .upcoming-item-actions {width:auto;justify-content:flex-start;flex-wrap:wrap;}
+#modePlay .upcoming-item-actions .booking-cancel-row {margin-left:10px;max-width:none;}
+#modePlay .upcoming-item-actions .booking-cancel-btn {border-radius:5px;background:transparent;}
+#modePlay .upcoming-item .lockbox-booking-access:not(:empty) {border:0;margin:0;padding:0;}
+#modePlay .play-access-compact {background:transparent;color:#32372b;border-radius:0;}
+#modePlay .play-access-compact .play-access-main {padding:0;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+#modePlay .play-access-compact .play-access-location {gap:0;}
+#modePlay .play-access-compact .play-access-kicker {display:none;}
+#modePlay .play-access-compact h3 {font-size:14px;color:#42483a;margin:0 0 5px;letter-spacing:0;}
+#modePlay .play-access-compact .play-access-side {font-size:11px;color:#74776a;}
+#modePlay .play-access-compact .play-access-code {border-left:0;padding-left:0;}
+#modePlay .play-access-compact .lockbox-pin {font-size:20px;color:#42483a;letter-spacing:.02em;margin:0 0 5px;}
+#modePlay .play-access-compact .play-access-code p {font-size:11px;color:#74776a;}
+#modePlay .play-access-details {margin-top:10px;}
+#modePlay .play-access-details summary {font-size:11px;color:#6b705f;cursor:pointer;}
+#modePlay .play-access-details .play-access-steps {grid-template-columns:1fr;background:transparent;padding:14px 0 0;gap:12px;}
+#modePlay .play-route-help {border-bottom:1px solid #dcd6c9;margin-top:24px;}
+#modePlay .play-route-help > summary {padding:15px 0;font-size:13px;font-weight:600;color:#44493b;cursor:pointer;}
+#modePlay .play-route-help-content {font-size:13px;line-height:1.7;color:#727769;padding:0 0 16px;max-width:760px;}
+#modePlay .play-route-rule {margin-top:15px;}
+#modePlay .play-route-rule > strong {font-size:13px;color:#44493b;}
+#modePlay .play-route-help-content p {font-size:13px;line-height:1.7;color:#727769;margin:5px 0 12px;}
+#modePlay .play-route-address {margin-top:20px;margin-bottom:30px;padding:0;border:0;align-items:center;font-size:12px;}
+#modePlay .play-route-address strong {margin-bottom:3px;color:#515747;}
+#modePlay .play-route-address span {color:#767b6b;}
+#modePlay .play-route-address > a {font-size:12px;font-weight:500;color:#42483a;background:transparent;border-radius:0;border-bottom:1px solid #babdac;padding:5px 0;}
+@media(max-width:1100px) and (min-width:701px){#modePlay .play-access-main {grid-template-columns:1fr;}#modePlay .play-access-code {padding:16px 0 0;border-left:0;border-top:1px solid #ffffff26;}#modePlay .play-access-steps {grid-template-columns:1fr;gap:16px;}#modePlay .play-today-booking {grid-template-columns:minmax(180px,.8fr) minmax(0,1.7fr);}#modePlay .play-access-compact .play-access-code {border:0;padding:0;}}
+@media(max-width:700px){#modePlay .play-today-booking {grid-template-columns:minmax(0,1fr);gap:20px;}#modePlay .play-today-booking-head {border:0;padding:0;}#modePlay .play-today-time {font-size:36px;}#modePlay .play-today-time > span {display:inline;font-size:13px;margin-left:8px;}#modePlay .play-today-booking h2 {margin:10px 0;}body.bielstein-theme #modePlay .play-today-kind-row {margin-bottom:12px;}#modePlay .play-access-main {grid-template-columns:1fr;padding:24px;gap:20px;}#modePlay .play-access-code {border-left:0;border-top:1px solid #ffffff26;padding:18px 0 0;}#modePlay .play-access .lockbox-pin {font-size:34px;}#modePlay .play-access-steps {grid-template-columns:1fr;padding:22px 24px;gap:20px;}#modePlay .play-access-step,#modePlay .play-access-step p {font-size:13px;}body.bielstein-theme #modePlay .upcoming-item {grid-template-columns:minmax(0,1fr);gap:15px;padding:21px 0;}#modePlay .play-access-compact .play-access-main {padding:0;}#modePlay .play-access-compact .play-access-code {border:0;padding:0;}#modePlay .play-access-compact .lockbox-pin {font-size:21px;}#modePlay .play-access-compact h3 {font-size:14px;}#modePlay .play-access-details .play-access-steps {padding:16px 0 0;}#modePlay .play-access-details summary {padding:6px 0;font-size:12px;}#modePlay .play-route-address > a {min-height:44px;}#modePlay .upcoming-item-actions .booking-cancel-btn {min-height:44px;}}
+@media(max-width:360px){#modePlay .play-access-main {padding:20px;}#modePlay .play-access-steps {padding:20px;}#modePlay .play-access .lockbox-pin {font-size:29px;}#modePlay .play-access-compact .play-access-main {grid-template-columns:1fr;gap:10px;}#modePlay .play-access-compact .lockbox-pin {font-size:22px;}}
+
+</style>
 </body>
 </html>
 
