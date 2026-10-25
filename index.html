@@ -23971,10 +23971,10 @@ init();
   function proofPlaceLabel(b){
     // Nur der Spieltag als Datum – Uhrzeit und Court stehen bereits in der
     // Buchungszeile darüber; die Wetterkachel beschreibt genau diesen Tag.
-    let out = 'Bielstein · Deine Spielzeit';
+    let out = 'Bielstein · Spieltag';
     try{
       const dateStr = new Date(b.date+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
-      out += ' · '+dateStr+' · '+bookingReadTime(b).range+' Uhr';
+      out += ' · '+dateStr;
     }catch(e){}
     return out;
   }
@@ -23998,7 +23998,7 @@ init();
       + '<div class="wx-wx-cond">'+esc(dm.t)+'</div></div></div>'
       + '</div>'
       + '<div class="wx-wx-meta">'
-      + '<span>Niederschlag zur Spielzeit <b>'+mmFmt(knownHours ? rain : null)+' mm</b><em>'+knownHours+' von '+expected+' Stunden erfasst</em></span>'
+      + '<span>Niederschlag 8–22 Uhr <b>'+mmFmt(knownHours ? rain : null)+' mm</b><em>'+knownHours+' von '+expected+' Stunden erfasst</em></span>'
       + '<span>'+hoursLabel+' <b>'+rnd(wetHours)+'</b></span>'
       + '<span>Wind <b>bis '+rnd(wind)+' km/h</b></span>'
       + '</div></div>';
@@ -24009,7 +24009,6 @@ init();
   function proofHourlyHTML(rows, dayKey, playStart, playEnd){
     let bars = ''; let windowRain = 0;
     for(let hour=8; hour<=21; hour++){
-      if(hour>=playEnd||hour+1<=playStart)continue;
       const row = wxHourRow(rows,dayKey,hour);
       const amount = row && row.precipitation != null ? Math.max(0,Number(row.precipitation)) : null;
       if(amount !== null) windowRain += amount;
@@ -24021,8 +24020,8 @@ init();
         + '<div class="track"><div class="fill" style="height:'+Math.max(2,h)+'%"></div><span class="temp">'+(temp==null?'–':temp+'°')+'</span></div>'
         + '<span class="hr">'+hour+'</span></div>';
     }
-    const complete = rows.filter(w=>w.precipitation!=null).length === Math.ceil(playEnd)-Math.floor(playStart);
-    return '<div class="wx-wx-hourly"><div class="hd"><span>Niederschlag zur gebuchten Spielzeit · DWD/Bright Sky</span><b>'+mmFmt(rows.some(w=>w.precipitation!=null)?windowRain:null)+' mm'+(complete?'':' · unvollständig')+'</b></div><div class="wx-wx-bars">'+bars+'</div></div>';
+    const complete = rows.filter(w=>w.precipitation!=null).length === 14;
+    return '<div class="wx-wx-hourly"><div class="hd"><span>Niederschlag am Spieltag · 8 bis 22 Uhr · DWD/Bright Sky</span><b>'+mmFmt(rows.some(w=>w.precipitation!=null)?windowRain:null)+' mm'+(complete?'':' · unvollständig')+'</b></div><div class="wx-wx-bars">'+bars+'</div></div>';
   }
   async function renderBookingProofContent(container, b){
     if(!container || !b) return;
@@ -24037,11 +24036,10 @@ init();
         + '<div class="pbwx-note">Die Wetterdaten sind gerade nicht abrufbar. Deine Meldung bleibt trotzdem möglich – der Abgleich mit den DWD-Werten erfolgt nachträglich.</div></div>';
       return false;
     }
-    const selected=rows.filter(w=>wxHour(w)<playEnd&&wxHour(w)+1>playStart);
-    const expected=Math.ceil(playEnd)-Math.floor(playStart),archived=selected.filter(w=>w.archived).length;
-    if(!selected.length){container.innerHTML='<div class="wx-wx-today yesterday"><div class="wx-wx-place">'+esc(proofPlaceLabel(b))+'</div><div class="pbwx-note">Für diese Spielzeit liegen noch keine Beobachtungswerte vor. Deine Meldung bleibt möglich; fehlende Stunden werden nachgeliefert.</div></div>';return false;}
-    container.innerHTML = proofCardHTML(selected, b, expected) + proofHourlyHTML(selected, dayKey, playStart, playEnd)
-      + '<div class="pbwx-note">'+archived+' von '+expected+' Stunden archiviert · Stationswerte als Orientierung für die Prüfung.'+(playStart%1||playEnd%1?' Stundenwerte: Randstunden enthalten auch Zeit außerhalb deiner Buchung.':'')+'</div>';
+    const dayRows=rows.filter(w=>wxHour(w)>=8&&wxHour(w)<22);
+    const expected=14,archived=dayRows.filter(w=>w.archived).length;
+    container.innerHTML = proofCardHTML(dayRows, b, expected) + proofHourlyHTML(dayRows, dayKey, playStart, playEnd)
+      + '<div class="pbwx-note"><span class="weather-booking-legend">Orange: deine gebuchte Spielzeit '+esc(bookingReadTime(b).range)+' Uhr.</span> '+archived+' von 14 Stunden archiviert · Stationswerte als Orientierung für die Prüfung. Fehlende Messwerte sind mit – gekennzeichnet.'+(playStart%1||playEnd%1?' Die Markierung umfasst die von deiner Buchung berührten Stunden.':'')+'</div>';
     return true;
   }
 
@@ -24052,7 +24050,7 @@ init();
     const revision=(container.weatherProofRevision||0)+1;container.weatherProofRevision=revision;
     const keep=container.weatherProofBooking===key&&container.weatherProofReady;
     container.weatherProofBooking=key;
-    if(!keep){container.weatherProofMarkup=null;container.innerHTML='<div class="wx-wx-today yesterday"><div class="pbwx-note">Wetter zur Spielzeit wird geladen …</div></div>';}
+    if(!keep){container.weatherProofMarkup=null;container.innerHTML='<div class="wx-wx-today yesterday"><div class="pbwx-note">Wetter zum Spieltag wird geladen …</div></div>';}
     const staged={innerHTML:''};
     const task=(async()=>{
       const available=await renderBookingProofContent(staged,b);
@@ -24118,8 +24116,6 @@ body.bielstein-theme #modePlay .play-today-kind-row {display:flex;flex-wrap:wrap
 #modePlay .history-weather-link {padding:7px 10px;border:1px solid #d6b799;border-radius:6px;background:#faf0e2;color:#8b482c;font:500 12px/1.5 "Manrope",Arial,sans-serif;cursor:pointer;}
 #modePlay .weather-retry {border:0;background:transparent;color:#b44729;text-decoration:underline;font:inherit;cursor:pointer;}
 #modePlay #playWeatherSection {scroll-margin-top:100px;}
-#modePlay .pbwx-proof .wx-wx-bars {max-width:600px;gap:12px;}
-#modePlay .pbwx-proof .wx-wx-bar {flex:0 1 70px;}
 #modePlay .history-weather-link:focus-visible,#modePlay .weather-booking-choice:focus-visible {outline:2px solid #d95736;outline-offset:3px;}
 @media(max-width:700px){#modePlay .weather-booking-choice {flex-basis:100%;min-height:60px;}#modePlay .history-weather-link {min-height:44px;}}
 #modePlay #playWeatherSection:has(#weatherReportCard[style*="block"]) {display:block;margin-top:38px;}
@@ -24202,6 +24198,12 @@ body.bielstein-theme #modePlay .upcoming-item-head {gap:12px;}
 @media(max-width:1100px) and (min-width:701px){#modePlay .play-access-main {grid-template-columns:1fr;}#modePlay .play-access-code {padding:16px 0 0;border-left:0;border-top:1px solid #ffffff26;}#modePlay .play-access-steps {grid-template-columns:1fr;gap:16px;}#modePlay .play-today-booking {grid-template-columns:minmax(180px,.8fr) minmax(0,1.7fr);}#modePlay .play-access-compact .play-access-code {border:0;padding:0;}}
 @media(max-width:700px){#modePlay .play-today-booking {grid-template-columns:minmax(0,1fr);gap:20px;}#modePlay .play-today-booking-head {border:0;padding:0;}#modePlay .play-today-time {font-size:36px;}#modePlay .play-today-time > span {display:inline;font-size:13px;margin-left:8px;}#modePlay .play-today-booking h2 {margin:10px 0;}body.bielstein-theme #modePlay .play-today-kind-row {margin-bottom:12px;}#modePlay .play-access-main {grid-template-columns:1fr;padding:24px;gap:20px;}#modePlay .play-access-code {border-left:0;border-top:1px solid #ffffff26;padding:18px 0 0;}#modePlay .play-access .lockbox-pin {font-size:34px;}#modePlay .play-access-steps {grid-template-columns:1fr;padding:22px 24px;gap:20px;}#modePlay .play-access-step,#modePlay .play-access-step p {font-size:13px;}body.bielstein-theme #modePlay .upcoming-item {grid-template-columns:minmax(0,1fr);gap:15px;padding:21px 0;}#modePlay .play-access-compact .play-access-main {padding:0;}#modePlay .play-access-compact .play-access-code {border:0;padding:0;}#modePlay .play-access-compact .lockbox-pin {font-size:21px;}#modePlay .play-access-compact h3 {font-size:14px;}#modePlay .play-access-details .play-access-steps {padding:16px 0 0;}#modePlay .play-access-details summary {padding:6px 0;font-size:12px;}#modePlay .play-route-address > a {min-height:44px;}#modePlay .upcoming-item-actions .booking-cancel-btn {min-height:44px;}}
 @media(max-width:360px){#modePlay .play-access-main {padding:20px;}#modePlay .play-access-steps {padding:20px;}#modePlay .play-access .lockbox-pin {font-size:29px;}#modePlay .play-access-compact .play-access-main {grid-template-columns:1fr;gap:10px;}#modePlay .play-access-compact .lockbox-pin {font-size:22px;}}
+
+#modePlay .weather-booking-legend {color:#ad542b;font-weight:600;}
+@media(max-width:520px){
+  #modePlay .pbwx-proof .wx-wx-bars {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:14px 7px;}
+  #modePlay .pbwx-proof .wx-wx-bar .mm,#modePlay .pbwx-proof .wx-wx-bar .hr {font-size:11px;}
+}
 
 </style>
 </body>
