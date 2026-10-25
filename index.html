@@ -3677,7 +3677,6 @@ main {
       return String(value || fallback);
     }
     async function callMeetupFunction(payload) {
-      if (app.PBPresentation?.active() || (app.PBPresentation?.blockLiveInvites() &amp;&amp; ![&quot;dashboard&quot;,&quot;list&quot;,&quot;list_groups&quot;].includes(payload.action))) throw new Error(&quot;Echter Einladungsversand ist für die Präsentation pausiert. Bitte oben die Vorführung öffnen.&quot;);
       const headers = await authHeaders();
       headers[&quot;Content-Type&quot;] = &quot;application/json&quot;;
       const url = `${appVal(&quot;SUPABASE_URL&quot;, &quot;https://hioaqcwqzeqcvvikollq.supabase.co&quot;)}/functions/v1/manage-meetup`;
@@ -10165,7 +10164,6 @@ function requestMeetFrameHeight() {
 }
 
 function refreshVerabredungenFrame() {
-  if(window.PBPresentation?.active()) return window.PBPresentation.renderMeet();
   const frame = document.querySelector('#modeVerabredungen .meet-preview-frame');
   try { frame?.contentWindow?.postMessage({ type: 'pb-refresh-meet' }, '*'); } catch(e) {}
   try {
@@ -10179,7 +10177,6 @@ function refreshVerabredungenFrame() {
 //  MODE
 // ============================================================
 function setMode(m, options) {
-  if(window.PBPresentation && !window.PBPresentation.beforeMode(m)) return;
   if (m !== 'admin' && typeof clearAdminCustomerSupport === 'function') clearAdminCustomerSupport();
   if (m === 'kiosk' && window.__kioskTabOn === false) m = 'book';
   curMode = m;
@@ -10225,7 +10222,6 @@ function setMode(m, options) {
     document.getElementById('adminFooterBtn').textContent = '⚙ Admin';
   }
   if (!options?.preserveScroll) window.pbPageStart();
-  if(window.PBPresentation?.active()) window.PBPresentation.renderMode(m);
 }
 
 // ============================================================
@@ -11116,7 +11112,6 @@ function updateUserBar() {
     renderPlaySection();
     refreshVerabredungenFrame();
   }
-  if(window.PBPresentation) window.PBPresentation.sync();
 }
 
 async function checkHasAbo() {
@@ -12630,7 +12625,6 @@ function getBookingStatus(b) {
 // scharfen Tueroeffner sehen. Jetzt steht dort ehrlich, dass nichts gebucht ist.
 
 async function renderPlaySection() {
-  if(window.PBPresentation?.active()) return window.PBPresentation.renderPlay();
   const notLoggedIn = document.getElementById('playNotLoggedIn');
   const loggedIn    = document.getElementById('playLoggedIn');
 
@@ -13885,7 +13879,6 @@ window.addEventListener('message', (event) => {
 });
 
 async function confirmBooking(skipAuthCheck) {
-  if(window.PBPresentation?.active()){window.PBPresentation.go('book');showToast('Vorführung: Es wird keine echte Buchung oder Zahlung ausgelöst.');return;}
   if(confirmBooking.inFlight) return;
   confirmBooking.inFlight=true;
   const button=typeof document==='undefined'?null:document.getElementById('bookBtn');
@@ -28755,8 +28748,3 @@ body.bielstein-theme #playLoggedIn { padding-inline: 3px; }
 body.bielstein-theme .avatar-lightbox.is-lockbox .avatar-lightbox-card { width: min(92vw,960px); }
 
 </style>
-<!-- Isolated board presentation: no outgoing mail or production writes. -->
-<link rel="stylesheet" href="assets/presentation/padel-presentation.css?v=20261025-1">
-<script src="assets/vendor/qrcode-generator/qrcode.js"></script>
-<script src="assets/presentation/meetup-domain.js?v=20261025-1"></script>
-<script src="assets/presentation/padel-presentation.js?v=20261025-1"></script>
