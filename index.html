@@ -3023,7 +3023,6 @@ main {
       <!-- Pro Buchung genau eine Lockbox; keine elektrische Türöffnung. -->
       <div id="doorButtons" style="display:none;">
         <div class="play-card lockbox-card" id="lockboxAccessCard" aria-live="polite">
-          <div class="play-card-title">■ Dein Zugang zur Anlage</div>
           <div id="lockboxAccessContent">Zugang wird vorbereitet …</div>
         </div>
 
@@ -8469,6 +8468,10 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 (()=>{
 // One presentation contract for the browser and the booking-confirmation mail.
 const safe=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LOCKBOX_PHOTOS=Object.freeze({
+  P:Object.freeze({url:'https://padel-bielstein.de/assets/access/lockbox-example.jpg',alt:'Beispielfoto einer igloohome-Schlüsselbox',caption:'Beispielfoto'}),
+  F:Object.freeze({url:'https://padel-bielstein.de/assets/access/lockbox-example.jpg',alt:'Beispielfoto einer igloohome-Schlüsselbox',caption:'Beispielfoto'}),
+});
 const clock=iso=>new Date(iso).toLocaleTimeString('de-DE',{timeZone:'Europe/Berlin',hour:'2-digit',minute:'2-digit'});
 function lockboxAccessContent(access) {
   if(!access||!['P','F'].includes(access.side)||!['ready','not_configured'].includes(access.state))throw Error('lockbox_content_invalid');
@@ -8486,13 +8489,19 @@ function lockboxAccessContent(access) {
     technical:`Technische Codegültigkeit: ${clock(access.pin_start)}–${clock(access.pin_end)} Uhr.`};
 }
 function lockboxAccessHtml(access) {
-  const v=lockboxAccessContent(access);
-  if(v.pending)return `<div class="lockbox-access"><strong>${safe(v.title)}</strong><p>${safe(v.message)}</p></div>`;
-  return `<div class="lockbox-access"><strong>${safe(v.title)}</strong>`+
-    `<p><strong>Dein Zugangscode: <span class="lockbox-pin">${safe(v.pin)}</span></strong></p>`+
-    `<p>Zutritt ab <strong>${v.entryClock} Uhr</strong> für deine Buchung um ${v.startClock} Uhr.</p>`+
-    `<p><strong>Code eingeben</strong>, danach <strong>Schloss-Taste unten rechts drücken</strong>. Schlüssel ${v.side} entnehmen, Tür öffnen, Schlüssel sofort zurücklegen und Box wieder schließen. Nach Spielende einfach nur die Tür wieder zu ziehen.</p>`+
-    `<p class="lockbox-detail" style="font-size:12px;color:#666;">${safe(v.technical)}</p></div>`;
+  const v=lockboxAccessContent(access),side=access.side,entrance=side==='P'?'Parkplatzseite':'Freibadseite';
+  const frame='box-sizing:border-box;width:100%;max-width:480px;margin:16px auto;background:#F6F1E7;border:1px solid #ED9B83;border-radius:22px;padding:22px;color:#1C1A17;text-align:left;font-family:Arial,Helvetica,sans-serif;box-shadow:0 8px 24px rgba(28,26,23,.06);';
+  const heading=`<strong class="lockbox-heading" style="display:block;font-size:23px;line-height:1.15;letter-spacing:-.02em;color:#D95736;"><span class="lockbox-kicker" style="display:block;font-size:10px;line-height:1.4;letter-spacing:.14em;text-transform:uppercase;color:#70695F;margin-bottom:9px;">Dein Platzzugang:</span> ${entrance} <span class="lockbox-key-label" style="font-size:12px;line-height:1.6;letter-spacing:0;color:#625B51;white-space:nowrap;">· Box/Schlüssel ${side}</span></strong>`;
+  if(v.pending)return `<div class="lockbox-access lockbox-access-pending" style="${frame}">${heading}<p style="margin:16px 0 0;font-size:13px;line-height:1.6;">${safe(v.message)}</p></div>`;
+  const photo=LOCKBOX_PHOTOS[side];
+  const image=`<img src="${safe(photo.url)}" alt="${safe(photo.alt)}" width="96" height="96" class="lockbox-photo" style="display:block;width:96px;height:96px;border:0;border-radius:14px;object-fit:cover;">`;
+  return `<div class="lockbox-access" style="${frame}">`+
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;table-layout:fixed;"><tr><td style="vertical-align:middle;padding:0 14px 0 0;">${heading}</td><td width="96" style="width:96px;vertical-align:top;padding:0;">${image}<span class="lockbox-photo-caption" style="display:block;text-align:center;font-size:9px;line-height:1.4;color:#766F65;margin-top:5px;">${safe(photo.caption)}</span></td></tr></table>`+
+    `<div class="lockbox-code-panel" style="background:#FFFDFA;border:1px solid #E4DACC;border-radius:14px;margin:18px 0 14px;padding:14px 16px;"><strong style="display:block;font-size:11px;line-height:1.4;letter-spacing:.06em;color:#756B5D;">Dein Zugangscode: <span class="lockbox-pin" style="display:block;font-size:29px;line-height:1.2;font-weight:700;letter-spacing:.04em;white-space:nowrap;color:#1C1A17;margin-top:5px;">${safe(v.pin)}</span></strong></div>`+
+    `<p style="margin:0 0 14px;font-size:13px;line-height:1.6;">Zutritt ab <strong>${v.entryClock} Uhr</strong> für deine Buchung um ${v.startClock} Uhr.</p>`+
+    `<div class="lockbox-instructions" style="border-top:1px solid #DED3C1;padding-top:14px;font-size:12px;line-height:1.65;"><p style="margin:0 0 9px;"><strong>Code eingeben</strong>, danach <strong>Schloss-Taste unten rechts drücken</strong>.</p>`+
+    `<p style="margin:0 0 9px;">Schlüssel ${v.side} entnehmen, Tür öffnen, Schlüssel sofort zurücklegen und Box wieder schließen.</p><p style="margin:0;">Nach Spielende einfach nur die Tür wieder zu ziehen.</p></div>`+
+    `<p class="lockbox-detail" style="margin:14px 0 0;font-size:10px;line-height:1.5;color:#766F65;">${safe(v.technical)}</p></div>`;
 }
 
 globalThis.PBLockboxContent=Object.freeze({lockboxAccessContent,lockboxAccessHtml});})();
@@ -12136,9 +12145,8 @@ async function renderMyBookingsLists() {
           <div class="upcoming-item-date">${dateStr} · ${timeStr} Uhr</div>
           <div class="upcoming-item-note">${courtLabel(item.court)}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
         </div>
-        <span class="upcoming-kind">${isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>
+        <div class="upcoming-item-actions"><span class="upcoming-kind">${isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>${cancelAction ? `<div class="booking-cancel-row">${cancelAction}</div>` : ''}</div>
       </div>
-      ${cancelAction ? `<div class="booking-cancel-row">${cancelAction}</div>` : ''}
       ${!pending ? `<div class="lockbox-booking-access" data-lockbox-source="${item.id}" data-lockbox-day="${item.date}" aria-live="polite"></div>` : ''}
     </div>`;
   }).join('');
@@ -15329,7 +15337,38 @@ function openPartnerCampaignPdf() {
   </style></head><body>
     <section class="page page-one ${pageOneDensity}"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">A. ${esc(reportCampaignName)}</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header>${kpis}<div class="report-grid">${SPONSOR_TIER_ORDER.map(tierTable).join('')}${donationsTable.replace('class="block"','class="block donation-block"')}</div><div class="footer">Seite 1 von 2</div></section>
     <section class="page page-two ${pageTwoDensity}"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">B. ${esc(reportCampaignName)} · Akquise</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header><div class="page2-grid"><div class="pipeline-column">${pipelineLeft}</div><div class="pipeline-column">${pipelineRight}</div></div><div class="footer">Seite 2 von 2</div></section>
-    <script>window.addEventListener('load',()=>setTimeout(()=>window.print(),300));<\/script></body></html>`);
+    <script>window.addEventListener('load',()=>setTimeout(()=>window.print(),300));<\/script><style id="lockboxCardsDesign">
+/* Access cards share the warm paper, orange accents and clear numbers of account cards. */
+#doorButtons, #doorAccessInfo { max-width: 520px; margin-left: auto; margin-right: auto; }
+body.bielstein-theme #lockboxAccessCard { background: transparent !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; }
+.lockbox-access { min-width: 0; font-family: "Manrope",Arial,sans-serif !important; }
+.lockbox-access .lockbox-heading, .lockbox-access .lockbox-pin { font-family: "Space Grotesk","Arial Narrow",Arial,sans-serif; }
+.lockbox-access .lockbox-pin { padding: 0; }
+.lockbox-access .lockbox-photo { max-width: none; }
+.lockbox-access .lockbox-detail { font-size: 10px; }
+body.bielstein-theme .upcoming-bookings-card { background: transparent !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; }
+#mySingleBookingsList { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,340px),1fr)); gap: 18px; align-items: start; }
+body.bielstein-theme .upcoming-item { box-sizing: border-box; width: 100%; max-width: 520px; min-width: 0; margin: 0; padding: 20px; border: 1px solid #ED9B83; border-radius: 22px; background: #F6F1E7; box-shadow: 0 8px 24px rgba(28,26,23,.06); }
+body.bielstein-theme .upcoming-item-head { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+.upcoming-item-head .upcoming-item-main { min-width: 0; width: 100%; }
+.upcoming-item-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+.upcoming-item-actions .upcoming-kind { background: #FFFDFA; border: 1px solid #E6DDCE; color: #756B5D; }
+.upcoming-item-actions .booking-cancel-row { display: flex; justify-content: flex-end; min-height: 0; padding: 0; margin: 0 0 0 auto; border: 0; max-width: 64%; }
+.upcoming-item-actions .booking-cancel-btn { width: auto; min-height: 34px; padding: 8px 12px; border: 1px solid #D7CABC; border-radius: 10px; background: #FFFDFA; font-size: 11px; color: #625B51; }
+.upcoming-item-actions .booking-cancel-btn:hover { border-color: #1C1A17; color: #1C1A17; background: #FFFFFF; }
+.upcoming-item-actions .booking-cancel-deadline { text-align: right; }
+.upcoming-item .lockbox-booking-access:not(:empty) { border-top: 1px solid #DED3C1; margin-top: 16px; padding-top: 16px; }
+.upcoming-item .lockbox-access { max-width: none !important; margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+@media(max-width:380px) {
+  body.bielstein-theme .upcoming-item { padding: 16px; }
+  .lockbox-access .lockbox-heading { font-size: 20px !important; }
+  .lockbox-access .lockbox-photo { width: 84px !important; height: 84px !important; }
+  .lockbox-access td:last-child { width: 84px !important; }
+  .lockbox-access .lockbox-pin { font-size: 25px !important; letter-spacing: .015em !important; }
+}
+
+</style>
+</body></html>`);
   popup.document.close();
 }
 
