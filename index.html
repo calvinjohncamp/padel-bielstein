@@ -8395,6 +8395,11 @@ const LOCKBOX_PHOTOS=Object.freeze({
 const LOCKBOX_MAIL_CSS='@media(max-width:480px){.lockbox-access-header .lockbox-photo{width:120px!important;height:120px!important}.lockbox-access-header td:last-child{width:120px!important}.lockbox-heading{font-size:23px!important}}@media(max-width:350px){.lockbox-access-header,.lockbox-access-header tbody,.lockbox-access-header tr,.lockbox-access-header td{display:block!important;width:100%!important}.lockbox-access-header td:last-child{width:100%!important;padding-top:16px!important}.lockbox-photo{width:144px!important;height:144px!important}.lockbox-heading{font-size:24px!important}}';
 const clock=iso=>new Date(iso).toLocaleTimeString('de-DE',{timeZone:'Europe/Berlin',hour:'2-digit',minute:'2-digit'});
 function lockboxAccessContent(access) {
+  if(access?.state==='scheduled'){
+    if(!Number.isFinite(Date.parse(access.release_at)))throw Error('lockbox_content_invalid');
+    const date=new Date(access.release_at).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return {title:'Dein Zugangscode',pending:true,scheduled:true,message:`Deinen Zugangscode geben wir ab ${date} Uhr nach Ende der Stornofrist frei. Du erhältst ihn automatisch per E-Mail und findest ihn unter „Jetzt spielen“.`};
+  }
   if(!access||!['P','F'].includes(access.side)||!['ready','not_configured'].includes(access.state))throw Error('lockbox_content_invalid');
   const side=access.side,entrance=side==='P'?'Parkplatzseite':'Freibadseite';
   const title=`Dein Platzzugang: ${entrance} · Box/Schlüssel ${side}`;
@@ -8409,6 +8414,7 @@ function lockboxAccessContent(access) {
     instruction:`Code eingeben, danach Schloss-Taste unten rechts drücken. Schlüssel ${side} entnehmen, Tür öffnen, Schlüssel sofort zurücklegen und Box wieder schließen. Nach Spielende einfach nur die Tür wieder zu ziehen.`};
 }
 function lockboxAccessHtml(access) {
+  if(access?.state==='scheduled'){const v=lockboxAccessContent(access);return `<div class="lockbox-access lockbox-access-pending" style="padding:20px;background:#F6F1E7;border-radius:14px;color:#1C1A17;font:14px/1.7 Arial,sans-serif;"><strong>${safe(v.title)}</strong><p style="margin:8px 0 0;">${safe(v.message)}</p></div>`;}
   const v=lockboxAccessContent(access),side=access.side,entrance=side==='P'?'Parkplatzseite':'Freibadseite';
   const frame='box-sizing:border-box;width:100%;max-width:480px;margin:16px auto;background:#F6F1E7;border:1px solid #ED9B83;border-radius:22px;padding:22px;color:#1C1A17;text-align:left;font-family:Arial,Helvetica,sans-serif;box-shadow:0 8px 24px rgba(28,26,23,.06);';
   const heading=`<strong class="lockbox-heading" style="display:block;font-size:25px;line-height:1.2;letter-spacing:-.02em;color:#D95736;"><span class="lockbox-kicker" style="display:block;font-size:10px;line-height:1.4;letter-spacing:.14em;text-transform:uppercase;color:#70695F;margin-bottom:9px;">Dein Platzzugang:</span> ${entrance} <span class="lockbox-key-label" style="font-size:14px;line-height:1.6;letter-spacing:0;color:#625B51;white-space:nowrap;">· Box/Schlüssel ${side}</span></strong>`;
@@ -12839,6 +12845,7 @@ function openPlayAccessInfo(trigger) {
 }
 function playLockboxAccessHtml(access,showBox=true,compact=false) {
   const v=PBLockboxContent.lockboxAccessContent(access),side=access.side;
+  if(v.scheduled)return `<div class="play-access play-access-pending play-access-scheduled ${compact?'play-access-compact':''}"><div class="play-access-kicker">Dein Zugangscode</div><p>${esc(v.message)}</p></div>`;
   const entrance=side==='F'?'Freibadseite':'Parkplatzseite';
   const symbol='<svg class="play-open-symbol" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 11V7a5 5 0 0 1 10 0M6 11h12v10H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>';
   const box=showBox?`<button type="button" class="play-keybox-photo" aria-label="Schlüsselbox ${side}: Originalfoto ansehen" aria-haspopup="dialog"><span class="play-keybox" role="img" aria-label="Schlüsselbox: Öffnen-Taste rechts unten im Tastenfeld"><span class="play-keybox-led"></span><span class="play-keybox-keys" aria-hidden="true">${['1','2','3','4','5','6','7','8','9','↶','0',symbol].map((key,i)=>`<span class="${i===11?'play-keybox-open':''}">${key}</span>`).join('')}</span></span></button>`:'';
@@ -12853,7 +12860,7 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
   const version=lockboxRenderVersion,viewer=currentUser?.id;
   const current=()=>version===lockboxRenderVersion&&currentUser?.id===viewer&&content.isConnected;
   if(!LOCKBOX_ACCESS_UI_ENABLED) {content.textContent='Die Lockbox-Anbindung wird vorbereitet. Es ist noch kein Zugangscode verfügbar.';return;}
-  const keepAccess=content.playAccessViewer===viewer&&content.playAccessUntil>Date.now()&&!!content.querySelector('.lockbox-pin');
+  const keepAccess=content.playAccessViewer===viewer&&((content.playAccessUntil>Date.now()&&!!content.querySelector('.lockbox-pin'))||!!content.querySelector('.play-access-pending'));
   if(!keepAccess)content.textContent='Dein Zugang wird geladen …';
   const renderAccess=access=>{
     const template=document.createElement('template');
@@ -12876,10 +12883,12 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
   try {
     const access=await fetchLockboxAccess(b);
     if(!current())return;
-    if(access.state!=='ready'){content.playAccessSignature=null;content.playTicketSignature=null;content.playAccessUntil=null;clearTimeout(content.playAccessExpiryTimer);}
+    const pendingView=access.state==='scheduled'||access.state==='not_configured'&&['P','F'].includes(access.side);
+    if(access.state!=='ready'&&(!pendingView||content.querySelector('.lockbox-pin'))){content.playAccessSignature=null;content.playTicketSignature=null;content.playAccessUntil=null;clearTimeout(content.playAccessExpiryTimer);content.replaceChildren();}
     if(access.state==='ready') {
       if(Date.now()>=Date.parse(access.access_until)){content.playAccessUntil=0;throw Error('lockbox_expired');}
       renderAccess(access);
+    }else if(access.state==='scheduled'){renderAccess(access);
     }else if(access.state==='match_forming') {
       content.textContent='Deine Teilnahme konnte gerade nicht bestätigt werden. Bitte lade die Seite neu.';
     }else if(access.state==='not_configured'&&['P','F'].includes(access.side)) {
@@ -12889,7 +12898,7 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
     if(b.isMatch&&access.ticket){const ticket=personalMatchTicketHtml(access.ticket);if(content.playTicketSignature!==ticket){content.querySelector('[data-play-tickets]')?.remove();content.insertAdjacentHTML('beforeend','<div data-play-tickets>'+ticket+'</div>');content.playTicketSignature=ticket;}}
   }catch(error) {
     if(!current())return;
-    if(!keepAccess||content.playAccessUntil<=Date.now()){content.playAccessSignature=null;content.textContent='Der Zugangscode konnte nicht geladen werden. Bitte erneut laden oder den Verein kontaktieren.';}
+    if(!keepAccess||(content.querySelector('.lockbox-pin')&&content.playAccessUntil<=Date.now())){content.playAccessSignature=null;content.textContent='Der Zugangscode konnte nicht geladen werden. Bitte erneut laden oder den Verein kontaktieren.';}
   }
   if(!b.isMatch&&!b.isEvent&&current()&&bookingDateAt(b).getTime()+bookingReadTime(b).minutes*60000>Date.now()){
     try{const tickets=await fetchOwnerFreibadTickets(b);if(current()){content.querySelector('.play-ticket-warning')?.remove();const ticket=tickets.length?ownerFreibadTicketsHtml(tickets,b.date):'';if(content.playTicketSignature!==ticket){content.querySelector('[data-play-tickets]')?.remove();if(ticket)content.insertAdjacentHTML('beforeend','<div data-play-tickets>'+ticket+'</div>');content.playTicketSignature=ticket;}}}
@@ -24200,6 +24209,9 @@ body.bielstein-theme #modePlay .upcoming-item-head {gap:12px;}
 @media(max-width:360px){#modePlay .play-access-main {padding:20px;}#modePlay .play-access-steps {padding:20px;}#modePlay .play-access .lockbox-pin {font-size:29px;}#modePlay .play-access-compact .play-access-main {grid-template-columns:1fr;gap:10px;}#modePlay .play-access-compact .lockbox-pin {font-size:22px;}}
 
 #modePlay .weather-booking-legend {color:#ad542b;font-weight:600;}
+#modePlay .play-access-compact.play-access-scheduled {padding:0;}
+#modePlay .play-access-compact.play-access-scheduled p {color:#74776a;font-size:12px;margin:0;}
+#modePlay .play-access-compact.play-access-scheduled .play-access-kicker {display:none;}
 @media(max-width:520px){
   #modePlay .pbwx-proof .wx-wx-bars {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:14px 7px;}
   #modePlay .pbwx-proof .wx-wx-bar .mm,#modePlay .pbwx-proof .wx-wx-bar .hr {font-size:11px;}
