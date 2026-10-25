@@ -3045,10 +3045,13 @@ main {
       <section class="play-history-section" aria-labelledby="playHistoryTitle">
         <!-- Die letzte meldbare Buchung bleibt bis 24 h nach Spielende optisch
              hervorgehoben und ist zugleich Einstieg in die Wettermeldung. -->
+        <section class="play-weather-section" id="playWeatherSection" aria-labelledby="playWeatherTitle">
+          <h2 id="playWeatherTitle">Wetterbedingten Ausfall melden</h2>
         <div class="play-card recent-booking-card" id="weatherReportCard" style="display:none;">
           <div class="play-card-title">◆ Aktuelle / letzte Buchung</div>
           <div id="weatherReportContent"></div>
         </div>
+        </section>
 
         <div id="pbSponsorPlay" class="pbsp-slot"></div>
 
@@ -12715,6 +12718,7 @@ async function renderPlaySection() {
   }
 
   await renderMyBookingsLists(confirmedMatches);   // gemeinsames chronologisches „Demnächst" unter den Türen
+  alignPlayRouteAddresses(listEl);
   renderWeatherReportCard(); // „Letzte Buchung" mit Wetterausfall-Meldung
   renderMyHistory(true,completedToday,confirmedMatches); // Completed today goes straight into history.
 }
@@ -12780,6 +12784,27 @@ async function fetchLockboxAccess(b) {
   lockboxAccessRequests.set(key,pending);
   try {return await pending;} finally {if(lockboxAccessRequests.get(key)===pending)lockboxAccessRequests.delete(key);}
 }
+function alignPlayRouteAddresses(list) {
+  list.playRouteObserver?.disconnect();
+  const align=()=>list.querySelectorAll('.play-today-booking').forEach(card=>{
+    const route=card.querySelector('.play-route-address'),text=card.querySelector('.play-access-step:last-child p');
+    if(!route||!text)return;
+    const access=card.querySelector('.lockbox-today-access > .play-access');
+    route.style.removeProperty('--play-route-shift');
+    access.style.minHeight='';
+    if(matchMedia('(max-width:700px)').matches)return;
+    const metadata=card.querySelector('.play-today-booking-head > div:first-child');
+    const needed=metadata.getBoundingClientRect().bottom+16+route.getBoundingClientRect().height;
+    const extra=Math.max(0,needed-text.getBoundingClientRect().bottom);
+    if(extra>0)access.style.minHeight=(access.getBoundingClientRect().height+extra)+'px';
+    const shift=text.getBoundingClientRect().bottom-route.getBoundingClientRect().bottom;
+    route.style.setProperty('--play-route-shift',Math.min(0,shift)+'px');
+  });
+  list.playRouteObserver=new ResizeObserver(align);
+  list.querySelectorAll('.play-today-booking,.play-access,.play-route-address').forEach(el=>list.playRouteObserver.observe(el));
+  align();
+  document.fonts.ready.then(()=>{if(list.isConnected)align();});
+}
 function openPlayAccessInfo(trigger) {
   const dialog=document.getElementById('playAccessDialog');
   if(!dialog)return;
@@ -12798,7 +12823,7 @@ function playLockboxAccessHtml(access,showBox=true,compact=false) {
   const box=showBox?`<button type="button" class="play-keybox-photo" aria-label="Schlüsselbox ${side}: Originalfoto ansehen" aria-haspopup="dialog"><span class="play-keybox" role="img" aria-label="Schlüsselbox: Öffnen-Taste rechts unten im Tastenfeld"><span class="play-keybox-led"></span><span class="play-keybox-keys" aria-hidden="true">${['1','2','3','4','5','6','7','8','9','↶','0',symbol].map((key,i)=>`<span class="${i===11?'play-keybox-open':''}">${key}</span>`).join('')}</span></span></button>`:'';
   const heading=`<div class="play-access-location">${box}<div><div class="play-access-kicker">Dein Platzzugang</div><div class="play-access-entrance"><h3>${entrance}</h3>${!compact?'<button type="button" class="play-info-star" aria-label="Zugang zur Padel-Anlage erläutern" aria-haspopup="dialog" aria-controls="playAccessDialog" onclick="openPlayAccessInfo(this)">*</button>':''}</div><div class="play-access-side">Schlüsselbox ${side}</div></div></div>`;
   if(v.pending)return `<div class="play-access play-access-pending">${heading}<p>${esc(v.message)}</p></div>`;
-  const instructions=`<div class="play-access-steps"><div class="play-access-step"><span class="play-step-number">01</span><div><strong class="play-step-heading">Code eingeben</strong><p class="play-open-instruction"><span>Danach die <strong>Öffnen-Taste rechts unten</strong> drücken.</span><span class="play-open-reminder">${symbol}</span></p></div></div><div class="play-access-step"><span class="play-step-number">02</span><div><strong>Schlüssel entnehmen</strong><p>Tür öffnen, Schlüssel sofort zurücklegen und Schlüsselbox wieder schließen.</p></div></div><div class="play-access-step"><span class="play-step-number">03</span><div><strong>Nach dem Spiel</strong><p>Einfach nur die Tür wieder zuziehen.</p></div></div></div>`;
+  const instructions=`<div class="play-access-steps"><div class="play-access-step"><span class="play-step-number">01</span><div><strong class="play-step-heading">Code eingeben</strong><p class="play-open-instruction"><span>Danach die <strong>Öffnen-Taste rechts unten</strong> drücken.</span><span class="play-open-reminder">${symbol}</span></p></div></div><div class="play-access-step"><span class="play-step-number">02</span><div><strong>Schlüssel entnehmen</strong><p>Tür öffnen, Schlüssel sofort zurücklegen und Schlüsselbox wieder schließen.</p></div></div><div class="play-access-step"><span class="play-step-number">03</span><div><strong>Nach dem Spiel</strong><p>Einfach nur die Tür zuziehen.</p></div></div></div>`;
   return `<div class="play-access ${compact?'play-access-compact':''}"><div class="play-access-main">${heading}<div class="play-access-code"><div class="play-access-kicker">Dein Zugangscode</div><div class="lockbox-pin">${esc(v.pin)}</div><p>Zutritt ab <strong>${v.entryClock} Uhr</strong> · Buchung um ${v.startClock} Uhr</p></div></div>${compact?`<details class="play-access-details"><summary>So öffnest du die Schlüsselbox</summary>${instructions}</details>`:instructions}</div>`;
 }
 async function renderLockboxAccess(b,target=null,showPhoto=true) {
@@ -24015,6 +24040,9 @@ body.bielstein-theme #modePlay .play-today-kind-row {display:flex;flex-wrap:wrap
 #modePlay .play-today-booked-by {margin:16px 0 0;font-size:12px;color:#73766a;line-height:1.65;}
 #modePlay .play-today-empty {display:block;padding:20px 0;border-top:1px solid #dcd6c9;}
 #modePlay .lockbox-today-access {min-width:0;}
+#modePlay .lockbox-today-access > .play-access {display:flex;flex-direction:column;}
+#modePlay .lockbox-today-access > .play-access .play-access-main {flex:1;}
+#modePlay .lockbox-today-access > .play-access .play-access-steps {flex-shrink:0;}
 #modePlay .play-access {min-width:0;overflow:hidden;border-radius:12px;background:#2a3026;color:#f9f6eb;}
 #modePlay .play-access-main {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;padding:26px;align-items:center;}
 #modePlay .play-access-location {display:flex;align-items:center;gap:20px;min-width:0;}
@@ -24028,7 +24056,10 @@ body.bielstein-theme #modePlay .play-today-kind-row {display:flex;flex-wrap:wrap
 #modePlay .play-info-star:hover {background:#ff5a361f;transform:scale(1.08);}
 #modePlay .play-info-star:focus-visible {outline:2px solid #ff5a36;outline-offset:2px;}
 #modePlay .play-today-booking-head {display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;}
-#modePlay .play-today-booking-head .play-route-address {display:block;margin:16px 0 0;font-size:11px;line-height:1.5;}
+#modePlay .play-today-booking-head .play-route-address {display:block;margin:16px 0 0;font-size:11px;line-height:1.5;transform:translateY(var(--play-route-shift,0px));}
+#modePlay #playWeatherSection {display:none;}
+#modePlay #playWeatherSection:has(#weatherReportCard[style*="block"]) {display:block;margin-top:38px;}
+body.bielstein-theme #modePlay #playWeatherTitle {margin:0 0 24px;font:600 clamp(30px,3.4vw,45px)/1.15 "Space Grotesk",Arial,sans-serif;letter-spacing:-.045em;color:#242620;text-transform:none;}
 #modePlay .play-today-booking-head .play-route-address > a {display:inline-flex;min-height:30px;padding:5px 0 3px;margin-top:4px;}
 @media(min-width:701px){#modePlay .play-today-time > span {margin-bottom:10px;}}
 #modePlay .play-access-dialog {box-sizing:border-box;width:min(92vw,600px);max-width:calc(100vw - 28px);max-height:calc(100dvh - 44px);margin:auto;padding:18px;border:1px solid #f6f1e729;border-radius:18px;background:#1c1a17;color:#f6f1e7;box-shadow:0 28px 80px #0007;overflow:auto;}
