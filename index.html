@@ -3017,13 +3017,12 @@ main {
             <p>Nutze den Eingang, der auf deiner Buchungskarte angegeben ist.</p>
             <div class="play-route-rule"><strong>Freibad geöffnet</strong><p>Der Zugang erfolgt ausschließlich über die Freibadseite. Dein Padel-Ticket gilt zugleich als Eintrittskarte für das Freibad.</p></div>
             <div class="play-route-rule"><strong>Freibad geschlossen</strong><p>Du erreichst die Courts über die Parkplatzseite.</p></div>
-            <p class="play-route-sharing">Ab 24 Stunden vor Spielbeginn kannst du den Zugangscode mit deinen Mitspielern teilen. Wenn du selbst nicht spielst, kannst du ihn an bis zu vier Personen weitergeben.</p>
-            <div class="play-route-address"><strong>Padel Bielstein</strong><span>Jahnstraße 13<br>51674 Wiehl-Bielstein</span><a href="https://www.google.com/maps/dir/?api=1&amp;destination=Jahnstra%C3%9Fe%2013%2C%2051674%20Wiehl-Bielstein" target="_blank" rel="noopener">Route planen <span aria-hidden="true">↗</span></a></div>
+            <p class="play-route-sharing">Teile den Zugangscode mit deinen Mitspielern, damit ihr gemeinsam auf den Platz kommt.</p>
+            <div class="play-route-address"><div><strong>Padel Bielstein</strong><span>Jahnstraße 13<br>51674 Wiehl-Bielstein</span></div><a href="https://www.google.com/maps/dir/?api=1&amp;destination=Jahnstra%C3%9Fe%2013%2C%2051674%20Wiehl-Bielstein" target="_blank" rel="noopener">Route planen</a></div>
           </aside>
         </div>
       </section>
 
-      <div id="pbSponsorPlay" class="pbsp-slot"></div>
 
       <!-- Alle kommenden Termine in einer gemeinsamen chronologischen Liste:
            Einzelbuchungen und jeweils der nächste Termin eines Jahresabos. -->
@@ -3043,6 +3042,8 @@ main {
           <div class="play-card-title">◆ Aktuelle / letzte Buchung</div>
           <div id="weatherReportContent"></div>
         </div>
+
+        <div id="pbSponsorPlay" class="pbsp-slot"></div>
 
         <div class="play-card-title play-history-title" id="playHistoryTitle">■ Historie der letzten 24 Monate</div>
 
@@ -12669,6 +12670,7 @@ async function renderPlaySection() {
     </article>`;
   }).join('') : '<div class="play-today-booking play-today-empty"><h2>Heute hast du keine Buchung.</h2><p>Deine nächsten bestätigten Termine findest du unter „Demnächst“.</p></div>';
 
+  const photoIndex=allBookings.findIndex(b=>getBookingStatus(b)!=='past');
   let cursor=0;
   const version=lockboxRenderVersion;
   await Promise.all(Array.from({length:Math.min(3,allBookings.length)},async()=>{
@@ -12676,7 +12678,7 @@ async function renderPlaySection() {
       const index=cursor++,b=allBookings[index];
       if(currentUser?.id!==viewer||version!==lockboxRenderVersion)return;
       const target=listEl.querySelector(`[data-today-index="${index}"]`);
-      if(target)await renderLockboxAccess(b,target);
+      if(target)await renderLockboxAccess(b,target,index===photoIndex);
     }
   }));
   // Refresh the complete day view at a time boundary, without a separate status banner.
@@ -12752,21 +12754,29 @@ async function fetchLockboxAccess(b) {
   lockboxAccessRequests.set(key,pending);
   try {return await pending;} finally {if(lockboxAccessRequests.get(key)===pending)lockboxAccessRequests.delete(key);}
 }
-async function renderLockboxAccess(b,target=null) {
+async function renderLockboxAccess(b,target=null,showPhoto=true) {
   const content=target||document.getElementById('lockboxAccessContent');
   if(!content||!b)return;
   const version=lockboxRenderVersion,viewer=currentUser?.id;
   const current=()=>version===lockboxRenderVersion&&currentUser?.id===viewer&&content.isConnected;
   if(!LOCKBOX_ACCESS_UI_ENABLED) {content.textContent='Die Lockbox-Anbindung wird vorbereitet. Es ist noch kein Zugangscode verfügbar.';return;}
   content.textContent='Dein Zugang wird geladen …';
+  const renderAccess=access=>{
+    const template=document.createElement('template');
+    template.innerHTML=PBLockboxContent.lockboxAccessHtml(access);
+    if(!showPhoto)template.content.querySelector('.lockbox-access-header td:last-child')?.remove();
+    const closing=template.content.querySelector('.lockbox-instructions p:last-child');
+    if(closing)closing.textContent='Nach Spielende einfach nur die Tür wieder zuziehen.';
+    content.replaceChildren(template.content);
+  };
   try {
     const access=await fetchLockboxAccess(b);
     if(!current())return;
     if(access.state==='ready') {
       if(Date.now()>=Date.parse(access.access_until))throw Error('lockbox_expired');
-      content.innerHTML=PBLockboxContent.lockboxAccessHtml(access);
+      renderAccess(access);
     }else if(access.state==='not_configured'&&['P','F'].includes(access.side)) {
-      content.innerHTML=PBLockboxContent.lockboxAccessHtml(access);
+      renderAccess(access);
     }else if(access.state==='not_configured')content.textContent='Die Lockbox-Anbindung wird vorbereitet. Es ist noch kein Zugangscode verfügbar.';
     else content.textContent='Der Zugangscode ist derzeit nicht verfügbar. Bitte erneut laden oder den Verein kontaktieren.';
   }catch(error) {
@@ -12791,7 +12801,7 @@ async function renderUpcomingLockboxAccess(items,container) {
       const item=confirmed[cursor++];
       if(currentUser?.id!==viewer||version!==lockboxRenderVersion)return;
       const target=container.querySelector(`[data-lockbox-source="${item.id}"][data-lockbox-day="${item.date}"]`);
-      if(target)await renderLockboxAccess(item,target);
+      if(target)await renderLockboxAccess(item,target,false);
     }
   }));
 }
@@ -28666,9 +28676,10 @@ body.bielstein-theme .upcoming-item-head { display: flex; flex-direction: column
 }
 
 /* One day overview, rendered on the real page rather than in separate banners. */
-body.bielstein-theme #todayBookingsCard.play-today-section { background: transparent !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; max-width: 1120px; margin: 22px auto; }
-.play-today-layout { display: grid; grid-template-columns: minmax(0,1.12fr) minmax(0,.88fr); gap: 24px; align-items: start; }
-.play-today-list { display: grid; gap: 18px; min-width: 0; }
+body.bielstein-theme #todayBookingsCard.play-today-section { background: transparent !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; max-width: none; margin: 22px 0; }
+.play-today-layout { display: grid; grid-template-columns: minmax(0,1.12fr) minmax(0,.88fr); gap: 24px; align-items: stretch; }
+.play-today-list { display: contents; }
+.play-today-booking { grid-column: 1; }
 .play-today-booking { box-sizing: border-box; min-width: 0; padding: 24px; border: 1px solid #ED9B83; border-radius: 22px; background: #F6F1E7; box-shadow: 0 8px 24px rgba(28,26,23,.06); }
 .play-today-booking-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid #DED3C1; }
 .play-today-kind, .play-route-kicker { color: #766F65; font: 700 11px/1.4 "Space Grotesk",Arial,sans-serif; letter-spacing: .11em; text-transform: uppercase; }
@@ -28676,18 +28687,21 @@ body.bielstein-theme #todayBookingsCard.play-today-section { background: transpa
 .play-today-time { font-size: 17px; line-height: 1.5; color: #625B51; }
 .play-today-status { border: 1px solid #DDCBBB; border-radius: 99px; padding: 7px 10px; color: #756B5D; background: #FFFDFA; font-size: 12px; white-space: nowrap; }
 .play-today-booking .lockbox-access { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
-.play-route-card { box-sizing: border-box; min-width: 0; background: #FFFEFC; border: 1px solid #E3DDCF; border-radius: 22px; padding: 28px; color: #1C1A17; box-shadow: 0 4px 16px rgba(28,26,23,.035); }
-.play-route-card h2 { margin: 10px 0 18px; font: 700 26px/1.2 "Space Grotesk",Arial,sans-serif; }
-.play-route-card p { font-size: 15px; line-height: 1.7; margin: 0 0 20px; color: #625B51; }
-.play-route-rule { margin: 20px 0; padding-bottom: 2px; }
+.play-route-card { box-sizing: border-box; min-width: 0; background: #FFFEFC; border: 1px solid #E3DDCF; border-radius: 22px; padding: 24px; display: flex; flex-direction: column; grid-column: 2; grid-row: 1; color: #1C1A17; box-shadow: 0 4px 16px rgba(28,26,23,.035); }
+.play-route-card h2 { margin: 8px 0 14px; font: 700 26px/1.2 "Space Grotesk",Arial,sans-serif; }
+.play-route-card p { font-size: 15px; line-height: 1.65; margin: 0 0 14px; color: #625B51; }
+.play-route-rule { margin: 0 0 14px; }
+.play-route-rule p { margin: 0; }
 .play-route-rule > strong { display: block; font-size: 15px; margin-bottom: 5px; }
 .play-route-card .play-route-sharing { font-size: 14px; }
-.play-route-address { padding-top: 20px; border-top: 1px solid #E3DDCF; display: grid; gap: 9px; font-size: 15px; line-height: 1.6; }
-.play-route-address > span { color: #625B51; }
-.play-route-address > a { display: flex; justify-content: space-between; align-items: center; background: #1C1A17; color: #FFF; padding: 13px 16px; border-radius: 12px; text-decoration: none; font-weight: 700; margin-top: 7px; }
+.play-route-address { padding-top: 16px; margin-top: auto; border-top: 1px solid #E3DDCF; display: flex; gap: 16px; align-items: flex-end; justify-content: space-between; font-size: 15px; line-height: 1.6; }
+.play-route-address > div { min-width: 0; }
+.play-route-address strong { display: block; margin-bottom: 5px; }
+.play-route-address span { display: block; color: #625B51; }
+.play-route-address > a { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; background: #1C1A17; color: #FFF; padding: 12px 16px; border-radius: 12px; text-decoration: none; font-size: 14px; font-weight: 700; white-space: nowrap; }
 .lockbox-access .lockbox-heading { overflow-wrap: anywhere; }
 .play-today-empty p, .play-today-ended { color: #625B51; font-size: 15px; line-height: 1.7; }
-@media(max-width:899px) { .play-today-layout { grid-template-columns: minmax(0,1fr); gap: 18px; } }
+@media(max-width:899px) { .play-today-layout { grid-template-columns: minmax(0,1fr); gap: 18px; } .play-route-card { grid-column: 1; grid-row: auto; } }
 @media(max-width:480px) {
   .play-today-booking, .play-route-card { padding: 20px; }
   .lockbox-access .lockbox-photo { width: 120px !important; height: 120px !important; }
@@ -28707,5 +28721,11 @@ body.bielstein-theme #todayBookingsCard.play-today-section { background: transpa
 
 body.bielstein-theme .play-today-kind-row {display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:8px;}
 body.bielstein-theme .play-today-kind-row .play-today-kind {margin-bottom:0;}
+
+/* All play sections share the booking tab's left edge. */
+body.bielstein-theme #upcomingBookingsCard { margin-left: 0 !important; margin-right: 0 !important; }
+body.bielstein-theme #modePlay .play-history-title { margin-left: 0 !important; }
+@media(max-width:380px) { .play-route-address { gap: 10px; font-size: 13px; } .play-route-address > a { font-size: 12px; padding: 11px 12px; } }
+body.bielstein-theme #playLoggedIn { padding-inline: 3px; }
 
 </style>
