@@ -3377,7 +3377,9 @@ main {
     body.embedded .appbar,body.embedded .main-tabs{display:none!important}
     body.embedded .shell{padding-top:0;padding-bottom:12px}
     @media(max-width:600px){.matchplan-section-head{scroll-margin-top:105px}}
-  &lt;/style&gt;
+  
+.recipient-picker{position:relative;display:block;min-width:0}.recipient-results{position:relative;z-index:5;background:#fff;border:1px solid var(--line,#ddd3c3);border-radius:12px;max-height:250px;overflow:auto;margin-top:5px}.recipient-results:empty{display:none}.recipient-option{display:block;width:100%;text-align:left;border:0;background:transparent;padding:12px;font:inherit;cursor:pointer}.recipient-option:hover,.recipient-option:focus{background:#eee8db}.recipient-option small{display:block;color:#767167;font-size:12px;margin-top:3px}.recipient-search{width:100%;min-width:0}.recipient-picker [role=status]{font-size:12px;color:#767167;padding:8px}.email-field-wrap{min-width:0}
+&lt;/style&gt;
 &lt;/head&gt;
 &lt;body class=&quot;embedded&quot;&gt;
   &lt;header class=&quot;appbar&quot;&gt;
@@ -3480,9 +3482,9 @@ main {
       &lt;div class=&quot;meet-info-card&quot;&gt;
         &lt;div class=&quot;meet-info-kicker&quot; id=&quot;meetInfoTitle&quot;&gt;Dating 2.0&lt;/div&gt;
         &lt;div class=&quot;meet-info-text&quot;&gt;
-          &lt;p&gt;Hier lädst du dir bekannte Mitspieler zu den von dir gebuchten Terminen ein (&lt;strong&gt;Mitspieler&lt;/strong&gt; bzw. &lt;strong&gt;Meine Gruppe&lt;/strong&gt;) oder aber du findest ganz neue Mitspieler.&lt;/p&gt;
+          &lt;p&gt;Hier lädst du dir bekannte Mitspieler zu den von dir gebuchten Terminen ein (&lt;strong&gt;Ausgewählte Personen&lt;/strong&gt;) oder aber du findest ganz neue Mitspieler.&lt;/p&gt;
           &lt;p&gt;Dafür gibt es die Funktion Einladung an &lt;strong&gt;Alle&lt;/strong&gt;. In diesem Fall werden keine Mails verschickt, sondern deine Einladung taucht an dieser Stelle in der App bei all denen auf, die zu deinen Vorgaben für das entsprechende Match passen.&lt;/p&gt;
-          &lt;p&gt;Möchtest du nur von dir bekannten Personen eingeladen werden, kannst du &lt;strong&gt;Einladungen von allen&lt;/strong&gt; jederzeit in deinem Account deaktivieren. Sobald sich 4 Personen gemeldet/eingebucht haben, wird die betreffende Buchung nicht mehr für weitere Personen angezeigt.&lt;/p&gt;
+          &lt;p&gt;Möchtest du nur von dir bekannten Personen eingeladen werden, kannst du &lt;strong&gt;Für Mitspieler auffindbar sein&lt;/strong&gt; jederzeit in deinem Account deaktivieren. Sobald sich 4 Personen gemeldet/eingebucht haben, wird die betreffende Buchung nicht mehr für weitere Personen angezeigt.&lt;/p&gt;
         &lt;/div&gt;
       &lt;/div&gt;
     &lt;/article&gt;
@@ -3561,14 +3563,18 @@ main {
       selectedId: bookings[0].id,
       ownMatches: [],
       accepted: [],
-      selectedGroupId: groups[0].id,
+      selectedGroupId: &quot;&quot;,
       groupEditorId: null
     };
     let systemOpenInvitesEnabled = true;
     const $ = (sel, root = document) =&gt; root.querySelector(sel);
     const $$ = (sel, root = document) =&gt; Array.from(root.querySelectorAll(sel));
-    const mailOk = value =&gt; /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(value || &quot;&quot;).trim());
-    const esc = value =&gt; String(value ?? &quot;&quot;).replace(/[&amp;&lt;&gt;&quot;']/g, c =&gt; ({ &quot;&amp;&quot;:&quot;&amp;amp;&quot;, &quot;&lt;&quot;:&quot;&amp;lt;&quot;, &quot;&gt;&quot;:&quot;&amp;gt;&quot;, '&quot;':&quot;&amp;quot;&quot;, &quot;'&quot;:&quot;&amp;#39;&quot; }[c]));
+    const emailAddressOk = value =&gt; /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(value || &quot;&quot;).trim());
+    const mailOk = value =&gt; /^ref:(user|member):[a-zA-Z0-9-]{1,80}$/.test(value) || emailAddressOk(value);
+    const recipientProfiles = new Map();
+    const recipientDrafts = new Map();
+
+    const esc = value =&gt; String(value ?? &quot;&quot;).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, c =&gt; ({ &quot;&amp;&quot;:&quot;&amp;amp;&quot;, &quot;&lt;&quot;:&quot;&amp;lt;&quot;, &quot;&gt;&quot;:&quot;&amp;gt;&quot;, &#x27;&quot;&#x27;:&quot;&amp;quot;&quot;, &quot;&#x27;&quot;:&quot;&amp;#39;&quot; }[c]));
     const initials = value =&gt; String(value || &quot;&quot;).trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part =&gt; part[0].toUpperCase()).join(&quot;&quot;) || &quot;JK&quot;;
     const initialsFromEmail = value =&gt; {
       const local = String(value || &quot;&quot;).trim().split(&quot;@&quot;)[0] || &quot;&quot;;
@@ -3728,7 +3734,7 @@ main {
     }
 
     function balls(n) {
-      return Array.from({ length: n }, () =&gt; '&lt;img src=&quot;assets/icons/padel-ball-hd.png&quot; alt=&quot;&quot;&gt;').join(&quot;&quot;);
+      return Array.from({ length: n }, () =&gt; &#x27;&lt;img src=&quot;assets/icons/padel-ball-hd.png&quot; alt=&quot;&quot;&gt;&#x27;).join(&quot;&quot;);
     }
     function applyBalls(root = document) {
       $$(&quot;[data-balls]&quot;, root).forEach(el =&gt; {
@@ -4053,6 +4059,7 @@ main {
       return {
         ...source,
         players,
+        recipients: row.invited_recipients || null,
         deliveries: (row.meetup_invite_deliveries || []).map(deliveryFromRow).filter(Boolean).sort((a, b) =&gt; String(a.sentAt).localeCompare(String(b.sentAt))),
         levels: Array.isArray(row.desired_levels) &amp;&amp; row.desired_levels.length ? row.desired_levels : [&quot;egal&quot;],
         level: Array.isArray(row.desired_levels) ? row.desired_levels.join(&quot;, &quot;) : &quot;egal&quot;,
@@ -4117,10 +4124,10 @@ main {
           groups = data.groups.map(group =&gt; ({
             id: group.id,
             name: group.name,
-            emails: group.emails || []
+            emails: group.emails || [], members: group.members || []
           }));
         }
-        state.selectedGroupId = groups[0]?.id || &quot;&quot;;
+        state.selectedGroupId = &quot;&quot;;
         state.ownMatches = Array.isArray(data.ownMeetups) ? data.ownMeetups.map(ownMatchFromMeetup) : [];
         const ownMeetupIds = new Set(state.ownMatches.map(match =&gt; String(match.meetupId || &quot;&quot;)).filter(Boolean));
         const ownSourceIds = new Set(state.ownMatches.map(match =&gt; String(match.id || &quot;&quot;)).filter(Boolean));
@@ -4225,7 +4232,7 @@ main {
           &lt;/span&gt;
           ${statusHtml ? `&lt;span class=&quot;invite-pick-side&quot;&gt;${statusHtml}&lt;/span&gt;` : &quot;&quot;}
         &lt;/button&gt;
-      `}).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine kommenden Buchungen gefunden.&lt;/div&gt;';
+      `}).join(&quot;&quot;) : &#x27;&lt;div class=&quot;empty&quot;&gt;Noch keine kommenden Buchungen gefunden.&lt;/div&gt;&#x27;;
       const sortedInvites = orderedInvites();
       $(&quot;#incomingInvites&quot;).innerHTML = sortedInvites.length ? sortedInvites.map((item, index) =&gt; {
         const active = state.selectedType === &quot;invite&quot; &amp;&amp; state.selectedId === item.id;
@@ -4241,7 +4248,7 @@ main {
             ${inviteSummaryBadgeHTML(item, true)}
           &lt;/span&gt;
         &lt;/button&gt;
-      `}).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Aktuell keine passenden Einladungen.&lt;/div&gt;';
+      `}).join(&quot;&quot;) : &#x27;&lt;div class=&quot;empty&quot;&gt;Aktuell keine passenden Einladungen.&lt;/div&gt;&#x27;;
       $$(&quot;[data-booking]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectBooking(btn.dataset.booking)));
       $$(&quot;[data-invite]&quot;).forEach(btn =&gt; btn.addEventListener(&quot;click&quot;, () =&gt; selectInvite(btn.dataset.invite)));
     }
@@ -4315,6 +4322,7 @@ main {
     function profileForEmail(value, fallback = null) {
       const mail = String(value || &quot;&quot;).trim().toLowerCase();
       if (!mail) return fallback;
+      if (recipientProfiles.has(mail)) return { ...fallback, ...recipientProfiles.get(mail), accepted: fallback?.accepted ?? recipientProfiles.get(mail).accepted };
       if (mail === user.email.toLowerCase()) return { name: user.name, email: user.email, level: user.level, avatar_url: user.avatar_url || &quot;&quot; };
       return fallback;
     }
@@ -4341,25 +4349,25 @@ main {
       return parts.length ? `&lt;span class=&quot;email-row-status&quot;&gt;${parts.join(&quot;&quot;)}&lt;/span&gt;` : &quot;&quot;;
     }
     function refreshEmailRowAvatars(root = document) {
-      $$('.email-row', root).forEach(row =&gt; {
-        const input = row.querySelector('.player-email');
+      $$(&#x27;.email-row&#x27;, root).forEach(row =&gt; {
+        const input = row.querySelector(&#x27;.player-email&#x27;);
         if (!input) return;
-        const existing = row.querySelector('.email-row-avatar');
-        const profileName = row.querySelector('.email-player-name')?.textContent || input.value;
+        const existing = row.querySelector(&#x27;.email-row-avatar&#x27;);
+        const profileName = row.querySelector(&#x27;.email-player-name&#x27;)?.textContent || input.value;
         const profile = profileForEmail(input.value, { name: profileName });
         const html = input.value.trim() ? emailFallbackAvatarHTML(input.value, profile) : &quot;&quot;;
-        row.classList.toggle('has-avatar', !!html);
-        if (html &amp;&amp; !existing) input.insertAdjacentHTML('beforebegin', `&lt;span class=&quot;email-row-avatar&quot;&gt;${html}&lt;/span&gt;`);
+        row.classList.toggle(&#x27;has-avatar&#x27;, !!html);
+        if (html &amp;&amp; !existing) input.insertAdjacentHTML(&#x27;beforebegin&#x27;, `&lt;span class=&quot;email-row-avatar&quot;&gt;${html}&lt;/span&gt;`);
         else if (html &amp;&amp; existing) existing.innerHTML = html;
         else if (!html &amp;&amp; existing) existing.remove();
       });
     }
     function restoreOwnEmailRows(root = document) {
       let changed = false;
-      $$('#emailList .email-row', root).forEach((row, index) =&gt; {
-        const input = row.querySelector('.player-email');
+      $$(&#x27;#emailList .email-row&#x27;, root).forEach((row, index) =&gt; {
+        const input = row.querySelector(&#x27;.player-email&#x27;);
         if (!input || !isUserEmail(input.value)) return;
-        if (row.classList.contains('has-remove') &amp;&amp; row.querySelector('.email-player-name') &amp;&amp; row.querySelector('.email-profile')) return;
+        if (row.classList.contains(&#x27;has-remove&#x27;) &amp;&amp; row.querySelector(&#x27;.email-player-name&#x27;) &amp;&amp; row.querySelector(&#x27;.email-profile&#x27;)) return;
         row.outerHTML = emailRowHTML(user.email, index + 1, profileForEmail(user.email), true);
         changed = true;
       });
@@ -4372,12 +4380,12 @@ main {
     }
     function syncFilledEmailRows(root = document) {
       let changed = false;
-      $$('#emailList .email-row', root).forEach((row, index) =&gt; {
-        const input = row.querySelector('.player-email');
+      $$(&#x27;#emailList .email-row&#x27;, root).forEach((row, index) =&gt; {
+        const input = row.querySelector(&#x27;.player-email&#x27;);
         const value = input?.value.trim() || &quot;&quot;;
         if (!value || !mailOk(value)) return;
-        if (row.querySelector('[data-toggle-accepted]') &amp;&amp; row.querySelector('[data-remove-email-row]') &amp;&amp; row.classList.contains('has-avatar')) return;
-        const accepted = row.querySelector('[data-toggle-accepted]')?.dataset.accepted === &quot;1&quot;;
+        if (row.querySelector(&#x27;[data-toggle-accepted]&#x27;) &amp;&amp; row.querySelector(&#x27;[data-remove-email-row]&#x27;) &amp;&amp; row.classList.contains(&#x27;has-avatar&#x27;)) return;
+        const accepted = row.querySelector(&#x27;[data-toggle-accepted]&#x27;)?.dataset.accepted === &quot;1&quot;;
         const baseProfile = profileForEmail(value, { email: value, name: value, accepted });
         row.outerHTML = emailRowHTML(value, index + 1, baseProfile, true);
         changed = true;
@@ -4402,8 +4410,8 @@ main {
         &lt;span class=&quot;seat-index&quot;&gt;${index}&lt;/span&gt;
         ${avatar ? `&lt;span class=&quot;email-row-avatar&quot;&gt;${avatar}&lt;/span&gt;` : &quot;&quot;}
         &lt;span class=&quot;email-field-wrap&quot;&gt;
-          ${playerName}
-          &lt;input class=&quot;text-input player-email&quot; type=&quot;email&quot; name=&quot;player_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;E-Mail ${index}&quot;&gt;
+          &lt;input class=&quot;text-input player-email&quot; type=&quot;hidden&quot; name=&quot;player_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;Empfänger ${index}&quot;&gt;
+          ${recipientInputHTML(value, profile, index)}
         &lt;/span&gt;
         ${statusInfo}
         ${profileInfo}
@@ -4411,36 +4419,92 @@ main {
         ${canRemove ? `&lt;button class=&quot;email-remove&quot; type=&quot;button&quot; data-remove-email-row aria-label=&quot;Spieler aus dieser Einladung entfernen&quot;&gt;×&lt;/button&gt;` : &quot;&quot;}
       &lt;/div&gt;`;
     }
+    function recipientInputHTML(value,profile,index){
+      const label=profile?.name || (value.startsWith(&#x27;ref:&#x27;)?&#x27;Ausgewählter Spieler&#x27;:value);
+      return `&lt;span class=&quot;recipient-picker&quot;&gt;&lt;input class=&quot;text-input recipient-search&quot; type=&quot;text&quot; value=&quot;${esc(label)}&quot; placeholder=&quot;Name oder E-Mail-Adresse&quot; autocomplete=&quot;off&quot; aria-label=&quot;Name oder E-Mail ${index}&quot; aria-expanded=&quot;false&quot;&gt;&lt;span class=&quot;recipient-results&quot;&gt;&lt;/span&gt;&lt;/span&gt;`;
+    }
+    function rememberRecipients(){
+      const item=currentBooking();if(!item||!$(&#x27;#emailList&#x27;))return;
+      recipientDrafts.set(item.id,$$(&#x27;#emailList .email-row&#x27;).map((row,index)=&gt;{
+        const value=$(&#x27;.player-email&#x27;,row)?.value.trim()||&#x27;&#x27;;
+        return {email:value,index:index+1,player:{...profileForEmail(value),email:value,accepted:$(&#x27;[data-toggle-accepted]&#x27;,row)?.dataset.accepted===&#x27;1&#x27;}};
+      }));
+    }
+    function wireRecipientSearch(root=document){
+      $$(&#x27;.recipient-search&#x27;,root).forEach(input=&gt;{
+        if(input.dataset.searchBound)return;input.dataset.searchBound=&#x27;1&#x27;;
+        const row=input.closest(&#x27;.email-row&#x27;),stored=row.querySelector(&#x27;.player-email,.group-email&#x27;),box=input.nextElementSibling;
+        let timer,version=0;
+        const close=()=&gt;{version++;clearTimeout(timer);box.innerHTML=&#x27;&#x27;;input.setAttribute(&#x27;aria-expanded&#x27;,&#x27;false&#x27;);sendMeetHeight();};
+        const replaceRow=(value,profile)=&gt;{
+          if(!row.isConnected)return;
+          if(profile)recipientProfiles.set(value.toLowerCase(),profile);
+          const index=Math.max(1,Array.from(row.parentElement.children).indexOf(row)+1);
+          const group=stored.classList.contains(&#x27;group-email&#x27;);
+          row.outerHTML=group?groupEmailRowHTML(value,index):emailRowHTML(value,index,profile,true);
+          wireEmailRowActions(document);refreshActionButtons();applyBalls();sendMeetHeight();
+        };
+        input.addEventListener(&#x27;input&#x27;,()=&gt;{
+          clearTimeout(timer);const current=++version,q=input.value.trim();stored.value=q;
+          const accepted=row.querySelector(&#x27;[data-toggle-accepted]&#x27;);if(accepted){accepted.dataset.accepted=&#x27;0&#x27;;accepted.classList.remove(&#x27;accepted&#x27;);accepted.textContent=&#x27;offen&#x27;;}
+          refreshActionButtons();if(!q||q.includes(&#x27;@&#x27;)){box.innerHTML=&#x27;&#x27;;return;}
+          timer=setTimeout(async()=&gt;{
+            try{box.innerHTML=&#x27;&lt;span role=&quot;status&quot;&gt;Spieler werden gesucht …&lt;/span&gt;&#x27;;const data=await callMeetupFunction({action:&#x27;search_players&#x27;,query:q});if(current!==version||!input.isConnected)return;
+              const players=data.players||[];box.innerHTML=players.length?players.map((p,i)=&gt;`&lt;button type=&quot;button&quot; class=&quot;recipient-option&quot; data-choice=&quot;${i}&quot;&gt;${esc(p.name)}&lt;small&gt;${p.registered?&#x27;Padel-Spieler&#x27;:&#x27;TFB · noch kein Padel-Account&#x27;}&lt;/small&gt;&lt;/button&gt;`).join(&#x27;&#x27;):&#x27;&lt;span role=&quot;status&quot;&gt;Kein Treffer. Du kannst eine E-Mail-Adresse eingeben.&lt;/span&gt;&#x27;;
+              input.setAttribute(&#x27;aria-expanded&#x27;,players.length?&#x27;true&#x27;:&#x27;false&#x27;);
+              $$(&#x27;[data-choice]&#x27;,box).forEach(button=&gt;button.addEventListener(&#x27;click&#x27;,()=&gt;{
+                const p=players[Number(button.dataset.choice)];
+                const existing=$$(&#x27;.player-email,.group-email&#x27;,row.parentElement).some(other=&gt;other!==stored&amp;&amp;other.value.toLowerCase()===p.ref.toLowerCase());
+                if(existing){toast(&#x27;Diese Person ist bereits ausgewählt.&#x27;);close();return;}
+                close();replaceRow(p.ref,{...p,email:p.ref});
+              }));sendMeetHeight();
+            }catch(error){if(current!==version)return;box.innerHTML=&#x27;&lt;span role=&quot;status&quot;&gt;Suche derzeit nicht verfügbar. E-Mail-Eingabe ist weiterhin möglich.&lt;/span&gt;&#x27;;sendMeetHeight();}
+          },250);
+        });
+        input.addEventListener(&#x27;keydown&#x27;,event=&gt;{
+          if(event.key===&#x27;Escape&#x27;){close();input.focus();}
+          if(event.key===&#x27;ArrowDown&#x27;){const first=box.querySelector(&#x27;button&#x27;);if(first){event.preventDefault();first.focus();}}
+        });
+        box.addEventListener(&#x27;keydown&#x27;,event=&gt;{
+          const buttons=Array.from(box.querySelectorAll(&#x27;button&#x27;)),i=buttons.indexOf(document.activeElement);
+          if(event.key===&#x27;ArrowDown&#x27;||event.key===&#x27;ArrowUp&#x27;){event.preventDefault();buttons[(i+(event.key===&#x27;ArrowDown&#x27;?1:-1)+buttons.length)%buttons.length]?.focus();}
+          if(event.key===&#x27;Escape&#x27;){close();input.focus();}
+        });
+        row.addEventListener(&#x27;focusout&#x27;,()=&gt;setTimeout(()=&gt;{if(!row.contains(document.activeElement)){close();if(emailAddressOk(stored.value))replaceRow(stored.value,profileForEmail(stored.value));}},0));
+      });
+    }
+
     function selectedChip(name, root = document) {
       return $(`[data-seg=&quot;${name}&quot;] .chip.active`, root)?.dataset.value || &quot;&quot;;
     }
     function addEmailRow(value = &quot;&quot;) {
       const list = $(&quot;#emailList&quot;);
-      const emptyInput = $$('.player-email', list).find(input =&gt; !input.value.trim());
+      const emptyInput = $$(&#x27;.player-email&#x27;, list).find(input =&gt; !input.value.trim());
       if (emptyInput &amp;&amp; !value) {
-        emptyInput.focus();
+        emptyInput.closest(&quot;.email-row&quot;).querySelector(&quot;.recipient-search&quot;)?.focus();
         return;
       }
-      if ($$('.player-email', list).length &gt;= 4) {
-        toast(&quot;Eine Buchung hat maximal vier Spielerplätze.&quot;);
+      if ($$(&#x27;.player-email&#x27;, list).filter(i=&gt;i.value.trim() &amp;&amp; !isUserEmail(i.value)).length &gt;= 12) {
+        toast(&quot;Du kannst bis zu zwölf Personen einladen. Spielen können vier.&quot;);
         return;
       }
       list.insertAdjacentHTML(&quot;beforeend&quot;, emailRowHTML(value, $$(&quot;.player-email&quot;, list).length + 1));
       const input = $$(&quot;.player-email&quot;, list).at(-1);
-      if (input) input.focus();
+      if (input) input.closest(&quot;.email-row&quot;).querySelector(&quot;.recipient-search&quot;)?.focus();
       refreshEmailIndexes();
       wireEmailAutofillGuard(list);
       wireEmailRowActions(list);
       refreshActionButtons();
     }
     function groupOptionHTML() {
-      if (!groups.length) return '&lt;option value=&quot;&quot; selected&gt;Keine Gruppe angelegt&lt;/option&gt;';
-      return groups.map(group =&gt; `&lt;option value=&quot;${esc(group.id)}&quot; ${group.id === state.selectedGroupId ? &quot;selected&quot; : &quot;&quot;}&gt;${esc(group.name)} · ${group.emails.length}&lt;/option&gt;`).join(&quot;&quot;);
+      if (!groups.length) return &#x27;&lt;option value=&quot;&quot; selected&gt;Keine Gruppe angelegt&lt;/option&gt;&#x27;;
+      return &#x27;&lt;option value=&quot;&quot;&gt;Gruppe auswählen …&lt;/option&gt;&#x27; + groups.map(group =&gt; `&lt;option value=&quot;${esc(group.id)}&quot; ${group.id === state.selectedGroupId ? &quot;selected&quot; : &quot;&quot;}&gt;${esc(group.name)} · ${group.emails.length}&lt;/option&gt;`).join(&quot;&quot;);
     }
     function groupEmailRowHTML(value = &quot;&quot;, index = 1) {
       return `&lt;div class=&quot;email-row&quot;&gt;
         &lt;span class=&quot;seat-index&quot;&gt;${index}&lt;/span&gt;
-        &lt;input class=&quot;text-input group-email&quot; type=&quot;email&quot; name=&quot;group_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;Gruppen-E-Mail ${index}&quot;&gt;
+        &lt;input class=&quot;text-input group-email&quot; type=&quot;hidden&quot; name=&quot;group_email_${index}_${Date.now()}&quot; autocomplete=&quot;off&quot; autocapitalize=&quot;none&quot; spellcheck=&quot;false&quot; placeholder=&quot;name@example.de&quot; value=&quot;${esc(value)}&quot; aria-label=&quot;Gruppen-E-Mail ${index}&quot;&gt;
+        ${recipientInputHTML(value, profileForEmail(value), index)}
       &lt;/div&gt;`;
     }
     function groupEditorHTML() {
@@ -4456,9 +4520,9 @@ main {
         &lt;input class=&quot;text-input&quot; id=&quot;groupNameInput&quot; type=&quot;text&quot; value=&quot;${esc(editing?.name || &quot;&quot;)}&quot; placeholder=&quot;Gruppenname&quot;&gt;
         &lt;div class=&quot;group-email-list&quot; id=&quot;groupEmailList&quot;&gt;${emails.map((email, index) =&gt; groupEmailRowHTML(email, index + 1)).join(&quot;&quot;)}&lt;/div&gt;
         &lt;div class=&quot;actions&quot;&gt;
-          &lt;button class=&quot;btn secondary&quot; type=&quot;button&quot; id=&quot;addGroupEmail&quot;&gt;E-Mail ergänzen&lt;/button&gt;
+          &lt;button class=&quot;btn secondary&quot; type=&quot;button&quot; id=&quot;addGroupEmail&quot;&gt;Person ergänzen&lt;/button&gt;
           &lt;button class=&quot;btn coral&quot; type=&quot;button&quot; id=&quot;saveGroup&quot;&gt;Gruppe speichern&lt;/button&gt;
-          ${editing ? '&lt;button class=&quot;btn secondary&quot; type=&quot;button&quot; id=&quot;deleteGroup&quot;&gt;Löschen&lt;/button&gt;' : &quot;&quot;}
+          ${editing ? &#x27;&lt;button class=&quot;btn secondary&quot; type=&quot;button&quot; id=&quot;deleteGroup&quot;&gt;Löschen&lt;/button&gt;&#x27; : &quot;&quot;}
         &lt;/div&gt;
       &lt;/div&gt;`;
     }
@@ -4530,7 +4594,7 @@ main {
           const data = await callMeetupFunction({ action: &quot;save_group&quot;, group_id: state.groupEditorId || undefined, name, emails });
           const saved = data.group || {};
           const index = groups.findIndex(group =&gt; group.id === saved.id);
-          const group = { id: saved.id, name: saved.name || name, emails: saved.emails || emails };
+          const group = { id: saved.id, name: saved.name || name, emails: saved.emails || emails, members: saved.members || [] };
           if (index &gt;= 0) groups.splice(index, 1, group);
           else groups.unshift(group);
           state.selectedGroupId = group.id;
@@ -4539,10 +4603,6 @@ main {
           toast(&quot;Gruppe gespeichert.&quot;);
           return;
         } catch (e) {
-          if (!state.groupEditorId) {
-            saveLocalGroup(name, emails);
-            return;
-          }
           toast(e.message || &quot;Gruppe konnte nicht gespeichert werden.&quot;);
           return;
         }
@@ -4563,7 +4623,7 @@ main {
       }
       const index = groups.findIndex(group =&gt; group.id === existing.id);
       if (index &gt;= 0) groups.splice(index, 1);
-      state.selectedGroupId = groups[0]?.id || &quot;&quot;;
+      state.selectedGroupId = &quot;&quot;;
       state.groupEditorId = null;
       renderEditor();
       toast(&quot;Gruppe gelöscht.&quot;);
@@ -4580,24 +4640,27 @@ main {
     function removeEmailRowPlayer(button) {
       const row = button.closest(&quot;.email-row&quot;);
       if (!row) return;
-      const input = row.querySelector('.player-email');
-      const label = row.querySelector('.email-player-name')?.textContent || input?.value || &quot;diesen Spieler&quot;;
-      if (!confirm(`Bist du sicher, dass du ${label} aus dieser Einladung entfernen willst?`)) return;
+      const input = row.querySelector(&#x27;.player-email&#x27;);
+      const label = row.querySelector(&#x27;.email-player-name&#x27;)?.textContent || input?.value || &quot;diesen Spieler&quot;;
+      // Removing from this invitation is reversible and never edits the saved group.
       const index = Math.max(1, $$(&quot;#emailList .email-row&quot;).indexOf(row) + 1);
       row.outerHTML = emailRowHTML(&quot;&quot;, index);
       refreshEmailIndexes();
       wireEmailAutofillGuard($(&quot;#emailList&quot;));
+      wireEmailRowActions($(&quot;#emailList&quot;));
       refreshActionButtons();
       toast(&quot;Spieler aus dieser Einladung entfernt.&quot;);
     }
     function toggleAccepted(button) {
       const next = button.dataset.accepted !== &quot;1&quot;;
+      if(next &amp;&amp; collectPlayerSlots().filter(p=&gt;p.accepted).length&gt;=4){toast(&quot;Alle vier Spielerplätze sind bereits belegt.&quot;);return;}
       button.dataset.accepted = next ? &quot;1&quot; : &quot;0&quot;;
       button.classList.toggle(&quot;accepted&quot;, next);
       button.textContent = next ? &quot;zugesagt&quot; : &quot;offen&quot;;
       refreshActionButtons();
     }
     function wireEmailRowActions(root = document) {
+      wireRecipientSearch(root);
       $$(&quot;[data-remove-email-row]&quot;, root).forEach(btn =&gt; {
         if (btn.dataset.bound === &quot;1&quot;) return;
         btn.dataset.bound = &quot;1&quot;;
@@ -4610,17 +4673,17 @@ main {
       });
     }
     function refreshParticipantStatusPills(root = document) {
-      $$('#emailList .email-row', root).forEach(row =&gt; {
-        const input = row.querySelector('.player-email');
-        const wrap = row.querySelector('.email-field-wrap');
+      $$(&#x27;#emailList .email-row&#x27;, root).forEach(row =&gt; {
+        const input = row.querySelector(&#x27;.player-email&#x27;);
+        const wrap = row.querySelector(&#x27;.email-field-wrap&#x27;);
         const value = input?.value.trim() || &quot;&quot;;
         if (!input || !wrap || !value) return;
-        row.querySelector('.email-row-status')?.remove();
-        const accepted = row.querySelector('[data-toggle-accepted]')?.dataset.accepted === &quot;1&quot;;
-        const name = row.querySelector('.email-player-name')?.textContent || value;
+        row.querySelector(&#x27;.email-row-status&#x27;)?.remove();
+        const accepted = row.querySelector(&#x27;[data-toggle-accepted]&#x27;)?.dataset.accepted === &quot;1&quot;;
+        const name = row.querySelector(&#x27;.email-player-name&#x27;)?.textContent || value;
         const profile = profileForEmail(value, { email: value, name, accepted });
         const statusInfo = participantStatusHTML(value, profile);
-        if (statusInfo) wrap.insertAdjacentHTML('afterend', statusInfo);
+        if (statusInfo) wrap.insertAdjacentHTML(&#x27;afterend&#x27;, statusInfo);
       });
     }
     let focusedEmailInput = null;
@@ -4822,58 +4885,35 @@ main {
       };
     }
     function refreshActionButtons() {
-      const send = $(&quot;#sendInvite&quot;);
-      const reminder = $(&quot;#sendReminder&quot;);
-      if (!send &amp;&amp; !reminder) return;
-      const item = currentBooking();
-      if (!item) return;
-      const existing = ownMatchFor(item.id);
-      const audience = selectedChip(&quot;audience&quot;) || existing?.audience || &quot;Mitspieler&quot;;
-      const rows = collectPlayerSlots().map(slot =&gt; ({ email: slot.email }));
-      const selectedGroup = groups.find(group =&gt; group.id === state.selectedGroupId);
-      const actions = actionState(existing, audience, rows, selectedGroup);
-      if (send &amp;&amp; !send.textContent.includes(&quot;werden&quot;)) {
-        send.disabled = !actions.canSendInvite;
-        send.title = actions.inviteHint || &quot;&quot;;
-        if (actions.canSendInvite) {
-          send.classList.remove(&quot;done&quot;);
-          send.classList.add(&quot;coral&quot;);
-          send.textContent = &quot;Spieler informieren&quot;;
-        } else if (!send.classList.contains(&quot;done&quot;)) {
-          send.textContent = &quot;Alle informiert&quot;;
-        }
-      }
-      if (reminder &amp;&amp; !reminder.textContent.includes(&quot;wird&quot;)) {
-        reminder.hidden = !actions.showReminder;
-        if (!actions.showReminder) {
-          reminder.disabled = true;
-          reminder.title = actions.reminderHint || &quot;&quot;;
-          return;
-        }
-        reminder.disabled = !actions.canSendReminder;
-        reminder.title = actions.reminderHint || &quot;&quot;;
-        if (actions.canSendReminder) {
-          reminder.classList.remove(&quot;done&quot;);
-          reminder.textContent = &quot;Erinnerungs-Mail schicken&quot;;
-        } else if (!reminder.classList.contains(&quot;done&quot;)) {
-          reminder.textContent = &quot;Erinnerung erledigt&quot;;
-        }
-      }
+      const send=$(&quot;#sendInvite&quot;);if(!send)return;
+      const all=collectEmails(),targets=uniqueEmails(all.filter(v=&gt;!isUserEmail(v)));
+      const valid=targets.every(mailOk),accepted=collectPlayerSlots().filter(p=&gt;p.accepted).length;
+      send.disabled=!valid||accepted&gt;4||targets.length&gt;12;
+      const existing=currentBooking()?ownMatchFor(currentBooking().id):null;
+      send.textContent=existing?&quot;Einladung aktualisieren&quot;:&quot;Spieler einladen&quot;;
+      const summary=$(&quot;#recipientSummary&quot;);if(summary)summary.textContent=`${targets.length} ${targets.length===1?&quot;Person in der Empfängerliste&quot;:&quot;Personen in der Empfängerliste&quot;} · ${accepted} von 4 Spielerplätzen zugesagt`;
+      rememberRecipients();
     }
+
     function ownEditorHTML(item) {
+      groups.forEach(g=&gt;(g.members||[]).forEach(m=&gt;{if(m.display_name)recipientProfiles.set((m.email_normalized||m.email).toLowerCase(),{email:m.email,name:m.display_name});}));
       const existing = ownMatchFor(item.id);
-      if (existing?.groupId) state.selectedGroupId = existing.groupId;
-      const audience = existing?.audience === &quot;Alle&quot; &amp;&amp; systemOpenInvitesEnabled === false ? &quot;Mitspieler&quot; : (existing?.audience || &quot;Mitspieler&quot;);
-      let rows = existing
-        ? existing.players.map((player, index) =&gt; ({ email: player?.email || &quot;&quot;, player, index: index + 1 }))
-        : [{ email: user.email, player: profileForEmail(user.email), index: 1 }, { email: &quot;&quot;, player: null, index: 2 }, { email: &quot;&quot;, player: null, index: 3 }, { email: &quot;&quot;, player: null, index: 4 }];
-      while (rows.length &lt; 4) rows.push({ email: &quot;&quot;, player: null, index: rows.length + 1 });
+      if(!groups.some(g=&gt;g.id===state.selectedGroupId))state.selectedGroupId = &quot;&quot;;
+      const audience = existing?.audience === &quot;Alle&quot; &amp;&amp; systemOpenInvitesEnabled !== false ? &quot;Alle&quot; : &quot;Mitspieler&quot;;
+      const recipients = existing?.recipients;
+      let rows = recipientDrafts.get(item.id) || (recipients
+        ? [...existing.players.filter(Boolean), ...recipients.filter(p=&gt;!existing.players.some(a=&gt;a?.email===p.email))]
+          .map((p,index)=&gt;({email:p.email,player:p,index:index+1}))
+        : existing ? existing.players.filter(Boolean).map((p,index)=&gt;({email:p.email,player:p,index:index+1}))
+        : [{email:user.email,player:profileForEmail(user.email),index:1}]);
+      rows=rows.slice();
+      if(!rows.some(r=&gt;!r.email))rows.push({email:&quot;&quot;,player:null,index:rows.length+1});
+      rows.forEach(r=&gt;{if(r.email&amp;&amp;r.player)recipientProfiles.set(r.email.toLowerCase(),r.player);});
       const selectedLevels = [&quot;egal&quot;];
       const gender = &quot;egal&quot;;
       const ageFilter = ageFilterFromItem(existing);
       const audienceItems = [
-        { value:&quot;Mitspieler&quot;, label:&quot;Mitspieler&quot; },
-        { value:&quot;Meine Gruppe&quot;, label:&quot;Meine Gruppe&quot; },
+        { value:&quot;Mitspieler&quot;, label:&quot;Ausgewählte Personen&quot; },
         ...(systemOpenInvitesEnabled === false ? [] : [{ value:&quot;Alle&quot;, label:&quot;Alle&quot; }])
       ];
       const defaultMailType = audience === &quot;Mitspieler&quot; &amp;&amp; rows.filter(row =&gt; row.email).length &gt;= 4 ? &quot;du_bist_dabei&quot; : &quot;lust_auf_padel&quot;;
@@ -4891,12 +4931,12 @@ main {
         &lt;/div&gt;
         ${bookingInviteSummaryHTML(existing)}
         &lt;div class=&quot;email-panel&quot;&gt;
-          &lt;span class=&quot;email-block-label&quot;&gt;Teilnehmer pro Einladung&lt;/span&gt;
+          &lt;span class=&quot;email-block-label&quot;&gt;Diese Personen lädst du ein&lt;/span&gt;
           &lt;div class=&quot;email-list&quot; id=&quot;emailList&quot;&gt;
             ${rows.map(row =&gt; emailRowHTML(row.email, row.index, row.player, true)).join(&quot;&quot;)}
           &lt;/div&gt;
-          &lt;div class=&quot;actions&quot;&gt;&lt;button class=&quot;btn secondary&quot; type=&quot;button&quot; id=&quot;addEmail&quot;&gt;E-Mail ergänzen&lt;/button&gt;&lt;/div&gt;
-          &lt;p class=&quot;small-note&quot;&gt;Die erste Mail-Adresse ist bereits vorausgefüllt. Sie kann gelöscht oder überschrieben werden, wenn du selbst nicht mitspielst.&lt;/p&gt;
+          &lt;div class=&quot;actions&quot;&gt;&lt;button class=&quot;btn secondary&quot; type=&quot;button&quot; id=&quot;addEmail&quot;&gt;Person ergänzen&lt;/button&gt;&lt;/div&gt;
+          &lt;p class=&quot;small-note&quot;&gt;Nur diese Liste zählt. Du kannst Personen ergänzen oder entfernen. Entferne dich selbst, wenn du nicht mitspielst. Eine Buchung hat vier Spielerplätze.&lt;/p&gt;
         &lt;/div&gt;
         &lt;div class=&quot;form-grid&quot;&gt;
           &lt;div class=&quot;field&quot;&gt;
@@ -4917,37 +4957,26 @@ main {
           &lt;div class=&quot;field&quot;&gt;
             &lt;label&gt;Einladung an&lt;/label&gt;
             ${segmentHTML(&quot;audience&quot;, audienceItems, audience)}
-            ${systemOpenInvitesEnabled === false ? '&lt;p class=&quot;small-note&quot;&gt;Einladungen an Alle sind derzeit nicht aktiv.&lt;/p&gt;' : ''}
+            ${systemOpenInvitesEnabled === false ? &#x27;&lt;p class=&quot;small-note&quot;&gt;Einladungen an Alle sind derzeit nicht aktiv.&lt;/p&gt;&#x27; : &#x27;&#x27;}
           &lt;/div&gt;
           &lt;div class=&quot;field&quot;&gt;
             &lt;label&gt;Alter&lt;/label&gt;
             ${ageFilterHTML(ageFilter)}
           &lt;/div&gt;
           &lt;div class=&quot;field groups-field&quot;&gt;
-            &lt;label&gt;Meine Gruppen&lt;/label&gt;
+            &lt;label&gt;Gruppe als Vorlage übernehmen&lt;/label&gt;
             ${groupToolsHTML()}
+            &lt;p class=&quot;small-note&quot;&gt;Eine gewählte Gruppe ersetzt die Empfängerliste. Deine eigene Teilnahme bleibt erhalten. Änderungen an der Liste ändern die gespeicherte Gruppe nicht.&lt;/p&gt;
             ${groupEditorHTML()}
           &lt;/div&gt;
         &lt;/div&gt;
-        &lt;div class=&quot;field invite-mail-choice&quot;&gt;
-          &lt;label&gt;Mail an Mitspieler&lt;/label&gt;
-          ${segmentHTML(&quot;mailType&quot;, [
-            { value:&quot;du_bist_dabei&quot;, label:&quot;Du bist dabei&quot; }, { value:&quot;lust_auf_padel&quot;, label:&quot;Lust auf Padel?&quot; }
-          ], selectedMailType)}
-        &lt;/div&gt;
         &lt;label class=&quot;cost-option&quot;&gt;
           &lt;input type=&quot;checkbox&quot; id=&quot;costCoveredByOrganizer&quot; ${existing?.costCoveredByOrganizer ? &quot;checked&quot; : &quot;&quot;}&gt;
-          &lt;span&gt;&lt;strong&gt;Ich übernehme die kompletten Kosten&lt;/strong&gt;&lt;small&gt;Wenn ausgeschaltet, nennt die Mail Gesamtpreis und rechnerischen Preis pro Person.&lt;/small&gt;&lt;/span&gt;
+          &lt;span&gt;&lt;strong&gt;Ich übernehme die kompletten Kosten&lt;/strong&gt;&lt;small&gt;Deine Kostenübernahme wird bei der Verabredung gespeichert.&lt;/small&gt;&lt;/span&gt;
         &lt;/label&gt;
         &lt;div class=&quot;actions invite-save-actions&quot;&gt;
-          &lt;div class=&quot;invite-action-copy&quot;&gt;
-            &lt;p class=&quot;small-note&quot;&gt;Mit &lt;strong&gt;Spieler informieren&lt;/strong&gt; verschickst du die passende Mail: Bei festen Mitspielern heißt das &lt;strong&gt;Du bist dabei&lt;/strong&gt;, bei Gruppen oder offenen Einladungen &lt;strong&gt;Lust auf Padel?&lt;/strong&gt;. Mit &lt;strong&gt;Erinnerungs-Mail&lt;/strong&gt; kannst du kurz vor dem Match nochmal alle Beteiligten einnorden.&lt;/p&gt;
-          &lt;/div&gt;
-          &lt;div class=&quot;invite-action-buttons&quot;&gt;
-            &lt;button class=&quot;btn beige cta-large&quot; type=&quot;button&quot; id=&quot;saveMeetup&quot;&gt;Änderungen speichern&lt;/button&gt;
-            &lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot; ${actions.canSendInvite ? &quot;&quot; : &quot;disabled&quot;} title=&quot;${esc(actions.inviteHint)}&quot;&gt;${actions.canSendInvite ? &quot;Spieler informieren&quot; : &quot;Alle informiert&quot;}&lt;/button&gt;
-            &lt;button class=&quot;btn gray cta-large&quot; type=&quot;button&quot; id=&quot;sendReminder&quot; ${actions.showReminder ? &quot;&quot; : &quot;hidden&quot;} ${actions.canSendReminder ? &quot;&quot; : &quot;disabled&quot;} title=&quot;${esc(actions.reminderHint)}&quot;&gt;${actions.canSendReminder ? &quot;Erinnerungs-Mail schicken&quot; : &quot;Erinnerung erledigt&quot;}&lt;/button&gt;
-          &lt;/div&gt;
+          &lt;div class=&quot;invite-action-copy&quot;&gt;&lt;p class=&quot;small-note&quot; id=&quot;recipientSummary&quot;&gt;&lt;/p&gt;&lt;p class=&quot;small-note&quot;&gt;Die Einladung erscheint in der App. Es wird keine E-Mail verschickt. TFB-Mitglieder ohne Account sehen sie nach ihrer Registrierung mit derselben E-Mail-Adresse.&lt;/p&gt;&lt;/div&gt;
+          &lt;div class=&quot;invite-action-buttons&quot;&gt;&lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot;&gt;${existing ? &quot;Einladung aktualisieren&quot; : &quot;Spieler einladen&quot;}&lt;/button&gt;&lt;/div&gt;
         &lt;/div&gt;
       &lt;/article&gt;`;
     }
@@ -4983,7 +5012,7 @@ main {
         &lt;/div&gt;
         &lt;div class=&quot;actions&quot;&gt;
           &lt;button class=&quot;btn ${alreadyIn ? &quot;done&quot; : &quot;coral&quot;} cta-large&quot; type=&quot;button&quot; id=&quot;acceptInvite&quot; ${alreadyIn || filled &gt;= 4 ? &quot;disabled&quot; : &quot;&quot;}&gt;${alreadyIn ? &quot;Du bist dabei&quot; : filled &gt;= 4 ? &quot;Bereits voll&quot; : &quot;Mitspielen&quot;}&lt;/button&gt;
-          ${alreadyIn ? '&lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;withdrawInvite&quot;&gt;Teilnahme zurückziehen&lt;/button&gt;' : ''}
+          ${alreadyIn ? &#x27;&lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;withdrawInvite&quot;&gt;Teilnahme zurückziehen&lt;/button&gt;&#x27; : &#x27;&#x27;}
         &lt;/div&gt;
       &lt;/article&gt;`;
     }
@@ -5007,11 +5036,11 @@ main {
       const mine = player.email.toLowerCase() === user.email.toLowerCase();
       const hasProfileName = playerHasProfileName(player);
       return `&lt;div class=&quot;seat ${mine ? &quot;mine&quot; : &quot;&quot;}&quot;&gt;
-        ${mine &amp;&amp; removable ? '&lt;button class=&quot;seat-remove&quot; type=&quot;button&quot; data-remove-me aria-label=&quot;Teilnahme zurückziehen&quot;&gt;×&lt;/button&gt;' : ''}
+        ${mine &amp;&amp; removable ? &#x27;&lt;button class=&quot;seat-remove&quot; type=&quot;button&quot; data-remove-me aria-label=&quot;Teilnahme zurückziehen&quot;&gt;×&lt;/button&gt;&#x27; : &#x27;&#x27;}
         &lt;span class=&quot;seat-index&quot;&gt;${index + 1}&lt;/span&gt;
         ${seatAvatarHTML(player, index)}
         &lt;div class=&quot;seat-main${hasProfileName ? &quot;&quot; : &quot; mail-only&quot;}&quot;&gt;${hasProfileName ? `&lt;div class=&quot;seat-name&quot;&gt;${esc(player.name)}&lt;/div&gt;` : &quot;&quot;}&lt;div class=&quot;seat-mail&quot;&gt;${esc(player.email)}&lt;/div&gt;&lt;/div&gt;
-        ${player.accepted || mine ? '&lt;span class=&quot;seat-accepted-check&quot; aria-label=&quot;zugesagt&quot;&gt;✓&lt;/span&gt;' : ''}
+        ${player.accepted || mine ? &#x27;&lt;span class=&quot;seat-accepted-check&quot; aria-label=&quot;zugesagt&quot;&gt;✓&lt;/span&gt;&#x27; : &#x27;&#x27;}
         ${seatLevelHTML(player.level)}
       &lt;/div&gt;`;
     }
@@ -5031,9 +5060,9 @@ main {
           syncLevelLegend(seg);
           return;
         }
-        $$(&quot;.chip[data-value='egal']&quot;, seg).forEach(chip =&gt; chip.classList.remove(&quot;active&quot;));
-        $$(`.chip[data-value='${value}']`, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;));
-        if (!$$(&quot;.chip.active&quot;, seg).length) $$(&quot;.chip[data-value='egal']&quot;, seg).forEach(chip =&gt; chip.classList.add(&quot;active&quot;));
+        $$(&quot;.chip[data-value=&#x27;egal&#x27;]&quot;, seg).forEach(chip =&gt; chip.classList.remove(&quot;active&quot;));
+        $$(`.chip[data-value=&#x27;${value}&#x27;]`, seg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;));
+        if (!$$(&quot;.chip.active&quot;, seg).length) $$(&quot;.chip[data-value=&#x27;egal&#x27;]&quot;, seg).forEach(chip =&gt; chip.classList.add(&quot;active&quot;));
         syncLevelLegend(seg);
       }
       $$(&quot;.seg[data-seg] .chip&quot;, root).forEach(btn =&gt; {
@@ -5054,18 +5083,18 @@ main {
       $$(&quot;[data-level-legend]&quot;, root).forEach(card =&gt; {
         card.addEventListener(&quot;click&quot;, () =&gt; {
           const field = card.closest(&quot;.field&quot;) || root;
-          const seg = $(&quot;.seg[data-seg='level']&quot;, field);
+          const seg = $(&quot;.seg[data-seg=&#x27;level&#x27;]&quot;, field);
           if (seg) toggleLevelValue(seg, card.dataset.levelLegend);
         });
       });
-      $$(&quot;.seg[data-seg='level']&quot;, root).forEach(syncLevelLegend);
+      $$(&quot;.seg[data-seg=&#x27;level&#x27;]&quot;, root).forEach(syncLevelLegend);
     }
     function syncMailTypeForAudience(root = document) {
-      const mailSeg = $(&quot;[data-seg='mailType']&quot;, root);
+      const mailSeg = $(&quot;[data-seg=&#x27;mailType&#x27;]&quot;, root);
       if (!mailSeg) return;
       const fixedPlayersOnly = selectedChip(&quot;audience&quot;, root) === &quot;Mitspieler&quot;;
-      const fixedChip = $(&quot;.chip[data-value='du_bist_dabei']&quot;, mailSeg);
-      const openChip = $(&quot;.chip[data-value='lust_auf_padel']&quot;, mailSeg);
+      const fixedChip = $(&quot;.chip[data-value=&#x27;du_bist_dabei&#x27;]&quot;, mailSeg);
+      const openChip = $(&quot;.chip[data-value=&#x27;lust_auf_padel&#x27;]&quot;, mailSeg);
       if (fixedChip) fixedChip.hidden = !fixedPlayersOnly;
       if (!fixedPlayersOnly &amp;&amp; openChip) {
         $$(&quot;.chip&quot;, mailSeg).forEach(chip =&gt; chip.classList.toggle(&quot;active&quot;, chip === openChip));
@@ -5089,7 +5118,13 @@ main {
       const add = $(&quot;#addEmail&quot;);
       if (add) add.addEventListener(&quot;click&quot;, () =&gt; addEmailRow());
       const groupSelect = $(&quot;#groupSelect&quot;);
-      if (groupSelect) groupSelect.addEventListener(&quot;change&quot;, () =&gt; { state.selectedGroupId = groupSelect.value; refreshActionButtons(); });
+      if (groupSelect) groupSelect.addEventListener(&quot;change&quot;, () =&gt; {
+        state.selectedGroupId=groupSelect.value;const group=groups.find(g=&gt;g.id===groupSelect.value);if(!group)return;
+        const own=collectPlayerSlots().find(p=&gt;isUserEmail(p.email));
+        const values=uniqueEmails([...(own?[user.email]:[]),...group.emails.filter(value=&gt;!isUserEmail(value))]);
+        $(&quot;#emailList&quot;).innerHTML=values.map((value,i)=&gt;emailRowHTML(value,i+1,profileForEmail(value),true)).join(&quot;&quot;)+emailRowHTML(&quot;&quot;,values.length+1);
+        wireEmailRowActions($(&quot;#emailList&quot;));refreshActionButtons();sendMeetHeight();
+      });
       const newGroup = $(&quot;#newGroup&quot;);
       if (newGroup) newGroup.addEventListener(&quot;click&quot;, () =&gt; openGroupEditor(&quot;&quot;));
       const editGroup = $(&quot;#editGroup&quot;);
@@ -5103,7 +5138,7 @@ main {
       const deleteGroupBtn = $(&quot;#deleteGroup&quot;);
       if (deleteGroupBtn) deleteGroupBtn.addEventListener(&quot;click&quot;, deleteGroup);
       const send = $(&quot;#sendInvite&quot;);
-      if (send) send.addEventListener(&quot;click&quot;, () =&gt; sendInvitation(true));
+      if (send) send.addEventListener(&quot;click&quot;, () =&gt; sendInvitation(false));
       const reminder = $(&quot;#sendReminder&quot;);
       if (reminder) reminder.addEventListener(&quot;click&quot;, () =&gt; sendInvitation(true, &quot;status_update&quot;));
       const saveMeetup = $(&quot;#saveMeetup&quot;);
@@ -5118,6 +5153,7 @@ main {
       refreshEmailRowAvatars($(&quot;#editor&quot;));
       applyBalls($(&quot;#editor&quot;));
       wireEditorPager();
+      refreshActionButtons();
       sendMeetHeight();
     }
     function wireEditorPager() {
@@ -5146,14 +5182,14 @@ main {
           touchStartY = 0;
           return;
         }
-        const touch = event.touches && event.touches[0];
+        const touch = event.touches &amp;&amp; event.touches[0];
         if (!touch) return;
         touchStartX = touch.clientX;
         touchStartY = touch.clientY;
       }, { passive: true });
       card.addEventListener(&quot;touchend&quot;, event =&gt; {
         if (!touchStartX &amp;&amp; !touchStartY) return;
-        const touch = event.changedTouches && event.changedTouches[0];
+        const touch = event.changedTouches &amp;&amp; event.changedTouches[0];
         if (!touch) return;
         const dx = touch.clientX - touchStartX;
         const dy = touch.clientY - touchStartY;
@@ -5180,7 +5216,7 @@ main {
       state.selectedType = &quot;booking&quot;;
       state.selectedId = id;
       const existing = ownMatchFor(id);
-      if (existing?.groupId) state.selectedGroupId = existing.groupId;
+      if(!groups.some(g=&gt;g.id===state.selectedGroupId))state.selectedGroupId = &quot;&quot;;
       renderPickLists();
       renderEditor();
       focusMeetupMobileEditor();
@@ -5193,24 +5229,22 @@ main {
       focusMeetupMobileEditor();
     }
     function collectEmails() {
-      enforceUniqueVisibleEmails(focusedEmailInput);
       return $$(&quot;.player-email&quot;).map(input =&gt; input.value.trim()).filter(Boolean);
     }
     function collectPlayerSlots() {
-      enforceUniqueVisibleEmails(focusedEmailInput);
-      return $$('#emailList .email-row').map((row) =&gt; {
-        const input = row.querySelector('.player-email');
+      return $$(&#x27;#emailList .email-row&#x27;).map((row) =&gt; {
+        const input = row.querySelector(&#x27;.player-email&#x27;);
         const email = input?.value.trim() || &quot;&quot;;
         if (!email) return null;
-        const acceptedButton = row.querySelector('[data-toggle-accepted]');
+        const acceptedButton = row.querySelector(&#x27;[data-toggle-accepted]&#x27;);
         return {
           email,
           accepted: isUserEmail(email) || acceptedButton?.dataset.accepted === &quot;1&quot;
         };
-      }).filter(Boolean).slice(0, 4).map((slot, index) =&gt; ({ ...slot, slotNo: index + 1 }));
+      }).filter(Boolean).map((slot, index) =&gt; ({ ...slot, slotNo: index + 1 }));
     }
     function selectedLevelsFromEditor() {
-      const active = $$(&quot;[data-seg='level'] .chip.active&quot;).map(btn =&gt; btn.dataset.value).filter(Boolean);
+      const active = $$(&quot;[data-seg=&#x27;level&#x27;] .chip.active&quot;).map(btn =&gt; btn.dataset.value).filter(Boolean);
       return active.length ? active : [&quot;egal&quot;];
     }
     function uniqueEmails(emails) {
@@ -5222,239 +5256,29 @@ main {
         return true;
       });
     }
-    async function sendInvitation(sendEmails = true, forcedMailType = &quot;&quot;) {
-      const item = currentBooking();
-      const sendButton = $(&quot;#sendInvite&quot;);
-      const saveButton = $(&quot;#saveMeetup&quot;);
-      const reminderButton = $(&quot;#sendReminder&quot;);
-      const actionButton = forcedMailType === &quot;status_update&quot; ? reminderButton : sendEmails ? sendButton : saveButton;
-      const audience = selectedChip(&quot;audience&quot;);
-      const playerSlots = collectPlayerSlots();
-      const emails = playerSlots.map(slot =&gt; slot.email);
-      const ageFilter = selectedAgeFilterFromEditor();
-      if (!ageFilter) return;
-      const chosenMailType = forcedMailType || (audience === &quot;Mitspieler&quot; ? selectedChip(&quot;mailType&quot;) : &quot;lust_auf_padel&quot;) || &quot;lust_auf_padel&quot;;
-      const selectedGroup = groups.find(group =&gt; group.id === state.selectedGroupId);
-      const invalid = emails.filter(email =&gt; !mailOk(email));
-      if (invalid.length) {
-        toast(&quot;Bitte nur gültige E-Mail-Adressen verwenden.&quot;);
-        return;
-      }
-      if (uniqueEmails(emails).length !== emails.length) {
-        toast(&quot;Bitte jede E-Mail-Adresse nur einmal eintragen.&quot;);
-        return;
-      }
-      if (audience === &quot;Alle&quot; &amp;&amp; systemOpenInvitesEnabled === false) {
-        toast(&quot;Einladungen an Alle sind derzeit nicht aktiv.&quot;);
-        return;
-      }
-      if (!emails.length &amp;&amp; audience === &quot;Mitspieler&quot;) {
-        toast(&quot;Bitte mindestens eine E-Mail eintragen oder Einladung an Alle wählen.&quot;);
-        return;
-      }
-      if (audience === &quot;Meine Gruppe&quot; &amp;&amp; (!selectedGroup || !selectedGroup.emails.length)) {
-        toast(&quot;Bitte zuerst eine Gruppe mit E-Mail-Adressen auswählen.&quot;);
-        return;
-      }
-      if (actionButton) {
-        actionButton.disabled = true;
-        actionButton.textContent = forcedMailType === &quot;status_update&quot; ? &quot;Erinnerung wird verschickt ...&quot; : sendEmails ? &quot;Spieler werden informiert ...&quot; : &quot;Änderungen werden gespeichert ...&quot;;
-      }
-      const playerEmails = emails.slice(0, 4);
-      if (embedded) {
-        try {
-          const payload = {
-            action: &quot;save_meetup&quot;,
-            booking_id: item.bookingId || &quot;&quot;,
-            subscription_id: item.subscriptionId || &quot;&quot;,
-            scheduled_date: item.dateISO,
-            desired_levels: selectedLevelsFromEditor().filter(level =&gt; level !== &quot;egal&quot;),
-            desired_gender: selectedChip(&quot;gender&quot;),
-            desired_age_min: ageFilter.min,
-            desired_age_max: ageFilter.max,
-            audience: audience === &quot;Meine Gruppe&quot; ? &quot;gruppe&quot; : audience === &quot;Alle&quot; ? &quot;alle&quot; : &quot;mitspieler&quot;,
-            group_id: audience === &quot;Meine Gruppe&quot; ? state.selectedGroupId : null,
-            send_emails: sendEmails,
-            mail_type: chosenMailType,
-            cost_covered_by_organizer: $(&quot;#costCoveredByOrganizer&quot;)?.checked === true,
-            slots: playerSlots.slice(0, 4).map(slot =&gt; ({
-              slot_no: slot.slotNo,
-              email: slot.email,
-              accepted: slot.accepted,
-              status: slot.accepted ? &quot;accepted&quot; : &quot;invited&quot;,
-              display_name: slot.email.toLowerCase() === user.email.toLowerCase() ? user.name : &quot;&quot;,
-              playing_level: slot.email.toLowerCase() === user.email.toLowerCase() ? user.level : &quot;&quot;
-            }))
-          };
-          const data = await callMeetupFunction(payload);
-          const saved = data.meetup ? ownMatchFromMeetup(data.meetup) : null;
-          if (saved) {
-            saved.mailType = chosenMailType === &quot;status_update&quot; ? &quot;Erinnerung&quot; : chosenMailType === &quot;du_bist_dabei&quot; ? &quot;Du bist dabei&quot; : &quot;Lust auf Padel?&quot;;
-            const index = state.ownMatches.findIndex(match =&gt; match.meetupId === saved.meetupId || match.id === saved.id || sameBookingSource(match, saved));
-            if (index &gt;= 0) state.ownMatches.splice(index, 1, saved);
-            else state.ownMatches.push(saved);
-            state.ownMatches.sort(sortByDate);
-          }
-          updateUserLevelReferences();
-          renderPickLists();
-          renderStatus();
-          const summary = data.mail_summary || {};
-          const sentCount = Number(summary.sent || 0);
-          const skippedCount = Number(summary.skipped || 0);
-          const failedCount = Number(summary.failed || 0);
-          const configured = summary.configured !== false;
-          const warnings = Array.isArray(summary.warnings) ? summary.warnings.filter(Boolean).map(value =&gt; readableErrorText(value, &quot;&quot;)).filter(Boolean) : [];
-          const successText = !sendEmails
-            ? &quot;Änderungen gespeichert&quot;
-            : failedCount
-              ? configured ? `${sentCount} verschickt · ${failedCount} fehlgeschlagen` : &quot;Mailversand nicht konfiguriert&quot;
-            : forcedMailType === &quot;status_update&quot; &amp;&amp; sentCount
-              ? `${sentCount} Erinnerungs-Mail${sentCount === 1 ? &quot;&quot; : &quot;s&quot;} verschickt`
-            : sentCount
-              ? `${sentCount} neue Adresse${sentCount === 1 ? &quot;&quot; : &quot;n&quot;} informiert`
-            : skippedCount
-              ? &quot;Bereits informiert · keine Doppelmail&quot;
-              : &quot;Keine neue Adresse zu informieren&quot;;
-          if (actionButton) {
-            actionButton.classList.remove(&quot;coral&quot;);
-            actionButton.classList.add(&quot;done&quot;);
-            actionButton.textContent = successText;
-            actionButton.disabled = !!sendEmails;
-          }
-          refreshParticipantStatusPills($(&quot;#editor&quot;));
-          if (sendEmails) {
-            const resultMessage = configured
-              ? warnings.length ? warnings.join(&quot; &quot;) : &quot;Bereits informierte Empfänger bekommen keine zweite Mail. Fehlgeschlagene Adressen kannst du gezielt prüfen.&quot;
-              : &quot;Der Termin wurde gespeichert, aber der Mailversand ist noch nicht konfiguriert.&quot;;
-            showInviteResultDialog(successText, resultMessage, data.mail_results || [], () =&gt; {
-              refreshActionButtons();
-              sendMeetHeight();
-            });
-          } else {
-            window.setTimeout(() =&gt; {
-              refreshActionButtons();
-              sendMeetHeight();
-            }, 1400);
-          }
-          toast(successText);
-          sendMeetHeight();
-          return;
-        } catch (e) {
-          const errorText = readableErrorText(e, &quot;Verabredung konnte nicht gespeichert werden.&quot;);
-          toast(errorText);
-          if (actionButton) {
-            actionButton.disabled = false;
-            actionButton.textContent = forcedMailType === &quot;status_update&quot; ? &quot;Erinnerungs-Mail schicken&quot; : sendEmails ? &quot;Spieler informieren&quot; : &quot;Änderungen speichern&quot;;
-          }
-          if (sendEmails) {
-            const visibleError = errorText === &quot;[object Object]&quot;
-              ? &quot;Die Live-Function hat ein nicht lesbares Fehlerobjekt zurückgegeben. Bitte die aktuelle manage-meetup-Datei deployen und danach die Diagnose-SQL prüfen.&quot;
-              : errorText;
-            showInviteResultDialog(&quot;Versand nicht abgeschlossen&quot;, &quot;Die Verabreden-Funktion ist vor einer einzelnen Versandrückmeldung abgebrochen. Das bedeutet nicht automatisch, dass jede eingegebene Adresse einzeln abgelehnt wurde.&quot;, [{ email: &quot;Verabreden-Funktion&quot;, status: &quot;failed&quot;, error: visibleError }], () =&gt; {
-              refreshActionButtons();
-              sendMeetHeight();
-            });
-          }
-          return;
-        }
-      }
-      const players = playerSlots.slice(0, 4).map(slot =&gt; {
-        const email = slot.email;
-        return ({
-        email,
-        name: email.toLowerCase() === user.email.toLowerCase() ? user.name : email,
-        level: email.toLowerCase() === user.email.toLowerCase() ? user.level : &quot;&quot;,
-        avatar_url: email.toLowerCase() === user.email.toLowerCase() ? user.avatar_url || &quot;&quot; : &quot;&quot;,
-        status: slot.accepted ? &quot;accepted&quot; : &quot;invited&quot;,
-        inviteKind: email.toLowerCase() === user.email.toLowerCase() ? &quot;organizer&quot; : &quot;direct&quot;,
-        isOrganizer: email.toLowerCase() === user.email.toLowerCase(),
-        accepted: slot.accepted,
-        acceptedAt: slot.accepted ? new Date().toISOString() : &quot;&quot;
-      })});
-      while (players.length &lt; 4) players.push(null);
-      const mailType = chosenMailType === &quot;status_update&quot; ? &quot;Erinnerung&quot; : chosenMailType === &quot;du_bist_dabei&quot; ? &quot;Du bist dabei&quot; : &quot;Lust auf Padel?&quot;;
-      const shouldSendMail = !!sendEmails;
-      const notifyPool = audience === &quot;Meine Gruppe&quot; ? uniqueEmails([...emails, ...(selectedGroup?.emails || [])]) : audience === &quot;Alle&quot; ? emails : emails;
-      const existing = state.ownMatches.findIndex(match =&gt; {
-        const current = ownMatchFor(item);
-        return current &amp;&amp; match === current;
-      });
-      const previous = existing &gt;= 0 ? state.ownMatches[existing] : null;
-      const previouslySent = previous?.sentEmails || [];
-      const previousDeliveries = previous?.deliveries || [];
-      const sentKeys = previouslySent.map(x =&gt; x.toLowerCase());
-      const newRecipients = shouldSendMail ? uniqueEmails(notifyPool).filter(email =&gt; {
-        const key = email.toLowerCase();
-        return mailOk(email) &amp;&amp; key !== user.email.toLowerCase() &amp;&amp; !sentKeys.includes(key);
-      }) : [];
-      const now = new Date().toISOString();
-      const newDeliveries = newRecipients.map(email =&gt; ({
-        email: email.toLowerCase(),
-        mailType: chosenMailType,
-        status: &quot;sent&quot;,
-        sentAt: now,
-        error: &quot;&quot;
-      }));
-      const match = {
-        bookingId: item.bookingId || item.id,
-        day: item.day,
-        date: item.date,
-        dateISO: item.dateISO,
-        time: item.time,
-        end: item.end,
-        court: item.court,
-        duration: item.duration,
-        level: selectedLevelsFromEditor().join(&quot;, &quot;),
-        levels: selectedLevelsFromEditor(),
-        gender: selectedChip(&quot;gender&quot;),
-        ageMin: ageFilter.min,
-        ageMax: ageFilter.max,
-        audience,
-        groupId: audience === &quot;Meine Gruppe&quot; ? state.selectedGroupId : &quot;&quot;,
-        costCoveredByOrganizer: $(&quot;#costCoveredByOrganizer&quot;)?.checked === true,
-        players,
-        deliveries: [...previousDeliveries, ...newDeliveries],
-        extraEmails: audience === &quot;Meine Gruppe&quot; ? uniqueEmails([...emails.slice(4), ...(selectedGroup?.emails || [])]) : emails.slice(4),
-        mailType,
-        sentEmails: Array.from(new Set([...previouslySent, ...newRecipients]))
-      };
-      if (existing &gt;= 0) state.ownMatches.splice(existing, 1, match);
-      else state.ownMatches.push(match);
-      state.ownMatches.sort(sortByDate);
-      renderStatus();
-      if (actionButton) {
-        actionButton.classList.remove(&quot;coral&quot;);
-        actionButton.classList.add(&quot;done&quot;);
-        actionButton.textContent = forcedMailType === &quot;status_update&quot; ? &quot;Erinnerung verschickt&quot; : shouldSendMail ? &quot;Spieler informiert&quot; : &quot;Änderungen gespeichert&quot;;
-        actionButton.disabled = shouldSendMail;
-      }
-      refreshParticipantStatusPills($(&quot;#editor&quot;));
-      if (!sendEmails) {
-        refreshActionButtons();
-        toast(&quot;Änderungen gespeichert. Es wurde keine Mail verschickt.&quot;);
-      } else if (audience === &quot;Alle&quot; &amp;&amp; !newRecipients.length) {
-        const localResults = previouslySent.map(email =&gt; ({ email, status: &quot;skipped_duplicate&quot; }));
-        showInviteResultDialog(&quot;Offene Einladung gespeichert&quot;, &quot;Einladungen an alle erscheinen in der App. Es wird keine direkte Mail verschickt.&quot;, localResults, () =&gt; {
-          refreshActionButtons();
-          sendMeetHeight();
-        });
-        toast(&quot;Offene Einladung gespeichert. Keine neue Adresse zu informieren.&quot;);
-      } else if (newRecipients.length) {
-        const localResults = newRecipients.map(email =&gt; ({ email, status: &quot;sent&quot; }));
-        showInviteResultDialog(forcedMailType === &quot;status_update&quot; ? &quot;Erinnerung verschickt&quot; : &quot;Spieler informiert&quot;, &quot;Lokale Vorschau: Live zeigt hier die echte Zustellrückmeldung der Edge Function.&quot;, localResults, () =&gt; {
-          refreshActionButtons();
-          sendMeetHeight();
-        });
-        toast(`${newRecipients.length} neue Adresse${newRecipients.length === 1 ? &quot;&quot; : &quot;n&quot;}: ${mailType === &quot;Erinnerung&quot; ? &quot;Erinnerungs-Mail&quot; : mailType === &quot;Du bist dabei&quot; ? &quot;Du-bist-dabei-Mail&quot; : &quot;Lust-auf-Padel-Mail&quot;} vorbereitet.`);
-      } else {
-        const localResults = previouslySent.map(email =&gt; ({ email, status: &quot;skipped_duplicate&quot; }));
-        showInviteResultDialog(&quot;Bereits informiert&quot;, &quot;Keine Adresse wird doppelt informiert. Nur neue Empfänger werden erneut angeschrieben.&quot;, localResults, () =&gt; {
-          refreshActionButtons();
-          sendMeetHeight();
-        });
-        toast(&quot;Änderungen gespeichert. Keine Adresse wird doppelt informiert.&quot;);
-      }
+    async function sendInvitation() {
+      const item=currentBooking();if(!item)return;
+      const all=collectEmails(),targets=uniqueEmails(all.filter(v=&gt;!isUserEmail(v)));
+      if(all.some(v=&gt;!mailOk(v))){toast(&quot;Bitte einen Spieler auswählen oder eine gültige E-Mail-Adresse eingeben.&quot;);return;}
+      if(uniqueEmails(all).length!==all.length){toast(&quot;Bitte jede Person nur einmal auswählen.&quot;);return;}
+      const slots=collectPlayerSlots().filter(p=&gt;p.accepted);
+      if(slots.length&gt;4||targets.length&gt;12){toast(&quot;Höchstens zwölf Einladungen und vier bestätigte Spieler sind möglich.&quot;);return;}
+      const age=selectedAgeFilterFromEditor();if(!age)return;
+      const button=$(&quot;#sendInvite&quot;);button.disabled=true;button.textContent=&quot;Einladung wird gespeichert …&quot;;
+      try {
+        const data=await callMeetupFunction({action:&quot;save_meetup&quot;,booking_id:item.bookingId||&quot;&quot;,subscription_id:item.subscriptionId||&quot;&quot;,scheduled_date:item.dateISO,
+          desired_levels:selectedLevelsFromEditor().filter(l=&gt;l!==&quot;egal&quot;),desired_gender:selectedChip(&quot;gender&quot;),desired_age_min:age.min,desired_age_max:age.max,
+          audience:selectedChip(&quot;audience&quot;)===&quot;Alle&quot;?&quot;alle&quot;:&quot;mitspieler&quot;,group_id:null,recipient_emails:targets,send_emails:false,mail_type:&quot;lust_auf_padel&quot;,
+          cost_covered_by_organizer:$(&quot;#costCoveredByOrganizer&quot;)?.checked===true,
+          slots:slots.map((p,i)=&gt;({slot_no:i+1,email:p.email,accepted:true,display_name:profileForEmail(p.email)?.name||&quot;&quot;}))});
+        if(!data.meetup)throw new Error(&quot;Die Einladung konnte nicht bestätigt werden.&quot;);
+        const saved=ownMatchFromMeetup(data.meetup),index=state.ownMatches.findIndex(m=&gt;m.meetupId===saved.meetupId||m.id===saved.id||sameBookingSource(m,saved));
+        if(index&gt;=0)state.ownMatches.splice(index,1,saved);else state.ownMatches.push(saved);
+        recipientDrafts.delete(item.id);renderPickLists();renderEditor();renderStatus();toast(&quot;Einladung in der App aktualisiert. Keine E-Mail verschickt.&quot;);
+      } catch(error){toast(readableErrorText(error,&quot;Einladung konnte nicht gespeichert werden.&quot;));button.disabled=false;button.textContent=&quot;Erneut versuchen&quot;;}
+      sendMeetHeight();
     }
+
     async function acceptInvitation() {
       const item = currentInvite();
       if (embedded &amp;&amp; item?.id &amp;&amp; !item.demo) {
@@ -5538,7 +5362,7 @@ main {
         detailLines.push(audienceLongLabel(item));
         detailLines.push(countParts.length ? countParts.join(&quot; · &quot;) : &quot;gespeichert&quot;);
       }
-      const detailHtml = detailLines.length ? detailLines.map(line =&gt; `&lt;span&gt;${esc(line)}&lt;/span&gt;`).join(&quot;&quot;) : '&lt;span&gt;gespeichert&lt;/span&gt;';
+      const detailHtml = detailLines.length ? detailLines.map(line =&gt; `&lt;span&gt;${esc(line)}&lt;/span&gt;`).join(&quot;&quot;) : &#x27;&lt;span&gt;gespeichert&lt;/span&gt;&#x27;;
       const world = kind === &quot;own&quot; ? &quot;own-world&quot; : &quot;invite-world&quot;;
       const shade = index % 2 === 0 ? &quot;shade-a&quot; : &quot;shade-b&quot;;
       const complete = accepted &gt;= 4;
@@ -5548,16 +5372,16 @@ main {
           &lt;div&gt;&lt;div class=&quot;day&quot;&gt;${esc(item.day)}, ${esc(item.date)}&lt;/div&gt;&lt;div class=&quot;time&quot;&gt;${esc(item.time)}-${esc(item.end)}&lt;/div&gt;&lt;/div&gt;
           &lt;span class=&quot;status progress ${complete ? &quot;complete&quot; : &quot;green&quot;}&quot;&gt;&lt;strong&gt;${esc(statusText)}&lt;/strong&gt;${detailHtml}&lt;/span&gt;
         &lt;/div&gt;
-        &lt;div class=&quot;meta&quot;&gt;&lt;div class=&quot;meta-left&quot;&gt;&lt;span&gt;${esc(item.court)}&lt;/span&gt;&lt;span&gt;${esc(item.duration)}&lt;/span&gt;${item.mailType ? `&lt;span&gt;${esc(item.mailType)}&lt;/span&gt;` : &quot;&quot;}&lt;/div&gt;${item.costCoveredByOrganizer ? '&lt;div class=&quot;meta-right&quot;&gt;&lt;span class=&quot;cost-cover-pill&quot;&gt;Gastgeber zahlt&lt;/span&gt;&lt;/div&gt;' : &quot;&quot;}&lt;/div&gt;
+        &lt;div class=&quot;meta&quot;&gt;&lt;div class=&quot;meta-left&quot;&gt;&lt;span&gt;${esc(item.court)}&lt;/span&gt;&lt;span&gt;${esc(item.duration)}&lt;/span&gt;${item.mailType ? `&lt;span&gt;${esc(item.mailType)}&lt;/span&gt;` : &quot;&quot;}&lt;/div&gt;${item.costCoveredByOrganizer ? &#x27;&lt;div class=&quot;meta-right&quot;&gt;&lt;span class=&quot;cost-cover-pill&quot;&gt;Gastgeber zahlt&lt;/span&gt;&lt;/div&gt;&#x27; : &quot;&quot;}&lt;/div&gt;
         &lt;div class=&quot;player-grid&quot;&gt;${[0,1,2,3].map(i =&gt; seatHTML(item.players[i], i)).join(&quot;&quot;)}&lt;/div&gt;
       &lt;/article&gt;`;
     }
     function renderStatus() {
       const now = new Date();
       const ownItems = state.ownMatches.filter(item =&gt; isWithinNextMonth(item, now) &amp;&amp; hasVisibleBookingSource(item)).sort(sortByDate).slice(0, 20);
-      $(&quot;#ownStatus&quot;).innerHTML = ownItems.length ? ownItems.map((item, index) =&gt; miniStatusHTML(item, &quot;own&quot;, index)).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine eigene Einladung vorbereitet.&lt;/div&gt;';
+      $(&quot;#ownStatus&quot;).innerHTML = ownItems.length ? ownItems.map((item, index) =&gt; miniStatusHTML(item, &quot;own&quot;, index)).join(&quot;&quot;) : &#x27;&lt;div class=&quot;empty&quot;&gt;Noch keine eigene Einladung vorbereitet.&lt;/div&gt;&#x27;;
       const acceptedItems = state.accepted.map(id =&gt; invites.find(item =&gt; item.id === id)).filter(Boolean).filter(item =&gt; isFutureItem(item, now)).sort(sortByDate).slice(0, 10);
-      $(&quot;#acceptedStatus&quot;).innerHTML = acceptedItems.length ? acceptedItems.map((item, index) =&gt; miniStatusHTML(item, &quot;invite&quot;, index)).join(&quot;&quot;) : '&lt;div class=&quot;empty&quot;&gt;Noch keine Einladung angenommen.&lt;/div&gt;';
+      $(&quot;#acceptedStatus&quot;).innerHTML = acceptedItems.length ? acceptedItems.map((item, index) =&gt; miniStatusHTML(item, &quot;invite&quot;, index)).join(&quot;&quot;) : &#x27;&lt;div class=&quot;empty&quot;&gt;Noch keine Einladung angenommen.&lt;/div&gt;&#x27;;
       applyBalls($(&quot;#ownStatus&quot;));
       applyBalls($(&quot;#acceptedStatus&quot;));
     }
@@ -22100,7 +21924,7 @@ function profileCardHTML() {
         <label class="form-label">Einladungen</label>
         <label class="acct-pref-row">
           <input type="checkbox" id="pfOpenInvites" ${openInvitesAllowed ? 'checked' : ''}>
-          <span><strong>Einladungen von allen zulassen</strong><em>Wenn ausgeschaltet, siehst du nur direkte Einladungen oder Einladungen deiner Gruppen.</em></span>
+          <span><strong>Für Mitspieler auffindbar sein</strong><em>Andere Padel-Spieler können dich per Namen finden. Wenn ausgeschaltet, bleibst du über eine bekannte E-Mail-Adresse oder deine Gruppen einladbar und siehst nur direkte Einladungen.</em></span>
         </label>
       </div>
       <div class="form-group">
