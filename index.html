@@ -2111,6 +2111,7 @@ main {
 .lockbox-access .lockbox-pin { display: block; }
 
 </style>
+<style id="ownerFreibadTicketStyles">.owner-freibad-tickets{margin-top:20px}.owner-freibad-tickets h3{font-size:17px;margin:0 0 12px}.owner-freibad-ticket-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.owner-freibad-ticket-grid .match-personal-ticket{max-width:none!important;margin:0!important;padding:14px!important;min-width:0}.owner-freibad-ticket-grid img{max-width:100%!important;height:30px!important}.owner-freibad-ticket-grid strong{font-size:14px}.owner-freibad-ticket-grid .match-personal-ticket>div{font-size:22px!important}@media(max-width:420px){.owner-freibad-ticket-grid{grid-template-columns:1fr}}</style>
 </head>
 <body class="bielstein-theme">
 
@@ -6032,6 +6033,15 @@ main {
     <div id="adminFreibad">
 
       <p class="admin-price-help">Die Freibad-Aufschläge werden unter <button type="button" class="admin-price-link" onclick="setAdminTab('prices')">Preise</button> gepflegt. Hier legst du Saison und Öffnungszeiten fest.</p>
+
+      <div class="admin-section" id="freibadTicketDisplaySection">
+        <div class="admin-section-title">Freibadtickets anzeigen</div>
+        <div class="admin-card">
+          <label style="display:flex;align-items:center;gap:12px;font-weight:800;cursor:pointer;"><input type="checkbox" id="cfgAlwaysFreibadTickets" disabled onchange="saveAdminFreibadTicketDisplay()" style="width:20px;height:20px;accent-color:#FF5934;">Freibadtickets immer anzeigen</label>
+          <p class="admin-price-help" style="margin:12px 0 0;">Für deine Präsentation: Tickets auch außerhalb der Freibad-Saison und Öffnungszeiten anzeigen. Neue Bestätigungsmails enthalten dann ebenfalls die Tickets. Preise und Eingangsauswahl bleiben unverändert.</p>
+          <div class="admin-ok" id="cfgTicketDisplayOk"></div><div class="admin-err" id="cfgTicketDisplayErr"></div>
+        </div>
+      </div>
 
       <!-- Saison -->
       <div class="admin-section">
@@ -12584,6 +12594,18 @@ async function fetchConfirmedMatchAccess(b){
  const response=await fetch(SUPABASE_URL+'/functions/v1/manage-meetup',{method:'POST',headers:await authHeaders(),body:JSON.stringify({action:'match_access',meetup_id:b.id}),cache:'no-store'});
  const data=await response.json();if(!response.ok||currentUser?.id!==viewer)throw Error('match_access_unavailable');return data;
 }
+async function fetchOwnerFreibadTickets(b){
+  if(b.isMatch||b.isEvent)return [];
+  const viewer=currentUser?.id;if(!viewer)return [];
+  const {data,error}=await sb.rpc('freibad_my_booking_tickets',{p_kind:lockboxBookingKind(b),p_sale_id:b.id,p_day:b.date});
+  if(error)throw error;if(currentUser?.id!==viewer)return [];
+  if(!Array.isArray(data)||![0,4].includes(data.length)||data.some((t,i)=>Number(t.ticket_no)!==i+1||!/^[A-HJ-NP-Z2-9]{6}$/.test(t.code)))throw Error('Freibadtickets konnten nicht geprüft werden.');
+  return data;
+}
+function ownerFreibadTicketsHtml(tickets,day){
+  if(!tickets.length)return '';
+  return '<section class="owner-freibad-tickets" aria-label="Deine Freibadtickets"><h3>Deine Freibadtickets</h3><div class="owner-freibad-ticket-grid">'+tickets.map(t=>personalMatchTicketHtml({...t,day})).join('')+'</div></section>';
+}
 function personalMatchTicketHtml(ticket){
  if(!ticket)return '';return '<div class="match-personal-ticket" style="background:#98a3bc;border-radius:14px;padding:18px;text-align:center;max-width:320px;margin:16px 0;"><img src="sponsors/Freibad%20Bielstein%20-%20Logo.png" alt="Freibad Bielstein" style="height:34px;max-width:180px;object-fit:contain;margin:0 auto 10px;display:block;"><strong>Freibad-Ticket '+esc(ticket.ticket_no)+'</strong><div style="background:#fff;border-radius:8px;font-family:monospace;font-size:24px;letter-spacing:3px;padding:12px;margin:12px 0;">'+esc(ticket.code)+'</div><small>Gültig am '+esc(new Date(ticket.day+'T12:00:00').toLocaleDateString('de-DE'))+' · 1 Person · nur einmal</small></div>';
 }
@@ -12791,6 +12813,10 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
   }catch(error) {
     if(!current())return;
     content.textContent='Der Zugangscode konnte nicht geladen werden. Bitte erneut laden oder den Verein kontaktieren.';
+  }
+  if(!b.isMatch&&!b.isEvent&&current()&&bookingDateAt(b).getTime()+bookingReadTime(b).minutes*60000>Date.now()){
+    try{const tickets=await fetchOwnerFreibadTickets(b);if(current()&&tickets.length)content.insertAdjacentHTML('beforeend',ownerFreibadTicketsHtml(tickets,b.date));}
+    catch(error){if(current())content.insertAdjacentHTML('beforeend','<p role="status">Freibadtickets konnten gerade nicht geladen werden. Bitte erneut laden.</p>');}
   }
   // The prominent card refreshes at expiry; future booking cards need no countdown.
   if(!target&&current()) {
@@ -17155,11 +17181,38 @@ async function loadAdminFreibad() {
   document.getElementById('cfgOpenH').value  = freibadConfig.open_hour;
   document.getElementById('cfgCloseH').value = freibadConfig.close_hour;
   await loadClosureList();
+  await loadAdminFreibadTicketDisplay();
   renderExceptionList();
   loadFreibadPricingAdmin();
   if (typeof loadOpenInvitesEnabled === 'function') loadOpenInvitesEnabled();
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
+}
+
+let freibadTicketDisplayState=null;
+async function loadAdminFreibadTicketDisplay(){
+  const input=document.getElementById('cfgAlwaysFreibadTickets');if(!input)return;
+  freibadTicketDisplayState=null;input.disabled=true;
+  try{
+    const {data,error}=await sb.rpc('public_freibad_ticket_display');
+    if(error)throw error;
+    if(typeof data?.always_show!=='boolean'||!Number.isFinite(Date.parse(data.updated_at)))throw Error('Die Ticketeinstellung konnte nicht geprüft werden.');
+    freibadTicketDisplayState=data;input.checked=data.always_show;input.disabled=false;
+  }catch(error){showAdminMsg('cfgTicketDisplayErr',error.message||'Ticketeinstellung nicht verfügbar. Bitte neu laden.');}
+}
+async function saveAdminFreibadTicketDisplay(){
+  const input=document.getElementById('cfgAlwaysFreibadTickets');if(!input||!freibadTicketDisplayState)return;
+  const desired=input.checked;input.disabled=true;
+  document.getElementById('cfgTicketDisplayOk').textContent='';document.getElementById('cfgTicketDisplayErr').textContent='';
+  try{
+    const {data,error}=await sb.rpc('admin_save_freibad_ticket_display',{p_always_show:desired,p_expected_updated_at:freibadTicketDisplayState.updated_at});
+    if(error)throw error;
+    if(data?.always_show!==desired||!Number.isFinite(Date.parse(data.updated_at)))throw Error('Speichern konnte nicht bestätigt werden.');
+    freibadTicketDisplayState=data;input.checked=data.always_show;
+    if(typeof clearLockboxAccess==='function')clearLockboxAccess(true);
+    showAdminMsg('cfgTicketDisplayOk',desired?'✓ Freibadtickets werden immer angezeigt.':'✓ Freibadtickets werden wieder nach den Freibadzeiten angezeigt.');
+  }catch(error){await loadAdminFreibadTicketDisplay();showAdminMsg('cfgTicketDisplayErr',error.message||'Speichern nicht bestätigt. Bitte neu laden.');}
+  finally{input.disabled=!freibadTicketDisplayState;}
 }
 
 async function saveFreibadConfig() {
