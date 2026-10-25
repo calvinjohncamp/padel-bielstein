@@ -12765,6 +12765,17 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
     const template=document.createElement('template');
     template.innerHTML=PBLockboxContent.lockboxAccessHtml(access);
     if(!showPhoto)template.content.querySelector('.lockbox-access-header td:last-child')?.remove();
+    const photo=template.content.querySelector('.lockbox-photo');
+    if(photo) {
+      const label='Schlüsselbox · '+(access.side==='F'?'Freibadseite':'Parkplatzseite');
+      const button=document.createElement('button');
+      button.type='button';button.className='lockbox-photo-button';
+      button.setAttribute('aria-label',label+' groß ansehen');
+      button.setAttribute('aria-haspopup','dialog');
+      button.addEventListener('click',()=>openAvatarLightbox(photo.src,label,photo.src,'lockbox'));
+      photo.replaceWith(button);button.appendChild(photo);
+    }
+
     const closing=template.content.querySelector('.lockbox-instructions p:last-child');
     if(closing)closing.textContent='Nach Spielende einfach nur die Tür wieder zuziehen.';
     content.replaceChildren(template.content);
@@ -22629,7 +22640,7 @@ function ensureAvatarLightbox() {
   document.body.appendChild(overlay);
   return overlay;
 }
-function openAvatarLightbox(avatarUrl, name = '', largeUrl = '') {
+function openAvatarLightbox(avatarUrl, name = '', largeUrl = '', photoKind = 'avatar') {
   const cleanAvatar = String(avatarUrl || '').trim();
   if (!cleanAvatar) return;
   const cleanLarge = String(largeUrl || avatarLargeUrl(cleanAvatar) || cleanAvatar).trim();
@@ -22643,7 +22654,10 @@ function openAvatarLightbox(avatarUrl, name = '', largeUrl = '') {
       img.src = cleanAvatar;
     }
   };
-  img.alt = name ? `Profilbild von ${name}` : 'Profilbild';
+  const isLockbox=photoKind==='lockbox';
+  overlay.classList.toggle('is-lockbox',isLockbox);
+  overlay.querySelector('[role="dialog"]').setAttribute('aria-label',isLockbox?'Schlüsselbox ansehen':'Profilbild ansehen');
+  img.alt = isLockbox ? name : name ? `Profilbild von ${name}` : 'Profilbild';
   img.src = cleanLarge;
   title.textContent = name || 'Profilbild';
   overlay.classList.add('open');
@@ -28727,5 +28741,10 @@ body.bielstein-theme #upcomingBookingsCard { margin-left: 0 !important; margin-r
 body.bielstein-theme #modePlay .play-history-title { margin-left: 0 !important; }
 @media(max-width:380px) { .play-route-address { gap: 10px; font-size: 13px; } .play-route-address > a { font-size: 12px; padding: 11px 12px; } }
 body.bielstein-theme #playLoggedIn { padding-inline: 3px; }
+
+/* Reuse the account-photo viewer with the uncropped original box image. */
+.lockbox-photo-button { display: block; padding: 0; margin: 0; border: 0; border-radius: 14px; background: transparent; cursor: zoom-in; line-height: 0; }
+.lockbox-photo-button:focus-visible { outline: 3px solid #D95736; outline-offset: 4px; }
+body.bielstein-theme .avatar-lightbox.is-lockbox .avatar-lightbox-card { width: min(92vw,960px); }
 
 </style>
