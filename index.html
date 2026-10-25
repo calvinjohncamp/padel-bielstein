@@ -9826,6 +9826,12 @@ function renderMinuteSlots(){
 function minuteAboBilledCount(months,weeks){
   return (months===12?'':String(months/12).replace('.',',')+' × ')+String(weeks).replace('.',',');
 }
+function minuteLoyaltyExplanation(offer){
+  if(!offer||!['percent','free_hour'].includes(offer.kind))return '';
+  const threshold=Number.isInteger(offer.threshold)&&offer.threshold>0?offer.threshold:null;
+  if(offer.kind==='free_hour')return threshold?`Deine ${threshold}. gebuchte Spielstunde ist kostenlos. Bei dieser Buchung schenken wir dir 60 Minuten.`:'Bei dieser Buchung erhältst du als Treuebonus 60 Minuten kostenlos.';
+  return (threshold?`Du hast ${threshold} gebuchte Spielstunden erreicht. `:'')+`Dafür erhältst du bei dieser Einzelbuchung einmalig ${offer.pct} % Treuerabatt.`;
+}
 function minuteCalc(root,terms,price,total=price.netCents,billing=null){
   const heading=document.createElement('div');heading.className='abo-calc-h';heading.textContent='Transparenz – So setzt sich dein Buchungspreis zusammen';
   const table=document.createElement('table'),body=document.createElement('tbody');table.style.minWidth='0';table.style.tableLayout='fixed';table.style.width='100%';
@@ -9833,7 +9839,7 @@ function minuteCalc(root,terms,price,total=price.netCents,billing=null){
   if(billing)for(const row of rows)row[1]=row[1].replace(/ \(.*\)$/,'');
   if(billing)rows.push(['Summe',fmt(price.snapshot.grossCents/100)]);
   if(price.snapshot.discountPct>0)rows.push([(price.discountLabel||'Rabatt').replaceAll('/',' / '),`${String(price.snapshot.discountPct).replace('.',',')} %`]);
-  if(price.loyaltyDiscountCents>0)rows.push([price.offer?.kind==='free_hour'?'Treuebonus – 100. Stunde kostenlos':`Treuebonus – ${price.offer?.pct||0} %`,fmt(price.loyaltyDiscountCents/100)]);
+  if(price.loyaltyDiscountCents>0)rows.push([price.offer?.kind==='free_hour'?`Treuebonus – ${price.offer.threshold||100}. Stunde kostenlos`:`Treuebonus – ${price.offer?.pct||0} %`,fmt(price.loyaltyDiscountCents/100)]);
   if(billing){
     rows.push(['Preis je Termin nach Rabatt',fmt(price.netCents/100)]);
     rows.push(['Berechnete Termine',minuteAboBilledCount(billing.months,billing.weeks)]);
@@ -9842,6 +9848,7 @@ function minuteCalc(root,terms,price,total=price.netCents,billing=null){
   rows.push(['Dein Buchungspreis',fmt(total/100)]);
   for(const values of rows){const tr=document.createElement('tr');for(const value of values){const td=document.createElement('td');td.textContent=value;td.style.whiteSpace='normal';td.style.overflowWrap='anywhere';td.style.width='50%';td.style.textAlign=tr.children.length?'right':'left';tr.appendChild(td);}body.appendChild(tr);}
   table.appendChild(body);const wrap=document.createElement('div');wrap.className='abo-calc-wrap';wrap.appendChild(table);root.replaceChildren(heading,wrap);
+  const reason=minuteLoyaltyExplanation(price.offer);if(reason){const note=document.createElement('p');note.className='loyalty-explanation';note.style.cssText='margin:12px 0 0;font-size:14px;line-height:1.5';note.textContent=reason;root.appendChild(note);}
 }
 function updateMinuteSummary(){
   const card=document.getElementById('sumCard'),button=document.getElementById('bookBtn');
@@ -9851,7 +9858,7 @@ function updateMinuteSummary(){
   const values={sDate:new Date(selDate+'T12:00Z').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}),
     sCourt:courtLabel(selSlot.court),sTime:PBMinuteDomain.receiptBookingTime(terms).range,sDur:`${minuteSingleDuration} Minuten`,sTotal:fmt(p.netCents/100),sPer:fmt(p.netCents/400),
     sReg:p.netCents<p.snapshot.grossCents?`statt ${fmt(p.snapshot.grossCents/100)} regulär`:'',
-    'sb-rabatt':[p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:'',p.offer.kind==='free_hour'?'Treuebonus: Du hast die kostenlose 100. Stunde erreicht. Bei dieser Buchung sind 60 Minuten kostenlos.':p.offer.kind==='percent'?`Zusätzlich erhältst du ${p.offer.pct} % Treuebonus.`:''].filter(Boolean).join(' ')};
+    'sb-rabatt':[p.snapshot.discountPct>0?`Dein Rabatt beträgt ${String(p.snapshot.discountPct).replace('.',',')} %.`:'',minuteLoyaltyExplanation(p.offer)].filter(Boolean).join(' ')};
   for(const [id,value]of Object.entries(values)){const e=document.getElementById(id);if(e)e.textContent=value;}
   const save=document.getElementById('sSave');save.style.display=p.netCents<p.snapshot.grossCents?'':'none';save.textContent=`Du sparst ${fmt((p.snapshot.grossCents-p.netCents)/100)}`;
   const bonus=document.getElementById('sb-bonus');if(bonus)bonus.style.display=p.snapshot.parts.some(part=>part.surchargeRateCents>0)?'':'none';
@@ -12105,7 +12112,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
 
   const matchItems=confirmedMatches===null?await loadConfirmedMatches():confirmedMatches;
   if(currentUser?.id!==viewerAuthId)return;
-  upcoming.push(...matchItems.filter(m=>m.date!==today));
+  upcoming.push(...matchItems.filter(m=>m.date>today));
   upcoming.sort((a,b) => a.date.localeCompare(b.date) || bookingReadTime(a).start - bookingReadTime(b).start);
 
   if (!upcoming.length) {
@@ -12133,7 +12140,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
       <div class="upcoming-item-head">
         <div class="upcoming-item-main">
           <div class="upcoming-item-date">${dateStr} · ${timeStr} Uhr</div>
-          <div class="upcoming-item-note">${courtLabel(item.court)}${item.isMatch?' · Gebucht von '+esc(item.bookedBy)+(item.matchState==='ready'?' · ✓ Das Match steht':' · Ein Platz frei'):''}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
+          <div class="upcoming-item-note">${courtLabel(item.court)}${item.isMatch?' · Gebucht von '+esc(item.bookedBy)+' · Du bist dabei'+(item.matchState==='ready'?' · ✓ Das Match steht':''):''}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
         </div>
         <div class="upcoming-item-actions"><span class="upcoming-kind">${item.isMatch ? 'Mitspieltermin' : isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>${cancelAction ? `<div class="booking-cancel-row">${cancelAction}</div>` : ''}</div>
       </div>
@@ -12457,95 +12464,63 @@ function personalHistoryStartDate() {
   return localISODate(start);
 }
 
-async function renderMyHistory(reset) {
-  const card = document.getElementById('myHistoryCard');
-  const list = document.getElementById('myHistoryList');
-  const more = document.getElementById('historyMoreBtn');
-  if (!card || !list || !currentUser) return;
-  if (reset) { historyOffset = 0; list.innerHTML = ''; card.style.display = 'none'; more.style.display = 'none'; }
-
-  let userId;
-  try { userId = await dataUserId(); } catch(e) { return; }
-  if (!userId) return;
-
-  // Eine Portion vergangener Buchungen laden (jüngste zuerst).
-  // date <= heute; ob die Spielzeit wirklich vorbei ist, filtert das JS,
-  // damit heutige, noch laufende Buchungen nicht in der Historie landen.
-  let rows = [];
-  try {
-    const { data, error } = await sb
-      .from('bookings')
-      .select(bookingReadColumns('id,court,date,hour_start,duration,price_paid_cents,status'))
-      .eq('user_id', userId)
-      .gte('date', personalHistoryStartDate())
-      .lte('date', todayStr())
-      .in('status', ['paid', 'active'])
-      .order('date', { ascending: false })
-      .order('hour_start', { ascending: false })
-      .range(historyOffset, historyOffset + HISTORY_PAGE - 1);
-    if (error) throw error;
-    rows = data || [];
-  } catch(e) { console.error('Historie laden fehlgeschlagen', e); return; }
-
-  const now = new Date();
-  const done = rows.filter(b => {
-    const end = bookingDateAt(b).getTime() + bookingReadTime(b).minutes * 60000;
-    // Die ersten 24 Stunden nach Spielende gehören zur farblich
-    // hervorgehobenen Karte „Letzte Buchung", nicht ins graue Archiv.
-    return end + 24 * 3600 * 1000 <= now.getTime();
-  });
-
-  // Wettermeldungen zu dieser Portion holen (RLS: nur die eigenen)
-  let reportsByBooking = {};
-  if (done.length) {
-    try {
-      const { data } = await sb
-        .from('weather_reports')
-        .select('booking_id,percent,status,credit_cents')
-        .in('booking_id', done.map(b => b.id));
-      (data || []).forEach(r => { reportsByBooking[r.booking_id] = r; });
-    } catch(e) { console.error('Historie: Meldungen laden fehlgeschlagen', e); }
-  }
-
-  const html = done.map(b => {
-    const dateStr = new Date(b.date + 'T12:00:00').toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', year:'2-digit'});
-    const timeStr = `${bookingReadTime(b).range}`;
-    const price = b.price_paid_cents ? weatherFmtEUR(b.price_paid_cents) : '';
-    const r = reportsByBooking[b.id];
-    let badge;
-    if (!r) {
-      badge = `<span class="history-badge" style="color:#7A7368;">✓ gespielt</span>`;
-    } else if (r.status === 'pending') {
-      badge = `<span class="history-badge" style="color:#B8402C;">⏳ Wettermeldung wird geprüft</span>`;
-    } else if (r.status === 'approved') {
-      badge = r.percent === 100
-        ? `<span class="history-badge" style="color:#1F8A5F;">🌧 wetterbedingt ausgefallen · +${weatherFmtEUR(r.credit_cents || 0)}</span>`
-        : `<span class="history-badge" style="color:#1F8A5F;">🌧 ${r.percent} % gutgeschrieben · +${weatherFmtEUR(r.credit_cents || 0)}</span>`;
-    } else {
-      badge = `<span class="history-badge" style="color:#7A7368;">Wettermeldung nicht bestätigt</span>`;
+let historyItems=[];
+let historyOwner=null;
+let historyTodayEntries=[];
+let historyRenderRevision=0;
+function playHistoryKey(b){return `${b.isMatch?'match':b.isAbo?'abo':b.isEvent?'event':'booking'}:${b.id}:${b.date}:${bookingReadTime(b).start}`;}
+async function renderMyHistory(reset,completedToday=null,participantMatches=null) {
+  const card=document.getElementById('myHistoryCard'),list=document.getElementById('myHistoryList'),more=document.getElementById('historyMoreBtn');
+  if(!card||!list||!more||!currentUser)return;
+  const viewer=currentUser.id,revision=++historyRenderRevision;
+  const current=()=>currentUser?.id===viewer&&revision===historyRenderRevision;
+  if(historyOwner!==viewer){reset=true;historyTodayEntries=[];}
+  if(completedToday!==null)historyTodayEntries=completedToday;
+  if(reset){historyOffset=0;historyItems=[];historyOwner=viewer;list.innerHTML='';card.style.display='none';more.style.display='none';}
+  more.disabled=true;
+  try{
+    if(reset){
+      const userId=await dataUserId();if(!userId||!current())return;
+      const rows=[];let offset=0,chunk;
+      do{
+        const result=await sb.from('bookings').select(bookingReadColumns('id,court,date,hour_start,duration,price_paid_cents,status'))
+          .eq('user_id',userId).gte('date',personalHistoryStartDate()).lte('date',todayStr()).in('status',['paid','active'])
+          .order('date',{ascending:false}).order('id',{ascending:false}).range(offset,offset+499);
+        if(result.error)throw result.error;if(!current())return;
+        chunk=result.data||[];rows.push(...chunk);offset+=chunk.length;
+      }while(chunk.length===500);
+      const matches=participantMatches===null?await loadConfirmedMatches():participantMatches;if(!current())return;
+      const unique=new Map(),now=Date.now(),cutoff=personalHistoryStartDate();
+      for(const b of [...rows,...matches,...historyTodayEntries]){
+        if(b.date<cutoff||b.date>todayStr())continue;
+        if(bookingDateAt(b).getTime()+bookingReadTime(b).minutes*60000>now)continue;
+        unique.set(playHistoryKey(b),b);
+      }
+      historyItems=[...unique.values()].sort((a,b)=>b.date.localeCompare(a.date)||bookingReadTime(b).start-bookingReadTime(a).start);
     }
-    return `<div class="closure-item my-booking">
-      <div style="flex:1;">
-        <div class="closure-item-date">${dateStr} · ${timeStr} Uhr</div>
-        <div class="closure-item-note">${courtLabel(b.court)}${price ? ' · ' + price : ''}</div>
-      </div>
-      ${badge}
-    </div>`;
-  }).join('');
-
-  if (reset && !done.length && rows.length < HISTORY_PAGE) return;   // noch gar keine Vergangenheit -> Karte bleibt unsichtbar
-
-  list.insertAdjacentHTML('beforeend', html);
-  card.style.display = 'block';
-  if (!list.children.length) {
-    list.innerHTML = `<div class="play-empty" style="padding:24px 0;"><div style="font-size:0.82rem;color:#555;">Noch keine vergangenen Buchungen</div></div>`;
-  }
-
-  historyOffset += rows.length;
-  // Gibt es womöglich weitere? Nur dann den Knopf zeigen.
-  more.style.display = rows.length === HISTORY_PAGE ? 'block' : 'none';
+    const rows=historyItems.slice(historyOffset,historyOffset+HISTORY_PAGE),reportsByBooking={};
+    const ownIds=rows.filter(b=>!b.isMatch&&!b.isAbo&&!b.isEvent).map(b=>b.id);
+    if(ownIds.length){
+      const {data,error}=await sb.from('weather_reports').select('booking_id,percent,status,credit_cents').in('booking_id',ownIds);
+      if(error)console.warn('Historie: Wettermeldungen nicht verfügbar',error.message);
+      for(const r of data||[])reportsByBooking[r.booking_id]=r;
+    }
+    if(!current())return;
+    const html=rows.map(b=>{
+      const date=new Date(b.date+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'2-digit'});
+      const price=!b.isMatch&&!b.isAbo&&!b.isEvent&&Number.isFinite(b.price_paid_cents)?' · '+weatherFmtEUR(b.price_paid_cents):'';
+      const origin=b.isMatch?' · Gebucht von '+esc(b.bookedBy)+' · Du warst dabei':b.isAbo?' · Jahresabo':b.isEvent?' · Event':'';
+      const r=reportsByBooking[b.id];let badge='<span class="history-badge" style="color:#7A7368;">✓ Beendet</span>';
+      if(r?.status==='pending')badge='<span class="history-badge" style="color:#B8402C;">⏳ Wettermeldung wird geprüft</span>';
+      else if(r?.status==='approved')badge=`<span class="history-badge" style="color:#1F8A5F;">🌧 ${r.percent===100?'wetterbedingt ausgefallen':r.percent+' % gutgeschrieben'} · +${weatherFmtEUR(r.credit_cents||0)}</span>`;
+      else if(r)badge='<span class="history-badge" style="color:#7A7368;">Wettermeldung nicht bestätigt</span>';
+      return `<div class="closure-item my-booking"><div style="flex:1;"><div class="closure-item-date">${date} · ${bookingReadTime(b).range} Uhr</div><div class="closure-item-note">${esc(courtLabel(b.court))}${origin}${price}</div></div>${badge}</div>`;
+    }).join('');
+    list.insertAdjacentHTML('beforeend',html);historyOffset+=rows.length;
+    card.style.display=historyItems.length?'block':'none';more.style.display=historyOffset<historyItems.length?'block':'none';
+  }catch(error){if(current())console.error('Historie laden fehlgeschlagen',error);}
+  finally{if(current())more.disabled=false;}
 }
-
 function loadMoreHistory() { renderMyHistory(false); }
 
 // Guthaben verschenken: bucht sofort vom eigenen Saldo ab und legt dem
@@ -12672,6 +12647,8 @@ async function renderPlaySection() {
   }
 
   allBookings.push(...confirmedMatches.filter(m=>m.date===todayStr()));
+  const completedToday=allBookings.filter(b=>getBookingStatus(b)==='past');
+  allBookings=allBookings.filter(b=>getBookingStatus(b)!=='past');
   allBookings.sort((a,b) => bookingReadTime(a).start - bookingReadTime(b).start);
 
   const listEl = document.getElementById('playBookingsList');
@@ -12679,12 +12656,12 @@ async function renderPlaySection() {
   listEl.innerHTML = allBookings.length ? allBookings.map((b,index)=>{
     const status=getBookingStatus(b),time=bookingReadTime(b);
     const kind=b.isMatch?'Mitspieltermin':b.isAbo?'Jahresabo':b.isEvent?'Event':'Einzelbuchung';
-    const badge=status==='past'?'Beendet':b.isMatch?(b.matchState==='ready'?'✓ Das Match steht':'Ein Platz frei'):status==='now'?'Zugang bereit':'Bald';
+    const badge=status==='past'?'Beendet':b.isMatch?(b.matchState==='ready'?'✓ Das Match steht':'Du bist dabei'):status==='now'?'Zugang bereit':'Bald';
     return `<article class="play-today-booking">
-      <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isMatch&&!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><h2>${esc(courtLabel(b.court))}</h2><div class="play-today-time">${time.from} – ${time.to} Uhr</div>${b.isMatch?`<p class="play-today-booked-by" style="margin:8px 0 0;color:#7a7368;font-size:14px;">Gebucht von ${esc(b.bookedBy)}</p>`:""}</div><span class="play-today-status">${badge}</span></div>
+      <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isMatch&&!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><h2>${esc(courtLabel(b.court))}</h2><div class="play-today-time">${time.from} – ${time.to} Uhr</div>${b.isMatch?`<p class="play-today-booked-by" style="margin:8px 0 0;color:#7a7368;font-size:14px;">Gebucht von ${esc(b.bookedBy)} · Du bist dabei</p>`:""}</div><span class="play-today-status">${badge}</span></div>
       ${status==='past'?'<p class="play-today-ended">Deine Spielzeit ist beendet.</p>':`<div class="lockbox-today-access" data-today-index="${index}"></div>`}
     </article>`;
-  }).join('') : '<div class="play-today-booking play-today-empty"><h2>Heute hast du keine Buchung.</h2><p>Deine nächsten bestätigten Termine findest du unter „Demnächst“.</p></div>';
+  }).join('') : '<div class="play-today-booking play-today-empty"><h2>Heute stehen keine weiteren Spieltermine an.</h2><p>Deine nächsten bestätigten Termine findest du unter „Demnächst“.</p></div>';
 
   if(confirmedMatchReadFailed)listEl.insertAdjacentHTML('beforeend','<p role="status">Mitspieltermine konnten nicht geladen werden. Bitte erneut laden.</p>');
   const photoIndex=allBookings.findIndex(b=>getBookingStatus(b)!=='past');
@@ -12708,7 +12685,7 @@ async function renderPlaySection() {
 
   await renderMyBookingsLists(confirmedMatches);   // gemeinsames chronologisches „Demnächst" unter den Türen
   renderWeatherReportCard(); // „Letzte Buchung" mit Wetterausfall-Meldung
-  renderMyHistory(true);     // Historie: abgearbeitete Buchungen inkl. Wetterstatus
+  renderMyHistory(true,completedToday,confirmedMatches); // Completed today goes straight into history.
 }
 
 // Klick-Demo für die Türen: der Button reagiert sichtbar, es passiert aber noch
@@ -12805,7 +12782,7 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
       if(Date.now()>=Date.parse(access.access_until))throw Error('lockbox_expired');
       renderAccess(access);
     }else if(access.state==='match_forming') {
-      content.textContent='Ein Platz ist noch frei. Deinen Zugang findest du hier, sobald eure Runde wieder komplett ist.';
+      content.textContent='Deine Teilnahme konnte gerade nicht bestätigt werden. Bitte lade die Seite neu.';
     }else if(access.state==='not_configured'&&['P','F'].includes(access.side)) {
       renderAccess(access);
     }else if(access.state==='not_configured')content.textContent='Die Lockbox-Anbindung wird vorbereitet. Es ist noch kein Zugangscode verfügbar.';
