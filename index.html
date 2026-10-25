@@ -3004,35 +3004,24 @@ main {
         <div id="myEventsList"></div>
       </section>
 
-      <!-- Meine heutigen Buchungen -->
-      <div class="play-card today-bookings-card" id="todayBookingsCard">
-        <div class="play-card-title">▶ Heutige Buchungen</div>
-        <div id="playBookingsList">
-          <div class="play-empty" style="padding:24px 0;">
-            <div style="font-size:2rem;margin-bottom:8px;">📅</div>
-            <div style="font-size:0.82rem;color:#555;">Wird geladen …</div>
+      <!-- Heutige Buchungen: ein Einstieg aus Spielzugang und Anreise. -->
+      <section class="play-today-section" id="todayBookingsCard" aria-labelledby="todayBookingsTitle">
+        <div class="play-card-title" id="todayBookingsTitle">▶ Heutige Buchungen</div>
+        <div class="play-today-layout">
+          <div id="playBookingsList" class="play-today-list" aria-live="polite">
+            <div class="play-today-booking"><p>Deine Buchungen werden geladen …</p></div>
           </div>
+          <aside class="play-route-card" id="playRouteCard" aria-labelledby="playRouteTitle">
+            <div class="play-route-kicker">Zugang zur Padel-Anlage</div>
+            <h2 id="playRouteTitle">Dein Weg zum Court</h2>
+            <p>Nutze den Eingang, der auf deiner Buchungskarte angegeben ist.</p>
+            <div class="play-route-rule"><strong>Freibad geöffnet</strong><p>Der Zugang erfolgt ausschließlich über die Freibadseite. Dein Padel-Ticket gilt zugleich als Eintrittskarte für das Freibad.</p></div>
+            <div class="play-route-rule"><strong>Freibad geschlossen</strong><p>Du erreichst die Courts über die Parkplatzseite.</p></div>
+            <p class="play-route-sharing">Ab 24 Stunden vor Spielbeginn kannst du den Zugangscode mit deinen Mitspielern teilen. Wenn du selbst nicht spielst, kannst du ihn an bis zu vier Personen weitergeben.</p>
+            <div class="play-route-address"><strong>Padel Bielstein</strong><span>Jahnstraße 13<br>51674 Wiehl-Bielstein</span><a href="https://www.google.com/maps/dir/?api=1&amp;destination=Jahnstra%C3%9Fe%2013%2C%2051674%20Wiehl-Bielstein" target="_blank" rel="noopener">Route planen <span aria-hidden="true">↗</span></a></div>
+          </aside>
         </div>
-      </div>
-
-      <!-- Zugangsinformation -->
-      <div class="door-info" id="doorAccessInfo">
-        Wird geladen …
-      </div>
-
-      <!-- Pro Buchung genau eine Lockbox; keine elektrische Türöffnung. -->
-      <div id="doorButtons" style="display:none;">
-        <div class="play-card lockbox-card" id="lockboxAccessCard" aria-live="polite">
-          <div id="lockboxAccessContent">Zugang wird vorbereitet …</div>
-        </div>
-
-        <div class="freibad-note">
-          <div class="freibad-note-title">■ Zugang zur Padel-Anlage</div>
-          <p>Während der Öffnungszeiten des Freibads Bielstein erfolgt der Zugang zur Padel-Anlage <strong>ausschließlich über den Eingang des Freibads</strong>. Dein Padel-Ticket gilt zu diesen Zeiten zugleich als Eintrittskarte für das Freibad. Außerhalb der Öffnungszeiten erfolgt der Zugang <strong>ausschließlich über die Parkplatzseite (Box P)</strong>.</p>
-          <p>Die Zugangscodes kannst du ab 24 h vor Spielbeginn an deine Mitspieler weiterleiten. Kannst oder möchtest du selbst nicht spielen, lassen sie sich an bis zu 4 Personen weitergeben.</p>
-          <p class="freibad-route">📍 <strong>Padel Bielstein</strong> · Jahnstraße 13, 51674 Wiehl-Bielstein · <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Jahnstra%C3%9Fe%2013%2C%2051674%20Wiehl-Bielstein" target="_blank" rel="noopener">Route planen →</a></p>
-        </div>
-      </div>
+      </section>
 
       <div id="pbSponsorPlay" class="pbsp-slot"></div>
 
@@ -8469,9 +8458,10 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 // One presentation contract for the browser and the booking-confirmation mail.
 const safe=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LOCKBOX_PHOTOS=Object.freeze({
-  P:Object.freeze({url:'https://padel-bielstein.de/assets/access/lockbox-example.jpg',alt:'Beispielfoto einer igloohome-Schlüsselbox',caption:'Beispielfoto'}),
-  F:Object.freeze({url:'https://padel-bielstein.de/assets/access/lockbox-example.jpg',alt:'Beispielfoto einer igloohome-Schlüsselbox',caption:'Beispielfoto'}),
+  P:Object.freeze({url:'https://padel-bielstein.de/assets/access/lockbox-example.jpg',alt:'igloohome-Schlüsselbox mit Ziffernfeld'}),
+  F:Object.freeze({url:'https://padel-bielstein.de/assets/access/lockbox-example.jpg',alt:'igloohome-Schlüsselbox mit Ziffernfeld'}),
 });
+const LOCKBOX_MAIL_CSS='@media(max-width:480px){.lockbox-access-header .lockbox-photo{width:120px!important;height:120px!important}.lockbox-access-header td:last-child{width:120px!important}.lockbox-heading{font-size:23px!important}}@media(max-width:350px){.lockbox-access-header,.lockbox-access-header tbody,.lockbox-access-header tr,.lockbox-access-header td{display:block!important;width:100%!important}.lockbox-access-header td:last-child{width:100%!important;padding-top:16px!important}.lockbox-photo{width:144px!important;height:144px!important}.lockbox-heading{font-size:24px!important}}';
 const clock=iso=>new Date(iso).toLocaleTimeString('de-DE',{timeZone:'Europe/Berlin',hour:'2-digit',minute:'2-digit'});
 function lockboxAccessContent(access) {
   if(!access||!['P','F'].includes(access.side)||!['ready','not_configured'].includes(access.state))throw Error('lockbox_content_invalid');
@@ -8485,23 +8475,22 @@ function lockboxAccessContent(access) {
     ||Date.parse(access.access_until)<=Date.parse(access.display_from)+5*60000)throw Error('lockbox_content_invalid');
   const starts=new Date(Date.parse(access.display_from)+5*60000).toISOString();
   return {title,pending:false,pin:access.pin,entryClock:clock(access.display_from),startClock:clock(starts),side,
-    instruction:`Code eingeben, danach Schloss-Taste unten rechts drücken. Schlüssel ${side} entnehmen, Tür öffnen, Schlüssel sofort zurücklegen und Box wieder schließen. Nach Spielende einfach nur die Tür wieder zu ziehen.`,
-    technical:`Technische Codegültigkeit: ${clock(access.pin_start)}–${clock(access.pin_end)} Uhr.`};
+    instruction:`Code eingeben, danach Schloss-Taste unten rechts drücken. Schlüssel ${side} entnehmen, Tür öffnen, Schlüssel sofort zurücklegen und Box wieder schließen. Nach Spielende einfach nur die Tür wieder zu ziehen.`};
 }
 function lockboxAccessHtml(access) {
   const v=lockboxAccessContent(access),side=access.side,entrance=side==='P'?'Parkplatzseite':'Freibadseite';
   const frame='box-sizing:border-box;width:100%;max-width:480px;margin:16px auto;background:#F6F1E7;border:1px solid #ED9B83;border-radius:22px;padding:22px;color:#1C1A17;text-align:left;font-family:Arial,Helvetica,sans-serif;box-shadow:0 8px 24px rgba(28,26,23,.06);';
-  const heading=`<strong class="lockbox-heading" style="display:block;font-size:23px;line-height:1.15;letter-spacing:-.02em;color:#D95736;"><span class="lockbox-kicker" style="display:block;font-size:10px;line-height:1.4;letter-spacing:.14em;text-transform:uppercase;color:#70695F;margin-bottom:9px;">Dein Platzzugang:</span> ${entrance} <span class="lockbox-key-label" style="font-size:12px;line-height:1.6;letter-spacing:0;color:#625B51;white-space:nowrap;">· Box/Schlüssel ${side}</span></strong>`;
-  if(v.pending)return `<div class="lockbox-access lockbox-access-pending" style="${frame}">${heading}<p style="margin:16px 0 0;font-size:13px;line-height:1.6;">${safe(v.message)}</p></div>`;
+  const heading=`<strong class="lockbox-heading" style="display:block;font-size:25px;line-height:1.2;letter-spacing:-.02em;color:#D95736;"><span class="lockbox-kicker" style="display:block;font-size:10px;line-height:1.4;letter-spacing:.14em;text-transform:uppercase;color:#70695F;margin-bottom:9px;">Dein Platzzugang:</span> ${entrance} <span class="lockbox-key-label" style="font-size:14px;line-height:1.6;letter-spacing:0;color:#625B51;white-space:nowrap;">· Box/Schlüssel ${side}</span></strong>`;
+  if(v.pending)return `<div class="lockbox-access lockbox-access-pending" style="${frame}">${heading}<p style="margin:16px 0 0;font-size:15px;line-height:1.65;">${safe(v.message)}</p></div>`;
   const photo=LOCKBOX_PHOTOS[side];
-  const image=`<img src="${safe(photo.url)}" alt="${safe(photo.alt)}" width="96" height="96" class="lockbox-photo" style="display:block;width:96px;height:96px;border:0;border-radius:14px;object-fit:cover;">`;
+  const image=`<img src="${safe(photo.url)}" alt="${safe(photo.alt)}" width="136" height="136" class="lockbox-photo" style="display:block;width:136px;height:136px;border:0;border-radius:14px;object-fit:cover;">`;
   return `<div class="lockbox-access" style="${frame}">`+
-    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;table-layout:fixed;"><tr><td style="vertical-align:middle;padding:0 14px 0 0;">${heading}</td><td width="96" style="width:96px;vertical-align:top;padding:0;">${image}<span class="lockbox-photo-caption" style="display:block;text-align:center;font-size:9px;line-height:1.4;color:#766F65;margin-top:5px;">${safe(photo.caption)}</span></td></tr></table>`+
-    `<div class="lockbox-code-panel" style="background:#FFFDFA;border:1px solid #E4DACC;border-radius:14px;margin:18px 0 14px;padding:14px 16px;"><strong style="display:block;font-size:11px;line-height:1.4;letter-spacing:.06em;color:#756B5D;">Dein Zugangscode: <span class="lockbox-pin" style="display:block;font-size:29px;line-height:1.2;font-weight:700;letter-spacing:.04em;white-space:nowrap;color:#1C1A17;margin-top:5px;">${safe(v.pin)}</span></strong></div>`+
-    `<p style="margin:0 0 14px;font-size:13px;line-height:1.6;">Zutritt ab <strong>${v.entryClock} Uhr</strong> für deine Buchung um ${v.startClock} Uhr.</p>`+
-    `<div class="lockbox-instructions" style="border-top:1px solid #DED3C1;padding-top:14px;font-size:12px;line-height:1.65;"><p style="margin:0 0 9px;"><strong>Code eingeben</strong>, danach <strong>Schloss-Taste unten rechts drücken</strong>.</p>`+
+    `<table class="lockbox-access-header" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;table-layout:fixed;"><tr><td style="vertical-align:middle;padding:0 14px 0 0;">${heading}</td><td width="136" style="width:136px;vertical-align:top;padding:0;">${image}</td></tr></table>`+
+    `<div class="lockbox-code-panel" style="background:#FFFDFA;border:1px solid #E4DACC;border-radius:14px;margin:18px 0 14px;padding:14px 16px;"><strong style="display:block;font-size:12px;line-height:1.4;letter-spacing:.04em;color:#756B5D;">Dein Zugangscode: <span class="lockbox-pin" style="display:block;font-size:29px;line-height:1.2;font-weight:700;letter-spacing:.04em;white-space:nowrap;color:#1C1A17;margin-top:5px;">${safe(v.pin)}</span></strong></div>`+
+    `<p style="margin:0 0 14px;font-size:15px;line-height:1.65;">Zutritt ab <strong>${v.entryClock} Uhr</strong> für deine Buchung um ${v.startClock} Uhr.</p>`+
+    `<div class="lockbox-instructions" style="border-top:1px solid #DED3C1;padding-top:16px;font-size:14px;line-height:1.65;"><p style="margin:0 0 9px;"><strong>Code eingeben</strong>, danach <strong>Schloss-Taste unten rechts drücken</strong>.</p>`+
     `<p style="margin:0 0 9px;">Schlüssel ${v.side} entnehmen, Tür öffnen, Schlüssel sofort zurücklegen und Box wieder schließen.</p><p style="margin:0;">Nach Spielende einfach nur die Tür wieder zu ziehen.</p></div>`+
-    `<p class="lockbox-detail" style="margin:14px 0 0;font-size:10px;line-height:1.5;color:#766F65;">${safe(v.technical)}</p></div>`;
+    '</div>';
 }
 
 globalThis.PBLockboxContent=Object.freeze({lockboxAccessContent,lockboxAccessHtml});})();
@@ -12075,6 +12064,7 @@ async function renderMyBookingsLists() {
   const now = new Date();
   let upcoming = bookings
     .filter(b => {
+      if(b.date===today&&['paid','active'].includes(b.status))return false;
       if (BOOKING_CANCELLATION_POLICY_ENABLED) return true;
       const start = bookingDateAt(b);
       return start.getTime() > now.getTime();
@@ -12657,50 +12647,35 @@ async function renderPlaySection() {
 
   const listEl = document.getElementById('playBookingsList');
 
-  if (!allBookings.length) {
-    listEl.innerHTML =
-      `<div class="play-empty" style="padding:20px 0;">
-         <div style="font-size:0.85rem;color:#7A7368;">Heute hast du keine Buchung.</div>
-       </div>`;
-  } else {
-  listEl.innerHTML = allBookings.map(b => {
-    const status = getBookingStatus(b);
-    const h1 = bookingReadTime(b).from;
-    const h2 = bookingReadTime(b).to;
-    const aboTag  = b.isAbo  ? ' <span style="font-size:0.65rem;color:#888;font-weight:400;">(Abo)</span>'
-      : b.isEvent ? ' <span style="font-size:0.65rem;color:#888;font-weight:400;">(Event)</span>' : '';
-    const badgeCls = status === 'now'  ? 'play-badge-now'  :
-                     status === 'done' ? 'play-badge-past' :
-                     status === 'soon' ? 'play-badge-soon' : 'play-badge-past';
-    const badgeTxt = status === 'now'  ? '● Läuft jetzt'     :
-                     status === 'done' ? '✓ Spielzeit beendet' :
-                     status === 'soon' ? '⏱ Bald'            : '✓ Beendet';
-    const dISO = b.date || todayStr();
-    return `
-      <div class="play-booking-item">
-        <div class="play-booking-head">
-          <div class="play-booking-info">
-            <div class="play-booking-court">${courtLabel(b.court)}${aboTag}</div>
-            <div class="play-booking-time">${h1} – ${h2} Uhr</div>
-          </div>
-          <span class="${badgeCls}">${badgeTxt}</span>
-        </div>
-      </div>`;
-  }).join('');
+  listEl.innerHTML = allBookings.length ? allBookings.map((b,index)=>{
+    const status=getBookingStatus(b),time=bookingReadTime(b);
+    const kind=b.isAbo?'Jahresabo':b.isEvent?'Event':'Einzelbuchung';
+    const badge=status==='past'?'Beendet':status==='now'?'Zugang bereit':'Bald';
+    return `<article class="play-today-booking">
+      <div class="play-today-booking-head"><div><div class="play-today-kind">${kind}</div><h2>${esc(courtLabel(b.court))}</h2><div class="play-today-time">${time.from} – ${time.to} Uhr</div></div><span class="play-today-status">${badge}</span></div>
+      ${status==='past'?'<p class="play-today-ended">Deine Spielzeit ist beendet.</p>':`<div class="lockbox-today-access" data-today-index="${index}"></div>`}
+    </article>`;
+  }).join('') : '<div class="play-today-booking play-today-empty"><h2>Heute hast du keine Buchung.</h2><p>Deine nächsten bestätigten Termine findest du unter „Demnächst“.</p></div>';
+
+  let cursor=0;
+  const version=lockboxRenderVersion;
+  await Promise.all(Array.from({length:Math.min(3,allBookings.length)},async()=>{
+    while(cursor<allBookings.length) {
+      const index=cursor++,b=allBookings[index];
+      if(currentUser?.id!==viewer||version!==lockboxRenderVersion)return;
+      const target=listEl.querySelector(`[data-today-index="${index}"]`);
+      if(target)await renderLockboxAccess(b,target);
+    }
+  }));
+  // Refresh the complete day view at a time boundary, without a separate status banner.
+  const futureEnds=allBookings.map(b=>bookingDateAt(b).getTime()+bookingReadTime(b).minutes*60000).filter(t=>t>Date.now());
+  if(futureEnds.length&&currentUser?.id===viewer&&version===lockboxRenderVersion) {
+    lockboxRefreshTimer=setTimeout(()=>{
+      if(currentUser?.id===viewer&&document.getElementById('modePlay')?.style.display!=='none')renderPlaySection().catch(()=>clearLockboxAccess());
+    },Math.max(1000,Math.min(60000,Math.min(...futureEnds)-Date.now())));
   }
 
-  const active = getActiveBooking(allBookings);
-  const next = allBookings.find(b => getBookingStatus(b) === 'soon');
-  const doorInfoEl = document.getElementById('doorAccessInfo');
-  const doorBtns = document.getElementById('doorButtons');
-  doorInfoEl.style.display = 'block';
-  doorInfoEl.textContent = active ? 'Dein Zugangscode gilt für genau einen Eingang.'
-    : next ? `Deine nächste Buchung startet um ${bookingReadTime(next).from} Uhr.`
-    : 'Aktuell hast du keine laufende Buchung.';
-  doorBtns.style.display = active || next ? 'block' : 'none';
-  await renderLockboxAccess(active || next);
-
-  renderMyBookingsLists();   // gemeinsames chronologisches „Demnächst" unter den Türen
+  await renderMyBookingsLists();   // gemeinsames chronologisches „Demnächst" unter den Türen
   renderWeatherReportCard(); // „Letzte Buchung" mit Wetterausfall-Meldung
   renderMyHistory(true);     // Historie: abgearbeitete Buchungen inkl. Wetterstatus
 }
@@ -12732,7 +12707,7 @@ const lockboxAccessRequests = new Map();
 function clearLockboxAccess(resetCache=false) {
   lockboxRenderVersion++;
   clearTimeout(lockboxRefreshTimer);
-  document.querySelectorAll('#lockboxAccessContent,.lockbox-booking-access').forEach(el=>el.replaceChildren());
+  document.querySelectorAll('#lockboxAccessContent,.lockbox-booking-access,.lockbox-today-access').forEach(el=>el.replaceChildren());
   if(resetCache) {lockboxAccessCache.clear();lockboxAccessRequests.clear();lockboxCacheViewer=null;}
 }
 function plannedLockboxSide(b) {
@@ -15337,38 +15312,7 @@ function openPartnerCampaignPdf() {
   </style></head><body>
     <section class="page page-one ${pageOneDensity}"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">A. ${esc(reportCampaignName)}</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header>${kpis}<div class="report-grid">${SPONSOR_TIER_ORDER.map(tierTable).join('')}${donationsTable.replace('class="block"','class="block donation-block"')}</div><div class="footer">Seite 1 von 2</div></section>
     <section class="page page-two ${pageTwoDensity}"><header class="header"><div><div class="brand">PADEL <b>BIELSTEIN</b></div><div class="report-title">B. ${esc(reportCampaignName)} · Akquise</div></div><div class="meta">Aktueller Stand · ${today}<br>Tennisfreunde Bielstein e.V.</div></header><div class="page2-grid"><div class="pipeline-column">${pipelineLeft}</div><div class="pipeline-column">${pipelineRight}</div></div><div class="footer">Seite 2 von 2</div></section>
-    <script>window.addEventListener('load',()=>setTimeout(()=>window.print(),300));<\/script><style id="lockboxCardsDesign">
-/* Access cards share the warm paper, orange accents and clear numbers of account cards. */
-#doorButtons, #doorAccessInfo { max-width: 520px; margin-left: auto; margin-right: auto; }
-body.bielstein-theme #lockboxAccessCard { background: transparent !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; }
-.lockbox-access { min-width: 0; font-family: "Manrope",Arial,sans-serif !important; }
-.lockbox-access .lockbox-heading, .lockbox-access .lockbox-pin { font-family: "Space Grotesk","Arial Narrow",Arial,sans-serif; }
-.lockbox-access .lockbox-pin { padding: 0; }
-.lockbox-access .lockbox-photo { max-width: none; }
-.lockbox-access .lockbox-detail { font-size: 10px; }
-body.bielstein-theme .upcoming-bookings-card { background: transparent !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; }
-#mySingleBookingsList { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,340px),1fr)); gap: 18px; align-items: start; }
-body.bielstein-theme .upcoming-item { box-sizing: border-box; width: 100%; max-width: 520px; min-width: 0; margin: 0; padding: 20px; border: 1px solid #ED9B83; border-radius: 22px; background: #F6F1E7; box-shadow: 0 8px 24px rgba(28,26,23,.06); }
-body.bielstein-theme .upcoming-item-head { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
-.upcoming-item-head .upcoming-item-main { min-width: 0; width: 100%; }
-.upcoming-item-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
-.upcoming-item-actions .upcoming-kind { background: #FFFDFA; border: 1px solid #E6DDCE; color: #756B5D; }
-.upcoming-item-actions .booking-cancel-row { display: flex; justify-content: flex-end; min-height: 0; padding: 0; margin: 0 0 0 auto; border: 0; max-width: 64%; }
-.upcoming-item-actions .booking-cancel-btn { width: auto; min-height: 34px; padding: 8px 12px; border: 1px solid #D7CABC; border-radius: 10px; background: #FFFDFA; font-size: 11px; color: #625B51; }
-.upcoming-item-actions .booking-cancel-btn:hover { border-color: #1C1A17; color: #1C1A17; background: #FFFFFF; }
-.upcoming-item-actions .booking-cancel-deadline { text-align: right; }
-.upcoming-item .lockbox-booking-access:not(:empty) { border-top: 1px solid #DED3C1; margin-top: 16px; padding-top: 16px; }
-.upcoming-item .lockbox-access { max-width: none !important; margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
-@media(max-width:380px) {
-  body.bielstein-theme .upcoming-item { padding: 16px; }
-  .lockbox-access .lockbox-heading { font-size: 20px !important; }
-  .lockbox-access .lockbox-photo { width: 84px !important; height: 84px !important; }
-  .lockbox-access td:last-child { width: 84px !important; }
-  .lockbox-access .lockbox-pin { font-size: 25px !important; letter-spacing: .015em !important; }
-}
-
-</style>
-</body></html>`);
+    <script>window.addEventListener('load',()=>setTimeout(()=>window.print(),300));<\/script></body></html>`);
   popup.document.close();
 }
 
@@ -28679,3 +28623,74 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   else initSponsorArea();
 })();
 </script>
+<style id="lockboxDayOverview">
+/* Access cards share the warm paper, orange accents and clear numbers of account cards. */
+#doorButtons, #doorAccessInfo { max-width: 520px; margin-left: auto; margin-right: auto; }
+body.bielstein-theme #lockboxAccessCard { background: transparent !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; }
+.lockbox-access { min-width: 0; font-family: "Manrope",Arial,sans-serif !important; }
+.lockbox-access .lockbox-heading, .lockbox-access .lockbox-pin { font-family: "Space Grotesk","Arial Narrow",Arial,sans-serif; }
+.lockbox-access .lockbox-pin { padding: 0; }
+.lockbox-access .lockbox-photo { max-width: none; }
+.lockbox-access .lockbox-detail { font-size: 10px; }
+body.bielstein-theme .upcoming-bookings-card { background: transparent !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; }
+#mySingleBookingsList { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,340px),1fr)); gap: 18px; align-items: start; }
+body.bielstein-theme .upcoming-item { box-sizing: border-box; width: 100%; max-width: 520px; min-width: 0; margin: 0; padding: 20px; border: 1px solid #ED9B83; border-radius: 22px; background: #F6F1E7; box-shadow: 0 8px 24px rgba(28,26,23,.06); }
+body.bielstein-theme .upcoming-item-head { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+.upcoming-item-head .upcoming-item-main { min-width: 0; width: 100%; }
+.upcoming-item-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+.upcoming-item-actions .upcoming-kind { background: #FFFDFA; border: 1px solid #E6DDCE; color: #756B5D; }
+.upcoming-item-actions .booking-cancel-row { display: flex; justify-content: flex-end; min-height: 0; padding: 0; margin: 0 0 0 auto; border: 0; max-width: 64%; }
+.upcoming-item-actions .booking-cancel-btn { width: auto; min-height: 34px; padding: 8px 12px; border: 1px solid #D7CABC; border-radius: 10px; background: #FFFDFA; font-size: 11px; color: #625B51; }
+.upcoming-item-actions .booking-cancel-btn:hover { border-color: #1C1A17; color: #1C1A17; background: #FFFFFF; }
+.upcoming-item-actions .booking-cancel-deadline { text-align: right; }
+.upcoming-item .lockbox-booking-access:not(:empty) { border-top: 1px solid #DED3C1; margin-top: 16px; padding-top: 16px; }
+.upcoming-item .lockbox-access { max-width: none !important; margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+@media(max-width:380px) {
+  body.bielstein-theme .upcoming-item { padding: 16px; }
+  .lockbox-access .lockbox-heading { font-size: 20px !important; }
+  .lockbox-access .lockbox-photo { width: 84px !important; height: 84px !important; }
+  .lockbox-access td:last-child { width: 84px !important; }
+  .lockbox-access .lockbox-pin { font-size: 25px !important; letter-spacing: .015em !important; }
+}
+
+/* One day overview, rendered on the real page rather than in separate banners. */
+body.bielstein-theme #todayBookingsCard.play-today-section { background: transparent !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; max-width: 1120px; margin: 22px auto; }
+.play-today-layout { display: grid; grid-template-columns: minmax(0,1.12fr) minmax(0,.88fr); gap: 24px; align-items: start; }
+.play-today-list { display: grid; gap: 18px; min-width: 0; }
+.play-today-booking { box-sizing: border-box; min-width: 0; padding: 24px; border: 1px solid #ED9B83; border-radius: 22px; background: #F6F1E7; box-shadow: 0 8px 24px rgba(28,26,23,.06); }
+.play-today-booking-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid #DED3C1; }
+.play-today-kind, .play-route-kicker { color: #766F65; font: 700 11px/1.4 "Space Grotesk",Arial,sans-serif; letter-spacing: .11em; text-transform: uppercase; }
+.play-today-booking h2 { margin: 8px 0 5px; font: 700 25px/1.2 "Space Grotesk",Arial,sans-serif; color: #1C1A17; }
+.play-today-time { font-size: 17px; line-height: 1.5; color: #625B51; }
+.play-today-status { border: 1px solid #DDCBBB; border-radius: 99px; padding: 7px 10px; color: #756B5D; background: #FFFDFA; font-size: 12px; white-space: nowrap; }
+.play-today-booking .lockbox-access { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+.play-route-card { box-sizing: border-box; min-width: 0; background: #FFFEFC; border: 1px solid #E3DDCF; border-radius: 22px; padding: 28px; color: #1C1A17; box-shadow: 0 4px 16px rgba(28,26,23,.035); }
+.play-route-card h2 { margin: 10px 0 18px; font: 700 26px/1.2 "Space Grotesk",Arial,sans-serif; }
+.play-route-card p { font-size: 15px; line-height: 1.7; margin: 0 0 20px; color: #625B51; }
+.play-route-rule { margin: 20px 0; padding-bottom: 2px; }
+.play-route-rule > strong { display: block; font-size: 15px; margin-bottom: 5px; }
+.play-route-card .play-route-sharing { font-size: 14px; }
+.play-route-address { padding-top: 20px; border-top: 1px solid #E3DDCF; display: grid; gap: 9px; font-size: 15px; line-height: 1.6; }
+.play-route-address > span { color: #625B51; }
+.play-route-address > a { display: flex; justify-content: space-between; align-items: center; background: #1C1A17; color: #FFF; padding: 13px 16px; border-radius: 12px; text-decoration: none; font-weight: 700; margin-top: 7px; }
+.lockbox-access .lockbox-heading { overflow-wrap: anywhere; }
+.play-today-empty p, .play-today-ended { color: #625B51; font-size: 15px; line-height: 1.7; }
+@media(max-width:899px) { .play-today-layout { grid-template-columns: minmax(0,1fr); gap: 18px; } }
+@media(max-width:480px) {
+  .play-today-booking, .play-route-card { padding: 20px; }
+  .lockbox-access .lockbox-photo { width: 120px !important; height: 120px !important; }
+  .lockbox-access .lockbox-access-header td:last-child { width: 120px !important; }
+  .lockbox-access .lockbox-heading { font-size: 23px !important; }
+}
+@media(max-width:350px) {
+  .lockbox-access .lockbox-photo { width: 112px !important; height: 112px !important; }
+  .lockbox-access .lockbox-access-header td:last-child { width: 112px !important; }
+}
+
+@media(max-width:350px) {
+  .lockbox-access-header, .lockbox-access-header tbody, .lockbox-access-header tr, .lockbox-access-header td { display: block !important; width: 100% !important; }
+  .lockbox-access .lockbox-access-header td:last-child { width: 100% !important; padding-top: 16px !important; }
+  .lockbox-access .lockbox-photo { width: 144px !important; height: 144px !important; }
+}
+
+</style>
