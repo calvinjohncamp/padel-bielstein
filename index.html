@@ -12180,6 +12180,14 @@ async function renderMyBookingsLists(confirmedMatches = null) {
 // ============================================================
 let weatherReportBooking = null;   // aktuell meldbare Buchung
 let weatherReportPercent = 0;      // im Dialog gewählter Anteil
+let weatherReportBookings = [];
+let weatherReportsByBooking = {};
+let weatherReportViewer = null;
+let weatherReportRevision = 0;
+let weatherReportTimer = null;
+let weatherReportSelection = null;
+let weatherReportDialogBooking = null;
+let weatherReportDialogViewer = null;
 
 function weatherFmtEUR(cents) {
   return (cents / 100).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
@@ -12209,15 +12217,37 @@ function weatherEndDate(b) {
 }
 
 function weatherDeadlineDate(b) {
-  const start = weatherStartDate(b);
-  return new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1, 23, 59, 0);
+  const nextDay=new Date(Date.parse(b.date+'T12:00:00Z')+86400000).toISOString().slice(0,10);
+  return PBMinuteDomain.berlinBookingDate(nextDay,1439);
+}
+function weatherCanReport(b,now=Date.now()) {
+  return !!b&&!b.isMatch&&!b.isAbo&&!b.isEvent&&Number(b.price_paid_cents)>0&&['paid','active'].includes(b.status)&&
+    now>=bookingDateAt(b).getTime()&&now<=weatherDeadlineDate(b).getTime();
+}
+function weatherTimeRemaining(b,now=Date.now()) {
+  const minutes=Math.max(0,Math.floor((weatherDeadlineDate(b).getTime()-now)/60000));
+  if(minutes<1)return 'unter 1 Min.';
+  const hours=Math.floor(minutes/60),rest=minutes%60;
+  return hours?`${hours} Std.${rest?' '+rest+' Min.':''}`:`${rest} Min.`;
+}
+function weatherDeadlineLabel(b) {
+  return weatherDeadlineDate(b).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' Uhr';
+}
+function clearWeatherReportState() {
+  weatherReportRevision++;
+  closeWeatherReport();
+  weatherReportDialogBooking=null;weatherReportDialogViewer=null;
+  clearTimeout(weatherReportTimer);
+  weatherReportBookings=[];weatherReportsByBooking={};weatherReportBooking=null;weatherReportSelection=null;weatherReportViewer=null;
+  const card=document.getElementById('weatherReportCard');if(card)card.style.display='none';
+  document.getElementById('weatherReportContent')?.replaceChildren();
 }
 
 // Buchungswert in Cent – für Anzeige und Gutschrift-Berechnung der Wettermeldung.
 // (Beim Cleanup am 27.07.2026 versehentlich mitentfernt, hier wiederhergestellt.)
 function weatherBookingValueCents(b) {
   if (!b) return 0;
-  if (!b.weather_preview_slot && (b.time_version===2 || Number(b.price_paid_cents || 0) > 0)) {
+  if (b.time_version===2 || Number(b.price_paid_cents || 0) > 0) {
     return Number(b.price_paid_cents);
   }
   const start = Number(b.hour_start || 0);
@@ -12244,137 +12274,77 @@ async function loadWeatherProofForBooking(b) {
   }
 }
 
-async function renderWeatherReportCard() {
-  const card = document.getElementById('weatherReportCard');
-  const box  = document.getElementById('weatherReportContent');
-  if (!card || !box) return;
-  card.style.display = 'none';
-  weatherReportBooking = null;
-  if (!currentUser) return;
-
-  let userId;
-  try { userId = await dataUserId(); } catch(e) { return; }
-  if (!userId) return;
-
-  // Testphase: Solange app_settings.test_mode = true ist, ist die jüngste
-  // Buchung IMMER meldbar - ohne Warten auf Spielbeginn, ohne 24-h-Frist.
-  // Die Datenbankfunktion kennt dieselbe Ausnahme (Skript 22). Zum Livegang
-  // wird test_mode auf false gestellt - dann gilt hier automatisch wieder
-  // die echte Regel, ohne dass am Code etwas zu ändern ist.
-  let weatherTestMode = false;
+async function renderWeatherReportCard(requestedId=null) {
+  const card=document.getElementById('weatherReportCard'),box=document.getElementById('weatherReportContent');
+  if(!card||!box)return;
+  const viewer=currentUser?.id,revision=++weatherReportRevision;
+  clearTimeout(weatherReportTimer);weatherReportBooking=null;
+  card.style.display='none';box.replaceChildren();
+  if(!viewer){clearWeatherReportState();return;}
+  if(weatherReportViewer!==viewer){closeWeatherReport();weatherReportDialogBooking=null;weatherReportDialogViewer=null;weatherReportSelection=null;weatherReportBookings=[];weatherReportsByBooking={};}
+  weatherReportViewer=viewer;
+  const current=()=>currentUser?.id===viewer&&revision===weatherReportRevision;
   try {
-    const { data: ts } = await sb.from('app_settings').select('test_mode').maybeSingle();
-    weatherTestMode = ts?.test_mode === true;
-  } catch(e) {}
-
-  // Kandidaten: bezahlte Buchungen. Im Normalbetrieb nur vorgestern bis
-  // heute; ob die 24-h-Frist wirklich noch läuft, entscheidet der Filter unten.
-  const now = new Date();
-  const from = new Date(now.getTime() - 48 * 3600 * 1000);
-  const fromStr = `${from.getFullYear()}-${String(from.getMonth()+1).padStart(2,'0')}-${String(from.getDate()).padStart(2,'0')}`;
-
-  let bookings = [];
-  try {
-    let query = sb
-      .from('bookings')
-      .select(bookingReadColumns('id,court,date,hour_start,duration,price_paid_cents,status'))
-      .eq('user_id', userId)
-      .in('status', ['paid', 'active'])
-      .order('date', { ascending: false })
-      .order('hour_start', { ascending: false });
-    query = weatherTestMode
-      ? query.limit(5)
-      : query.gte('date', fromStr).lte('date', todayStr());
-    const { data, error } = await query;
-    if (error) throw error;
-    bookings = data || [];
-  } catch(e) { console.error('Wetterausfall: Buchungen laden fehlgeschlagen', e); return; }
-
-  // Meldbar = Spielzeit hat begonnen und ist bis Ende des Folgetags offen
-  // (im Testmodus: jede bezahlte Buchung)
-  const eligible = bookings.filter(b => {
-    if (!b.price_paid_cents) return false;
-    if (weatherTestMode) return true;
-    const start = bookingDateAt(b);
-    return now >= start && now <= weatherDeadlineDate(b);
-  });
-  if (!eligible.length) return;
-
-  // Liegen schon Meldungen vor? (RLS: man sieht nur die eigenen)
-  let reportsByBooking = {};
-  try {
-    const { data, error } = await sb
-      .from('weather_reports')
-      .select('booking_id,percent,status,credit_cents,admin_note')
-      .in('booking_id', eligible.map(x => x.id));
-    if (error) throw error;
-    (data || []).forEach(r => { reportsByBooking[r.booking_id] = r; });
-  } catch(e) { console.error('Wetterausfall: Meldungen laden fehlgeschlagen', e); }
-
-  // Bevorzugt die jüngste Buchung OHNE Meldung; haben alle schon eine,
-  // wird der Stand der jüngsten Meldung angezeigt.
-  const open = eligible.find(x => !reportsByBooking[x.id]);
-  let b = open || eligible[0];
-  if (weatherTestMode) {
-    b = {
-      ...b,
-      date: '2026-07-26',
-      time_version:1,
-      start_minute:1080,
-      duration_minutes:120,
-      hour_start: 18,
-      duration: 2,
-      court: b?.court || 2,
-      weather_preview_slot: true
-    };
-    b.price_paid_cents = weatherBookingValueCents(b);
+    const userId=await dataUserId();if(!userId||!current())return;
+    const today=todayStr(),yesterday=new Date(Date.parse(today+'T12:00:00Z')-86400000).toISOString().slice(0,10);
+    const {data,error}=await sb.from('bookings').select(bookingReadColumns('id,court,date,hour_start,duration,price_paid_cents,status'))
+      .eq('user_id',userId).in('status',['paid','active']).gte('date',yesterday).lte('date',today)
+      .order('date',{ascending:false}).order('hour_start',{ascending:false});
+    if(!current())return;if(error)throw error;
+    const eligible=(data||[]).filter(b=>weatherCanReport(b)).sort((a,b)=>bookingDateAt(b)-bookingDateAt(a));
+    weatherReportBookings=eligible;
+    if(!eligible.length){weatherReportSelection=null;return;}
+    const result=await sb.from('weather_reports').select('booking_id,percent,status,credit_cents,admin_note').in('booking_id',eligible.map(b=>b.id));
+    if(!current())return;if(result.error)throw result.error;
+    weatherReportsByBooking=Object.fromEntries((result.data||[]).map(r=>[r.booking_id,r]));
+    const desired=requestedId||weatherReportSelection;
+    const selected=eligible.find(b=>b.id===desired)||eligible.find(b=>!weatherReportsByBooking[b.id])||eligible[0];
+    selectWeatherBooking(selected.id);
+    weatherReportTimer=setTimeout(()=>{if(currentUser?.id===viewer&&document.getElementById('modePlay')?.style.display!=='none'){
+      renderWeatherReportCard();refreshWeatherHistoryBadges();
+    }},Math.max(1000,Math.min(60000,Math.min(...eligible.map(b=>weatherDeadlineDate(b).getTime()))-Date.now()+1)));
+  } catch(error) {
+    if(!current())return;
+    box.innerHTML='<p class="weather-report-hint" role="status">Die meldbaren Buchungen konnten nicht geladen werden. <button type="button" class="weather-retry" onclick="renderWeatherReportCard()">Erneut versuchen</button></p>';
+    card.style.display='block';
+    console.error('Wettermeldungen konnten nicht geladen werden',error);
   }
-  const report = reportsByBooking[b.id] || null;
-  const bookingValueCents = weatherBookingValueCents(b);
-
-  const bookingRow = `
-    <div class="closure-item my-booking" style="margin-bottom:4px;">
-      <div style="flex:1;">
-        <div class="closure-item-date">${weatherBookingLabel(b)}</div>
-        <div class="closure-item-note">Buchungswert ${weatherFmtEUR(bookingValueCents)}${b.weather_preview_slot ? ' · Wetter-Testslot' : ''}</div>
-      </div>
-    </div>`;
-  const proofPanel = renderWeatherProofShell(b);
-
-  if (!report) {
-    weatherReportBooking = b;
-    let hint;
-    if (weatherTestMode) {
-      hint = b.weather_preview_slot
-        ? 'Testansicht mit echtem Wetter vom 26.07.2026, 18-20 Uhr.'
-        : 'Testphase: Meldung jederzeit möglich.';
-    } else {
-      const hoursLeft = Math.max(1, Math.floor((weatherDeadlineDate(b).getTime() - now.getTime()) / 3600000));
-      hint = `Wetterbedingt ausgefallen? Meldung noch ${hoursLeft} Std. möglich.`;
-    }
-    box.innerHTML = bookingRow + `
-      ${proofPanel}
-      <button type="button" class="weather-report-btn" onclick="openWeatherReport()">🌧 Wetterausfall melden</button>
-      <div class="weather-report-hint">${hint}</div>`;
-  } else if (report.status === 'pending') {
-    box.innerHTML = bookingRow + `
-      ${proofPanel}
-      <div class="weather-status-note" style="color:#B8402C;">⏳ Meldung eingegangen (${report.percent} % ausgefallen) – wird geprüft.</div>`;
-  } else if (report.status === 'approved') {
-    box.innerHTML = bookingRow + `
-      ${proofPanel}
-      <div class="weather-status-note" style="color:#1F8A5F;">✓ Wetterausfall bestätigt – ${weatherFmtEUR(report.credit_cents || 0)} wurden deinem Spielguthaben gutgeschrieben.</div>`;
-  } else {
-    box.innerHTML = bookingRow + `
-      ${proofPanel}
-      <div class="weather-status-note" style="color:#7A7368;">Deine Meldung (${report.percent} %) wurde nach Abgleich mit den Wetterdaten nicht bestätigt.${report.admin_note ? '<br>Hinweis: ' + esc(report.admin_note) : ''}</div>`;
-  }
-  card.style.display = 'block';
+}
+function selectWeatherBooking(id,scroll=false) {
+  if(weatherReportViewer!==currentUser?.id)return;
+  const b=weatherReportBookings.find(row=>row.id===id);
+  if(!b||!weatherCanReport(b))return;
+  weatherReportSelection=b.id;
+  const report=weatherReportsByBooking[b.id]||null,box=document.getElementById('weatherReportContent');
+  weatherReportBooking=report?null:b;
+  const picker=weatherReportBookings.length>1?`<div class="weather-booking-picker" role="group" aria-label="Buchung für die Wettermeldung auswählen">${weatherReportBookings.map((row,index)=>`<button type="button" class="weather-booking-choice" data-weather-booking="${esc(row.id)}" aria-pressed="${row.id===b.id}" onclick="selectWeatherBooking(this.dataset.weatherBooking)"><span>${index+1} · ${esc(weatherBookingLabel(row))}</span><small>${weatherReportsByBooking[row.id]?'Meldung vorhanden':'Frist: noch '+weatherTimeRemaining(row)}</small></button>`).join('')}</div>`:'';
+  const row=`<div class="closure-item my-booking" style="margin-bottom:4px;"><div style="flex:1;"><div class="closure-item-date">${esc(weatherBookingLabel(b))}</div><div class="closure-item-note">Buchungswert ${weatherFmtEUR(weatherBookingValueCents(b))}</div></div></div>`;
+  let status;
+  if(!report)status=`<button type="button" class="weather-report-btn" onclick="openWeatherReport()">🌧 Wetterausfall melden</button><div class="weather-report-hint">Meldung noch ${weatherTimeRemaining(b)} möglich · bis ${weatherDeadlineLabel(b)} (Bielstein).</div>`;
+  else if(report.status==='pending')status=`<div class="weather-status-note">Meldung eingegangen (${Number(report.percent)} % ausgefallen) – wird geprüft.</div>`;
+  else if(report.status==='approved')status=`<div class="weather-status-note">Wetterausfall bestätigt – ${weatherFmtEUR(report.credit_cents||0)} wurden deinem Spielguthaben gutgeschrieben.</div>`;
+  else status=`<div class="weather-status-note">Deine Meldung (${Number(report.percent)} %) wurde nach Abgleich mit den Wetterdaten nicht bestätigt.${report.admin_note?'<br>Hinweis: '+esc(report.admin_note):''}</div>`;
+  box.innerHTML=picker+row+renderWeatherProofShell(b)+status;
+  document.getElementById('weatherReportCard').style.display='block';
   loadWeatherProofForBooking(b);
+  if(scroll)document.getElementById('playWeatherSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function refreshWeatherHistoryBadges() {
+  document.querySelectorAll('.history-weather-link').forEach(button=>{
+    const b=historyItems.find(row=>row.id===button.dataset.weatherBooking&&!row.isMatch&&!row.isAbo&&!row.isEvent);
+    if(b&&weatherCanReport(b))button.textContent='Wetterfrist: noch '+weatherTimeRemaining(b);
+    else {const ended=document.createElement('span');ended.className='history-badge';ended.textContent='✓ Beendet';button.replaceWith(ended);}
+  });
+}
+async function showWeatherBooking(id) {
+  if(!weatherReportBookings.some(b=>b.id===id)||weatherReportViewer!==currentUser?.id)await renderWeatherReportCard(id);
+  selectWeatherBooking(id,true);
 }
 
 function openWeatherReport() {
   if (!weatherReportBooking) return;
+  if(!weatherCanReport(weatherReportBooking)){renderWeatherReportCard();showToast('Die Meldefrist ist abgelaufen.');return;}
+  weatherReportDialogBooking=weatherReportBooking;weatherReportDialogViewer=currentUser?.id;
   weatherReportPercent = 0;
   document.getElementById('weatherDialogBooking').textContent =
     weatherBookingLabel(weatherReportBooking) + ' · ' + weatherFmtEUR(weatherBookingValueCents(weatherReportBooking));
@@ -12411,46 +12381,46 @@ function closeWeatherReport() {
 }
 
 function selectWeatherPercent(btn) {
-  if (!weatherReportBooking) return;
+  if (!weatherReportDialogBooking) return;
   weatherReportPercent = Number(btn.dataset.pct);
   document.querySelectorAll('#weatherPctGrid .weather-pct').forEach(el => el.classList.toggle('selected', el === btn));
-  const credit = Math.round(weatherBookingValueCents(weatherReportBooking) * weatherReportPercent / 100);
+  const credit = Math.round(weatherBookingValueCents(weatherReportDialogBooking) * weatherReportPercent / 100);
   document.getElementById('weatherCreditAmount').textContent = weatherFmtEUR(credit);
   document.getElementById('weatherCreditBox').classList.add('visible');
   document.getElementById('weatherSubmitBtn').disabled = false;
 }
 
 async function submitWeatherReport() {
-  if (!weatherReportBooking || !weatherReportPercent) return;
+  if (!weatherReportDialogBooking || !weatherReportPercent || weatherReportDialogViewer!==currentUser?.id) return;
   const noteEl = document.getElementById('weatherReportNote');
   const userNote = (noteEl?.value || '').trim().slice(0, 200);
-  if (weatherReportBooking.weather_preview_slot) {
-    closeWeatherReport();
-    showToast('Testansicht: Die echte Meldung wird erst bei einer tatsächlichen Buchung gespeichert.');
-    return;
-  }
+  if(!weatherCanReport(weatherReportDialogBooking)){closeWeatherReport();renderWeatherReportCard();showToast('Die Meldefrist ist abgelaufen.');return;}
+  const submittedBooking=weatherReportDialogBooking,viewer=currentUser?.id;
   const btn = document.getElementById('weatherSubmitBtn');
   btn.disabled = true;
   btn.textContent = 'Wird gesendet …';
   try {
     const payload = {
-      p_booking_id: weatherReportBooking.id,
+      p_booking_id: submittedBooking.id,
       p_percent: weatherReportPercent
     };
     if (userNote) payload.p_user_note = userNote;
     let { error } = await sb.rpc('report_weather_outage', payload);
     if (error && userNote) {
       const fallback = await sb.rpc('report_weather_outage', {
-        p_booking_id: weatherReportBooking.id,
+        p_booking_id: submittedBooking.id,
         p_percent: weatherReportPercent
       });
       error = fallback.error;
     }
     if (error) throw error;
+    if(currentUser?.id!==viewer)return;
     closeWeatherReport();
+    renderMyHistory(true);
     showToast('✅ Meldung eingegangen – wir prüfen sie und schreiben dir den Ausfall danach gut.');
     renderWeatherReportCard();
   } catch(e) {
+    if(currentUser?.id!==viewer)return;
     btn.disabled = false;
     btn.textContent = 'Meldung absenden';
     alert('Meldung nicht möglich: ' + (e?.message || 'Unbekannter Fehler'));
@@ -12514,7 +12484,8 @@ async function renderMyHistory(reset,completedToday=null,participantMatches=null
       for(const b of [...rows,...matches,...historyTodayEntries]){
         if(b.date<cutoff||b.date>todayStr())continue;
         if(bookingDateAt(b).getTime()+bookingReadTime(b).minutes*60000>now)continue;
-        unique.set(playHistoryKey(b),b);
+        const key=playHistoryKey(b);
+        if(!unique.has(key))unique.set(key,b); // Keep the authoritative booking value from the history query.
       }
       historyItems=[...unique.values()].sort((a,b)=>b.date.localeCompare(a.date)||bookingReadTime(b).start-bookingReadTime(a).start);
     }
@@ -12534,6 +12505,7 @@ async function renderMyHistory(reset,completedToday=null,participantMatches=null
       if(r?.status==='pending')badge='<span class="history-badge" style="color:#B8402C;">⏳ Wettermeldung wird geprüft</span>';
       else if(r?.status==='approved')badge=`<span class="history-badge" style="color:#1F8A5F;">🌧 ${r.percent===100?'wetterbedingt ausgefallen':r.percent+' % gutgeschrieben'} · +${weatherFmtEUR(r.credit_cents||0)}</span>`;
       else if(r)badge='<span class="history-badge" style="color:#7A7368;">Wettermeldung nicht bestätigt</span>';
+      else if(weatherCanReport(b))badge=`<button type="button" class="history-weather-link" data-weather-booking="${esc(b.id)}" onclick="showWeatherBooking(this.dataset.weatherBooking)">Wetterfrist: noch ${weatherTimeRemaining(b)}</button>`;
       return `<div class="closure-item my-booking"><div style="flex:1;"><div class="closure-item-date">${date} · ${bookingReadTime(b).range} Uhr</div><div class="closure-item-note">${esc(courtLabel(b.court))}${origin}${price}</div></div>${badge}</div>`;
     }).join('');
     list.insertAdjacentHTML('beforeend',html);historyOffset+=rows.length;
@@ -12652,6 +12624,7 @@ async function renderPlaySection() {
 
   // Ohne Anmeldung gibt es nichts anzuzeigen - dann die Anmelde-Aufforderung.
   if (!currentUser) {
+    clearWeatherReportState();
     clearLockboxAccess();
     notLoggedIn.style.display = 'block';
     loggedIn.style.display    = 'none';
@@ -12891,6 +12864,7 @@ async function renderUpcomingLockboxAccess(items,container) {
 
 
 async function doLogout() {
+  clearWeatherReportState();
   clearLockboxAccess(true);
   await sb.auth.signOut();
   showToast('Erfolgreich abgemeldet.');
@@ -23894,7 +23868,7 @@ init();
             + '<div class="track"><div class="fill" style="height:'+Math.max(2,h)+'%"></div><span class="temp">'+(temp==null?'–':temp+'°')+'</span></div>'
             + '<span class="hr">'+hour+'</span></div>';
         }
-        el.innerHTML = '<div class="hd"><span>'+esc(title)+'</span><b>'+mmFmt(windowRain)+' mm'+(missing?' · unvollständig':'')+'</b></div><div class="wx-wx-bars">'+bars+'</div>';
+        el.innerHTML = '<div class="hd"><span>'+esc(title)+'</span><b>'+mmFmt(rows.some(w=>w.precipitation!=null)?windowRain:null)+' mm'+(missing?' · unvollständig':'')+'</b></div><div class="wx-wx-bars">'+bars+'</div>';
         el.style.display = '';
       }
       renderHourlyBox(document.getElementById('pbwxTodayHourly'), todayKey, 'Niederschlag heute · 8 bis 22 Uhr · Messwerte / Prognose');
@@ -23941,14 +23915,14 @@ init();
   function proofPlaceLabel(b){
     // Nur der Spieltag als Datum – Uhrzeit und Court stehen bereits in der
     // Buchungszeile darüber; die Wetterkachel beschreibt genau diesen Tag.
-    let out = 'Bielstein · Spieltag';
+    let out = 'Bielstein · Deine Spielzeit';
     try{
       const dateStr = new Date(b.date+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
-      out += ' · '+dateStr;
+      out += ' · '+dateStr+' · '+bookingReadTime(b).range+' Uhr';
     }catch(e){}
     return out;
   }
-  function proofCardHTML(rows, b){
+  function proofCardHTML(rows, b, expected){
     const temps = rows.filter(w=>w.temperature!=null).map(w=>Number(w.temperature)).filter(Number.isFinite);
     const winds = rows.filter(w=>w.wind_gust_speed!=null || w.wind_speed!=null).map(w=>Number(w.wind_gust_speed ?? w.wind_speed)).filter(Number.isFinite);
     const rain = rows.reduce((s,w)=>s+Number(w.precipitation||0),0);
@@ -23968,7 +23942,7 @@ init();
       + '<div class="wx-wx-cond">'+esc(dm.t)+'</div></div></div>'
       + '</div>'
       + '<div class="wx-wx-meta">'
-      + '<span>Niederschlag 8–22 Uhr <b>'+mmFmt(knownHours ? rain : null)+' mm</b><em>'+knownHours+' von 14 Stunden erfasst</em></span>'
+      + '<span>Niederschlag zur Spielzeit <b>'+mmFmt(knownHours ? rain : null)+' mm</b><em>'+knownHours+' von '+expected+' Stunden erfasst</em></span>'
       + '<span>'+hoursLabel+' <b>'+rnd(wetHours)+'</b></span>'
       + '<span>Wind <b>bis '+rnd(wind)+' km/h</b></span>'
       + '</div></div>';
@@ -23979,19 +23953,20 @@ init();
   function proofHourlyHTML(rows, dayKey, playStart, playEnd){
     let bars = ''; let windowRain = 0;
     for(let hour=8; hour<=21; hour++){
+      if(hour>=playEnd||hour+1<=playStart)continue;
       const row = wxHourRow(rows,dayKey,hour);
       const amount = row && row.precipitation != null ? Math.max(0,Number(row.precipitation)) : null;
       if(amount !== null) windowRain += amount;
       const temp = row && row.temperature != null ? Math.round(Number(row.temperature)) : null;
       const h = Math.min(100, amount * 32);
-      const played = hour >= playStart && hour < playEnd;
+      const played = hour < playEnd && hour+1 > playStart;
       bars += '<div class="wx-wx-bar'+(played?' pbwx-play':'')+'">'
         + '<span class="mm">'+hourlyMmLabel(amount)+'</span>'
         + '<div class="track"><div class="fill" style="height:'+Math.max(2,h)+'%"></div><span class="temp">'+(temp==null?'–':temp+'°')+'</span></div>'
         + '<span class="hr">'+hour+'</span></div>';
     }
-    const complete = rows.filter(w=>w.precipitation!=null).length === 14;
-    return '<div class="wx-wx-hourly"><div class="hd"><span>Niederschlag am Spieltag · 8 bis 22 Uhr · DWD/Bright Sky</span><b>'+mmFmt(windowRain)+' mm'+(complete?'':' · unvollständig')+'</b></div><div class="wx-wx-bars">'+bars+'</div></div>';
+    const complete = rows.filter(w=>w.precipitation!=null).length === Math.ceil(playEnd)-Math.floor(playStart);
+    return '<div class="wx-wx-hourly"><div class="hd"><span>Niederschlag zur gebuchten Spielzeit · DWD/Bright Sky</span><b>'+mmFmt(rows.some(w=>w.precipitation!=null)?windowRain:null)+' mm'+(complete?'':' · unvollständig')+'</b></div><div class="wx-wx-bars">'+bars+'</div></div>';
   }
   async function renderBookingProof(container, b){
     if(!container || !b) return;
@@ -24006,9 +23981,11 @@ init();
         + '<div class="pbwx-note">Die Wetterdaten sind gerade nicht abrufbar. Deine Meldung bleibt trotzdem möglich – der Abgleich mit den DWD-Werten erfolgt nachträglich.</div></div>';
       return;
     }
-    const archived = rows.filter(w=>w.archived).length;
-    container.innerHTML = proofCardHTML(rows, b) + proofHourlyHTML(rows, dayKey, playStart, playEnd)
-      + '<div class="pbwx-note">'+archived+' von 14 Stunden archiviert · Stationswerte als Orientierung für die Prüfung.</div>';
+    const selected=rows.filter(w=>wxHour(w)<playEnd&&wxHour(w)+1>playStart);
+    const expected=Math.ceil(playEnd)-Math.floor(playStart),archived=selected.filter(w=>w.archived).length;
+    if(!selected.length){container.innerHTML='<div class="wx-wx-today yesterday"><div class="wx-wx-place">'+esc(proofPlaceLabel(b))+'</div><div class="pbwx-note">Für diese Spielzeit liegen noch keine Beobachtungswerte vor. Deine Meldung bleibt möglich; fehlende Stunden werden nachgeliefert.</div></div>';return;}
+    container.innerHTML = proofCardHTML(selected, b, expected) + proofHourlyHTML(selected, dayKey, playStart, playEnd)
+      + '<div class="pbwx-note">'+archived+' von '+expected+' Stunden archiviert · Stationswerte als Orientierung für die Prüfung.'+(playStart%1||playEnd%1?' Stundenwerte: Randstunden enthalten auch Zeit außerhalb deiner Buchung.':'')+'</div>';
   }
 
   window.PBWeather = { renderBookingProof: renderBookingProof };
@@ -24058,6 +24035,18 @@ body.bielstein-theme #modePlay .play-today-kind-row {display:flex;flex-wrap:wrap
 #modePlay .play-today-booking-head {display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;}
 #modePlay .play-today-booking-head .play-route-address {display:block;margin:16px 0 0;font-size:11px;line-height:1.5;transform:translateY(var(--play-route-shift,0px));}
 #modePlay #playWeatherSection {display:none;}
+#modePlay .weather-booking-picker {display:flex;flex-wrap:wrap;gap:10px;margin:0 0 22px;}
+#modePlay .weather-booking-choice {flex:1 1 220px;min-width:0;padding:13px 15px;text-align:left;background:#f6f1e7;border:1px solid #d9d2c4;border-radius:9px;color:#535747;font:500 13px/1.5 "Manrope",Arial,sans-serif;cursor:pointer;}
+#modePlay .weather-booking-choice span,#modePlay .weather-booking-choice small {display:block;}
+#modePlay .weather-booking-choice small {margin-top:5px;font-size:11px;opacity:.8;}
+#modePlay .weather-booking-choice[aria-pressed="true"] {background:#2a3026;color:#f9f6eb;border-color:#2a3026;}
+#modePlay .history-weather-link {padding:7px 10px;border:1px solid #d6b799;border-radius:6px;background:#faf0e2;color:#8b482c;font:500 12px/1.5 "Manrope",Arial,sans-serif;cursor:pointer;}
+#modePlay .weather-retry {border:0;background:transparent;color:#b44729;text-decoration:underline;font:inherit;cursor:pointer;}
+#modePlay #playWeatherSection {scroll-margin-top:100px;}
+#modePlay .pbwx-proof .wx-wx-bars {max-width:600px;gap:12px;}
+#modePlay .pbwx-proof .wx-wx-bar {flex:0 1 70px;}
+#modePlay .history-weather-link:focus-visible,#modePlay .weather-booking-choice:focus-visible {outline:2px solid #d95736;outline-offset:3px;}
+@media(max-width:700px){#modePlay .weather-booking-choice {flex-basis:100%;min-height:60px;}#modePlay .history-weather-link {min-height:44px;}}
 #modePlay #playWeatherSection:has(#weatherReportCard[style*="block"]) {display:block;margin-top:38px;}
 body.bielstein-theme #modePlay #playWeatherTitle {margin:0 0 24px;font:600 clamp(30px,3.4vw,45px)/1.15 "Space Grotesk",Arial,sans-serif;letter-spacing:-.045em;color:#242620;text-transform:none;}
 #modePlay .play-today-booking-head .play-route-address > a {display:inline-flex;min-height:30px;padding:5px 0 3px;margin-top:4px;}
