@@ -3429,6 +3429,7 @@ main {
 .invite-composer .invite-audience-row{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:18px;align-items:start}
 .invite-composer .invite-audience-info{margin:0;padding:12px 14px;border:1px solid #e5dccd;border-left:3px solid #ff5934;border-radius:11px;background:#faf8f3;color:#7a7368;font-size:13px;line-height:1.55;font-weight:400}
 @media(max-width:780px){.invite-composer .invite-audience-row{grid-template-columns:1fr;gap:10px}.invite-composer .invite-audience-info{font-size:12px}}
+.meetup-full.match-ready{background:#e1eddc!important;color:#426d3a!important}.meetup-full.match-ready strong{color:inherit!important}
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body class=&quot;embedded&quot;&gt;
@@ -4056,9 +4057,9 @@ main {
     function slotStatusPillHTML(item) {
       const confirmed = confirmedPlayerCount(item);
       if (confirmed &gt;= 4) {
-        return `&lt;span class=&quot;meetup-full&quot;&gt;&lt;strong&gt;Buchung vollständig&lt;/strong&gt;&lt;/span&gt;`;
+        return `&lt;span class=&quot;meetup-full match-ready&quot;&gt;&lt;strong&gt;✓ Das Match steht&lt;/strong&gt;&lt;/span&gt;`;
       }
-      return `&lt;span class=&quot;meetup-full&quot;&gt;&lt;strong&gt;${confirmed} von 4 zugesagt&lt;/strong&gt;&lt;/span&gt;`;
+      return `&lt;span class=&quot;meetup-full&quot;&gt;&lt;strong&gt;${item?.wasReady ? (4-confirmed)+&quot; Platz&quot;+(confirmed===3?&quot;&quot;:&quot;e&quot;)+&quot; frei&quot; : confirmed+&quot; von 4 zugesagt&quot;}&lt;/strong&gt;&lt;/span&gt;`;
     }
     function bookingInviteSummaryHTML(existing, includeUserDelivery = false) {
       if (!existing) return &quot;&quot;;
@@ -4075,7 +4076,7 @@ main {
       const confirmed = confirmedPlayerCount(item);
       const informed = (includeUserDelivery ? deliveryEmailsForInviteView(item) : inviteeDeliveryEmails(item)).length;
       const parts = [];
-      const status = confirmed &gt;= 4 ? &quot;Buchung vollständig&quot; : confirmed ? `${confirmed} von 4 zugesagt` : &quot;Noch offen&quot;;
+      const status = confirmed &gt;= 4 ? &quot;✓ Das Match steht&quot; : confirmed ? `${confirmed} von 4 zugesagt` : &quot;Noch offen&quot;;
       if (informed) parts.push(`${informed} informiert`);
       return `&lt;span class=&quot;invite-summary-badge&quot;&gt;${esc(audienceLongLabel(item))}&lt;span&gt;${esc(status)}${parts.length ? ` · ${esc(parts.join(&quot; · &quot;))}` : &quot;&quot;}&lt;/span&gt;&lt;/span&gt;`;
     }
@@ -4088,6 +4089,8 @@ main {
         bookingId: row.booking_id || &quot;&quot;,
         subscriptionId: row.subscription_id || &quot;&quot;,
         meetupId: row.id,
+        matchState: row.match_state || &quot;forming&quot;,
+        wasReady: !!row.match_ready_at,
         day: parts.day,
         date: parts.date,
         dateISO: row.scheduled_date,
@@ -4436,8 +4439,8 @@ main {
         const input = row.querySelector(&#x27;.player-email&#x27;);
         const value = input?.value.trim() || &quot;&quot;;
         if (!value || !mailOk(value)) return;
-        if (row.querySelector(&#x27;[data-toggle-accepted]&#x27;) &amp;&amp; row.querySelector(&#x27;[data-remove-email-row]&#x27;) &amp;&amp; row.classList.contains(&#x27;has-avatar&#x27;)) return;
-        const accepted = row.querySelector(&#x27;[data-toggle-accepted]&#x27;)?.dataset.accepted === &quot;1&quot;;
+        if (row.querySelector(&#x27;[data-toggle-accepted],[data-participant-status]&#x27;) &amp;&amp; row.querySelector(&#x27;[data-remove-email-row]&#x27;) &amp;&amp; row.classList.contains(&#x27;has-avatar&#x27;)) return;
+        const accepted = row.querySelector(&#x27;[data-toggle-accepted],[data-participant-status]&#x27;)?.dataset.accepted === &quot;1&quot;;
         const baseProfile = profileForEmail(value, { email: value, name: value, accepted });
         row.outerHTML = emailRowHTML(value, index + 1, baseProfile, true);
         changed = true;
@@ -4467,7 +4470,7 @@ main {
         &lt;/span&gt;
         ${statusInfo}
         ${profileInfo}
-        ${value ? `&lt;button class=&quot;email-accept-toggle ${accepted ? &quot;accepted&quot; : &quot;&quot;}&quot; type=&quot;button&quot; data-toggle-accepted data-accepted=&quot;${accepted ? &quot;1&quot; : &quot;0&quot;}&quot;&gt;${accepted ? &quot;zugesagt&quot; : &quot;offen&quot;}&lt;/button&gt;` : &quot;&quot;}
+        ${value ? `&lt;span class=&quot;email-accept-toggle ${accepted ? &quot;accepted&quot; : &quot;&quot;}&quot; data-accepted=&quot;${accepted ? &quot;1&quot; : &quot;0&quot;}&quot; data-participant-status&gt;${accepted ? &quot;zugesagt&quot; : &quot;offen&quot;}&lt;/span&gt;` : &quot;&quot;}
         ${canRemove ? `&lt;button class=&quot;email-remove&quot; type=&quot;button&quot; data-remove-email-row aria-label=&quot;Spieler aus dieser Einladung entfernen&quot;&gt;×&lt;/button&gt;` : &quot;&quot;}
       &lt;/div&gt;`;
     }
@@ -4479,7 +4482,7 @@ main {
       const item=currentBooking();if(!item||!$(&#x27;#emailList&#x27;))return;
       recipientDrafts.set(item.id,$$(&#x27;#emailList .email-row&#x27;).map((row,index)=&gt;{
         const value=$(&#x27;.player-email&#x27;,row)?.value.trim()||&#x27;&#x27;;
-        return {email:value,index:index+1,player:{...profileForEmail(value),email:value,accepted:$(&#x27;[data-toggle-accepted]&#x27;,row)?.dataset.accepted===&#x27;1&#x27;}};
+        return {email:value,index:index+1,player:{...profileForEmail(value),email:value,accepted:$(&#x27;[data-toggle-accepted],[data-participant-status]&#x27;,row)?.dataset.accepted===&#x27;1&#x27;}};
       }));
     }
     function wireRecipientSearch(root=document){
@@ -4498,7 +4501,7 @@ main {
         };
         input.addEventListener(&#x27;input&#x27;,()=&gt;{
           clearTimeout(timer);const current=++version,q=input.value.trim();stored.value=q;
-          const accepted=row.querySelector(&#x27;[data-toggle-accepted]&#x27;);if(accepted){accepted.dataset.accepted=&#x27;0&#x27;;accepted.classList.remove(&#x27;accepted&#x27;);accepted.textContent=&#x27;offen&#x27;;}
+          const accepted=row.querySelector(&#x27;[data-toggle-accepted],[data-participant-status]&#x27;);if(accepted){accepted.dataset.accepted=&#x27;0&#x27;;accepted.classList.remove(&#x27;accepted&#x27;);accepted.textContent=&#x27;offen&#x27;;}
           refreshActionButtons();if(!q||q.includes(&#x27;@&#x27;)){box.innerHTML=&#x27;&#x27;;return;}
           timer=setTimeout(async()=&gt;{
             try{box.innerHTML=&#x27;&lt;span role=&quot;status&quot;&gt;Spieler werden gesucht …&lt;/span&gt;&#x27;;const data=await callMeetupFunction({action:&#x27;search_players&#x27;,query:q});if(current!==version||!input.isConnected)return;
@@ -4766,7 +4769,7 @@ main {
         const value = input?.value.trim() || &quot;&quot;;
         if (!input || !wrap || !value) return;
         row.querySelector(&#x27;.email-row-status&#x27;)?.remove();
-        const accepted = row.querySelector(&#x27;[data-toggle-accepted]&#x27;)?.dataset.accepted === &quot;1&quot;;
+        const accepted = row.querySelector(&#x27;[data-toggle-accepted],[data-participant-status]&#x27;)?.dataset.accepted === &quot;1&quot;;
         const name = row.querySelector(&#x27;.email-player-name&#x27;)?.textContent || value;
         const profile = profileForEmail(value, { email: value, name, accepted });
         const statusInfo = participantStatusHTML(value, profile);
@@ -4986,7 +4989,7 @@ main {
       let rows=(recipientDrafts.get(item.id)||(existing?[...existing.players.filter(Boolean),...recipients.filter(p=&gt;!existing.players.some(a=&gt;a?.email===p.email))].map((p,i)=&gt;({email:p.email,player:p,index:i+1})):[{email:user.email,player:profileForEmail(user.email),index:1}])).slice();
       while(rows.length&lt;4)rows.push({email:&#x27;&#x27;,player:null,index:rows.length+1});
       if(!rows.some(r=&gt;!r.email))rows.push({email:&#x27;&#x27;,player:null,index:rows.length+1});
-      rows.forEach(r=&gt;{if(r.email&amp;&amp;r.player)recipientProfiles.set(r.email.toLowerCase(),r.player);});
+      rows.forEach(r=&gt;{const actual=existing?.players.find(p=&gt;p?.email===r.email);if(actual)r.player={...r.player,...actual};if(r.email&amp;&amp;r.player)recipientProfiles.set(r.email.toLowerCase(),r.player);});
       const chosenLevels=draft.levels||existing?.levels||[&#x27;egal&#x27;],gender=draft.gender||existing?.gender||&#x27;egal&#x27;,age=draft.age||ageFilterFromItem(existing);
       const ownPlays=rows.some(r=&gt;isUserEmail(r.email));
       return `&lt;article class=&quot;create-card is-booking invite-composer ${selectedToneClass()}&quot;&gt;
@@ -5010,7 +5013,7 @@ main {
 
     function inviteEditorHTML(item) {
       const filled = item.players.filter(Boolean).length;
-      const alreadyIn = item.players.some(p =&gt; p &amp;&amp; p.email.toLowerCase() === user.email.toLowerCase());
+      const alreadyIn = item.players.some(p =&gt; p &amp;&amp; p.accepted &amp;&amp; p.email.toLowerCase() === user.email.toLowerCase());
       return `&lt;article class=&quot;create-card is-invite ${selectedToneClass()}&quot;&gt;
         &lt;div class=&quot;badge&quot;&gt;Einladung von ${esc(item.from)}&lt;/div&gt;
         &lt;div class=&quot;create-head&quot;&gt;
@@ -5039,7 +5042,7 @@ main {
           &lt;/div&gt;
         &lt;/div&gt;
         &lt;div class=&quot;actions&quot;&gt;
-          &lt;button class=&quot;btn ${alreadyIn ? &quot;done&quot; : &quot;coral&quot;} cta-large&quot; type=&quot;button&quot; id=&quot;acceptInvite&quot; ${alreadyIn || filled &gt;= 4 ? &quot;disabled&quot; : &quot;&quot;}&gt;${alreadyIn ? &quot;Du bist dabei&quot; : filled &gt;= 4 ? &quot;Bereits voll&quot; : &quot;Mitspielen&quot;}&lt;/button&gt;
+          &lt;button class=&quot;btn ${alreadyIn ? &quot;done&quot; : &quot;coral&quot;} cta-large&quot; type=&quot;button&quot; id=&quot;acceptInvite&quot; ${alreadyIn || filled &gt;= 4 ? &quot;disabled&quot; : &quot;&quot;}&gt;${alreadyIn ? (filled&gt;=4?&quot;✓ Das Match steht&quot;:&quot;✓ Du bist dabei · &quot;+filled+&quot; von 4 bestätigt&quot;) : filled &gt;= 4 ? &quot;Bereits voll&quot; : &quot;Mitspielen&quot;}&lt;/button&gt;
           ${alreadyIn ? &#x27;&lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;withdrawInvite&quot;&gt;Teilnahme zurückziehen&lt;/button&gt;&#x27; : &#x27;&lt;button class=&quot;btn secondary cta-large&quot; type=&quot;button&quot; id=&quot;declineInvite&quot;&gt;Absagen&lt;/button&gt;&#x27;}
         &lt;/div&gt;
       &lt;/article&gt;`;
@@ -5258,7 +5261,7 @@ main {
         const input = row.querySelector(&#x27;.player-email&#x27;);
         const email = input?.value.trim() || &quot;&quot;;
         if (!email) return null;
-        const acceptedButton = row.querySelector(&#x27;[data-toggle-accepted]&#x27;);
+        const acceptedButton = row.querySelector(&#x27;[data-toggle-accepted],[data-participant-status]&#x27;);
         return {
           email,
           accepted: isUserEmail(email) || acceptedButton?.dataset.accepted === &quot;1&quot;
@@ -5311,6 +5314,7 @@ main {
           const data = await callMeetupFunction({ action: &quot;accept_invite&quot;, meetup_id: item.id });
           const updated = data.meetup ? inviteFromServer({ direct: item.mode === &quot;direct&quot;, participant_id: data.participant?.id || item.participantId, invite_status: &quot;accepted&quot;, meetup: data.meetup }) : null;
           if (updated) {
+            updated.from=item.from;updated.fromAvatar=item.fromAvatar;
             const index = invites.findIndex(invite =&gt; invite.id === item.id);
             if (index &gt;= 0) invites.splice(index, 1, updated);
           }
@@ -5318,7 +5322,7 @@ main {
           renderPickLists();
           renderEditor();
           renderStatus();
-          toast(&quot;Du bist dabei. Die Einladung erscheint jetzt unten rechts.&quot;);
+          toast(&quot;Deine Zusage ist gespeichert.&quot;);
           sendMeetHeight();
           return;
         } catch (e) {
@@ -5339,7 +5343,7 @@ main {
       renderPickLists();
       renderEditor();
       renderStatus();
-      toast(&quot;Du bist dabei. Die Einladung erscheint jetzt unten rechts.&quot;);
+      toast(&quot;Deine Zusage ist gespeichert.&quot;);
     }
     async function withdrawInvitation() {
       const item = currentInvite();
@@ -5349,6 +5353,7 @@ main {
           const data = await callMeetupFunction({ action: &quot;withdraw_invite&quot;, meetup_id: item.id });
           const updated = data.meetup ? inviteFromServer({ direct: item.mode === &quot;direct&quot;, participant_id: item.participantId, invite_status: &quot;declined&quot;, meetup: data.meetup }) : null;
           if (updated) {
+            updated.from=item.from;updated.fromAvatar=item.fromAvatar;
             const index = invites.findIndex(invite =&gt; invite.id === item.id);
             if (index &gt;= 0) invites.splice(index, 1);
           }
@@ -5374,7 +5379,7 @@ main {
     function miniStatusHTML(item, kind, index = 0) {
       const accepted = confirmedPlayerCount(item);
       const informed = kind === &quot;own&quot; ? inviteeDeliveryEmails(item).length : deliveryEmailsForInviteView(item).length;
-      const statusText = accepted &gt;= 4 ? &quot;Buchung vollständig&quot; : `${accepted}\u00a0von\u00a04 zugesagt`;
+      const statusText = accepted &gt;= 4 ? &quot;✓ Das Match steht&quot; : `${accepted}\u00a0von\u00a04 zugesagt`;
       const detailLines = [];
       if (kind === &quot;own&quot;) {
         const countParts = [];
@@ -5444,6 +5449,14 @@ main {
       initMeetInfoModal();
       sendMeetHeight();
     }
+    setInterval(async()=&gt;{
+      try{
+        if(document.visibilityState===&#x27;hidden&#x27;||app.document.getElementById(&#x27;modeVerabredungen&#x27;)?.style.display===&#x27;none&#x27;||document.activeElement?.closest(&#x27;input,textarea,#groupEditor&#x27;))return;
+        const selected={type:state.selectedType,id:state.selectedId};await loadLiveData();
+        if(selected.type===&#x27;invite&#x27;&amp;&amp;invites.some(i=&gt;i.id===selected.id)||selected.type===&#x27;booking&#x27;&amp;&amp;bookings.some(i=&gt;i.id===selected.id)){state.selectedType=selected.type;state.selectedId=selected.id;}
+        renderPickLists();renderStatus();if(state.selectedType===&#x27;invite&#x27;)renderEditor();sendMeetHeight();
+      }catch(_error){}
+    },30000);
     let refreshAttempts = 0;
     async function retryLiveRefresh() {
       if (!embedded || refreshAttempts &gt;= 3) return;
@@ -11897,7 +11910,7 @@ async function cancelSingleBooking(bookingId, bookingLabel, priceCents) {
 
 // Füllt „Demnächst" als EINE gemeinsame chronologische Liste. Einzelbuchungen
 // und der jeweils nächste Abo-Termin haben dieselbe visuelle Wichtigkeit.
-async function renderMyBookingsLists() {
+async function renderMyBookingsLists(confirmedMatches = null) {
   const bookingsEl = document.getElementById('mySingleBookingsList');
   if (!bookingsEl || !currentUser) return;
   const viewerAuthId = currentUser.id;
@@ -11971,6 +11984,9 @@ async function renderMyBookingsLists() {
     }
   }
 
+  const matchItems=confirmedMatches===null?await loadConfirmedMatches():confirmedMatches;
+  if(currentUser?.id!==viewerAuthId)return;
+  upcoming.push(...matchItems.filter(m=>m.date!==today));
   upcoming.sort((a,b) => a.date.localeCompare(b.date) || bookingReadTime(a).start - bookingReadTime(b).start);
 
   if (!upcoming.length) {
@@ -11983,7 +11999,7 @@ async function renderMyBookingsLists() {
       {weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
     const timeStr = bookingReadTime(item).range;
     const isAbo = item.kind === 'abo';
-    const price = !isAbo && item.price_paid_cents ? weatherFmtEUR(item.price_paid_cents) : '';
+    const price = !isAbo && !item.isMatch && item.price_paid_cents ? weatherFmtEUR(item.price_paid_cents) : '';
     const pending = item.status === 'pending';
     const label = `${dateStr} um ${bookingReadTime(item).from} Uhr, ${courtLabel(item.court)}`;
     const cancelAction = canCancelSingleBooking(item)
@@ -11998,9 +12014,9 @@ async function renderMyBookingsLists() {
       <div class="upcoming-item-head">
         <div class="upcoming-item-main">
           <div class="upcoming-item-date">${dateStr} · ${timeStr} Uhr</div>
-          <div class="upcoming-item-note">${courtLabel(item.court)}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
+          <div class="upcoming-item-note">${courtLabel(item.court)}${item.isMatch?' · Gebucht von '+esc(item.bookedBy)+(item.matchState==='ready'?' · ✓ Das Match steht':' · Ein Platz frei'):''}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
         </div>
-        <div class="upcoming-item-actions"><span class="upcoming-kind">${isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>${cancelAction ? `<div class="booking-cancel-row">${cancelAction}</div>` : ''}</div>
+        <div class="upcoming-item-actions"><span class="upcoming-kind">${item.isMatch ? 'Mitspieltermin' : isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>${cancelAction ? `<div class="booking-cancel-row">${cancelAction}</div>` : ''}</div>
       </div>
       ${!pending ? `<div class="lockbox-booking-access" data-lockbox-source="${item.id}" data-lockbox-day="${item.date}" aria-live="polite"></div>` : ''}
     </div>`;
@@ -12450,6 +12466,31 @@ async function sendGiftCredit() {
 }
 
 // Prüft ob eine Buchung gerade aktiv ist (±15 Min)
+
+let confirmedMatchRequest=null;
+let confirmedMatchViewer=null;
+let confirmedMatchReadFailed=false;
+async function loadConfirmedMatches(){
+ if(!currentUser)return [];if(confirmedMatchRequest&&confirmedMatchViewer===currentUser.id)return confirmedMatchRequest;
+ const viewer=currentUser.id;confirmedMatchViewer=viewer;confirmedMatchReadFailed=false;
+ const pending=(async()=>{
+  const response=await fetch(SUPABASE_URL+'/functions/v1/manage-meetup',{method:'POST',headers:await authHeaders(),body:JSON.stringify({action:'my_matches'}),cache:'no-store'});
+  if(!response.ok)throw new Error('Mitspieltermine konnten nicht geladen werden.');const data=await response.json();
+  if(currentUser?.id!==viewer)return [];
+  return (data.matches||[]).map(m=>({...m,kind:'match',status:'active',isMatch:true,matchState:m.match_state,bookedBy:m.booked_by}));
+ })();
+ confirmedMatchRequest=pending;
+ try{return await pending;}catch(_error){if(currentUser?.id===viewer)confirmedMatchReadFailed=true;return [];}finally{if(confirmedMatchRequest===pending)confirmedMatchRequest=null;}
+}
+async function fetchConfirmedMatchAccess(b){
+ const viewer=currentUser?.id;if(!viewer)throw Error('match_login_required');
+ const response=await fetch(SUPABASE_URL+'/functions/v1/manage-meetup',{method:'POST',headers:await authHeaders(),body:JSON.stringify({action:'match_access',meetup_id:b.id}),cache:'no-store'});
+ const data=await response.json();if(!response.ok||currentUser?.id!==viewer)throw Error('match_access_unavailable');return data;
+}
+function personalMatchTicketHtml(ticket){
+ if(!ticket)return '';return '<div class="match-personal-ticket" style="background:#98a3bc;border-radius:14px;padding:18px;text-align:center;max-width:320px;margin:16px 0;"><img src="sponsors/Freibad%20Bielstein%20-%20Logo.png" alt="Freibad Bielstein" style="height:34px;max-width:180px;object-fit:contain;margin:0 auto 10px;display:block;"><strong>Freibad-Ticket '+esc(ticket.ticket_no)+'</strong><div style="background:#fff;border-radius:8px;font-family:monospace;font-size:24px;letter-spacing:3px;padding:12px;margin:12px 0;">'+esc(ticket.code)+'</div><small>Gültig am '+esc(new Date(ticket.day+'T12:00:00').toLocaleDateString('de-DE'))+' · 1 Person · nur einmal</small></div>';
+}
+
 function getActiveBooking(bookings) {
   const now = new Date();
   const nowMin = now.getTime()/60000;
@@ -12495,7 +12536,7 @@ async function renderPlaySection() {
   const oldDoors=document.getElementById('doorButtons');
   if(oldDoors) oldDoors.style.display='none';
   const viewer=currentUser.id;
-  const [regularBookings, aboSlots] = await Promise.all([loadTodayBookings(), loadTodayAboSlots()]);
+  const [regularBookings, aboSlots, confirmedMatches] = await Promise.all([loadTodayBookings(), loadTodayAboSlots(), loadConfirmedMatches()]);
   if(currentUser?.id!==viewer)return;
   const eventData = await loadMyEvents();
   if(currentUser?.id!==viewer)return;
@@ -12508,20 +12549,22 @@ async function renderPlaySection() {
     for (const h of event.hours) allBookings.push({id:event.id,court:h.court,date:event.day,hour_start:h.hour,duration:1,isEvent:true});
   }
 
+  allBookings.push(...confirmedMatches.filter(m=>m.date===todayStr()));
   allBookings.sort((a,b) => bookingReadTime(a).start - bookingReadTime(b).start);
 
   const listEl = document.getElementById('playBookingsList');
 
   listEl.innerHTML = allBookings.length ? allBookings.map((b,index)=>{
     const status=getBookingStatus(b),time=bookingReadTime(b);
-    const kind=b.isAbo?'Jahresabo':b.isEvent?'Event':'Einzelbuchung';
-    const badge=status==='past'?'Beendet':status==='now'?'Zugang bereit':'Bald';
+    const kind=b.isMatch?'Mitspieltermin':b.isAbo?'Jahresabo':b.isEvent?'Event':'Einzelbuchung';
+    const badge=status==='past'?'Beendet':b.isMatch?(b.matchState==='ready'?'✓ Das Match steht':'Ein Platz frei'):status==='now'?'Zugang bereit':'Bald';
     return `<article class="play-today-booking">
-      <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><h2>${esc(courtLabel(b.court))}</h2><div class="play-today-time">${time.from} – ${time.to} Uhr</div></div><span class="play-today-status">${badge}</span></div>
+      <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isMatch&&!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><h2>${esc(courtLabel(b.court))}</h2><div class="play-today-time">${time.from} – ${time.to} Uhr</div>${b.isMatch?`<p class="play-today-booked-by" style="margin:8px 0 0;color:#7a7368;font-size:14px;">Gebucht von ${esc(b.bookedBy)}</p>`:""}</div><span class="play-today-status">${badge}</span></div>
       ${status==='past'?'<p class="play-today-ended">Deine Spielzeit ist beendet.</p>':`<div class="lockbox-today-access" data-today-index="${index}"></div>`}
     </article>`;
   }).join('') : '<div class="play-today-booking play-today-empty"><h2>Heute hast du keine Buchung.</h2><p>Deine nächsten bestätigten Termine findest du unter „Demnächst“.</p></div>';
 
+  if(confirmedMatchReadFailed)listEl.insertAdjacentHTML('beforeend','<p role="status">Mitspieltermine konnten nicht geladen werden. Bitte erneut laden.</p>');
   const photoIndex=allBookings.findIndex(b=>getBookingStatus(b)!=='past');
   let cursor=0;
   const version=lockboxRenderVersion;
@@ -12541,7 +12584,7 @@ async function renderPlaySection() {
     },Math.max(1000,Math.min(60000,Math.min(...futureEnds)-Date.now())));
   }
 
-  await renderMyBookingsLists();   // gemeinsames chronologisches „Demnächst" unter den Türen
+  await renderMyBookingsLists(confirmedMatches);   // gemeinsames chronologisches „Demnächst" unter den Türen
   renderWeatherReportCard(); // „Letzte Buchung" mit Wetterausfall-Meldung
   renderMyHistory(true);     // Historie: abgearbeitete Buchungen inkl. Wetterstatus
 }
@@ -12586,6 +12629,7 @@ function lockboxClock(iso) {
 }
 function lockboxBookingKind(b) {return b.isEvent?'event':b.isAbo||b.kind==='abo'?'abo':'booking';}
 async function fetchLockboxAccess(b) {
+  if(b.isMatch)return fetchConfirmedMatchAccess(b);
   const viewer=currentUser?.id;
   if(!viewer)throw Error('lockbox_login_required');
   if(lockboxCacheViewer!==viewer) {lockboxAccessCache.clear();lockboxAccessRequests.clear();lockboxCacheViewer=viewer;}
@@ -12638,10 +12682,13 @@ async function renderLockboxAccess(b,target=null,showPhoto=true) {
     if(access.state==='ready') {
       if(Date.now()>=Date.parse(access.access_until))throw Error('lockbox_expired');
       renderAccess(access);
+    }else if(access.state==='match_forming') {
+      content.textContent='Ein Platz ist noch frei. Deinen Zugang findest du hier, sobald eure Runde wieder komplett ist.';
     }else if(access.state==='not_configured'&&['P','F'].includes(access.side)) {
       renderAccess(access);
     }else if(access.state==='not_configured')content.textContent='Die Lockbox-Anbindung wird vorbereitet. Es ist noch kein Zugangscode verfügbar.';
     else content.textContent='Der Zugangscode ist derzeit nicht verfügbar. Bitte erneut laden oder den Verein kontaktieren.';
+    if(b.isMatch&&access.ticket)content.insertAdjacentHTML('beforeend',personalMatchTicketHtml(access.ticket));
   }catch(error) {
     if(!current())return;
     content.textContent='Der Zugangscode konnte nicht geladen werden. Bitte erneut laden oder den Verein kontaktieren.';
