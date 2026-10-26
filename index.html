@@ -3427,7 +3427,7 @@ main {
 .invite-composer .invite-filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .invite-composer .invite-filter-grid .seg{padding:4px;background:#eee8dc;display:flex;border-radius:10px}
 .invite-composer .invite-filter-grid .chip{flex:1;text-align:center;padding:10px 9px;white-space:nowrap}
-.invite-composer .cost-option{margin:20px 0 0;padding:14px 0;background:transparent;border:0;border-top:1px solid #dfd4c3;border-radius:0}
+.invite-composer .cost-option{margin:20px 0 0;padding:14px 0;background:transparent;border:0;border-top:1px solid #dfd4c3;border-radius:0;align-items:center}.invite-composer .cost-option input{margin:0}
 .invite-composer .invite-save-actions{display:flex!important;flex-direction:column;align-items:flex-start!important;gap:9px;margin-top:12px}
 .invite-composer #sendInvite{width:auto!important;max-width:100%;font-size:16px;padding:16px 24px;border-radius:11px}
 .invite-composer #invitationChannel{margin:0;font-size:13px;line-height:1.5;color:#7a7368}
@@ -12828,7 +12828,7 @@ async function renderPlaySectionNow() {
     const kind=b.isMatch?'Mitspieltermin':b.isAbo?'Jahresabo':b.isEvent?'Event':'Einzelbuchung';
     const badge=status==='past'?'Beendet':b.isMatch?(b.matchState==='ready'?'✓ Das Match steht':'Du bist dabei'):status==='now'?'Zugang bereit':'Bald';
     return `<article class="play-today-booking" data-play-booking-key="${esc(kind+':'+b.id+':'+b.date+':'+time.start)}">
-      <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isMatch&&!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><div class="play-today-time">${time.from} – ${time.to}<span>Uhr</span></div><h2>${esc(courtLabel(b.court))}</h2><span class="play-today-status">${badge}</span>${b.isMatch?`<p class="play-today-booked-by">Gebucht von ${esc(b.bookedBy)} · Du bist dabei</p>`:""}${informOwnedBookingButton(b)}</div>${route}</div>
+      <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isMatch&&!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><div class="play-today-time">${time.from} – ${time.to}<span>Uhr</span></div><h2>${esc(courtLabel(b.court))}</h2><span class="play-today-status">${badge}</span>${b.isMatch?`<p class="play-today-booked-by">Gebucht von ${esc(b.bookedBy)} · Du bist dabei</p>`:""}</div>${informOwnedBookingButton(b)?`<div class="play-today-inform">${informOwnedBookingButton(b)}</div>`:''}${route}</div>
       ${status==='past'?'<p class="play-today-ended">Deine Spielzeit ist beendet.</p>':`<div class="lockbox-today-access" data-today-index="${index}"></div>`}
     </article>`;
   }).join('') : `<div class="play-today-booking play-today-empty"><h2>Heute stehen keine weiteren Spieltermine an.</h2><p>Deine nächsten bestätigten Termine findest du unter „Demnächst“.</p>${route}</div>`;
@@ -12938,12 +12938,14 @@ function alignPlayRouteAddresses(list) {
     route.style.removeProperty('--play-route-shift');
     access.style.minHeight='';
     if(matchMedia('(max-width:700px)').matches)return;
-    const metadata=card.querySelector('.play-today-booking-head > div:first-child');
-    const needed=metadata.getBoundingClientRect().bottom+16+route.getBoundingClientRect().height;
+    const metadata=card.querySelector('.play-today-booking-head > div:first-child'),action=card.querySelector('.play-today-inform');
+    if(action)action.style.removeProperty('--play-inform-shift');
+    const needed=metadata.getBoundingClientRect().bottom+(action?112:16)+route.getBoundingClientRect().height;
     const extra=Math.max(0,needed-text.getBoundingClientRect().bottom);
     if(extra>0)access.style.minHeight=(access.getBoundingClientRect().height+extra)+'px';
     const shift=text.getBoundingClientRect().bottom-route.getBoundingClientRect().bottom;
     route.style.setProperty('--play-route-shift',Math.min(0,shift)+'px');
+    if(action){const badge=card.querySelector('.play-today-status'),rect=action.getBoundingClientRect(),center=((badge||metadata).getBoundingClientRect().bottom+route.getBoundingClientRect().top)/2;action.style.setProperty('--play-inform-shift',(center-(rect.top+rect.height/2))+'px');}
   });
   list.playRouteObserver=new ResizeObserver(align);
   list.querySelectorAll('.play-today-booking,.play-access,.play-route-address').forEach(el=>list.playRouteObserver.observe(el));
@@ -24342,6 +24344,11 @@ body.bielstein-theme #modePlay .upcoming-item-head {gap:12px;}
   #modePlay .pbwx-proof .wx-wx-bar .mm,#modePlay .pbwx-proof .wx-wx-bar .hr {font-size:11px;}
 }
 
+
+/* Today: the action has its own centered space between status and directions. */
+#modePlay .play-today-inform {display:flex;flex:1 0 96px;min-height:96px;align-items:center;justify-content:center;transform:translateY(var(--play-inform-shift,0px));}
+#modePlay .play-today-inform .inform-btn {margin:0;max-width:100%;}
+@media(max-width:700px){#modePlay .play-today-inform {flex:0 0 auto;transform:none;}#modePlay .play-today-booking-head .play-route-address {margin-top:0;}}
 </style>
 </body>
 </html>
