@@ -3731,6 +3731,7 @@ main {
     }
     const sortByDate = (a, b) =&gt; `${a.dateISO}-${a.time}`.localeCompare(`${b.dateISO}-${b.time}`);
     function startsAt(item) {
+      if(Number.isFinite(item?.startEpoch))return new Date(item.startEpoch);
       if (!item?.dateISO || !item?.time) return null;
       const value = new Date(`${item.dateISO}T${item.time}:00`);
       return Number.isNaN(value.getTime()) ? null : value;
@@ -3990,6 +3991,7 @@ main {
       return {
         id: `booking-${row.id}`,
         type: &quot;booking&quot;,
+        startEpoch: appFn(&quot;bookingDateAt&quot;)(row).getTime(),
         bookingId: String(row.id || &quot;&quot;),
         day: parts.day,
         date: parts.date,
@@ -4008,6 +4010,7 @@ main {
       return {
         id: `abo-${row.id}-${dateISO}`,
         type: &quot;abo&quot;,
+        startEpoch: appFn(&quot;bookingDateAt&quot;)({...row,date:dateISO}).getTime(),
         subscriptionId: String(row.id || &quot;&quot;),
         day: parts.day,
         date: parts.date,
@@ -4198,6 +4201,22 @@ main {
         players
       };
     }
+    function navigationSourceMatches(item,request) {
+      return item&amp;&amp;item.dateISO===request.dateISO&amp;&amp;item.time===`${String(Math.floor(request.startMinute/60)).padStart(2,&#x27;0&#x27;)}:${String(request.startMinute%60).padStart(2,&#x27;0&#x27;)}`
+        &amp;&amp;(request.kind===&#x27;abo&#x27;?item.subscriptionId===request.sourceId:item.bookingId===request.sourceId);
+    }
+    async function resolveBookedNavigation(request,bookingRows,aboRows) {
+      const viewer=appFn(&#x27;bookedMeetupViewerKey&#x27;);if(!viewer||viewer()!==request.viewer)return null;
+      const abo=request.kind===&#x27;abo&#x27;;let row=(abo?aboRows:bookingRows).find(r=&gt;String(r.id)===request.sourceId);
+      if(!row){const load=appFn(&#x27;loadOwnedMeetupNavigationSource&#x27;);if(load)row=await load(request);}
+      if(!row||viewer()!==request.viewer||!(abo?[&#x27;active&#x27;]:[&#x27;paid&#x27;,&#x27;active&#x27;]).includes(row.status))return null;
+      if(abo&amp;&amp;(request.dateISO&lt;row.starts_on||request.dateISO&gt;=row.ends_on||new Date(request.dateISO+&#x27;T12:00:00Z&#x27;).getUTCDay()!==Number(row.weekday)))return null;
+      const item=abo?sourceFromAbo(row,request.dateISO):sourceFromBooking(row);
+      if(!navigationSourceMatches(item,request))return null;
+      const duration=Number.parseInt(item.duration,10),end=item.startEpoch+duration*60000;if(!Number.isFinite(end)||end&lt;=Date.now())return null;
+      return item;
+    }
+
     async function loadLiveData() {
       if (!embedded) return;
       const loadBookings = appFn(&quot;loadUpcomingBookings&quot;);
@@ -4254,6 +4273,20 @@ main {
             if (dateISO) nextAbos.push(sourceFromAbo(row, dateISO));
           });
           bookings = [...nextBookings, ...nextAbos].sort(sortByDate).slice(0, 20);
+          const pending=appVal(&#x27;pbPendingBookedSource&#x27;,null),request=pending||state.directBookedSource;
+          if(request){
+            const pinned=await resolveBookedNavigation(request,bookingRows||[],aboRows||[]).catch(()=&gt;null);
+            if(pinned){
+              if(!bookings.some(b=&gt;b.id===pinned.id))bookings=[...bookings.slice(0,19),pinned].sort(sortByDate);
+              state.directBookedSource=request;state.blockBookedFallback=false;
+              if(pending){state.focusBookedEditor=true;state.navigationRequest=pending.requestId;}
+            }else{
+              state.directBookedSource=null;
+              if(pending){state.bookedNavigationFailed=true;state.blockBookedFallback=true;toast(&#x27;Diese Buchung ist für diesen Account nicht mehr verfügbar.&#x27;);}
+            }
+            if(pending&amp;&amp;app.pbPendingBookedSource?.requestId===pending.requestId)app.pbPendingBookedSource=null;
+          }
+
           if (bookings.length) {
             state.selectedType = &quot;booking&quot;;
             state.selectedId = bookings[0].id;
@@ -5024,7 +5057,9 @@ main {
     function refreshActionButtons(){
       const send=$(&#x27;#sendInvite&#x27;);if(!send)return;const all=selectedChip(&#x27;audience&#x27;)===&#x27;Alle&#x27;;
       const targets=uniqueEmails(collectEmails().filter(v=&gt;!isUserEmail(v))),accepted=collectPlayerSlots().filter(p=&gt;p.accepted).length;
-      send.disabled=!all&amp;&amp;(!targets.length||!targets.every(mailOk)||accepted&gt;4||targets.length&gt;12);
+      const started=startsAt(currentBooking())&lt;=new Date();
+      send.disabled=started||!all&amp;&amp;(!targets.length||!targets.every(mailOk)||accepted&gt;4||targets.length&gt;12);
+      if(started&amp;&amp;$(&#x27;#invitationChannel&#x27;))$(&#x27;#invitationChannel&#x27;).textContent=&#x27;Die Spielzeit läuft bereits. Eine fest vereinbarte Viererrunde kannst du weiterhin informieren.&#x27;;
       const values=collectEmails(),ready=!all&amp;&amp;values.length===4&amp;&amp;uniqueEmails(values).length===4&amp;&amp;values.every(mailOk);
       const known=$(&#x27;#confirmKnownGroup&#x27;);if(known){known.disabled=!ready;known.title=ready?&#x27;Diese vier Personen sind bereits fest verabredet.&#x27;:&#x27;Bitte genau vier Personen auswählen, einschließlich dir, falls du mitspielst.&#x27;;}
       send.textContent=&#x27;Spieler einladen – Bist du dabei?&#x27;;rememberRecipients();rememberInvitationForm();
@@ -5047,7 +5082,6 @@ main {
         &lt;div class=&quot;invite-audience field&quot;&gt;&lt;label&gt;Wen möchtest du einladen?&lt;/label&gt;&lt;div class=&quot;invite-audience-row&quot;&gt;${segmentHTML(&#x27;audience&#x27;,[{value:&#x27;Mitspieler&#x27;,label:&#x27;Ausgewählte Personen&#x27;},...(systemOpenInvitesEnabled===false?[]:[{value:&#x27;Alle&#x27;,label:&#x27;Alle&#x27;}])],audience)}&lt;aside class=&quot;invite-audience-info&quot; id=&quot;allAudienceInfo&quot; ${audience===&#x27;Alle&#x27;?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;Mit „Alle“ erreichst du passende Spieler aus unserer Padel-Datenbank – auch Personen, die du noch nicht kennst. Deine Vorgaben zu Spielstärke, Geschlecht und Alter bestimmen, wer die Einladung in der App sieht. Möchtest du selbst keine offenen Einladungen erhalten, deaktiviere „Für Mitspieler auffindbar sein“ in deinem Account.&lt;/aside&gt;&lt;/div&gt;&lt;/div&gt;
         &lt;div class=&quot;selected-recipient-panel&quot; data-selected-only ${audience===&#x27;Alle&#x27;?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;
           &lt;div class=&quot;email-panel&quot;&gt;&lt;span class=&quot;email-block-label&quot;&gt;Diese Personen lädst du ein&lt;/span&gt;&lt;div class=&quot;email-list&quot; id=&quot;emailList&quot;&gt;${rows.map(r=&gt;emailRowHTML(r.email,r.index,r.player,true)).join(&#x27;&#x27;)}&lt;/div&gt;&lt;div class=&quot;actions&quot;&gt;&lt;button class=&quot;btn secondary&quot; type=&quot;button&quot; id=&quot;addEmail&quot;&gt;+ Person ergänzen&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
-          &lt;section class=&quot;invite-groups field&quot;&gt;&lt;div class=&quot;invite-section-head&quot;&gt;&lt;h3&gt;Meine Gruppen&lt;/h3&gt;&lt;span&gt;Gruppe auswählen und Personen bei Bedarf entfernen.&lt;/span&gt;&lt;/div&gt;${groupToolsHTML()}${groupEditorHTML()}&lt;/section&gt;
         &lt;/div&gt;
         &lt;div id=&quot;allOrganizer&quot; ${audience===&#x27;Alle&#x27;?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;&lt;div class=&quot;all-organizer&quot;&gt;${miniAvatarHTML(user.name,user.avatar_url)}&lt;div&gt;&lt;small&gt;Du lädst ein&lt;/small&gt;&lt;strong&gt;${esc(user.name)}&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;label class=&quot;organizer-participation&quot;&gt;&lt;input type=&quot;checkbox&quot; id=&quot;organizerPlays&quot; ${ownPlays?&#x27;checked&#x27;:&#x27;&#x27;}&gt; Ich spiele selbst mit&lt;/label&gt;&lt;/div&gt;
         &lt;section class=&quot;invite-filter-panel&quot; id=&quot;inviteFilters&quot; ${audience===&#x27;Alle&#x27;?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;
@@ -5055,10 +5089,13 @@ main {
           &lt;div class=&quot;field level-field&quot;&gt;&lt;label&gt;Gewünschte Spielstärke&lt;/label&gt;&lt;div class=&quot;level-state&quot; hidden&gt;${segmentHTML(&#x27;level&#x27;,[{value:&#x27;A&#x27;,label:&#x27;A&#x27;},{value:&#x27;B&#x27;,label:&#x27;B&#x27;},{value:&#x27;C&#x27;,label:&#x27;C&#x27;},{value:&#x27;D&#x27;,label:&#x27;D&#x27;},{value:&#x27;egal&#x27;,label:&#x27;egal&#x27;}],chosenLevels,true)}&lt;/div&gt;&lt;div class=&quot;level-legend invite-level-options&quot;&gt;${Object.entries(levels).map(([level,meta])=&gt;`&lt;button type=&quot;button&quot; class=&quot;level-legend-item ${chosenLevels.includes(level)?&#x27;active&#x27;:&#x27;&#x27;}&quot; data-level-legend=&quot;${level}&quot; aria-pressed=&quot;${chosenLevels.includes(level)}&quot;&gt;&lt;span class=&quot;level-legend-letter&quot;&gt;${level}&lt;/span&gt;&lt;span class=&quot;level-legend-main&quot;&gt;&lt;span class=&quot;level-legend-title&quot;&gt;${esc(meta.title)}&lt;/span&gt;&lt;span class=&quot;balls&quot; data-balls=&quot;${meta.balls}&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;button type=&quot;button&quot; class=&quot;level-legend-item level-any ${chosenLevels.includes(&#x27;egal&#x27;)?&#x27;active&#x27;:&#x27;&#x27;}&quot; data-level-legend=&quot;egal&quot; aria-pressed=&quot;${chosenLevels.includes(&#x27;egal&#x27;)}&quot;&gt;&lt;span class=&quot;level-legend-title&quot;&gt;egal&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
           &lt;div class=&quot;invite-filter-grid&quot;&gt;&lt;div class=&quot;field&quot;&gt;&lt;label&gt;Mitspieler&lt;/label&gt;${segmentHTML(&#x27;gender&#x27;,[{value:&#x27;egal&#x27;,label:&#x27;egal&#x27;},{value:&#x27;weiblich&#x27;,label:&#x27;weiblich&#x27;},{value:&#x27;männlich&#x27;,label:&#x27;männlich&#x27;}],gender)}&lt;/div&gt;&lt;div class=&quot;field age-filter-row&quot;&gt;&lt;label&gt;Alter&lt;/label&gt;${ageFilterHTML(age)}&lt;/div&gt;&lt;/div&gt;
         &lt;/section&gt;
-        &lt;label class=&quot;cost-option&quot;&gt;&lt;input type=&quot;checkbox&quot; id=&quot;costCoveredByOrganizer&quot; ${(draft.cost??existing?.costCoveredByOrganizer)?&#x27;checked&#x27;:&#x27;&#x27;}&gt;&lt;span&gt;&lt;strong&gt;Ich übernehme die kompletten Kosten&lt;/strong&gt;&lt;/span&gt;&lt;/label&gt;
         &lt;div class=&quot;actions invite-save-actions ${audience===&#x27;Alle&#x27;?&#x27;is-open&#x27;:&#x27;&#x27;}&quot;&gt;
           &lt;div class=&quot;invite-action-option&quot; id=&quot;knownGroupAction&quot; ${audience===&#x27;Alle&#x27;?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;&lt;button class=&quot;btn cta-large&quot; type=&quot;button&quot; id=&quot;confirmKnownGroup&quot;&gt;Spieler informieren – Du bist dabei!&lt;/button&gt;&lt;p&gt;Schon zu viert verabredet? Wähle genau diese vier Personen aus. Sie erhalten ihre Spielbestätigung samt Zugang – ohne weitere Zusage.&lt;/p&gt;&lt;/div&gt;
           &lt;div class=&quot;invite-action-option&quot;&gt;&lt;button class=&quot;btn coral cta-large&quot; type=&quot;button&quot; id=&quot;sendInvite&quot;&gt;Spieler einladen – Bist du dabei?&lt;/button&gt;&lt;p class=&quot;small-note&quot; id=&quot;invitationChannel&quot;&gt;${audience===&#x27;Alle&#x27;?&#x27;Du suchst noch Mitspieler? Passende Spieler sehen deine Einladung nur in der App. Keine E-Mails.&#x27;:&#x27;Noch Mitspieler oder Zusagen offen? Die ausgewählten Personen erhalten eine Einladung und antworten in der App.&#x27;}&lt;/p&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;label class=&quot;cost-option&quot;&gt;&lt;input type=&quot;checkbox&quot; id=&quot;costCoveredByOrganizer&quot; ${(draft.cost??existing?.costCoveredByOrganizer)?&#x27;checked&#x27;:&#x27;&#x27;}&gt;&lt;span&gt;&lt;strong&gt;Ich übernehme die kompletten Kosten&lt;/strong&gt;&lt;/span&gt;&lt;/label&gt;
+        &lt;div data-selected-only ${audience===&#x27;Alle&#x27;?&#x27;hidden&#x27;:&#x27;&#x27;}&gt;
+          &lt;section class=&quot;invite-groups field&quot;&gt;&lt;div class=&quot;invite-section-head&quot;&gt;&lt;h3&gt;Meine Gruppen&lt;/h3&gt;&lt;span&gt;Gruppe auswählen und Personen bei Bedarf entfernen.&lt;/span&gt;&lt;/div&gt;${groupToolsHTML()}${groupEditorHTML()}&lt;/section&gt;
         &lt;/div&gt;
       &lt;/article&gt;`;
     }
@@ -5290,6 +5327,7 @@ main {
       if (meetupPhoneLayout.matches) requestAnimationFrame(() =&gt; $(&quot;#editorHeadline&quot;).closest(&quot;.matchplan-section-head&quot;).scrollIntoView({behavior:&quot;smooth&quot;,block:&quot;start&quot;}));
     }
     function selectBooking(id) {
+      state.directBookedSource=null;state.blockBookedFallback=false;
       state.selectedType = &quot;booking&quot;;
       state.selectedId = id;
       const existing = ownMatchFor(id);
@@ -5299,6 +5337,7 @@ main {
       focusMeetupMobileEditor();
     }
     function selectInvite(id) {
+      state.directBookedSource=null;state.blockBookedFallback=false;
       state.selectedType = &quot;invite&quot;;
       state.selectedId = id;
       renderPickLists();
@@ -5336,6 +5375,7 @@ main {
     async function sendInvitation(mode=&#x27;invite&#x27;){
       const confirmed=mode===&#x27;confirmed&#x27;;
       const item=currentBooking();if(!item)return;
+      if(!confirmed&amp;&amp;startsAt(item)&lt;=new Date()){toast(&#x27;Die Spielzeit läuft bereits. Informiere deine fest vereinbarte Spielrunde.&#x27;);return;}
       const open=selectedChip(&#x27;audience&#x27;)===&#x27;Alle&#x27;,values=open?[]:collectEmails(),targets=uniqueEmails(values.filter(v=&gt;!isUserEmail(v)));
       if(!open&amp;&amp;(!targets.length||values.some(v=&gt;!mailOk(v)))){toast(&#x27;Bitte mindestens eine Person auswählen oder eine gültige E-Mail-Adresse eingeben.&#x27;);return;}
       if(!open&amp;&amp;uniqueEmails(values).length!==values.length){toast(&#x27;Bitte jede Person nur einmal auswählen.&#x27;);return;}
@@ -5492,8 +5532,14 @@ main {
       event.preventDefault();
       openAvatarPreviewFromNode(avatar);
     });
-    async function init() {
+    async function initMeetupView() {
+      const previous={type:state.selectedType,id:state.selectedId};
       await loadLiveData();
+      const direct=state.directBookedSource;
+      const pinned=direct&amp;&amp;bookings.find(b=&gt;navigationSourceMatches(b,direct));
+      if(state.bookedNavigationFailed||state.blockBookedFallback){state.selectedType=&#x27;booking&#x27;;state.selectedId=&#x27;&#x27;;state.bookedNavigationFailed=false;}
+      else if(pinned){state.selectedType=&#x27;booking&#x27;;state.selectedId=pinned.id;}
+      else if(previous.type===&#x27;booking&#x27;&amp;&amp;bookings.some(b=&gt;b.id===previous.id)||previous.type===&#x27;invite&#x27;&amp;&amp;invites.some(i=&gt;i.id===previous.id)){state.selectedType=previous.type;state.selectedId=previous.id;}
       updateUserLevelReferences();
       renderLevelStrip();
       renderProfile();
@@ -5505,6 +5551,14 @@ main {
       applyBalls();
       initMeetInfoModal();
       sendMeetHeight();
+      if(state.focusBookedEditor){state.focusBookedEditor=false;const scroll=appFn(&#x27;scrollBookedMeetupEditor&#x27;);if(scroll)scroll();}
+
+    }
+    let meetupInitFlight=null,meetupReloadRequested=false;
+    function init(){
+      if(meetupInitFlight){meetupReloadRequested=true;return meetupInitFlight;}
+      meetupInitFlight=initMeetupView().finally(()=&gt;{meetupInitFlight=null;if(meetupReloadRequested){meetupReloadRequested=false;init();}});
+      return meetupInitFlight;
     }
     setInterval(async()=&gt;{
       try{
@@ -5523,7 +5577,7 @@ main {
       if (!bookings.length &amp;&amp; !invites.length) setTimeout(retryLiveRefresh, 900 * refreshAttempts);
     }
     window.addEventListener(&quot;message&quot;, async event =&gt; {
-      if (!event.data || event.data.type !== &quot;pb-refresh-meet&quot;) return;
+      if (event.source!==app||!event.data||![&quot;pb-refresh-meet&quot;,&quot;pb-open-booked-meetup&quot;].includes(event.data.type)) return;
       refreshAttempts = 0;
       await init();
     });
@@ -10621,22 +10675,38 @@ function openVerabredungenPreview() {
 }
 
 function openVerabredungenForBookedSlot(court, dateISO, hourStart, duration, kind, sourceId) {
-  const d = new Date(dateISO + 'T12:00:00');
-  const day = d.toLocaleDateString('de-DE', { weekday:'short' }).replace('.', '');
-  const date = d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
-  const hour = String(Number(hourStart)).padStart(2,'0') + ':00';
-  const end = String(Number(hourStart) + Number(duration)).padStart(2,'0') + ':00';
-  const isAbo = kind === 'abo';
-  openVerabredungenWithSource({
-    kind: isAbo ? 'abo' : 'paid',
-    id: `${isAbo ? 'abo' : 'booking'}-${sourceId || `${dateISO}-${court}-${hourStart}`}`,
-    sortKey: `${dateISO}-${String(Number(hourStart)).padStart(2,'0')}`,
-    label: `${isAbo ? 'Abo-Termin' : 'Bezahlte Buchung'} · ${day} · ${date} · ${hour}–${end} · ${courtLabelShort(court)}`,
-    mini: `${day} · ${date} · ${hour}–${end} · ${courtLabelShort(court)} · gebucht`,
-    day, date, dateISO, time: hour, end, hourStart: Number(hourStart), court: courtLabelShort(court), courtNum: Number(court), duration: `${Number(duration) * 60} Min`, hours: Number(duration) || 2, paid: true,
-    bookingId: isAbo ? '' : String(sourceId || ''),
-    subscriptionId: isAbo ? String(sourceId || '') : ''
-  });
+  openPlayBookingMeetup(sourceId,dateISO,kind,Math.round(Number(hourStart)*60));
+}
+
+// Navigation only: resolve the actual owned source in Verabreden before selecting it.
+function openPlayBookingMeetup(sourceId, dateISO, kind, startMinute) {
+  if(!currentUser?.id)return;
+  if(!/^[a-f0-9-]{36}$/i.test(String(sourceId))||!/^\d{4}-\d{2}-\d{2}$/.test(dateISO)||!Number.isInteger(startMinute))return;
+  window.pbPendingMeetupId='';
+  window.pbPendingBookedSource={sourceId:String(sourceId),dateISO,kind:kind==='abo'?'abo':'booking',startMinute,viewer:String(currentUser.id),requestId:(window.pbBookedRequestSequence=(window.pbBookedRequestSequence||0)+1)};
+  setMode('verabredungen');
+  const frame=document.querySelector('#modeVerabredungen .meet-preview-frame');
+  frame?.contentWindow?.postMessage({type:'pb-open-booked-meetup'},'*');
+}
+function bookedMeetupViewerKey(){return String(currentUser?.id||'');}
+async function loadOwnedMeetupNavigationSource(request) {
+  const viewer=bookedMeetupViewerKey();if(!viewer||request.viewer!==viewer)return null;
+  const owner=await dataUserId();if(!owner||bookedMeetupViewerKey()!==viewer)return null;
+  const abo=request.kind==='abo';
+  const{data,error}=await sb.from(abo?'subscriptions':'bookings').select(bookingReadColumns(abo?'id,court,weekday,hour_start,duration,starts_on,ends_on,status':'id,court,date,hour_start,duration,status')).eq('id',request.sourceId).eq('user_id',owner).in('status',abo?['active']:['paid','active']).maybeSingle();
+  if(error||bookedMeetupViewerKey()!==viewer)return null;return data;
+}
+function scrollBookedMeetupEditor() {
+  if(curMode!=='verabredungen')return;
+  const frame=document.querySelector('#modeVerabredungen .meet-preview-frame'),target=frame?.contentDocument?.getElementById('editorHeadline');
+  if(!frame||!target)return;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    if(curMode!=='verabredungen')return;
+    const header=document.getElementById('heroHeader'),position=header?getComputedStyle(header).position:'';
+    const offset=['fixed','sticky'].includes(position)?header.getBoundingClientRect().height+14:18;
+    const top=window.scrollY+frame.getBoundingClientRect().top+target.closest('.matchplan-section-head').getBoundingClientRect().top-offset;
+    window.scrollTo({top:Math.max(0,top),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  }));
 }
 
 async function openBookingFromMeet(source) {
@@ -12023,6 +12093,12 @@ function meetBookedButtonHtml(court, dateISO, hourStart, duration, kind, sourceI
     </button>`;
 }
 
+function informOwnedBookingButton(item) {
+  if(item.isMatch||item.isEvent||!item.id||!['paid','active'].includes(item.status||'active'))return '';
+  const kind=item.isAbo||item.kind==='abo'?'abo':'booking';
+  return `<button type="button" class="inform-btn meet-inline-btn" onclick="openPlayBookingMeetup('${esc(item.id)}','${esc(item.date)}','${kind}',${bookingReadTime(item).start})">Mitspieler informieren</button>`;
+}
+
 function bookingStartTime(item) {
   return bookingDateAt(item);
 }
@@ -12207,7 +12283,7 @@ async function renderMyBookingsLists(confirmedMatches = null) {
           <div class="upcoming-item-date"><span>${dateStr}</span><strong>${timeStr} Uhr</strong></div>
           <div class="upcoming-item-note">${courtLabel(item.court)}${item.isMatch?' · Gebucht von '+esc(item.bookedBy)+' · Du bist dabei'+(item.matchState==='ready'?' · ✓ Das Match steht':''):''}${price ? ' · '+price : ''}${pending ? ' · Bestätigung läuft' : ''}</div>
         </div>
-        <div class="upcoming-item-actions"><span class="upcoming-kind">${item.isMatch ? 'Mitspieltermin' : isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>${cancelAction ? `<div class="booking-cancel-row">${cancelAction}</div>` : ''}</div>
+        <div class="upcoming-item-actions"><span class="upcoming-kind">${item.isMatch ? 'Mitspieltermin' : isAbo ? 'Jahresabo' : 'Einzelbuchung'}</span>${cancelAction ? `<div class="booking-cancel-row">${cancelAction}</div>` : ''}${!pending?informOwnedBookingButton(item):''}</div>
       </div>
       ${!pending ? `<div class="lockbox-booking-access" data-lockbox-source="${item.id}" data-lockbox-day="${item.date}" aria-live="polite"></div>` : ''}
     </div>`;
@@ -12752,7 +12828,7 @@ async function renderPlaySectionNow() {
     const kind=b.isMatch?'Mitspieltermin':b.isAbo?'Jahresabo':b.isEvent?'Event':'Einzelbuchung';
     const badge=status==='past'?'Beendet':b.isMatch?(b.matchState==='ready'?'✓ Das Match steht':'Du bist dabei'):status==='now'?'Zugang bereit':'Bald';
     return `<article class="play-today-booking" data-play-booking-key="${esc(kind+':'+b.id+':'+b.date+':'+time.start)}">
-      <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isMatch&&!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><div class="play-today-time">${time.from} – ${time.to}<span>Uhr</span></div><h2>${esc(courtLabel(b.court))}</h2><span class="play-today-status">${badge}</span>${b.isMatch?`<p class="play-today-booked-by">Gebucht von ${esc(b.bookedBy)} · Du bist dabei</p>`:""}</div>${route}</div>
+      <div class="play-today-booking-head"><div><div class="play-today-kind-row"><div class="play-today-kind">${kind}</div>${!b.isMatch&&!b.isAbo&&!b.isEvent?`<span data-today-cancel="${esc(b.id)}"></span>`:''}</div><div class="play-today-time">${time.from} – ${time.to}<span>Uhr</span></div><h2>${esc(courtLabel(b.court))}</h2><span class="play-today-status">${badge}</span>${b.isMatch?`<p class="play-today-booked-by">Gebucht von ${esc(b.bookedBy)} · Du bist dabei</p>`:""}${informOwnedBookingButton(b)}</div>${route}</div>
       ${status==='past'?'<p class="play-today-ended">Deine Spielzeit ist beendet.</p>':`<div class="lockbox-today-access" data-today-index="${index}"></div>`}
     </article>`;
   }).join('') : `<div class="play-today-booking play-today-empty"><h2>Heute stehen keine weiteren Spieltermine an.</h2><p>Deine nächsten bestätigten Termine findest du unter „Demnächst“.</p>${route}</div>`;
