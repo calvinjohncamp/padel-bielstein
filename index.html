@@ -2438,7 +2438,7 @@ main {
 </div>
 
 <svg class="pb-logo-color-defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
-  <defs><filter id="pbLogoCoolColors" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.122392868053 -1.109811981 0 0 1.01761182602 -0.552725858861 -0.428527786264 0 0 1.02239913045 -0.71694392757 -0.262810009165 0 0 1.02356360991 0 0 0 1 0"/></filter></defs>
+  <defs><filter id="pbLogoCoolColors" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.650512400367 0.375510317438 0 0 0.000598031864175 -0.0246063265476 1.05679451218 0 0 0.00538533629354 -0.188824395256 1.22251228928 0 0 0.00654981574933 0 0 0 1 0"/></filter></defs>
 </svg>
 <div class="pb-splash" id="pbSplash" hidden>
   <div class="pb-splash-inner">
@@ -29250,6 +29250,27 @@ html[data-design-world="cool"] .pb-splash-logobox { border-color:#D7D7D7!importa
 /* Tint the existing alpha artwork without altering its scale, position or click action. */
 html[data-design-world="cool"] #pbSplashActionArt img { opacity:0!important; }
 html[data-design-world="cool"] #pbSplashActionTeaserTint { display:block!important; background:#C4553A!important; }
+
+/* Forecast and the weather evidence under Jetzt spielen share the Cool palette. */
+html[data-design-world="cool"] .pbwx {
+  --paper:#F9F9F9; --ink:#171717; --ink-soft:#454545; --ink-faint:#686868;
+  --rule:#D7D7D7; --rule-strong:#A3A3A3; --flag:#C4553A;
+}
+html[data-design-world="cool"] .pbwx .wx-wx-today {
+  background:linear-gradient(160deg,#F9F9F9,#E5E5E5);
+}
+html[data-design-world="cool"] .pbwx .wx-wx-today.yesterday,
+html[data-design-world="cool"] .pbwx .wx-wx-today.alt {
+  background:linear-gradient(160deg,#EFEFEF,#F9F9F9);
+}
+html[data-design-world="cool"] .pbwx .wx-wx-day,
+html[data-design-world="cool"] .pbwx .wx-wx-hourly { background:#F9F9F9; }
+html[data-design-world="cool"] .pbwx .wx-wx-bar.pbwx-play .track { background:rgba(196,85,58,.12); }
+html[data-design-world="cool"] #modePlay .history-weather-link {
+  background:#F9F9F9; border-color:#D7D7D7; color:#454545;
+}
+html[data-design-world="cool"] #modePlay .weather-booking-legend,
+html[data-design-world="cool"] #modePlay .weather-retry { color:var(--pb-link); }
 
 /* Filled controls use a readable action pair; accent and action remain separate.
    This also covers the calendar's selected state and its time/price labels. */
