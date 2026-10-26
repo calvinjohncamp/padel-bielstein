@@ -5830,7 +5830,6 @@ main {
     </div>
 
     <div class="admin-tabs" id="adminTabs">
-      <button class="admin-tab" type="button" id="atab-design" data-admin-tab="design" onclick="setAdminTab('design')"><span aria-hidden="true">◐</span><span class="admin-tab-label">Design &amp; Farben</span></button>
       <button class="admin-tab active" type="button" id="atab-freibad" data-admin-tab="freibad" onclick="setAdminTab('freibad')"><span aria-hidden="true">🏊</span><span class="admin-tab-label">Freibad &amp; Padel-Anlage</span></button>
       <button class="admin-tab" type="button" id="atab-splash" data-admin-tab="splash" onclick="setAdminTab('splash')"><span aria-hidden="true">🖼</span><span class="admin-tab-label">Splash</span></button>
       <button class="admin-tab" type="button" id="atab-meetups" data-admin-tab="meetups" onclick="setAdminTab('meetups')"><span aria-hidden="true">👥</span><span class="admin-tab-label">Verabreden</span></button>
@@ -5848,42 +5847,6 @@ main {
       <button class="admin-tab" type="button" id="atab-weather" data-admin-tab="weather" onclick="setAdminTab('weather')"><span aria-hidden="true">🌧</span><span class="admin-tab-label">Wetterausfälle</span></button>
       <button class="admin-tab" type="button" id="atab-wipe" data-admin-tab="wipe" hidden disabled style="display:none;"><span class="admin-tab-label">Wartung</span></button>
     </div>
-
-    <div id="adminDesign" style="display:none;">
-  <div class="admin-section">
-    <div class="admin-section-title">Design &amp; Farben</div>
-    <p class="design-world-intro">Zwei Farbwelten für Padel Bielstein. Wähle einen Look und sieh ihn sofort in der gesamten App.</p>
-    <div class="design-world-grid" role="group" aria-label="Farbwelt auswählen">
-      <button type="button" class="design-world-choice" data-design-world-choice="tango" aria-pressed="true" style="--preview-bg:#F6F1E7;--preview-paper:#FFFFFF;--preview-accent:#FF5A36;--preview-ink:#1C1A17;--preview-action:#FF5A36;--preview-on-action:#1C1A17;">
-        <span class="design-world-preview" aria-hidden="true">
-          <span class="design-world-preview-brand">PADEL BIELSTEIN <i></i></span>
-          <span class="design-world-preview-title">Dein nächstes Match.</span>
-          <span class="design-world-preview-slots"><span>18:00 ✓</span><span>19:00</span><span>20:00</span></span>
-        </span>
-        <span class="design-world-choice-copy">
-          <span class="design-world-choice-title"><strong>Padel Bielstein</strong><span class="design-world-selected">✓ Aktiv</span></span>
-          <span class="design-world-choice-description">Warm und offen. Cremeweiß, Tango-Orange und warmes Anthrazit.</span>
-          <span class="design-world-colors" aria-hidden="true"><i style="--color:#F6F1E7"></i><i style="--color:#FFFFFF"></i><i style="--color:#FF5A36"></i><i style="--color:#1C1A17"></i><i style="--color:#7A7368"></i></span>
-        </span>
-      </button>
-      <button type="button" class="design-world-choice" data-design-world-choice="cool" aria-pressed="false" style="--preview-bg:#EFEFEF;--preview-paper:#F9F9F9;--preview-accent:#C4553A;--preview-ink:#171717;--preview-action:#AD452E;--preview-on-action:#FFFFFF;">
-        <span class="design-world-preview" aria-hidden="true">
-          <span class="design-world-preview-brand">PADEL BIELSTEIN <i></i></span>
-          <span class="design-world-preview-title">Dein nächstes Match.</span>
-          <span class="design-world-preview-slots"><span>18:00 ✓</span><span>19:00</span><span>20:00</span></span>
-        </span>
-        <span class="design-world-choice-copy">
-          <span class="design-world-choice-title"><strong>Tennisfreunde Bielstein</strong><span class="design-world-selected">Auswählen</span></span>
-          <span class="design-world-choice-description">Kühle Grautöne mit dem unverwechselbaren TFB Signature-Rot.</span>
-          <span class="design-world-colors" aria-hidden="true"><i style="--color:#EFEFEF"></i><i style="--color:#F9F9F9"></i><i style="--color:#C4553A"></i><i style="--color:#171717"></i><i style="--color:#686868"></i></span>
-        </span>
-      </button>
-    </div>
-    <p id="designWorldStatus" role="status" aria-live="polite">Padel Bielstein ist aktiv.</p>
-    <p class="design-world-note">Deine Auswahl wird auf diesem Gerät gespeichert. Ohne eigene Auswahl startet die App in der ursprünglichen Padel-Farbwelt.</p>
-  </div>
-</div>
-
 
     <!-- ── VERABREDEN ── -->
     <div id="adminMeetups" style="display:none;">
@@ -6574,6 +6537,41 @@ main {
 
     <!-- ── SPLASH-STARTSEITE ── -->
     <div id="adminSplash" style="display:none;">
+      <div id="adminDesign">
+  <div class="admin-section">
+    <div class="admin-section-title">Design &amp; Farben</div>
+    <p class="design-world-intro">Zwei Farbwelten für Padel Bielstein. Wähle einen Look und sieh ihn sofort in der gesamten App.</p>
+    <div class="design-world-grid" role="group" aria-label="Farbwelt auswählen">
+      <button type="button" class="design-world-choice" data-design-world-choice="tango" aria-pressed="true" style="--preview-bg:#F6F1E7;--preview-paper:#FFFFFF;--preview-accent:#FF5A36;--preview-ink:#1C1A17;--preview-action:#FF5A36;--preview-on-action:#1C1A17;">
+        <span class="design-world-preview" aria-hidden="true">
+          <span class="design-world-preview-brand">PADEL BIELSTEIN <i></i></span>
+          <span class="design-world-preview-title">Dein nächstes Match.</span>
+          <span class="design-world-preview-slots"><span>18:00 ✓</span><span>19:00</span><span>20:00</span></span>
+        </span>
+        <span class="design-world-choice-copy">
+          <span class="design-world-choice-title"><strong>Padel Bielstein</strong><span class="design-world-selected">✓ Aktiv</span></span>
+          <span class="design-world-choice-description">Warm und offen. Cremeweiß, Tango-Orange und warmes Anthrazit.</span>
+          <span class="design-world-colors" aria-hidden="true"><i style="--color:#F6F1E7"></i><i style="--color:#FFFFFF"></i><i style="--color:#FF5A36"></i><i style="--color:#1C1A17"></i><i style="--color:#7A7368"></i></span>
+        </span>
+      </button>
+      <button type="button" class="design-world-choice" data-design-world-choice="cool" aria-pressed="false" style="--preview-bg:#EFEFEF;--preview-paper:#F9F9F9;--preview-accent:#C4553A;--preview-ink:#171717;--preview-action:#AD452E;--preview-on-action:#FFFFFF;">
+        <span class="design-world-preview" aria-hidden="true">
+          <span class="design-world-preview-brand">PADEL BIELSTEIN <i></i></span>
+          <span class="design-world-preview-title">Dein nächstes Match.</span>
+          <span class="design-world-preview-slots"><span>18:00 ✓</span><span>19:00</span><span>20:00</span></span>
+        </span>
+        <span class="design-world-choice-copy">
+          <span class="design-world-choice-title"><strong>Tennisfreunde Bielstein</strong><span class="design-world-selected">Auswählen</span></span>
+          <span class="design-world-choice-description">Kühle Grautöne mit dem unverwechselbaren TFB Signature-Rot.</span>
+          <span class="design-world-colors" aria-hidden="true"><i style="--color:#EFEFEF"></i><i style="--color:#F9F9F9"></i><i style="--color:#C4553A"></i><i style="--color:#171717"></i><i style="--color:#686868"></i></span>
+        </span>
+      </button>
+    </div>
+    <p id="designWorldStatus" role="status" aria-live="polite">Padel Bielstein ist aktiv.</p>
+    <p class="design-world-note">Deine Auswahl wird auf diesem Gerät gespeichert. Ohne eigene Auswahl startet die App in der ursprünglichen Padel-Farbwelt.</p>
+  </div>
+</div>
+
       <div class="admin-section">
         <div class="admin-section-title">🖼 Splash-Startseite</div>
         <div style="font-size:0.8rem;color:var(--pb-muted,#7A7368);line-height:1.5;margin-bottom:14px;">
@@ -16665,9 +16663,6 @@ async function sendInfoMail(testOnly) {
 }
 
 function setAdminTab(tab) {
-  const designPanel = document.getElementById('adminDesign');
-  if (designPanel) designPanel.style.display = tab === 'design' ? 'block' : 'none';
-  document.getElementById('atab-design')?.classList.toggle('active', tab === 'design');
   if (tab !== 'mis' && typeof clearAdminCustomerSupport === 'function') clearAdminCustomerSupport();
   if (tab === 'wipe') tab = 'freibad';
   document.getElementById('adminFreibad').style.display   = tab==='freibad'  ? 'block' : 'none';
@@ -16771,8 +16766,6 @@ function applyAdminMenuConfig(config) {
   });
   const wipe = document.getElementById('atab-wipe');
   if (wipe) tabs.appendChild(wipe);
-  const design = document.getElementById('atab-design');
-  if (design) tabs.prepend(design);
 }
 
 async function loadAdminMenuConfig(force) {
@@ -29333,7 +29326,7 @@ html body.bielstein-theme .value-choice-group .buy-mini.selected {
 }
 html body.bielstein-theme .value-choice-group .buy-mini.selected :is(.buy-mini-amount,.buy-mini-label,.buy-mini-note) { color:var(--pb-on-action)!important; }
 
-/* Native admin control. It stays first even with an older saved menu order. */
+/* Color selection at the beginning of the existing Splash admin section. */
 .design-world-intro { max-width:680px; color:var(--pb-text,#5C564C); font:500 14px/1.7 Manrope,Arial,sans-serif; margin:0 0 22px; }
 .design-world-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
 .design-world-choice { min-width:0; padding:0; overflow:hidden; text-align:left; background:var(--pb-paper,#FFFFFF); border:2px solid var(--pb-line,#E2DACB); border-radius:16px; color:var(--pb-ink,#1C1A17); font:inherit; cursor:pointer; }
