@@ -1967,6 +1967,13 @@ body.partner-drag-active,body.partner-drag-active *{cursor:grabbing!important;us
 #adminPartnerBoard .partner-swap-target{outline:3px solid var(--pb-accent,#FF5A36);outline-offset:2px;}
 #adminPartnerBoard .partner-swap-target::after{content:attr(data-swap-label);position:absolute;left:4px;right:4px;bottom:4px;z-index:4;border-radius:4px;padding:4px;background:var(--pb-accent,#FF5A36);color:#fff;text-align:center;font:700 10px Manrope,sans-serif;pointer-events:none;}
 .partner-new-placement{outline:3px solid var(--pb-accent,#FF5A36);outline-offset:3px;}
+
+/* Statusangaben sind Text, keine scheinbar anklickbaren Schalter. */
+.admin-action-list-statuses{display:grid;gap:5px;margin:0;font-size:12px;line-height:1.45;justify-content:start;color:var(--pb-ink,#1C1A17);}
+.admin-action-list-statuses>div{display:flex;gap:6px;flex-wrap:wrap;}
+.admin-action-list-statuses dt{font-weight:700;}
+.admin-action-list-statuses dd{margin:0;}
+.admin-action-save-status{font-size:13px;line-height:1.5;margin:0 0 14px;color:var(--pb-ink,var(--pb-ink,#1C1A17));}
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -6629,20 +6636,24 @@ main {
         <div class="admin-action-content">
           <div class="admin-action-visibility">
             <div class="admin-action-visibility-item">
-              <label class="eb-adm-lbl">Aktion anzeigen</label>
+              <label class="eb-adm-lbl">Aktionsangebot einschalten</label>
               <div class="seg-toggle">
                 <button type="button" id="ebAdmOff" class="seg-btn seg-active" onclick="setEarlybirdEnabled(false)">Aus</button>
                 <button type="button" id="ebAdmOn" class="seg-btn" onclick="setEarlybirdEnabled(true)">An</button>
               </div>
             </div>
             <div class="admin-action-visibility-item">
-              <label class="eb-adm-lbl">Splash-PNG anzeigen</label>
+              <label class="eb-adm-lbl">PNG auf der Splash-Seite anzeigen</label>
               <div class="seg-toggle">
                 <button type="button" id="spActionEnabledOff" class="seg-btn seg-active" onclick="setSplashActionEnabled(false)">Aus</button>
                 <button type="button" id="spActionEnabledOn" class="seg-btn" onclick="setSplashActionEnabled(true)">An</button>
               </div>
             </div>
           </div>
+
+          <p class="admin-action-description">Das Aktionsangebot steuert die Aktionskachel und den Rabatt im festgelegten Zeitraum. Das Splash-PNG wird unabhängig davon angezeigt und aktiviert keinen Rabatt. Beide Schalter werden erst mit „Aktion speichern“ übernommen.</p>
+          <p id="marketingActionSaveStatus" class="admin-action-save-status" role="status" aria-live="polite"></p>
+          <button type="button" id="retryMarketingActionSplashBtn" class="admin-action-edit-btn" onclick="retryMarketingActionSplash()" hidden>Splash-Seite erneut aktualisieren</button>
 
           <div class="admin-action-namebar">
             <div><label class="eb-adm-lbl">Name der Aktion</label><input type="text" id="marketingActionName" maxlength="120" class="eb-adm-inp" placeholder="z. B. Halloween 2027"></div>
@@ -27512,6 +27523,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   };
 
   window.pbPublishSplashSnapshot = async function(){
+    if(window.__pbSplashBootstrap)window.__pbSplashLastConfirmed=window.__pbSplashBootstrap;
     window.__pbSplashBootstrapReady=null;
     window.__pbSplashBootstrap=null;
     try{sessionStorage.removeItem(window.__splashCacheKey);sessionStorage.removeItem('pbSponsorsPublicCache');}catch(e){}
@@ -27526,12 +27538,14 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       window.__pbSplashBootstrapReady=window.pbFetchSplashSnapshot();
       var snapshot=await window.__pbSplashBootstrapReady;
       if(!snapshot || snapshot.revision<result.data.revision) throw new Error('Neuer Splash-Stand noch nicht abrufbar');
+      window.__pbSplashBootstrap=snapshot;window.__pbSplashLastConfirmed=snapshot;
       window.applySponsorVisibility(snapshot.sponsorsEnabled);
       window.pbApplySplashData(snapshot.config);
       if(typeof window.pbApplySplashSponsors==='function')window.pbApplySplashSponsors(snapshot.sponsors);
       try{sessionStorage.removeItem(window.__splashCacheKey);sessionStorage.removeItem('pbSponsorsPublicCache');}catch(e){}
       return true;
     }catch(e){
+      window.__pbSplashBootstrapReady=null;window.__pbSplashBootstrap=null;
       // Das Speichern ist bereits erfolgreich; der Server wiederholt
       // ausstehende Publikationen unabhaengig von diesem Browser.
       if(typeof showToast==='function')showToast('Gespeichert. Splash-Aktualisierung wird automatisch wiederholt.');
@@ -27549,6 +27563,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   };
   window.fillSplashAdmin = function(){
     var d = window.__splash || {};
+    var preserveDraft=window.marketingActionEditorOpen&&window.marketingActionEditorOpen()&&!window.__fillingMarketingActionEditor;
     // Farb-Auswahllisten einmalig befüllen
     ['spEbKickerColor','spEbTextColor','spEbHiColor'].forEach(function(id){
       var sel=document.getElementById(id);
@@ -27559,6 +27574,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     var setv=function(id,v){ var el=document.getElementById(id); if(el && v!=null) el.value=v; };
     setv('spClaim', d.splash_claim);
     setv('spSubline', d.splash_subline);
+    if(preserveDraft)return;
     setv('spEbKicker', d.splash_eb_kicker);
     setv('spEbText', d.splash_eb_text);
     setv('spActionCtaLabel', d.splash_action_cta_label || 'Mehr anzeigen');
@@ -28011,6 +28027,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   };
   (function(){
     var ed=document.getElementById('abBodyEditor'),editor=document.getElementById('marketingActionEditor');if(!ed||!editor)return;
+    ['input','change'].forEach(function(type){editor.addEventListener(type,function(){if(window.markMarketingActionDirty)window.markMarketingActionDirty();});});
     ed.addEventListener('input',window.syncActionRichText);
     ed.addEventListener('paste',function(e){
       e.preventDefault();var data=e.clipboardData;if(!data)return;
@@ -28062,6 +28079,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 
   // ── Admin-Editor: „Jahresabo sichern"-Kachel ──
   window.fillAboBannerAdmin = function(){
+    if(window.marketingActionEditorOpen&&window.marketingActionEditorOpen()&&!window.__fillingMarketingActionEditor)return;
     var d = window.__abobanner || {};
     ['abKickerColor','abTitleColor','abBodyColor','abHiColor','abLabelColor','abValueColor'].forEach(function(id){
       var sel=document.getElementById(id);
@@ -28111,16 +28129,49 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   window.__marketingActions=[];
   window.__selectedMarketingActionId=null;
   window.__splashAdmEnabled=false;
+  window.marketingActionEditorOpen=function(){return !!window.__selectedMarketingActionId&&document.getElementById('marketingActionEditor')?.hidden===false;};
+  window.marketingActionSaveStatus=function(message,pending){
+    var el=document.getElementById('marketingActionSaveStatus');if(el)el.textContent=message||'';
+    var retry=document.getElementById('retryMarketingActionSplashBtn');if(retry)retry.hidden=!pending;
+  };
+  window.markMarketingActionDirty=function(){
+    if(window.__fillingMarketingActionEditor)return;
+    window.marketingActionSaveStatus('Noch nicht gespeichert. Die öffentliche Anzeige bleibt bis zum Speichern unverändert.',false);
+  };
+  window.marketingActionStatus=function(a,now){
+    var c=a.config||{},start=Date.parse(c.earlybird_start),end=Date.parse(c.earlybird_end),time=now==null?Date.now():now;
+    var action=!a.action_enabled?'ausgeschaltet':Number.isFinite(start)&&time<start?'geplant':Number.isFinite(end)&&time>=end?'Zeitraum beendet':'aktiv';
+    var packet=window.__pbSplashBootstrap||window.__pbSplashLastConfirmed,live=packet&&packet.config;
+    var image=String(c.splash_action_image_url||'').trim();
+    var png=!a.splash_enabled?'ausgeblendet':!image?'kein PNG hinterlegt':!live?'Anzeige eingeschaltet · Live-Status noch nicht bestätigt':live.splash_action_enabled===true&&live.splash_action_image_url===image?'sichtbar':'Aktualisierung ausstehend';
+    if(!a.splash_enabled&&!(window.__marketingActions||[]).some(function(other){return other.splash_enabled;})&&live&&live.splash_action_enabled===true&&live.splash_action_image_url===image&&image)png='Ausblenden ausstehend';
+    return {action:action,png:png};
+  };
+  window.marketingActionPublicationMatches=function(){
+    var active=(window.__marketingActions||[]).find(function(a){return a.splash_enabled;});
+    var live=window.__pbSplashBootstrap?.config;
+    return !!live&&live.splash_action_enabled===!!active&&(!active||live.splash_action_image_url===String(active.config?.splash_action_image_url||'').trim());
+  };
+  window.retryMarketingActionSplash=async function(){
+    var btn=document.getElementById('retryMarketingActionSplashBtn');if(btn)btn.disabled=true;
+    try{
+      var ok=await window.pbPublishSplashSnapshot()&&window.marketingActionPublicationMatches();
+      window.renderMarketingActionList();
+      window.marketingActionSaveStatus(ok?'Gespeichert. Die Splash-Seite ist aktualisiert.':'Gespeichert. Die Splash-Seite konnte noch nicht aktualisiert werden. Bitte erneut versuchen.',!ok);
+    }finally{if(btn)btn.disabled=false;}
+  };
+
   window.marketingActionById=function(id){ return (window.__marketingActions||[]).find(function(a){ return String(a.id)===String(id); })||null; };
   window.renderMarketingActionList=function(){
     var host=document.getElementById('marketingActionList'); if(!host) return;
     var actions=window.__marketingActions||[];
     if(!actions.length){ host.innerHTML='<div class="admin-action-empty">Noch keine Aktion gespeichert.</div>'; return; }
     host.innerHTML=actions.map(function(a){
+      var status=window.marketingActionStatus(a);
       var updated=a.updated_at ? new Date(a.updated_at).toLocaleDateString('de-DE') : '';
       return '<div class="admin-action-list-item">'
         +'<div class="admin-action-list-name"><strong>'+pbEsc(a.name||'Unbenannte Aktion')+'</strong><small>'+(updated?'Zuletzt geändert: '+pbEsc(updated):'Gespeicherte Aktion')+'</small></div>'
-        +'<div class="admin-action-list-statuses"><span class="admin-action-status'+(a.action_enabled?' is-on':'')+'">Aktion '+(a.action_enabled?'an':'aus')+'</span><span class="admin-action-status'+(a.splash_enabled?' is-on':'')+'">PNG '+(a.splash_enabled?'an':'aus')+'</span></div>'
+        +'<dl class="admin-action-list-statuses"><div><dt>Aktion:</dt><dd>'+pbEsc(status.action)+'</dd></div><div><dt>Splash-PNG:</dt><dd>'+pbEsc(status.png)+'</dd></div></dl>'
         +'<button type="button" class="admin-action-edit-btn" aria-label="'+pbEsc(a.name||'Aktion')+' bearbeiten" onclick="selectMarketingAction(\''+String(a.id).replace(/'/g,'')+'\')">Bearbeiten</button></div>';
     }).join('');
   };
@@ -28159,10 +28210,13 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
     window.__splash=Object.assign({},publicSplash,c,{splash_action_enabled:!!a.splash_enabled,splash_action_modal_enabled:c.splash_action_modal_enabled!==false});
     window.__abobanner=c;
     window.__pbSplashActionEnabled=!!a.splash_enabled;
-    window.fillEarlybirdAdmin(); window.fillSplashAdmin(); window.fillAboBannerAdmin();
+    window.__fillingMarketingActionEditor=true;
+    try{window.fillEarlybirdAdmin(); window.fillSplashAdmin(); window.fillAboBannerAdmin();}
+    finally{window.__fillingMarketingActionEditor=false;}
     window.__earlybird=publicEarlybird; window.__splash=publicSplash; window.__abobanner=publicAbo; window.__pbSplashActionEnabled=publicSplashEnabled;
     window.__ebAdmEnabled=!!a.action_enabled; window.refreshEbToggle(window.__ebAdmEnabled);
     window.__splashAdmEnabled=!!a.splash_enabled; window.refreshSplashActionToggle(window.__splashAdmEnabled);
+    window.marketingActionSaveStatus('Gespeicherter Stand. Änderungen werden erst mit „Aktion speichern“ übernommen.',false);
     if(focusEditor!==false&&editor) editor.scrollIntoView({behavior:'smooth',block:'start'});
   };
   window.closeMarketingActionEditor=function(clearSelection){
@@ -28201,35 +28255,43 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   };
   window.saveMarketingAction=async function(options){
     options=options||{}; var id=window.__selectedMarketingActionId; if(!id){ alert('Bitte zuerst eine Aktion auswählen.'); return false; }
-    var saveBtn=document.getElementById('saveMarketingActionBtn');
+    var saveBtn=document.getElementById('saveMarketingActionBtn'),editor=document.getElementById('marketingActionEditor');
+    var requestedAction=!!window.__ebAdmEnabled,requestedSplash=!!window.__splashAdmEnabled;
     try{
       if(saveBtn) saveBtn.disabled=true;
+      if(editor)editor.inert=true;
+      window.marketingActionSaveStatus('Wird gespeichert …',false);
+      var name=(document.getElementById('marketingActionName')?.value||'').trim();
+      var editedConfig=window.collectMarketingActionConfig();
       var fileEl=document.getElementById('spActionImageFile'),file=fileEl&&fileEl.files&&fileEl.files[0];
       if(file){
         if(!(file.type==='image/png'||/\.png$/i.test(file.name||''))) throw new Error('Bitte eine PNG-Datei auswählen.');
         if(file.size>5*1024*1024) throw new Error('Die PNG-Datei ist zu groß. Bitte maximal 5 MB verwenden.');
-        var url=await uploadSponsorLogo(file,'splash-action'); var urlEl=document.getElementById('spActionImageUrl'); if(urlEl) urlEl.value=url;
+        var url=await uploadSponsorLogo(file,'splash-action'); var urlEl=document.getElementById('spActionImageUrl'); if(urlEl) urlEl.value=url;editedConfig.splash_action_image_url=url;
       }
-      var name=(document.getElementById('marketingActionName')?.value||'').trim();
-      var editedConfig=window.collectMarketingActionConfig();
       var config=Object.assign({},window.marketingActionById(id)?.config||{},editedConfig);
       if(!config.earlybird_abo_start) throw new Error('Bitte ein festes Startdatum eingeben.');
       if(!config.earlybird_abo_start && window.__ebAdmEnabled) throw new Error('Der Eröffnungstermin ist noch offen. Bitte die Aktion ausschalten, bevor du diesen Beginn speicherst.');
-      var r=await sb.rpc('admin_save_marketing_action_with_start',{p_id:id,p_name:name,p_config:config,p_action_enabled:!!window.__ebAdmEnabled,p_splash_enabled:!!window.__splashAdmEnabled}); if(r.error) throw r.error;
+      if(requestedSplash&&!String(config.splash_action_image_url||'').trim())throw new Error('Bitte zuerst ein Splash-PNG hinterlegen oder die PNG-Anzeige ausschalten.');
+      var r=await sb.rpc('admin_save_marketing_action_with_start',{p_id:id,p_name:name,p_config:config,p_action_enabled:requestedAction,p_splash_enabled:requestedSplash}); if(r.error) throw r.error;
       if(fileEl) fileEl.value='';
       await window.loadMarketingActions(id);
       var saved=window.marketingActionById(id);
-      if(!saved||Object.keys(editedConfig).some(function(key){return saved.config?.[key]!==editedConfig[key];}))
+      if(!saved||saved.name!==name||saved.action_enabled!==requestedAction||saved.splash_enabled!==requestedSplash||Object.keys(editedConfig).some(function(key){return saved.config?.[key]!==editedConfig[key];}))
         throw new Error('Die gespeicherten Aktionsdaten konnten nicht vollständig bestätigt werden. Bitte die Aktion erneut öffnen und prüfen.');
       if(typeof loadEarlybird==='function') await loadEarlybird();
-      if(typeof window.pbPublishSplashSnapshot==='function') await window.pbPublishSplashSnapshot();
-      if(typeof loadSplash==='function') await loadSplash();
+      var published=typeof window.pbPublishSplashSnapshot==='function'&&await window.pbPublishSplashSnapshot();
+      if(published&&typeof loadSplash==='function') await loadSplash();
       if(typeof loadAboBanner==='function') await loadAboBanner();
       window.selectMarketingAction(id,false);
-      if(!options.quiet&&typeof showToast==='function') showToast('Aktion gespeichert.');
-      return true;
-    }catch(e){ alert('Speichern fehlgeschlagen: '+(e&&e.message?e.message:'Unbekannter Fehler')); return false; }
-    finally{ if(saveBtn) saveBtn.disabled=false; }
+      published=!!published&&window.marketingActionPublicationMatches();
+      window.renderMarketingActionList();
+      var message=published?'Gespeichert. Die Splash-Seite ist aktualisiert.':'Einstellungen gespeichert. Die Splash-Seite ist noch nicht aktualisiert. Bitte erneut versuchen.';
+      window.marketingActionSaveStatus(message,!published);
+      if(!options.quiet&&typeof showToast==='function')showToast(message);
+      return published;
+    }catch(e){ window.marketingActionSaveStatus('Nicht vollständig bestätigt: '+(e&&e.message?e.message:'Unbekannter Fehler'),false);alert('Speichern fehlgeschlagen: '+(e&&e.message?e.message:'Unbekannter Fehler')); return false; }
+    finally{ if(saveBtn) saveBtn.disabled=false;if(editor)editor.inert=false; }
   };
   window.deleteMarketingAction=async function(){
     var a=window.marketingActionById(window.__selectedMarketingActionId); if(!a) return;
@@ -28256,10 +28318,12 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
   window.setSplashActionEnabled = function(on){
     window.__splashAdmEnabled=!!on;
     window.refreshSplashActionToggle(window.__splashAdmEnabled);
+    window.markMarketingActionDirty();
   };
   window.setEarlybirdEnabled = function(on){
     window.__ebAdmEnabled=!!on;
     window.refreshEbToggle(window.__ebAdmEnabled);
+    window.markMarketingActionDirty();
   };
   window.refreshSplashActionModalFields=function(){
     var checkbox=document.getElementById('spActionModalEnabled');
@@ -28350,6 +28414,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
       :'Dieses Datum gilt für neue Aktions-Abos. Bestehende Abos behalten ihren vereinbarten Beginn. Reguläre Jahresabos sind davon unabhängig.';
   };
   window.fillEarlybirdAdmin = function(){
+    if(window.marketingActionEditorOpen&&window.marketingActionEditorOpen()&&!window.__fillingMarketingActionEditor)return;
     var eb=window.__earlybird||{};
     var p=function(n){ return String(n).padStart(2,'0'); };
     var toLocal=function(iso){ if(!iso) return ''; var d=new Date(iso); if(isNaN(d.getTime())) return ''; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes()); };
