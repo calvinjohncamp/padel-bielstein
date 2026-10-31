@@ -9638,10 +9638,10 @@ function lockboxAccessContent(access) {
     message:`Der Zugang über die ${entrance} wird noch eingerichtet. Den Zugangscode findest du nach der Einrichtung unter „Jetzt spielen“.`};
   if(typeof access.pin!=='string'||!/^[0-9]{4,12}$/.test(access.pin)
     ||![access.display_from,access.access_until,access.pin_start,access.pin_end].every(v=>Number.isFinite(Date.parse(v)))
-    ||Date.parse(access.pin_start)>Date.parse(access.display_from)||Date.parse(access.pin_end)<Date.parse(access.access_until)
+    ||Date.parse(access.pin_start)>=Date.parse(access.access_until)||Date.parse(access.pin_end)<Date.parse(access.access_until)
     ||Date.parse(access.access_until)<=Date.parse(access.display_from)+5*60000)throw Error('lockbox_content_invalid');
   const starts=new Date(Date.parse(access.display_from)+5*60000).toISOString();
-  return {title,pending:false,pin:access.pin,entryClock:clock(access.display_from),startClock:clock(starts),side,
+  return {title,pending:false,pin:access.pin,entryClock:clock(new Date(Math.max(Date.parse(access.display_from),Date.parse(access.pin_start))).toISOString()),startClock:clock(starts),side,
     instruction:`Code eingeben, danach die Öffnen-Taste rechts unten drücken. Schlüssel entnehmen, Tür öffnen, Schlüssel sofort zurücklegen und Box wieder schließen. Nach Spielende einfach nur die Tür zuziehen.`};
 }
 function lockboxAccessHtml(access) {
