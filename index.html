@@ -15,6 +15,45 @@
 <html lang="de" class="pb-boot">
 <head>
 <meta charset="UTF-8">
+<script>/* A persistent viewport is needed for genuine responsive media queries.
+   Start it before the application boots; never restart the app to enter/exit focus. */
+(function () {
+  'use strict';
+  if (parent !== window) {
+    try {
+      const host = parent.PBFocusHost;
+      if (!host?.owns(window)) return;
+      window.pbNavigateExternalCheckout = target => { host.navigateExternal(window,target); return true; };
+      for (const method of ['replaceState', 'pushState']) {
+        const original = history[method];
+        history[method] = function (...args) {
+          const result = original.apply(this, args);
+          host.syncLocation(window);
+          return result;
+        };
+      }
+      addEventListener('hashchange', () => host.syncLocation(window));
+      addEventListener('popstate', () => host.syncLocation(window));
+    } catch (_) {}
+    return;
+  }
+  if (!/^https?:$/.test(location.protocol)) return;
+  const ua = navigator.userAgent;
+  // Search crawlers keep the original, directly indexable application document.
+  if (/bot\b|crawler|spider|slurp/i.test(ua)) return;
+  const ipad = /iPad/i.test(ua) || (!/iPhone|iPod|Android/i.test(ua)
+    && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if ((/iPhone|iPod|Android|Mobile/i.test(ua) && !ipad)
+      || navigator.standalone === true || matchMedia('(display-mode: standalone)').matches) return;
+  const root = document.documentElement;
+  if (!(root.requestFullscreen || root.webkitRequestFullscreen)) return;
+  const shell = new URL('focus-shell.html', location.href);
+  shell.searchParams.set('page', location.pathname + location.search + location.hash);
+  // Stop parsing the outer app: only the child owns session listeners and timers.
+  window.stop();
+  location.replace(shell.href);
+})();
+</script>
 <script>// Set before the first stylesheet: no flash of Tango after reloading a choice.
 (function () {
   const worlds = ['tango', 'cool'];
@@ -14030,6 +14069,7 @@ function isStripeTestCheckoutUrl(url) {
 
 function performExternalCheckoutRedirect(target) {
   showToast('Weiter zu Stripe …');
+  if (typeof window.pbNavigateExternalCheckout === 'function' && window.pbNavigateExternalCheckout(target)) return;
   window.location.assign(target);
   setTimeout(() => {
     if (!document.hidden) window.location.href = target;
@@ -29650,7 +29690,7 @@ html body.bielstein-theme #modeAdmin .admin-tab-label { min-width:0; overflow-wr
 html.pb-focus-active { background:var(--pb-chrome,#1C1A17); }
 html.pb-focus-active::backdrop { background:var(--pb-chrome,#1C1A17); }
 html.pb-focus-active body.bielstein-theme .appbar {
-  padding-right:calc(52px + env(safe-area-inset-right,0px));
+  padding-right:calc(var(--pb-focus-close-space,52px) + env(safe-area-inset-right,0px));
   padding-top:calc(18px + env(safe-area-inset-top,0px));
 }
 html.pb-focus-active .pb-splash-inner { min-height:100dvh; }
@@ -29659,6 +29699,35 @@ html.pb-focus-active .pb-splash-inner { min-height:100dvh; }
 (function () {
   'use strict';
   const root = document.documentElement;
+  let host = null;
+  try { if (parent !== window && parent.PBFocusHost?.owns(window)) host = parent.PBFocusHost; } catch (_) {}
+  if (host) {
+    const mark = document.querySelector('#pbSplash .pb-splash-logobox');
+    if (!mark) return;
+    const entry = document.createElement('button');
+    entry.type = 'button';
+    entry.className = mark.className + ' pb-focus-entry';
+    entry.setAttribute('aria-label','Im Fokus öffnen');
+    entry.append(...mark.childNodes);
+    mark.replaceWith(entry);
+    window.PBFocusBridge = Object.freeze({sync(active,scale) {
+      root.classList.toggle('pb-focus-active',active);
+      if (active) root.style.setProperty('--pb-focus-close-space',52/scale+'px');
+      else root.style.removeProperty('--pb-focus-close-space');
+      entry.setAttribute('aria-pressed',String(active));
+    }});
+    entry.addEventListener('click',async()=>{
+      if (await host.enter()) {
+        if (!document.getElementById('pbSplash').hidden) document.getElementById('pbSplashCta').click();
+      } else if (typeof window.showToast==='function') window.showToast('Vollbild ist hier nicht verfügbar. Du kannst die App normal weiter nutzen.');
+    });
+    document.addEventListener('keydown',event=>host.key(event));
+    document.addEventListener('pointermove',event=>{
+      if (event.clientY > innerHeight-30) host.reveal();
+    },{passive:true});
+    host.refresh();
+    return;
+  }
   const ua = navigator.userAgent;
   const ipad = /iPad/i.test(ua) || (!/iPhone|iPod|Android/i.test(ua)
     && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
