@@ -29633,6 +29633,112 @@ html body.bielstein-theme #modeAdmin .admin-tab-label { min-width:0; overflow-wr
   apply(root.dataset.designWorld, false);
 })();
 </script>
+<style id="pbFocusStyles">/* Only opt-in desktop/iPad fullscreen changes these styles. */
+.pb-focus-entry { display:block; padding:0; background:transparent; cursor:pointer; }
+.pb-focus-entry:focus-visible { outline:2px solid var(--pb-action,#FF5A36); outline-offset:5px; }
+.pb-focus-close {
+  position:fixed; top:calc(5px + env(safe-area-inset-top,0px));
+  right:calc(4px + env(safe-area-inset-right,0px)); z-index:10001;
+  display:flex; align-items:center; justify-content:center; width:44px; height:44px;
+  padding:0; border:0; border-radius:6px; background:var(--pb-chrome,#1C1A17);
+  color:#76736E; cursor:pointer; -webkit-tap-highlight-color:transparent;
+}
+.pb-focus-close[hidden] { display:none!important; }
+.pb-focus-close svg { fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; }
+.pb-focus-close:hover { color:#B8B0A2; }
+.pb-focus-close:focus-visible { outline:2px solid #B8B0A2; outline-offset:-5px; }
+html.pb-focus-active { background:var(--pb-chrome,#1C1A17); }
+html.pb-focus-active::backdrop { background:var(--pb-chrome,#1C1A17); }
+html.pb-focus-active body.bielstein-theme .appbar {
+  padding-right:calc(52px + env(safe-area-inset-right,0px));
+  padding-top:calc(18px + env(safe-area-inset-top,0px));
+}
+html.pb-focus-active .pb-splash-inner { min-height:100dvh; }
+</style>
+<script>/* Focus changes only the current document's display; no frame, reload or app state copy. */
+(function () {
+  'use strict';
+  const root = document.documentElement;
+  const ua = navigator.userAgent;
+  const ipad = /iPad/i.test(ua) || (!/iPhone|iPod|Android/i.test(ua)
+    && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const mobile = /iPhone|iPod|Android|Mobile/i.test(ua);
+  const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+  const request = root.requestFullscreen || root.webkitRequestFullscreen;
+  const exit = document.exitFullscreen || document.webkitExitFullscreen;
+  if ((mobile && !ipad) || standalone || !request || !exit
+      || (root.requestFullscreen ? document.fullscreenEnabled === false : document.webkitFullscreenEnabled === false)) return;
+
+  const mark = document.querySelector('#pbSplash .pb-splash-logobox');
+  if (!mark) return;
+  const entry = document.createElement('button');
+  entry.type = 'button';
+  entry.className = mark.className + ' pb-focus-entry';
+  entry.setAttribute('aria-label', 'Im Fokus öffnen');
+  entry.append(...mark.childNodes);
+  mark.replaceWith(entry);
+
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.id = 'pbFocusClose';
+  close.className = 'pb-focus-close';
+  close.hidden = true;
+  close.setAttribute('aria-label', 'Fokus beenden');
+  close.title = 'Fokus beenden (Escape)';
+  close.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="m7 7 10 10M17 7 7 17"/></svg>';
+  document.body.append(close);
+  let pending = false;
+  const fullscreen = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function sync() {
+    const active = fullscreen() === root;
+    root.classList.toggle('pb-focus-active', active);
+    close.hidden = !active;
+    entry.setAttribute('aria-pressed', String(active));
+  }
+  function notice(message) {
+    if (typeof window.showToast === 'function') window.showToast(message);
+  }
+  async function enter() {
+    if (pending || fullscreen()) return;
+    pending = true;
+    try {
+      // Call before any await: Safari requires the original click's user activation.
+      await request.call(root, { navigationUI: 'hide' });
+      sync();
+      if (fullscreen() === root && !document.getElementById('pbSplash').hidden) {
+        // Reuse the normal entry, including session checks and login handling.
+        document.getElementById('pbSplashCta').click();
+      }
+    } catch (_) {
+      sync();
+      notice('Vollbild ist hier nicht verfügbar. Du kannst die App normal weiter nutzen.');
+    } finally { pending = false; }
+  }
+  async function leave() {
+    if (fullscreen() !== root) { sync(); return; }
+    const restoreFocus = document.activeElement === close;
+    try {
+      await exit.call(document);
+      // Never navigate, reopen Splash, log out or reset a booking on exit.
+      if (restoreFocus && !fullscreen()) {
+        const target = !document.getElementById('pbSplash').hidden ? entry : document.querySelector('.appbar-brand');
+        target?.focus({ preventScroll: true });
+      }
+    } catch (_) {
+      if (fullscreen() === root) notice('Bitte Vollbild über Escape oder die Browser-Steuerung beenden.');
+    } finally { sync(); }
+  }
+  entry.addEventListener('click', enter);
+  close.addEventListener('click', leave);
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && fullscreen() === root) void leave();
+  });
+  document.addEventListener('fullscreenchange', sync);
+  document.addEventListener('webkitfullscreenchange', sync);
+  window.addEventListener('pageshow', sync);
+  sync();
+})();
+</script>
 
 <script>
 // Invitation links only navigate; answering still requires the authenticated account.
