@@ -53,7 +53,7 @@
   const root = document.documentElement;
   if (!(root.requestFullscreen || root.webkitRequestFullscreen)) return;
   const shell = new URL('focus-shell.html', location.href);
-  shell.searchParams.set('v','20261104-ipad-aligned');
+  shell.searchParams.set('v','20261104-booking-divider');
   shell.searchParams.set('page', location.pathname + location.search + location.hash);
   // Stop parsing the outer app: only the child owns session listeners and timers.
   window.stop();
@@ -29417,7 +29417,7 @@ body.bielstein-theme #todayBookingsCard.play-today-section {margin:28px 0 36px;}
 #modePlay .play-day-kicker {color:var(--pb-muted,#7b756b);font:700 11px/1.5 "Manrope",Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;}
 body.bielstein-theme #todayBookingsTitle {margin:6px 0 28px;color:var(--pb-ink,#242620);font:600 clamp(30px,3.4vw,45px)/1.15 "Space Grotesk",Arial,sans-serif;letter-spacing:-.045em;text-transform:none;}
 #modePlay .play-today-layout,#modePlay .play-today-list {display:block;}
-#modePlay .play-today-list > article + article {margin-top:28px;}
+html body.bielstein-theme #modePlay .play-today-list > article + article {margin-top:24px;padding-top:24px;border-top:1px solid #dcd6c9;}
 #modePlay .play-today-booking {display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,2fr);gap:28px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;}
 #modePlay .play-today-booking-head {display:block;min-width:0;margin:0;padding:0 24px 0 0;border:0;border-right:1px solid var(--pb-line,#dcd6c9);}
 body.bielstein-theme #modePlay .play-today-kind-row {display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
