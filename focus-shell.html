@@ -252,7 +252,7 @@ body { font:13px/1.3 system-ui,sans-serif; color:#C9C2B6; }
   try {initial=new URL(new URLSearchParams(location.search).get('page')||'/',location.origin);} catch (_) {initial=new URL('/',location.origin);}
   if (initial.origin!==location.origin || !['/','/index.html'].includes(initial.pathname)) initial=new URL('/',location.origin);
   history.replaceState(null,'',initial.pathname+initial.search+initial.hash);
-  initial.searchParams.set('_pb_focus_view','20261104-footer-rules');
+  initial.searchParams.set('_pb_focus_view','20261104-name-gap20');
   frame.src=initial.href;
   sync();
 })();
