@@ -53,7 +53,7 @@
   const root = document.documentElement;
   if (!(root.requestFullscreen || root.webkitRequestFullscreen)) return;
   const shell = new URL('focus-shell.html', location.href);
-  shell.searchParams.set('v','20261104-logo-larger');
+  shell.searchParams.set('v','20261104-phone-logo21');
   shell.searchParams.set('page', location.pathname + location.search + location.hash);
   // Stop parsing the outer app: only the child owns session listeners and timers.
   window.stop();
@@ -26648,7 +26648,7 @@ body.bielstein-theme #myHistoryCard .closure-item.my-booking {
 }
 @media (max-width: 560px) {
   body.bielstein-theme .appbar { gap: 8px; }
-  body.bielstein-theme .appbar-wordmark { font-size: 19px; }
+  body.bielstein-theme .appbar-wordmark { font-size: 21.3px; }
   body.bielstein-theme .appbar-btn { padding: 8px 10px; font-size: 11px; }
 }
 @media (max-width: 420px) {
@@ -29792,7 +29792,7 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
 /* Apply the existing phone text sizes in both orientations. */
 @media (max-width:560px), (max-width:1024px) and (max-height:560px) and (orientation:landscape) {
-  body.bielstein-theme .appbar-wordmark { font-size:19px; }
+  body.bielstein-theme .appbar-wordmark { font-size:21.3px; }
   body.bielstein-theme .appbar-btn { font-size:11px; }
   body.bielstein-theme .site-footer-center a { font-size:10.5px; }
   .regional-seo { font-size:.86rem; }
