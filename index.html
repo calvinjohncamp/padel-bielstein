@@ -53,7 +53,7 @@
   const root = document.documentElement;
   if (!(root.requestFullscreen || root.webkitRequestFullscreen)) return;
   const shell = new URL('focus-shell.html', location.href);
-  shell.searchParams.set('v','20261104-landscape-wide');
+  shell.searchParams.set('v','20261104-ipad-aligned');
   shell.searchParams.set('page', location.pathname + location.search + location.hash);
   // Stop parsing the outer app: only the child owns session listeners and timers.
   window.stop();
@@ -2026,6 +2026,14 @@ body.bielstein-theme .profile-round-image { display:block; width:100%; height:10
 
 @media (min-width: 561px) and (max-width: 1024px) and (orientation: landscape) {
   html body.bielstein-theme #heroHeader .appbar-wordmark { font-size: 36px; }
+}
+
+/* Tablet portrait: one shared edge for header, navigation and content. */
+@media (min-width: 721px) and (max-width: 1100px) and (orientation: portrait) {
+  html body.bielstein-theme { --tablet-portrait-gutter: clamp(24px, 3.125vw, 32px); }
+  html body.bielstein-theme > main { width: calc(100% - 2 * var(--tablet-portrait-gutter)) !important; }
+  html body.bielstein-theme #heroHeader { padding-left: var(--tablet-portrait-gutter) !important; padding-right: var(--tablet-portrait-gutter) !important; }
+  html body.bielstein-theme #modeBook .date-chip { min-width: 64px; padding: 8px 12px; }
 }
 </style>
 
