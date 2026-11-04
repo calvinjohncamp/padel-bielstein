@@ -53,7 +53,7 @@
   const root = document.documentElement;
   if (!(root.requestFullscreen || root.webkitRequestFullscreen)) return;
   const shell = new URL('focus-shell.html', location.href);
-  shell.searchParams.set('v','20261104-avatar56');
+  shell.searchParams.set('v','20261104-footer-rules');
   shell.searchParams.set('page', location.pathname + location.search + location.hash);
   // Stop parsing the outer app: only the child owns session listeners and timers.
   window.stop();
@@ -2593,10 +2593,6 @@ main {
 <header class="appbar" aria-label="Padel Bielstein" id="heroHeader" onclick="if(curMode==='admin') setMode('book');">
   <button class="appbar-brand" type="button" onclick="event.stopPropagation(); goHome();" aria-label="Zur Startseite">
     <span class="appbar-wordmark"><span class="wm-a">PADEL</span> <span class="wm-b">BIELSTEIN</span></span>
-  </button>
-  <button class="court-rules-trigger" id="courtRulesTrigger" type="button"
-          onclick="event.stopPropagation(); openCourtRules();" aria-label="Court-Regeln öffnen" title="Court-Regeln">
-    <span class="court-rules-glyph" aria-hidden="true"></span>
   </button>
   <div class="appbar-auth" id="appbarAuth">
     <button type="button" class="appbar-btn ghost" onclick="event.stopPropagation(); openModal('register');">Registrieren</button>
@@ -8608,6 +8604,7 @@ main {
     </div>
     <div class="site-footer-center">
       <div class="footer-legal">
+        <a href="#court-regeln" onclick="event.preventDefault(); openCourtRules('rules');">Court-Regeln</a>
         <a href="#impressum" onclick="event.preventDefault(); openCourtRules('impressum');">Impressum</a>
         <a href="#datenschutz" onclick="event.preventDefault(); openCourtRules('privacy');">Datenschutz</a>
         <a href="#agb" onclick="event.preventDefault(); openCourtRules('agb');">AGB</a>
@@ -24898,12 +24895,12 @@ body.bielstein-theme .acct-actions .acct-primary:hover { border-color: var(--pb-
 
 /* Header rechts: Name + Avatar (wie Vorlage) */
 body.bielstein-theme .appbar-user {
-  display: flex; align-items: flex-end; gap: 10px;
+  display: flex; align-items: center; gap: 10px;
   background: none !important; border: 0; padding: 0; cursor: pointer;
 }
 body.bielstein-theme .appbar-username {
-  padding-bottom: 5px;
-  font-family: "Manrope","Arial",sans-serif; font-size: 0.86rem; color: var(--pb-sand,#B8B0A2); white-space: nowrap;
+  padding-bottom: 0;
+  font-family: "Manrope","Arial",sans-serif; font-size: 0.946rem; color: var(--pb-sand,#B8B0A2); white-space: nowrap;
 }
 body.bielstein-theme .appbar-avatar {
   width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
