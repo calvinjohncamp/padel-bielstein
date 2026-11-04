@@ -5226,7 +5226,7 @@ main {
       send.disabled=started||!all&amp;&amp;(!valid||!fits||!inviteTargets.length||inviteTargets.length!==targets.length);
       const known=$(&#x27;#confirmKnownGroup&#x27;);if(known){known.disabled=all||!valid||!fits||!confirmTargets.length;known.title=fits?&#x27;Nur die ausgewählten Personen werden fest bestätigt.&#x27;:&#x27;Für diese Auswahl sind nicht genügend freie Plätze vorhanden.&#x27;;known.textContent=&#x27;Informieren – Du bist dabei!&#x27;;}
       send.textContent=all?&#x27;Einladung veröffentlichen&#x27;:&#x27;Einladen – Bist du dabei?&#x27;;
-      const invitationSaved=all?!!ownMatchFor(currentBooking()?.id):valid&amp;&amp;targets.every(email=&gt;persistedRosterPerson(email)?.status===&#x27;invited&#x27;);
+      const invitationSaved=all?!!ownMatchFor(currentBooking()?.id):roster.some(p=&gt;p.status===&#x27;invited&#x27;)&amp;&amp;targets.every(email=&gt;persistedRosterPerson(email)?.status===&#x27;invited&#x27;);
       send.classList.toggle(&#x27;invitation-saved&#x27;,invitationSaved);
       if(started&amp;&amp;$(&#x27;#invitationChannel&#x27;))$(&#x27;#invitationChannel&#x27;).textContent=&#x27;Die Spielzeit läuft. Fest verabredete Personen kannst du bis zum Spielende noch informieren.&#x27;;
       rememberRecipients();rememberInvitationForm();
