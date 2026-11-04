@@ -2019,6 +2019,10 @@ body.partner-drag-active,body.partner-drag-active *{cursor:grabbing!important;us
 .admin-action-list-statuses dt{font-weight:700;}
 .admin-action-list-statuses dd{margin:0;}
 .admin-action-save-status{font-size:13px;line-height:1.5;margin:0 0 14px;color:var(--pb-ink,var(--pb-ink,#1C1A17));}
+
+/* Images fill the circle without tiling; lightbox handlers stay on the container. */
+body.bielstein-theme :is(.appbar-avatar,.acct-avatar-preview,.acct-photo-badge,.cover-avatar).has-photo { background-image:none!important; background-repeat:no-repeat; overflow:hidden; }
+body.bielstein-theme .profile-round-image { display:block; width:100%; height:100%; min-width:0; object-fit:cover; object-position:center; border-radius:inherit; }
 </style>
 
 <!-- Responsive Breiten-Optimierung – Desktop, iPad und iPhone -->
@@ -22290,7 +22294,7 @@ function roundAvatarHTML(className, initials = profileInitials(), url = profileA
   const style = safeUrl ? ` style="--avatar-image:url('${safeUrl}');background-image:var(--avatar-image)"` : '';
   const call = `openAvatarLightbox('${jsSingleQuoted(safeUrl)}','${jsSingleQuoted(initials)}','${jsSingleQuoted(safeLargeUrl)}')`;
   const preview = safeUrl ? ` role="button" tabindex="0" onclick="${esc(call)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${esc(call)}}"` : '';
-  return `<div class="${className}${safeUrl ? ' has-photo avatar-clickable' : ''}"${style}${preview}>${safeUrl ? '' : esc(initials)}</div>`;
+  return `<div class="${className}${safeUrl ? ' has-photo avatar-clickable' : ''}"${style}${preview}>${safeUrl ? `<img class="profile-round-image" src="${esc(url)}" alt="" draggable="false">` : esc(initials)}</div>`;
 }
 
 // --- Punktraster als HTML-Strings ---
@@ -22656,7 +22660,7 @@ function profileCardHTML() {
           <div class="acct-avatar-actions">
             <input id="pfAvatarFile" type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="saveProfileAvatar(this.files && this.files[0])">
             <button class="acct-avatar-btn" type="button" onclick="document.getElementById('pfAvatarFile').click()">Bild auswählen</button>
-            ${avatar ? '<button class="acct-avatar-btn danger" type="button" onclick="removeProfileAvatar()">Entfernen</button>' : ''}
+            ${avatar ? '<button class="acct-avatar-btn" type="button" onclick="adjustExistingAvatar()">Ausschnitt anpassen</button><button class="acct-avatar-btn danger" type="button" onclick="removeProfileAvatar()">Entfernen</button>' : ''}
           </div>
           <div class="acct-avatar-note">Bild auswählen oder hier ablegen. Wird rund angezeigt und automatisch verkleinert.</div>
         </div>
@@ -23252,6 +23256,21 @@ function avatarLargeBlob() {
 async function saveProfileAvatar(file) {
   return openProfileAvatarCrop(file);
 }
+async function adjustExistingAvatar() {
+  const msg = document.getElementById('pfSaveMsg');
+  const avatar = profileAvatarUrl();
+  if (!avatar) return;
+  try {
+    let response = await fetch(avatarLargeUrl(avatar), {cache:'no-store'});
+    if (!response.ok) response = await fetch(avatar, {cache:'no-store'});
+    if (!response.ok) throw new Error('Das vorhandene Profilbild konnte nicht geladen werden.');
+    const blob = await response.blob();
+    await openProfileAvatarCrop(new File([blob], 'existing-avatar.webp', {type:blob.type}));
+    if (avatarCropState) avatarCropState.editingExisting = true;
+  } catch (error) {
+    if (msg) msg.textContent = error.message;
+  }
+}
 async function openProfileAvatarCrop(file) {
   const msg = document.getElementById('pfSaveMsg');
   try {
@@ -23276,7 +23295,7 @@ async function confirmAvatarCrop() {
   if (msg) { msg.style.color = ''; msg.textContent = 'Profilbild wird gespeichert …'; }
   try {
     const blob = await avatarCropBlob();
-    const largeBlob = await avatarLargeBlob();
+    const largeBlob = avatarCropState.editingExisting ? null : await avatarLargeBlob();
     const path = `${currentUser.id}/avatar.webp`;
     const largePath = `${currentUser.id}/avatar-large.webp`;
     const { error: upErr } = await sb.storage.from('profile-avatars').upload(path, blob, {
@@ -23285,12 +23304,14 @@ async function confirmAvatarCrop() {
       contentType: 'image/webp'
     });
     if (upErr) throw upErr;
+    if (largeBlob) {
     const { error: upLargeErr } = await sb.storage.from('profile-avatars').upload(largePath, largeBlob, {
       upsert: true,
       cacheControl: '3600',
       contentType: 'image/webp'
     });
     if (upLargeErr) throw upLargeErr;
+    }
     const url = sb.storage.from('profile-avatars').getPublicUrl(path).data.publicUrl + `?v=${Date.now()}`;
     const { data, error } = await sb
       .from('users')
@@ -28798,7 +28819,12 @@ svg.link-arrow.link-arrow path { fill:currentColor; stroke:none; }
       try { photo = String((currentProfile && currentProfile.avatar_url) || '').trim(); } catch(e) {}
       if (photo) {
         avatar.textContent = '';
-        avatar.style.backgroundImage = 'url("' + photo.replace(/["\\]/g, '') + '")';
+        avatar.style.backgroundImage = 'none';
+        var photoImg = document.createElement('img');
+        photoImg.className = 'profile-round-image';
+        photoImg.alt = '';
+        photoImg.src = photo;
+        avatar.appendChild(photoImg);
         avatar.classList.add('has-photo');
       } else {
         avatar.style.backgroundImage = '';
