@@ -16209,6 +16209,24 @@ function downloadPartnerGuide() {
   }, 'image/png');
 }
 
+function partnerIdentityName(value) {
+  return String(value||'').normalize('NFKC').toLocaleLowerCase('de-DE').replace(/[\s.,_–—-]+/g,'').trim();
+}
+function partnerIdentityWebsite(value) {
+  try {
+    const raw=String(value||'').trim();
+    if(!raw)return '';
+    const url=new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)?raw:'https://'+raw);
+    if(!['http:','https:'].includes(url.protocol))return '';
+    return url.hostname.toLowerCase().replace(/^www\./,'').replace(/\.$/,'');
+  } catch { return ''; }
+}
+function findDuplicatePartners(rows,id,name,website) {
+  const key=partnerIdentityName(name),host=partnerIdentityWebsite(website);
+  return rows.filter(row=>row.id!==id&&((key&&partnerIdentityName(row.name)===key)||(host&&partnerIdentityWebsite(row.website_url)===host)))
+    .sort((a,b)=>Number(!!b.active)-Number(!!a.active));
+}
+
 async function saveSponsor() {
   if (!ensurePartnerCampaignEditable()) return;
   const btn    = document.getElementById('spSaveBtn');
@@ -16249,6 +16267,21 @@ async function saveSponsor() {
   const hasAddressInput = !!(addressStreet || addressZip || addressCity || contractNote || (addressCountry && addressCountry !== 'Deutschland'));
 
   if (!name) { alert('Bitte eine Marke angeben.'); return; }
+  if(!id || !orderRow || partnerIdentityName(orderRow.name)!==partnerIdentityName(name) || partnerIdentityWebsite(orderRow.website_url)!==partnerIdentityWebsite(website)) {
+    const {data:partners,error:duplicateReadError}=await sb.rpc('admin_list_sponsors');
+    if(duplicateReadError){alert('Die Prüfung auf vorhandene Partner ist gerade nicht möglich. Bitte erneut versuchen.');return;}
+    const matches=findDuplicatePartners(partners||[],id,name,website);
+    if(matches.length){
+      const existing=matches[0];
+      const open=confirm('Dieser Partner ist bereits vorhanden: '+existing.name+(existing.active?'':' (inaktiv)')+'. Bitte den bestehenden Eintrag bearbeiten und dort bei Bedarf die Partnerstufe ändern. Vorhandenen Partner jetzt öffnen? Deine neuen Eingaben werden dabei verworfen.');
+      if(open){
+        window.__sponsorRows=window.__sponsorRows||[];
+        if(!window.__sponsorRows.some(row=>row.id===existing.id))window.__sponsorRows.push(existing);
+        editSponsor(existing.id);
+      }
+      return;
+    }
+  }
   if (!Number.isFinite(annualAmountCents) || annualAmountCents < 0) { alert('Bitte einen gültigen Jahresbetrag angeben.'); return; }
   if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) { alert('Bitte eine gültige Kontakt-E-Mail angeben (oder leer lassen).'); return; }
   if (Array.from({length:5},(_,i)=>document.getElementById('spDiscountEmail'+(i+1))).some(input=>input.value.trim()&&!input.checkValidity())) {
