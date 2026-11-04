@@ -53,7 +53,7 @@
   const root = document.documentElement;
   if (!(root.requestFullscreen || root.webkitRequestFullscreen)) return;
   const shell = new URL('focus-shell.html', location.href);
-  shell.searchParams.set('v','20261104-landscape30');
+  shell.searchParams.set('v','20261104-landscape36');
   shell.searchParams.set('page', location.pathname + location.search + location.hash);
   // Stop parsing the outer app: only the child owns session listeners and timers.
   window.stop();
@@ -2025,7 +2025,7 @@ body.bielstein-theme :is(.appbar-avatar,.acct-avatar-preview,.acct-photo-badge,.
 body.bielstein-theme .profile-round-image { display:block; width:100%; height:100%; min-width:0; object-fit:cover; object-position:center; border-radius:inherit; }
 
 @media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
-  body.bielstein-theme .appbar-wordmark { font-size: 30px; }
+  body.bielstein-theme .appbar-wordmark { font-size: 36px; }
 }
 </style>
 
