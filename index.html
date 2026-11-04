@@ -8988,8 +8988,9 @@ function fmt(n) {
   return Number(n || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 }
 function todayStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const parts = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const value = type => parts.find(part=>part.type===type).value;
+  return `${value('year')}-${value('month')}-${value('day')}`;
 }
 // Slot gilt als abgelaufen, wenn er in der Vergangenheit liegt oder seine
 // Startzeit vor mehr als 30 Minuten war (Kulanzfrist). Serverseitig wird das
@@ -11829,8 +11830,7 @@ async function loadTodayAboSlots() {
   if (!currentUser) return [];
   const userId = await dataUserId();
   if (!userId) return [];
-  const today = new Date();
-  const weekday = today.getDay();
+  const weekday = new Date(todayStr()+'T12:00:00Z').getUTCDay();
   try {
     const { data, error } = await sb
       .from('subscriptions')
@@ -12982,8 +12982,19 @@ async function renderPlaySection() {
   playRefreshState.viewer=viewer;
   const task=renderPlaySectionNow();playRefreshState.promise=task;
   try{return await task;}catch(error){console.warn('Spielansicht konnte nicht aktualisiert werden',error);if(currentUser?.id===viewer&&document.getElementById('modePlay')?.style.display!=='none')lockboxRefreshTimer=setTimeout(()=>renderPlaySection(),60000);}
-  finally{if(playRefreshState.promise===task)playRefreshState.promise=null;}
+  finally{if(playRefreshState.promise===task){playRefreshState.promise=null;schedulePlayDayRefresh();}}
 }
+let playDayRefreshTimer=null;
+function schedulePlayDayRefresh() {
+  clearTimeout(playDayRefreshTimer);
+  if(!currentUser||document.visibilityState==='hidden'||document.getElementById('modePlay')?.style.display==='none')return;
+  playDayRefreshTimer=setTimeout(()=>renderPlaySection(),60000-Date.now()%60000+50);
+}
+function refreshVisiblePlayDay() {
+  if(currentUser&&document.visibilityState!=='hidden'&&document.getElementById('modePlay')?.style.display!=='none')void renderPlaySection();
+}
+document.addEventListener('visibilitychange',refreshVisiblePlayDay);
+window.addEventListener('pageshow',refreshVisiblePlayDay);
 async function renderPlaySectionNow() {
   const notLoggedIn = document.getElementById('playNotLoggedIn');
   const loggedIn    = document.getElementById('playLoggedIn');
@@ -13040,7 +13051,6 @@ async function renderPlaySectionNow() {
 
   reconcilePlayBookings(listEl,todayMarkup);
   if(confirmedMatchReadFailed)listEl.insertAdjacentHTML('beforeend','<p role="status">Mitspieltermine konnten nicht geladen werden. Bitte erneut laden.</p>');
-  const photoIndex=allBookings.findIndex(b=>getBookingStatus(b)!=='past');
   let cursor=0;
   const version=lockboxRenderVersion;
   await Promise.all(Array.from({length:Math.min(3,allBookings.length)},async()=>{
@@ -13048,7 +13058,7 @@ async function renderPlaySectionNow() {
       const index=cursor++,b=allBookings[index];
       if(currentUser?.id!==viewer||version!==lockboxRenderVersion)return;
       const target=listEl.querySelector(`[data-today-index="${index}"]`);
-      if(target)await renderLockboxAccess(b,target,index===photoIndex);
+      if(target)await renderLockboxAccess(b,target,true);
     }
   }));
   // Refresh the complete day view at a time boundary, without a separate status banner.
