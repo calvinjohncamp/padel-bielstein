@@ -53,7 +53,7 @@
   const root = document.documentElement;
   if (!(root.requestFullscreen || root.webkitRequestFullscreen)) return;
   const shell = new URL('focus-shell.html', location.href);
-  shell.searchParams.set('v','20261105-presentation');
+  shell.searchParams.set('v','20261105-focus-grips');
   shell.searchParams.set('page', location.pathname + location.search + location.hash);
   // Stop parsing the outer app: only the child owns session listeners and timers.
   window.stop();

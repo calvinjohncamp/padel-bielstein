@@ -19,11 +19,14 @@ body { font:13px/1.3 system-ui,sans-serif; color:#C9C2B6; }
 #pbFocusViewport { position:relative; width:100%; height:100%; flex:none; }
 #pbFocusApp { display:block; position:absolute; top:0; left:0; border:0; width:100%; height:100%; transform-origin:top left; background:#1C1A17; }
 .pb-focus-grip,#pbFocusTools,#pbFocusReveal { display:none; }
-.pb-focus-active.pb-focus-presentation .pb-focus-grip { display:block; position:absolute; top:0; bottom:0; width:16px; z-index:2; cursor:ew-resize; touch-action:none; user-select:none; }
+.pb-focus-active .pb-focus-grip { display:block; position:absolute; top:0; bottom:0; width:16px; z-index:2; cursor:ew-resize; touch-action:none; user-select:none; }
 .pb-focus-grip[data-side="left"] { left:-16px; }
 .pb-focus-grip[data-side="right"] { right:-16px; }
 .pb-focus-desktop .pb-focus-grip[data-side="left"] { left:0; }
 .pb-focus-desktop .pb-focus-grip[data-side="right"] { right:0; }
+.pb-focus-active:not(.pb-focus-presentation) .pb-focus-grip {
+  top:calc(50% - 36px); bottom:auto; height:72px;
+}
 .pb-focus-grip::after { content:""; position:absolute; top:calc(50% - 28px); left:6px; width:4px; height:56px; border-radius:3px; background:#76736E; transition:background .15s; }
 .pb-focus-grip:hover::after,.pb-focus-grip:focus-visible::after,.pb-focus-dragging .pb-focus-grip::after { background:#C9C2B6; }
 .pb-focus-grip:focus-visible { outline:1px solid #C9C2B6; outline-offset:-3px; }
@@ -66,7 +69,7 @@ body { font:13px/1.3 system-ui,sans-serif; color:#C9C2B6; }
   const presets = {tablet:[834,1194],phone:[390,844]};
   const fullscreen = () => document.fullscreenElement || document.webkitFullscreenElement;
   let active = false, presentation = false, pending = false, width = innerWidth, height = innerHeight, scale = 1, mode = 'desktop';
-  let drag = null, previousFocus = null;
+  let drag = null, previousFocus = null, normalWidth = null;
   const owns = child => child === frame.contentWindow;
   function childBridge() { try { return frame.contentWindow.PBFocusBridge; } catch (_) { return null; } }
   const canPresent = () => childBridge()?.canPresent() === true;
@@ -81,8 +84,10 @@ body { font:13px/1.3 system-ui,sans-serif; color:#C9C2B6; }
     root.classList.toggle('pb-focus-controls',active && presentation && allowed);
     const desktop = mode === 'desktop';
     if (desktop) { width = innerWidth; height = innerHeight; }
-    root.classList.toggle('pb-focus-desktop',desktop);
-    if (active && presentation && allowed) {
+    const presenting = active && presentation && allowed;
+    const normalDisplayWidth = Math.min(normalWidth ?? innerWidth,innerWidth);
+    root.classList.toggle('pb-focus-desktop',presenting ? desktop : innerWidth-normalDisplayWidth < 32);
+    if (presenting) {
       scale = desktop ? 1 : Math.min(Math.max(1,innerWidth-32)/width, innerHeight/height);
       viewport.style.width = width*scale+'px';
       viewport.style.height = height*scale+'px';
@@ -93,13 +98,16 @@ body { font:13px/1.3 system-ui,sans-serif; color:#C9C2B6; }
       scale = 1;
       viewport.removeAttribute('style');
       frame.removeAttribute('style');
+      if (active && normalWidth !== null) viewport.style.width = normalDisplayWidth+'px';
     }
-    const maximum = Math.max(width, Math.floor(Math.max(320,innerWidth-32)*height/innerHeight));
+    const gripWidth = presenting ? width : normalDisplayWidth;
+    const maximum = presenting ? Math.max(width, Math.floor(Math.max(320,innerWidth-32)*height/innerHeight)) : innerWidth;
+    const minimum = Math.min(320,maximum);
     for (const grip of grips) {
-      grip.setAttribute('aria-valuemin','320');
+      grip.setAttribute('aria-valuemin',String(minimum));
       grip.setAttribute('aria-valuemax',String(maximum));
-      grip.setAttribute('aria-valuenow',String(Math.round(width)));
-      grip.setAttribute('aria-valuetext',Math.round(width)+' Pixel breit');
+      grip.setAttribute('aria-valuenow',String(Math.round(gripWidth)));
+      grip.setAttribute('aria-valuetext',Math.round(gripWidth)+' Pixel breit');
     }
     tools.querySelectorAll('[data-mode]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.mode===mode)));
     document.getElementById('pbFocusSize').textContent = `${Math.round(width)} × ${Math.round(height)}`;
@@ -130,6 +138,7 @@ body { font:13px/1.3 system-ui,sans-serif; color:#C9C2B6; }
     pending = true;
     previousFocus = frame.contentWindow.document.activeElement;
     mode = 'desktop';
+    normalWidth = null;
     try {
       const request = root.requestFullscreen || root.webkitRequestFullscreen;
       await request.call(root,{navigationUI:'hide'});
@@ -160,7 +169,12 @@ body { font:13px/1.3 system-ui,sans-serif; color:#C9C2B6; }
     frame.focus();
   }
   function setWidth(value) {
-    if (!active || !presentation || !canPresent()) return;
+    if (!active) return;
+    if (!presentation) {
+      normalWidth = Math.min(innerWidth,Math.max(320,Math.round(value)));
+      layout();
+      return;
+    }
     const max = Math.max(320,Math.floor((innerWidth-32)*height/innerHeight));
     width = Math.max(320,Math.min(value,max));
     mode = '';
@@ -208,9 +222,9 @@ body { font:13px/1.3 system-ui,sans-serif; color:#C9C2B6; }
   tools.addEventListener('pointerleave',reveal);
   for (const grip of grips) {
     grip.addEventListener('pointerdown',event=>{
-      if (!active || !presentation || !canPresent() || drag || event.button!==0) return;
+      if (!active || drag || event.button!==0) return;
       event.preventDefault();
-      drag={grip,id:event.pointerId,startX:event.clientX,width,scale};
+      drag={grip,id:event.pointerId,startX:event.clientX,width:presentation ? width : viewport.clientWidth,scale};
       grip.setPointerCapture(event.pointerId);
       shield.hidden=false;
       root.classList.add('pb-focus-dragging');
@@ -222,11 +236,11 @@ body { font:13px/1.3 system-ui,sans-serif; color:#C9C2B6; }
     });
     for (const event of ['pointerup','pointercancel','lostpointercapture']) grip.addEventListener(event,finishDrag);
     grip.addEventListener('keydown',event=>{
-      if (!active || !presentation || !canPresent() || !['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+      if (!active || !['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
       event.preventDefault();
       const direction=grip.dataset.side==='right'?1:-1;
       setWidth(event.key==='Home'?320:event.key==='End'?Number.MAX_SAFE_INTEGER:
-        width+(event.key==='ArrowRight'?1:-1)*direction*(event.shiftKey?100:20));
+        (presentation ? width : viewport.clientWidth)+(event.key==='ArrowRight'?1:-1)*direction*(event.shiftKey?100:20));
       reveal();
     });
   }
@@ -241,7 +255,7 @@ body { font:13px/1.3 system-ui,sans-serif; color:#C9C2B6; }
   try {initial=new URL(new URLSearchParams(location.search).get('page')||'/',location.origin);} catch (_) {initial=new URL('/',location.origin);}
   if (initial.origin!==location.origin || !['/','/index.html'].includes(initial.pathname)) initial=new URL('/',location.origin);
   history.replaceState(null,'',initial.pathname+initial.search+initial.hash);
-  initial.searchParams.set('_pb_focus_view','20261105-presentation');
+  initial.searchParams.set('_pb_focus_view','20261105-focus-grips');
   frame.src=initial.href;
   sync();
 })();
