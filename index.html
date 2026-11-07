@@ -1114,6 +1114,13 @@ a.pbp-tile:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(0,0,0
    des Logos nicht auf → Logo zu hoch, „GROUP" wird abgeschnitten. */
 .pbp-tile-prem { height:clamp(128px,12vw,150px); width:100%; }
 .pbp-tile-prem img { max-width:52%; max-height:78%; }
+/* Ein einzelner Premium-Partner erhält die ganze Bühne; das Logo behält
+   unabhängig von der Kachelbreite seine Proportionen und eine ruhige Größe. */
+#partnerBoard .pbp-premwrap-single { grid-template-columns:minmax(0,1fr); }
+#partnerBoard .pbp-premwrap-single .pbp-tile-prem { height:clamp(140px,16vw,190px); }
+#partnerBoard .pbp-premwrap-single .pbp-tile-prem img { max-width:min(72%,360px); max-height:72%; }
+
+
 .pbp-grid { display:grid; gap:clamp(9px,1.3vw,15px); }
 /* Feste Kachelhöhe je Spalten-Layout (statt aspect-ratio). Nur so lösen sich
    die Prozent-max-Werte des Logos sauber auf – auch in Safari/iPad (der Bug
@@ -27286,9 +27293,6 @@ svg.link-arrow.link-arrow path { fill:currentColor; stroke:none; }
     var tile=window.pbPartnerLogoTile;
     var label=function(t){ return '<div class="pbp-seclabel"><span class="pbp-line"></span>'
       +'<span class="pbp-lbl">'+t+'</span><span class="pbp-line"></span></div>'; };
-    var premiumPlaceholder=function(n){
-      return '<div class="pbp-tile pbp-tile-prem pbp-tile-prem-empty">Premium-Partner '+n+'<span>frei</span></div>';
-    };
     try{
       if(typeof sb==='undefined' || !sb){ host.innerHTML=''; return; }
       var res=await sb.from('sponsors_public').select('id,tier,name,logo_url,action_logo_url,action_logo_mode,has_action_logo,sort_order,website_url,court_label,premium_slot');
@@ -27309,9 +27313,8 @@ svg.link-arrow.link-arrow path { fill:currentColor; stroke:none; }
         +'<div class="pbp-wtop">Aus der Region, für die Region</div>'
         +'<div class="pbp-wsub">Unsere starken Partner vor Ort</div></div></header>';
       if(prem.length){
-        var premiumTiles=[];
-        for(var slot=1;slot<=2;slot++){var sponsor=prem.find(function(s,i){return (s.premium_slot||i+1)===slot;});premiumTiles.push(sponsor?tile(sponsor,'pbp-tile-prem'):premiumPlaceholder(slot));}
-        h+=label('Premium-Partner')+'<div class="pbp-premwrap">'+premiumTiles.join('')+'</div>';
+        var premiumTiles=prem.slice().sort(function(a,b){return (a.premium_slot||1)-(b.premium_slot||1);}).slice(0,2).map(function(s){return tile(s,'pbp-tile-prem');});
+        h+=label('Premium-Partner')+'<div class="pbp-premwrap'+(premiumTiles.length===1?' pbp-premwrap-single':'')+'">'+premiumTiles.join('')+'</div>';
       }
       if(part.length) h+=label('Partner')+'<div class="pbp-grid pbp-grid-partner">'+part.map(function(s){return tile(s);}).join('')+'</div>';
       if(reg.length)  h+=label('Regionale Partner')+'<div class="pbp-grid pbp-grid-regional">'+reg.map(function(s){return tile(s);}).join('')+'</div>';
@@ -29138,23 +29141,19 @@ svg.link-arrow.link-arrow path { fill:currentColor; stroke:none; }
       setTimeout(function(){ fillMeetDuo(kicker, left, right, true); }, 180);
     }
   }
-  function emptyPremiumTile(n){
-    return '<div class="pbsp-tile pbsp-prem pbsp-tile-empty">Premium-Partner '+n+'<span>frei</span></div>';
-  }
-  function fillPremiumDuo(id, kicker, premiumRows){
+  function fillPremiumDuo(id, premiumRows){
     var el=document.getElementById(id); if(!el) return;
     var items=(premiumRows||[]).slice(0,2).map(function(s){ return tile(s,true,true); }).filter(Boolean);
-    while(items.length<2) items.push(emptyPremiumTile(items.length+1));
-    el.innerHTML = '<div class="pbsp-kicker">'+kicker+'</div><div class="pbsp-duo">'+items.join('')+'</div>';
-    el.style.display = window.__sponsorsEnabled === false ? 'none' : '';
+    var kicker=items.length===1 ? 'Wird Ihnen präsentiert von unserem Premium-Partner' : 'Wird Ihnen präsentiert von unseren Premium-Partnern';
+    el.innerHTML = items.length ? '<div class="pbsp-kicker">'+kicker+'</div><div class="pbsp-duo">'+items.join('')+'</div>' : '';
+    el.style.display = window.__sponsorsEnabled === false || !items.length ? 'none' : '';
   }
   function renderSplashPremiumFromRows(rows){
     var slot=document.getElementById('pbSplashSponsor');
     if(window.__sponsorsEnabled===false){if(slot){slot.innerHTML='';slot.style.display='none';}return;}
     var prem=(rows||[]).filter(function(r){return r.tier==='premium';})
       .sort(function(a,b){return (a.sort_order||0)-(b.sort_order||0);});
-    if(prem.length) fillPremiumDuo('pbSplashSponsor', 'Präsentiert von unseren Premium-Partnern', prem);
-    else if(slot)slot.innerHTML='';
+    fillPremiumDuo('pbSplashSponsor', prem);
   }
   window.pbApplySplashSponsors=renderSplashPremiumFromRows;
   function buildFairPlaylist(groups){
