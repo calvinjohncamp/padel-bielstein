@@ -1,0 +1,50 @@
+/* Padel host theme for the shared TFB kiosk. No product artwork or billing rules. */
+:host {
+  /* Match TFB's .app + .view width, independent of the wider Padel shell. */
+  display: block;
+  width: calc(100vw - 32px);
+  max-width: min(100%, 528px);
+  margin-inline: auto !important;
+  line-height: normal;
+  font-weight: 400;
+  letter-spacing: normal;
+  -webkit-font-smoothing: antialiased;
+}
+@media (min-width: 640px) {
+  :host { width: calc(100vw - 48px); max-width: min(100%, 832px); }
+}
+@media (min-width: 1024px) {
+  :host { width: calc(100vw - 64px); max-width: min(100%, 1136px); }
+}
+.club-kiosk-surface {
+  --bg: #F6F1E7;
+  --paper: #F6F1E7;
+  --cream: #EFE9DD;
+  --line: #E2DACB;
+  --signal: #FF5A36;
+  --tfb-signature-red: #FF5A36;
+  --clay: #FF5A36;
+  --clay-soft: #F5E3D9;
+  background: #F6F1E7;
+  line-height: normal;
+}
+/* TFB's native heading weight; size and breakpoints come from the shared CSS. */
+.club-kiosk-surface .kiosk-head h1 { font-weight: 800; letter-spacing: -.025em; }
+.club-kiosk-surface :is(.tile-art, .tile-picture, .tile-illustration) { background: #EFE9DD; }
+.club-kiosk-surface .deckel .deckel-face { background: #F9F9F9; }
+.club-kiosk-surface .coaster-owner { color: #171717; }
+/* Original high-resolution app mark, shown at the native TFB mark size. */
+.club-kiosk-surface .pb-kiosk-ball {
+  display: block;
+  position: relative;
+  aspect-ratio: 1;
+}
+.club-kiosk-surface .pb-kiosk-ball img {
+  position: absolute;
+  inset: -16.6667%;
+  width: 133.3333%;
+  height: 133.3333%;
+  max-width: none;
+  object-fit: contain;
+  filter: drop-shadow(0 .5px .7px rgba(28, 26, 23, .12));
+}
