@@ -1,0 +1,43 @@
+/* Reversible typography comparison. Existing sizes, colors and mark are retained. */
+html.pb-tfb-type {
+  --pb-type-body: "TFB DM Sans";
+  --pb-type-display: "TFB Bricolage";
+}
+/* Brand lettering is deliberately excluded from the experiment. */
+html :is(.appbar-wordmark, .appbar-wordmark *, .pb-splash-h1, .pb-splash-h1 *, .brand, .brand *) {
+  font-family: "Space Grotesk", "Arial Narrow", sans-serif !important;
+}
+#heroHeader.pb-type-header { flex-wrap: wrap; }
+#pbTypographySwitch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  color: #B8B0A2;
+  font: 500 11px/1.2 Manrope, Arial, sans-serif;
+}
+#pbTypographySwitch .pb-type-options {
+  display: flex;
+  padding: 3px;
+  border: 1px solid #635C52;
+  border-radius: 9px;
+  gap: 3px;
+}
+#pbTypographySwitch button {
+  min-height: 30px;
+  padding: 6px 11px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #D7CFC2;
+  font: 600 11px/1.2 Manrope, Arial, sans-serif;
+  cursor: pointer;
+}
+#pbTypographySwitch button[aria-pressed="true"] { background: #F6F1E7; color: #1C1A17; }
+#pbTypographySwitch button:focus-visible { outline: 2px solid #FF5A36; outline-offset: 2px; }
+@media (max-width: 720px) {
+  #pbTypographySwitch { order: 5; flex-basis: 100%; justify-content: flex-end; margin-top: -4px; }
+  #heroHeader.pb-type-header { row-gap: 12px; }
+  #pbTypographySwitch button { min-height: 34px; padding-inline: 14px; }
+}
+@media print { #pbTypographySwitch { display: none; } }
